@@ -167,6 +167,14 @@ Implemented in Stage 6.1:
 - `scripts/run_encoder_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (12 cells × 2 mask kinds = 24 metric rows) and writes `outputs/encoder_attention_experiments.{json,csv,md}`. Cells that fail to load are recorded as `skipped` rather than crashing the script.
 - This stage continues to **not** implement BERT obfuscated forward, LayerNorm / GELU / FFN obfuscation, MLM head handling, pooler / classification heads, encoder-decoder cross-attention, or real TEE security — those are explicit Limitations in the report.
 
+Implemented in Stage 6.2:
+
+- `src/pllo/experiments/cross_attention_probe.py` — encoder-decoder cross-attention probe for T5- and BART-style models. Decoder hidden states feed Q while encoder memory feeds K/V, so the input mask space for Q is independent of the input mask space for K/V. The probe validates the same Q/K/V mask invariants, the per-head `N_Q_dec N_K_enc^T = I` constraint, the `Q_dec_tilde K_enc_tilde^T ≈ Q_dec K_enc^T` score invariant under both all-ones and padding encoder masks, the V-aggregation invariant `AttnProb V_enc_tilde ≈ (AttnProb V_enc) N_V_enc`, and the output projection `Y_dec_tilde = Y_dec N_dec_out` (with Q/K/V/O pad compensation under `use_pad=true`).
+- New probe-level `EncoderMemoryCache` dataclass captures plain and obfuscated K/V plus the masks that produced them, and validates `K_enc_tilde ≈ K_enc N_K_enc` / `V_enc_tilde ≈ V_enc N_V_enc`. This is **not** a generation-runtime cache — it is a probe structure only.
+- Projection helpers handle `bias=None` (T5 attention) and `bias!=None` (BART attention) uniformly.
+- `scripts/run_cross_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `dec_seq_len ∈ {1, 4}`, `enc_seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (24 cells × 2 encoder-mask kinds = 48 metric rows) and writes `outputs/cross_attention_experiments.{json,csv,md}`. Cells whose model fails to load are recorded as `skipped`.
+- This stage continues to **not** implement full T5/BART obfuscated forward, decoder self-attention cache, encoder-decoder generation, LayerNorm / FFN / activation obfuscation, LM head, relative position bias, or real TEE security.
+
 ## Not Included
 
 This project currently does **not** include:
@@ -224,6 +232,7 @@ python scripts/run_attention_experiments.py
 python scripts/run_workload_profile.py
 python scripts/run_architecture_coverage.py
 python scripts/run_encoder_attention_experiments.py
+python scripts/run_cross_attention_experiments.py
 ```
 
 Useful variants:
@@ -255,6 +264,7 @@ By default, results are written to:
 - `outputs/workload_profile.json` / `.csv` / `.md` (Stage 5.0 workload profiler)
 - `outputs/architecture_coverage.json` / `.csv` / `.md` (Stage 6.0 architecture coverage)
 - `outputs/encoder_attention_experiments.json` / `.csv` / `.md` (Stage 6.1 encoder-only attention probe)
+- `outputs/cross_attention_experiments.json` / `.csv` / `.md` (Stage 6.2 encoder-decoder cross-attention probe)
 
 Each JSON file reports:
 
@@ -269,10 +279,9 @@ Each JSON file reports:
 
 ## Next Stage Plan
 
-Planned extensions after Stage 6.1:
+Planned extensions after Stage 6.2:
 
-- Stage 6.2 — Encoder-decoder cross-attention probe (Q from decoder, K/V from encoder memory; encoder-memory cache layout)
-- Stage 6.3 — Cross-architecture workload + security experiments (rerun Stage 5.0.1 profiler over each architecture)
+- Stage 6.3 — Cross-architecture workload + security experiments (rerun Stage 5.0.1 profiler over each architecture; 3×3 architecture × method matrix)
 - Stage 6.4 — Qwen / ModelScope migration
 - Stage 5.1 — GPU-side LayerNorm primitive prototype (replaces the trusted shortcut)
 - Stage 5.2 — GELU primitive feasibility (replaces the trusted shortcut)
