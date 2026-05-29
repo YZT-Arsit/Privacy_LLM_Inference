@@ -1,0 +1,1660 @@
+{
+  "results": [
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "seq_len": 4,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.1457672119140625e-06,
+          "mean_abs_error": 5.288602551445365e-07,
+          "relative_l2_error": 7.417741016979562e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.384185791015625e-06,
+          "mean_abs_error": 5.683182280336041e-07,
+          "relative_l2_error": 8.541078955204284e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.0531158447265625e-06,
+          "mean_abs_error": 7.233757060021162e-07,
+          "relative_l2_error": 8.653548206893902e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.172325134277344e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.2649765014648438e-06,
+            "mean_abs_error": 5.628680810332298e-07,
+            "relative_l2_error": 5.135152605362236e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.682209014892578e-07,
+            "mean_abs_error": 4.7686626203358173e-08,
+            "relative_l2_error": 1.949724719452206e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.8533319234848022e-06,
+            "mean_abs_error": 5.230540409684181e-07,
+            "relative_l2_error": 9.564510037307627e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.410743713378906e-06,
+            "mean_abs_error": 1.0147900866286363e-06,
+            "relative_l2_error": 1.3355263490666403e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.2649765014648438e-06,
+            "mean_abs_error": 5.628680810332298e-07,
+            "relative_l2_error": 5.135152605362236e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.682209014892578e-07,
+            "mean_abs_error": 4.7686626203358173e-08,
+            "relative_l2_error": 1.949724719452206e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.8533319234848022e-06,
+            "mean_abs_error": 5.230540409684181e-07,
+            "relative_l2_error": 9.564510037307627e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.4836273193359375e-06,
+            "mean_abs_error": 9.554814823786728e-07,
+            "relative_l2_error": 1.2968217788511538e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "seq_len": 4,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 1.430511474609375e-06,
+          "mean_abs_error": 3.7259451346471906e-07,
+          "relative_l2_error": 5.246553200777271e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.9073486328125e-06,
+          "mean_abs_error": 4.007129064120818e-07,
+          "relative_l2_error": 6.102421821196913e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 2.384185791015625e-06,
+          "mean_abs_error": 4.975408955942839e-07,
+          "relative_l2_error": 5.835486263094936e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.172325134277344e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.0265579223632812e-06,
+            "mean_abs_error": 5.958136171102524e-07,
+            "relative_l2_error": 5.528132760446169e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 5.6737917475402355e-08,
+            "relative_l2_error": 2.29625825909352e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.430511474609375e-06,
+            "mean_abs_error": 3.9042379285092466e-07,
+            "relative_l2_error": 7.20865045877872e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.0994415283203125e-06,
+            "mean_abs_error": 7.191124495875556e-07,
+            "relative_l2_error": 9.40386826187023e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.0265579223632812e-06,
+            "mean_abs_error": 5.958136171102524e-07,
+            "relative_l2_error": 5.528132760446169e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 5.6737917475402355e-08,
+            "relative_l2_error": 2.29625825909352e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.430511474609375e-06,
+            "mean_abs_error": 3.9042379285092466e-07,
+            "relative_l2_error": 7.20865045877872e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.0994415283203125e-06,
+            "mean_abs_error": 7.191124495875556e-07,
+            "relative_l2_error": 9.40386826187023e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "seq_len": 8,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.7418136596679688e-06,
+          "mean_abs_error": 5.344323312783672e-07,
+          "relative_l2_error": 7.545501148342737e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.384185791015625e-06,
+          "mean_abs_error": 5.255035375739681e-07,
+          "relative_l2_error": 7.957359002830344e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.5299530029296875e-06,
+          "mean_abs_error": 7.273612254721229e-07,
+          "relative_l2_error": 8.358452987522469e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 3.1888484954833984e-06,
+            "mean_abs_error": 6.709597073495388e-07,
+            "relative_l2_error": 6.830413781244715e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 4.186858859611675e-08,
+            "relative_l2_error": 2.774585823317466e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.1457672119140625e-06,
+            "mean_abs_error": 4.271409466127807e-07,
+            "relative_l2_error": 9.202616411130293e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.933906555175781e-06,
+            "mean_abs_error": 8.743755870455061e-07,
+            "relative_l2_error": 1.335589786322089e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 3.1888484954833984e-06,
+            "mean_abs_error": 6.709597073495388e-07,
+            "relative_l2_error": 6.830413781244715e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 4.282264853827655e-08,
+            "relative_l2_error": 3.5514523233359796e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.8014183044433594e-06,
+            "mean_abs_error": 5.143372163729509e-07,
+            "relative_l2_error": 1.0225220421489212e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.643574357032776e-06,
+            "mean_abs_error": 1.0310716334060999e-06,
+            "relative_l2_error": 1.3778152379018138e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "seq_len": 8,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 1.9073486328125e-06,
+          "mean_abs_error": 3.823337806352356e-07,
+          "relative_l2_error": 5.465218464451027e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.5497207641601562e-06,
+          "mean_abs_error": 3.6515459100883163e-07,
+          "relative_l2_error": 5.599407586487359e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 2.682209014892578e-06,
+          "mean_abs_error": 4.851302719544037e-07,
+          "relative_l2_error": 5.6147092664105e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.3543834686279297e-06,
+            "mean_abs_error": 4.65253833681345e-07,
+            "relative_l2_error": 4.5852164021198405e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.980232238769531e-07,
+            "mean_abs_error": 3.4949152905028313e-08,
+            "relative_l2_error": 2.456420702401374e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-06,
+            "mean_abs_error": 2.9687979008485854e-07,
+            "relative_l2_error": 6.418173938982363e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.3096799850463867e-06,
+            "mean_abs_error": 5.464102059704601e-07,
+            "relative_l2_error": 8.434548135483055e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.3543834686279297e-06,
+            "mean_abs_error": 4.65253833681345e-07,
+            "relative_l2_error": 4.5852164021198405e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.980232238769531e-07,
+            "mean_abs_error": 3.5794073482975364e-08,
+            "relative_l2_error": 3.0597337286053516e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.682209014892578e-06,
+            "mean_abs_error": 3.503648713376606e-07,
+            "relative_l2_error": 7.217475399556861e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.0994415283203125e-06,
+            "mean_abs_error": 6.988550467212917e-07,
+            "relative_l2_error": 9.438449524168391e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "seq_len": 16,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.86102294921875e-06,
+          "mean_abs_error": 5.5777996976758e-07,
+          "relative_l2_error": 8.104630637717491e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.7418136596679688e-06,
+          "mean_abs_error": 5.265682716526499e-07,
+          "relative_l2_error": 8.242604394581576e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.0531158447265625e-06,
+          "mean_abs_error": 6.989823191361211e-07,
+          "relative_l2_error": 8.07227934274124e-07,
+          "cosine_similarity": 0.9999997019767761,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.7418136596679688e-06,
+            "mean_abs_error": 6.907321221660823e-07,
+            "relative_l2_error": 8.60129659940867e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 3.290807626399328e-08,
+            "relative_l2_error": 4.366481789475074e-07,
+            "cosine_similarity": 0.9999997019767761,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.384185791015625e-06,
+            "mean_abs_error": 3.721978032444895e-07,
+            "relative_l2_error": 9.909782647810061e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.293156623840332e-06,
+            "mean_abs_error": 7.650720021956658e-07,
+            "relative_l2_error": 1.5303073723771377e-06,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.7418136596679688e-06,
+            "mean_abs_error": 6.907321221660823e-07,
+            "relative_l2_error": 8.60129659940867e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 2.8715589905914385e-08,
+            "relative_l2_error": 3.975597167027445e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.1457672119140625e-06,
+            "mean_abs_error": 4.0665017309038376e-07,
+            "relative_l2_error": 9.247140155821398e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.202127456665039e-06,
+            "mean_abs_error": 8.506640938321652e-07,
+            "relative_l2_error": 1.3304511412570719e-06,
+            "cosine_similarity": 0.9999997019767761,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "seq_len": 16,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.1457672119140625e-06,
+          "mean_abs_error": 3.85625583021465e-07,
+          "relative_l2_error": 5.589374154624238e-07,
+          "cosine_similarity": 0.9999997615814209,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.1457672119140625e-06,
+          "mean_abs_error": 3.9347293068203726e-07,
+          "relative_l2_error": 6.134212071629008e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 3.516674041748047e-06,
+          "mean_abs_error": 5.056692202742852e-07,
+          "relative_l2_error": 5.881774995941669e-07,
+          "cosine_similarity": 0.9999996423721313,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.86102294921875e-06,
+            "mean_abs_error": 5.315100679581519e-07,
+            "relative_l2_error": 6.596815751436225e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 2.3885490918473806e-08,
+            "relative_l2_error": 3.015047695953399e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.0265579223632812e-06,
+            "mean_abs_error": 2.563594705407013e-07,
+            "relative_l2_error": 6.992738690314582e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.6226043701171875e-06,
+            "mean_abs_error": 4.6529987685062224e-07,
+            "relative_l2_error": 9.467297559240251e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.86102294921875e-06,
+            "mean_abs_error": 5.315100679581519e-07,
+            "relative_l2_error": 6.596815751436225e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 2.3390953174384777e-08,
+            "relative_l2_error": 3.7459477653101203e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-06,
+            "mean_abs_error": 2.840615707100369e-07,
+            "relative_l2_error": 6.528760536639311e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.5033950805664062e-06,
+            "mean_abs_error": 5.499156259247684e-07,
+            "relative_l2_error": 8.684125987201696e-07,
+            "cosine_similarity": 0.9999997019767761,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "seq_len": 4,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.7418136596679688e-06,
+          "mean_abs_error": 5.344323312783672e-07,
+          "relative_l2_error": 7.545500579908548e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.384185791015625e-06,
+          "mean_abs_error": 5.255035375739681e-07,
+          "relative_l2_error": 7.957358434396156e-07,
+          "cosine_similarity": 0.9999998211860657,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.5299530029296875e-06,
+          "mean_abs_error": 7.273612254721229e-07,
+          "relative_l2_error": 8.358452987522469e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 3.337860107421875e-06,
+            "mean_abs_error": 6.592017598450184e-07,
+            "relative_l2_error": 5.882675964130613e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 5.535366653930396e-08,
+            "relative_l2_error": 2.0907276621073834e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.073124051094055e-06,
+            "mean_abs_error": 5.018381443733233e-07,
+            "relative_l2_error": 8.639218549433281e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.900859832763672e-06,
+            "mean_abs_error": 1.0230735369987087e-06,
+            "relative_l2_error": 1.2709888324025087e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 3.337860107421875e-06,
+            "mean_abs_error": 6.592017598450184e-07,
+            "relative_l2_error": 5.882675964130613e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 5.535366653930396e-08,
+            "relative_l2_error": 2.0907276621073834e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.073124051094055e-06,
+            "mean_abs_error": 5.018381443733233e-07,
+            "relative_l2_error": 8.639218549433281e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 6.139278411865234e-06,
+            "mean_abs_error": 1.0214650956186233e-06,
+            "relative_l2_error": 1.2708838994512917e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "seq_len": 4,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 1.9073486328125e-06,
+          "mean_abs_error": 3.823337806352356e-07,
+          "relative_l2_error": 5.465217896016838e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.5497207641601562e-06,
+          "mean_abs_error": 3.6515459100883163e-07,
+          "relative_l2_error": 5.599407018053171e-07,
+          "cosine_similarity": 0.9999998211860657,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 2.682209014892578e-06,
+          "mean_abs_error": 4.851302719544037e-07,
+          "relative_l2_error": 5.6147092664105e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.3543834686279297e-06,
+            "mean_abs_error": 5.289621185511351e-07,
+            "relative_l2_error": 4.228126329053339e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 6.357731763273478e-08,
+            "relative_l2_error": 2.367886509091477e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.6226043701171875e-06,
+            "mean_abs_error": 3.6772269140783465e-07,
+            "relative_l2_error": 6.510271646220644e-07,
+            "cosine_similarity": 0.9999997615814209,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.337860107421875e-06,
+            "mean_abs_error": 6.767022568965331e-07,
+            "relative_l2_error": 8.375676543437294e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.3543834686279297e-06,
+            "mean_abs_error": 5.289621185511351e-07,
+            "relative_l2_error": 4.228126329053339e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 6.357731763273478e-08,
+            "relative_l2_error": 2.367886509091477e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.6226043701171875e-06,
+            "mean_abs_error": 3.6772269140783465e-07,
+            "relative_l2_error": 6.510271646220644e-07,
+            "cosine_similarity": 0.9999997615814209,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.337860107421875e-06,
+            "mean_abs_error": 6.767022568965331e-07,
+            "relative_l2_error": 8.375676543437294e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "seq_len": 8,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.86102294921875e-06,
+          "mean_abs_error": 5.5777996976758e-07,
+          "relative_l2_error": 8.10463120615168e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.7418136596679688e-06,
+          "mean_abs_error": 5.265682716526499e-07,
+          "relative_l2_error": 8.242604394581576e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.0531158447265625e-06,
+          "mean_abs_error": 6.989823191361211e-07,
+          "relative_l2_error": 8.072280479609617e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.9802322387695312e-06,
+            "mean_abs_error": 6.661502993665636e-07,
+            "relative_l2_error": 7.150251235543692e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.662441253662109e-07,
+            "mean_abs_error": 5.021638571633957e-08,
+            "relative_l2_error": 3.742886747204466e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.337860107421875e-06,
+            "mean_abs_error": 4.4687851641356247e-07,
+            "relative_l2_error": 9.631631883166847e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.291534423828125e-06,
+            "mean_abs_error": 8.775225524004782e-07,
+            "relative_l2_error": 1.348446403426351e-06,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.9802322387695312e-06,
+            "mean_abs_error": 6.661502993665636e-07,
+            "relative_l2_error": 7.150251235543692e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.364418029785156e-07,
+            "mean_abs_error": 5.015090209781192e-08,
+            "relative_l2_error": 4.0657548083800066e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.159046173095703e-06,
+            "mean_abs_error": 4.680273093526921e-07,
+            "relative_l2_error": 9.249403092326247e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.231929779052734e-06,
+            "mean_abs_error": 9.533648608339718e-07,
+            "relative_l2_error": 1.3004749916945002e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "seq_len": 8,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 2.1457672119140625e-06,
+          "mean_abs_error": 3.85625583021465e-07,
+          "relative_l2_error": 5.589374723058427e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.1457672119140625e-06,
+          "mean_abs_error": 3.9347293068203726e-07,
+          "relative_l2_error": 6.134212071629008e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 3.516674041748047e-06,
+          "mean_abs_error": 5.056692202742852e-07,
+          "relative_l2_error": 5.881775564375857e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.384185791015625e-06,
+            "mean_abs_error": 5.221590981818736e-07,
+            "relative_l2_error": 5.456149096971785e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 3.741342879948206e-08,
+            "relative_l2_error": 2.575679047822632e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.86102294921875e-06,
+            "mean_abs_error": 3.229268941140617e-07,
+            "relative_l2_error": 7.02364161497826e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.337860107421875e-06,
+            "mean_abs_error": 5.94365246797679e-07,
+            "relative_l2_error": 9.244205330105615e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.384185791015625e-06,
+            "mean_abs_error": 5.221590981818736e-07,
+            "relative_l2_error": 5.456149096971785e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.8312206268310547e-07,
+            "mean_abs_error": 3.8492089515784755e-08,
+            "relative_l2_error": 2.973489472424262e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.6226043701171875e-06,
+            "mean_abs_error": 3.430662331993517e-07,
+            "relative_l2_error": 6.990703127485176e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.814697265625e-06,
+            "mean_abs_error": 6.69648727580352e-07,
+            "relative_l2_error": 9.253234907191654e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "seq_len": 16,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 3.516674041748047e-06,
+          "mean_abs_error": 5.263614752948342e-07,
+          "relative_l2_error": 7.784698254909017e-07,
+          "cosine_similarity": 0.9999995827674866,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 2.5033950805664062e-06,
+          "mean_abs_error": 5.250048502603022e-07,
+          "relative_l2_error": 8.239650810537569e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.5299530029296875e-06,
+          "mean_abs_error": 7.343643915191933e-07,
+          "relative_l2_error": 8.576457162234874e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 3.039836883544922e-06,
+            "mean_abs_error": 6.854370440123603e-07,
+            "relative_l2_error": 8.34841841879097e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.364418029785156e-07,
+            "mean_abs_error": 3.1274225875677075e-08,
+            "relative_l2_error": 4.1865106936711527e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.7418136596679688e-06,
+            "mean_abs_error": 3.619185804382141e-07,
+            "relative_l2_error": 9.812683856580406e-07,
+            "cosine_similarity": 0.9999997019767761,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.245208740234375e-06,
+            "mean_abs_error": 7.891695190664905e-07,
+            "relative_l2_error": 1.648368652240606e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 3.039836883544922e-06,
+            "mean_abs_error": 6.854370440123603e-07,
+            "relative_l2_error": 8.34841841879097e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 2.8346050839900272e-08,
+            "relative_l2_error": 4.050489792462031e-07,
+            "cosine_similarity": 0.9999995827674866,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.5033950805664062e-06,
+            "mean_abs_error": 4.0143200408238044e-07,
+            "relative_l2_error": 9.670093277236447e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.245208740234375e-06,
+            "mean_abs_error": 8.660437629259832e-07,
+            "relative_l2_error": 1.4597114841308212e-06,
+            "cosine_similarity": 0.999999463558197,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "seq_len": 16,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-bert",
+          "hf-internal-testing/tiny-random-BertModel",
+          "prajjwal1/bert-tiny"
+        ],
+        "model_class": "BertForMaskedLM",
+        "hidden_size": 128,
+        "num_attention_heads": 2,
+        "head_dim": 64
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 1.7881393432617188e-06,
+          "mean_abs_error": 3.68018220342492e-07,
+          "relative_l2_error": 5.433795422504772e-07,
+          "cosine_similarity": 0.9999997019767761,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.9073486328125e-06,
+          "mean_abs_error": 3.6785900192626286e-07,
+          "relative_l2_error": 5.763936314906459e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 3.814697265625e-06,
+          "mean_abs_error": 5.150048423274711e-07,
+          "relative_l2_error": 6.092070066188171e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 3.0994415283203125e-06,
+            "mean_abs_error": 5.070818360763951e-07,
+            "relative_l2_error": 6.276684985095926e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 7.748603820800781e-07,
+            "mean_abs_error": 2.4833752831909806e-08,
+            "relative_l2_error": 3.689160052999796e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.6093254089355469e-06,
+            "mean_abs_error": 2.7097141241938516e-07,
+            "relative_l2_error": 7.484125603696157e-07,
+            "cosine_similarity": 0.9999997019767761,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.814697265625e-06,
+            "mean_abs_error": 4.451806887573184e-07,
+            "relative_l2_error": 9.376390153192915e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 3.0994415283203125e-06,
+            "mean_abs_error": 5.070818360763951e-07,
+            "relative_l2_error": 6.276684985095926e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 6.556510925292969e-07,
+            "mean_abs_error": 2.4392818431806518e-08,
+            "relative_l2_error": 3.8656605738651706e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.294778823852539e-06,
+            "mean_abs_error": 3.059473954181158e-07,
+            "relative_l2_error": 7.357552362918796e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.5762786865234375e-06,
+            "mean_abs_error": 5.284901476443338e-07,
+            "relative_l2_error": 8.999590477287711e-07,
+            "cosine_similarity": 0.9999997019767761,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "bidirectional_self_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q N_K^T = I",
+        "value_mask": "per-head block-diagonal",
+        "cache_type": "none"
+      }
+    }
+  ]
+}

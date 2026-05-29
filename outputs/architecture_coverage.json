@@ -1,0 +1,156 @@
+{
+  "coverage": [
+    {
+      "architecture_key": "decoder_only",
+      "status": "loaded",
+      "model_id": "sshleifer/tiny-gpt2",
+      "candidates_tried": [
+        "sshleifer/tiny-gpt2"
+      ],
+      "spec": {
+        "model_id": "sshleifer/tiny-gpt2",
+        "architecture_type": "decoder_only",
+        "model_class": "GPT2LMHeadModel",
+        "has_encoder": false,
+        "has_decoder": true,
+        "has_cross_attention": false,
+        "has_causal_self_attention": true,
+        "has_bidirectional_self_attention": false,
+        "supports_past_key_values": true,
+        "has_lm_head": true,
+        "has_mlm_head": false,
+        "has_classification_head": false,
+        "vocab_size": 50257,
+        "hidden_size": 2,
+        "num_layers": 2,
+        "num_heads": 2,
+        "notes": []
+      },
+      "module_paths": {
+        "embedding": "transformer.wte",
+        "self_attention": "transformer.h.0.attn",
+        "cross_attention": null,
+        "ffn": "transformer.h.0.mlp",
+        "layernorm": "transformer.h.0.ln_1",
+        "output_head": "lm_head"
+      }
+    },
+    {
+      "architecture_key": "encoder_only",
+      "status": "loaded",
+      "model_id": "hf-internal-testing/tiny-bert",
+      "candidates_tried": [
+        "hf-internal-testing/tiny-bert",
+        "hf-internal-testing/tiny-random-BertModel",
+        "prajjwal1/bert-tiny"
+      ],
+      "spec": {
+        "model_id": "hf-internal-testing/tiny-bert",
+        "architecture_type": "encoder_only",
+        "model_class": "BertForMaskedLM",
+        "has_encoder": true,
+        "has_decoder": false,
+        "has_cross_attention": false,
+        "has_causal_self_attention": false,
+        "has_bidirectional_self_attention": true,
+        "supports_past_key_values": false,
+        "has_lm_head": false,
+        "has_mlm_head": true,
+        "has_classification_head": false,
+        "vocab_size": 30522,
+        "hidden_size": 128,
+        "num_layers": 2,
+        "num_heads": 2,
+        "notes": []
+      },
+      "module_paths": {
+        "embedding": "bert.embeddings.word_embeddings",
+        "self_attention": "bert.encoder.layer.0.attention.self",
+        "cross_attention": null,
+        "ffn": "bert.encoder.layer.0.intermediate",
+        "layernorm": "bert.encoder.layer.0.attention.output.LayerNorm",
+        "output_head": "cls.predictions"
+      }
+    },
+    {
+      "architecture_key": "encoder_decoder",
+      "status": "loaded",
+      "model_id": "hf-internal-testing/tiny-random-t5",
+      "candidates_tried": [
+        "hf-internal-testing/tiny-random-t5"
+      ],
+      "spec": {
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "architecture_type": "encoder_decoder",
+        "model_class": "T5ForConditionalGeneration",
+        "has_encoder": true,
+        "has_decoder": true,
+        "has_cross_attention": true,
+        "has_causal_self_attention": true,
+        "has_bidirectional_self_attention": true,
+        "supports_past_key_values": true,
+        "has_lm_head": true,
+        "has_mlm_head": false,
+        "has_classification_head": false,
+        "vocab_size": 1103,
+        "hidden_size": 32,
+        "num_layers": 5,
+        "num_heads": 4,
+        "notes": []
+      },
+      "module_paths": {
+        "embedding": "shared",
+        "self_attention": "encoder.block.0.layer.0.SelfAttention",
+        "cross_attention": "decoder.block.0.layer.1.EncDecAttention",
+        "ffn": "encoder.block.0.layer.1.DenseReluDense",
+        "layernorm": "encoder.block.0.layer.0.layer_norm",
+        "output_head": "lm_head"
+      }
+    }
+  ],
+  "attention_taxonomy": [
+    {
+      "name": "causal_self_attention",
+      "architecture_type": "decoder_only",
+      "q_source": "decoder_hidden_states",
+      "k_source": "decoder_hidden_states",
+      "v_source": "decoder_hidden_states",
+      "mask_type": "causal",
+      "cache_type": "autoregressive_kv_cache",
+      "required_invariant": "Q_tilde K_tilde^T = Q K^T (per-head N_Q N_K^T = I); K_cache_tilde = K_cache N_K; V_cache_tilde = V_cache N_V."
+    },
+    {
+      "name": "bidirectional_self_attention",
+      "architecture_type": "encoder_only",
+      "q_source": "encoder_hidden_states",
+      "k_source": "encoder_hidden_states",
+      "v_source": "encoder_hidden_states",
+      "mask_type": "padding_bidirectional",
+      "cache_type": "none",
+      "required_invariant": "Q_tilde K_tilde^T = Q K^T (per-head N_Q N_K^T = I); no autoregressive cache (the whole sequence is seen at once)."
+    },
+    {
+      "name": "cross_attention",
+      "architecture_type": "encoder_decoder",
+      "q_source": "decoder_hidden_states",
+      "k_source": "encoder_memory",
+      "v_source": "encoder_memory",
+      "mask_type": "encoder_padding_mask",
+      "cache_type": "encoder_memory_cache",
+      "required_invariant": "Q_dec_tilde K_enc_tilde^T = Q_dec K_enc^T; K_enc_tilde = K_enc N_K; V_enc_tilde = V_enc N_V (encoder memory cached once per generation)."
+    }
+  ],
+  "registry_defaults": {
+    "decoder_only": [
+      "sshleifer/tiny-gpt2"
+    ],
+    "encoder_only": [
+      "hf-internal-testing/tiny-bert",
+      "hf-internal-testing/tiny-random-BertModel",
+      "prajjwal1/bert-tiny"
+    ],
+    "encoder_decoder": [
+      "hf-internal-testing/tiny-random-t5"
+    ]
+  }
+}

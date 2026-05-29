@@ -153,6 +153,20 @@ Calibrated in Stage 5.0.1:
 - Added `amulet_style_reference` as a projected reference cost model (explicitly marked `implemented: false`, not a re-implementation of any published system).
 - New `interaction_breakdown` and `paper_metrics` JSON sections plus a "main online bottleneck" interpretation row.
 
+Implemented in Stage 6.0:
+
+- New `src/pllo/architectures/` package — `architecture_types.py` (`ArchitectureType` enum, `ArchitectureModelSpec`, `AttentionKindSpec`), `architecture_registry.py` (default + fallback model ids per architecture, `AutoModelFor*` class hints), `architecture_inspector.py` (auto-load + classify), `attention_taxonomy.py` (causal / bidirectional / cross-attention reference specs with required invariants), and `encoder_only_spec.py` / `encoder_decoder_spec.py` (BERT / T5 / BART module-path metadata).
+- `scripts/run_architecture_coverage.py` emits `outputs/architecture_coverage.{json,csv,md}` covering decoder-only (`sshleifer/tiny-gpt2`), encoder-only (`hf-internal-testing/tiny-bert` with fallbacks), and encoder-decoder (`hf-internal-testing/tiny-random-t5`). Models that fail to load are recorded as `skipped` rather than crashing the report.
+- Attention taxonomy documents the three required invariants — `Q_tilde K_tilde^T = Q K^T` everywhere, `K_cache_tilde = K_cache N_K` for causal self-attention, and `Q_dec_tilde K_enc_tilde^T = Q_dec K_enc^T` for cross-attention.
+- This stage is a **scaffold only** — no obfuscated forward / cache / generation path exists for BERT / T5 / BART yet; those are deferred to Stages 6.1 (encoder-only probe) and 6.2 (cross-attention probe).
+
+Implemented in Stage 6.1:
+
+- `src/pllo/experiments/encoder_attention_probe.py` — bidirectional self-attention probe for BERT-style encoder-only models. Pulls per-layer `nn.Linear` `query` / `key` / `value` / `output.dense` modules into the project's row-vector `[d_in, d_out]` convention, builds independent per-projection mask states with the same `N_Q N_K^T = I` constraint Stages 4.6 / 5.0 use for GPT-2, and validates the 10 invariants enumerated in the task spec (`Q_tilde = Q N_Q`, `K_tilde = K N_K`, `V_tilde = V N_V`, the QK constraint, the score / softmax / V-aggregation invariants, the output-projection invariant `Y_tilde = Y N_out`, and Q/K/V/O pad compensation under `use_pad=true`).
+- Both all-ones and per-batch padding attention masks are tested for every cell — the additive mask is added in the same trusted-side step for the obfuscated path as for the plain reference, so padding does not perturb the algebraic invariants.
+- `scripts/run_encoder_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (12 cells × 2 mask kinds = 24 metric rows) and writes `outputs/encoder_attention_experiments.{json,csv,md}`. Cells that fail to load are recorded as `skipped` rather than crashing the script.
+- This stage continues to **not** implement BERT obfuscated forward, LayerNorm / GELU / FFN obfuscation, MLM head handling, pooler / classification heads, encoder-decoder cross-attention, or real TEE security — those are explicit Limitations in the report.
+
 ## Not Included
 
 This project currently does **not** include:
@@ -208,6 +222,8 @@ python scripts/run_gpt2_generation_correctness.py --model-id sshleifer/tiny-gpt2
 python scripts/run_experiment_summary.py --rerun
 python scripts/run_attention_experiments.py
 python scripts/run_workload_profile.py
+python scripts/run_architecture_coverage.py
+python scripts/run_encoder_attention_experiments.py
 ```
 
 Useful variants:
@@ -237,6 +253,8 @@ By default, results are written to:
 - `outputs/experiment_summary.json` / `.csv` / `.md` (Stage 4.10 aggregator)
 - `outputs/attention_experiments.json` / `.csv` / `.md` (Stage 5.0 attention probe)
 - `outputs/workload_profile.json` / `.csv` / `.md` (Stage 5.0 workload profiler)
+- `outputs/architecture_coverage.json` / `.csv` / `.md` (Stage 6.0 architecture coverage)
+- `outputs/encoder_attention_experiments.json` / `.csv` / `.md` (Stage 6.1 encoder-only attention probe)
 
 Each JSON file reports:
 
@@ -251,9 +269,11 @@ Each JSON file reports:
 
 ## Next Stage Plan
 
-Planned extensions after Stage 5.0:
+Planned extensions after Stage 6.1:
 
+- Stage 6.2 — Encoder-decoder cross-attention probe (Q from decoder, K/V from encoder memory; encoder-memory cache layout)
+- Stage 6.3 — Cross-architecture workload + security experiments (rerun Stage 5.0.1 profiler over each architecture)
+- Stage 6.4 — Qwen / ModelScope migration
 - Stage 5.1 — GPU-side LayerNorm primitive prototype (replaces the trusted shortcut)
 - Stage 5.2 — GELU primitive feasibility (replaces the trusted shortcut)
 - Stage 5.3 — security proxy experiments (information leakage, mask uniqueness, pad freshness)
-- Stage 5.4 — Qwen / ModelScope migration (full Qwen2.5 wrapper, dual-source loading)

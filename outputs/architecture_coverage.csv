@@ -1,0 +1,4 @@
+architecture_key,status,model_id,architecture_type,model_class,has_encoder,has_decoder,has_cross_attention,has_causal_self_attention,has_bidirectional_self_attention,supports_past_key_values,has_lm_head,has_mlm_head,has_classification_head,vocab_size,hidden_size,num_layers,num_heads,skip_reason
+decoder_only,loaded,sshleifer/tiny-gpt2,decoder_only,GPT2LMHeadModel,False,True,False,True,False,True,True,False,False,50257,2,2,2,
+encoder_only,loaded,hf-internal-testing/tiny-bert,encoder_only,BertForMaskedLM,True,False,False,False,True,False,False,True,False,30522,128,2,2,
+encoder_decoder,loaded,hf-internal-testing/tiny-random-t5,encoder_decoder,T5ForConditionalGeneration,True,True,True,True,True,True,True,False,False,1103,32,5,4,

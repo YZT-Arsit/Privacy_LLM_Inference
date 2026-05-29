@@ -1,6 +1,10 @@
 """Paper-grade experiment harnesses (Stage 5.0)."""
 
 from pllo.experiments.attention_probe import AttentionProbeConfig, run_attention_probe
+from pllo.experiments.encoder_attention_probe import (
+    EncoderAttentionProbeConfig,
+    run_encoder_attention_probe,
+)
 from pllo.experiments.experiment_registry import (
     ATTENTION_SWEEP,
     DEFAULT_COST_MODEL,
@@ -21,6 +25,8 @@ from pllo.experiments.workload_profiler import (
 __all__ = [
     "AttentionProbeConfig",
     "run_attention_probe",
+    "EncoderAttentionProbeConfig",
+    "run_encoder_attention_probe",
     "WorkloadProfileConfig",
     "run_workload_profile",
     "ATTENTION_SWEEP",
