@@ -1,6 +1,11 @@
 """Paper-grade experiment harnesses (Stage 5.0)."""
 
 from pllo.experiments.attention_probe import AttentionProbeConfig, run_attention_probe
+from pllo.experiments.cross_architecture_summary import (
+    ARCHITECTURE_SPECS,
+    CrossArchitectureSummaryConfig,
+    run_cross_architecture_summary,
+)
 from pllo.experiments.cross_attention_probe import (
     CrossAttentionProbeConfig,
     EncoderMemoryCache,
@@ -20,6 +25,13 @@ from pllo.experiments.experiment_registry import (
     CostModel,
     WorkloadMethod,
 )
+from pllo.experiments.security_proxy import (
+    GPU_VISIBLE_TENSORS,
+    MASK_AUDIT_SPECS,
+    SecurityProxyConfig,
+    TRUSTED_ONLY_TENSORS,
+    run_security_proxy_experiments,
+)
 from pllo.experiments.workload_profiler import (
     InteractionCounts,
     ModuleCounts,
@@ -35,6 +47,14 @@ __all__ = [
     "CrossAttentionProbeConfig",
     "EncoderMemoryCache",
     "run_cross_attention_probe",
+    "ARCHITECTURE_SPECS",
+    "CrossArchitectureSummaryConfig",
+    "run_cross_architecture_summary",
+    "SecurityProxyConfig",
+    "run_security_proxy_experiments",
+    "GPU_VISIBLE_TENSORS",
+    "TRUSTED_ONLY_TENSORS",
+    "MASK_AUDIT_SPECS",
     "WorkloadProfileConfig",
     "run_workload_profile",
     "ATTENTION_SWEEP",

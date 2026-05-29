@@ -175,6 +175,12 @@ Implemented in Stage 6.2:
 - `scripts/run_cross_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `dec_seq_len ∈ {1, 4}`, `enc_seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (24 cells × 2 encoder-mask kinds = 48 metric rows) and writes `outputs/cross_attention_experiments.{json,csv,md}`. Cells whose model fails to load are recorded as `skipped`.
 - This stage continues to **not** implement full T5/BART obfuscated forward, decoder self-attention cache, encoder-decoder generation, LayerNorm / FFN / activation obfuscation, LM head, relative position bias, or real TEE security.
 
+Implemented in Stage 6.3:
+
+- `src/pllo/experiments/cross_architecture_summary.py` — pure aggregator over Stage 5.0 / 6.0 / 6.1 / 6.2 JSON artifacts plus the Stage 5.0.1 workload profile. Produces one unified summary across the three architectures with `architecture_type`, `model_id`, `attention_kind`, `cache_type`, `num_cells`, `num_rows`, `all_loaded_allclose`, `max_output_error` / `max_score_error` / `max_prob_error` / `max_cache_error`, `use_pad_supported`, `padding_mask_supported`, `bias_present`, `has_relative_attention_bias`, per-architecture trusted shortcuts and limitations. Missing upstream JSONs are recorded as `status="missing"` unless `require_existing_outputs=True`. `scripts/run_cross_architecture_summary.py` writes `outputs/cross_architecture_summary.{json,csv,md}`; an opt-in `--rerun-upstream` flag re-executes the upstream sweeps before aggregating.
+- `src/pllo/experiments/security_proxy.py` — four lightweight security proxy experiments: (1) pad-vs-no-pad pairwise linkability across `fixed_mask_no_pad` / `fresh_mask_no_pad` / `fixed_mask_fresh_pad` / `fresh_mask_fresh_pad`; (2) mask freshness / uniqueness audit using sha256 fingerprints over per-trial generated masks (mask contents are never emitted, only counts and condition-number aggregates); (3) static boundary leakage accounting partitioning every simulated tensor (`obfuscated_input`, `transformed_linear_weight`, `compensation_terms`, `obfuscated_q/k/v`, `obfuscated_kv_cache`, `obfuscated_encoder_memory_cache`, `obfuscated_logits`, ...) into `gpu_visible` vs `trusted_only` with a per-item leakage note; (4) cache leakage proxy that nearest-neighbour-matches plain K/V against `K_tilde = K N_K` / `V_tilde = V N_V` for both the KV cache and the encoder memory cache. `scripts/run_security_proxy_experiments.py` writes `outputs/security_proxy_experiments.{json,csv,md}`.
+- All four proxies are explicitly upper bounds on naive-observer adversary success. The report's Limitations section states that they are **not** formal security proofs, do **not** implement adaptive or learned inversion attacks, do **not** evaluate real TEE isolation, do **not** cover side channels, and do **not** prove LoRA adapter extraction resistance.
+
 ## Not Included
 
 This project currently does **not** include:
@@ -233,6 +239,8 @@ python scripts/run_workload_profile.py
 python scripts/run_architecture_coverage.py
 python scripts/run_encoder_attention_experiments.py
 python scripts/run_cross_attention_experiments.py
+python scripts/run_cross_architecture_summary.py
+python scripts/run_security_proxy_experiments.py
 ```
 
 Useful variants:
@@ -265,6 +273,8 @@ By default, results are written to:
 - `outputs/architecture_coverage.json` / `.csv` / `.md` (Stage 6.0 architecture coverage)
 - `outputs/encoder_attention_experiments.json` / `.csv` / `.md` (Stage 6.1 encoder-only attention probe)
 - `outputs/cross_attention_experiments.json` / `.csv` / `.md` (Stage 6.2 encoder-decoder cross-attention probe)
+- `outputs/cross_architecture_summary.json` / `.csv` / `.md` (Stage 6.3 cross-architecture coverage + correctness + workload aggregator)
+- `outputs/security_proxy_experiments.json` / `.csv` / `.md` (Stage 6.3 security proxy experiments — pad linkability, mask freshness, boundary leakage accounting, cache leakage proxy)
 
 Each JSON file reports:
 
@@ -279,10 +289,9 @@ Each JSON file reports:
 
 ## Next Stage Plan
 
-Planned extensions after Stage 6.2:
+Planned extensions after Stage 6.3:
 
-- Stage 6.3 — Cross-architecture workload + security experiments (rerun Stage 5.0.1 profiler over each architecture; 3×3 architecture × method matrix)
-- Stage 6.4 — Qwen / ModelScope migration
-- Stage 5.1 — GPU-side LayerNorm primitive prototype (replaces the trusted shortcut)
-- Stage 5.2 — GELU primitive feasibility (replaces the trusted shortcut)
-- Stage 5.3 — security proxy experiments (information leakage, mask uniqueness, pad freshness)
+- Stage 5.1 — GPU-side LayerNorm / RMSNorm primitive prototype (replaces the trusted LayerNorm shortcut shared across all three architectures)
+- Stage 5.2 — GELU / activation primitive feasibility (replaces the trusted activation shortcut)
+- Stage 5.3 — stronger leakage experiments (adaptive observer / learned inverter; the Stage 6.3 proxies are naive-observer bounds only)
+- Stage 6.4 — Qwen / ModelScope migration on top of Stage 6.0+'s architecture scaffold

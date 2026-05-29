@@ -1,0 +1,338 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "num_trials": 32,
+    "batch_size": 2,
+    "seq_len": 8,
+    "hidden_size": 64,
+    "pad_scale": 1.0,
+    "dtype": "float32",
+    "device": "cpu",
+    "seed": 1337
+  },
+  "pad_linkability_proxy": {
+    "per_strategy": {
+      "fixed_mask_no_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 1.0000000000000002,
+        "max_pairwise_cosine": 1.0000000000000004,
+        "min_pairwise_cosine": 1.0000000000000004,
+        "mean_pairwise_l2": 0.0,
+        "max_pairwise_l2": 0.0,
+        "min_pairwise_l2": 0.0,
+        "interpretation": "Highest naive-linkability \u2014 same plaintext maps to identical GPU tensor."
+      },
+      "fresh_mask_no_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 0.0035630250427570592,
+        "max_pairwise_cosine": 0.0922854535517891,
+        "min_pairwise_cosine": -0.09695156344155569,
+        "mean_pairwise_l2": 46.79129703673439,
+        "max_pairwise_l2": 49.10167388782658,
+        "min_pairwise_l2": 44.66601595847826,
+        "interpretation": "Fresh mask alone removes the identity equivalence but preserves linear structure."
+      },
+      "fixed_mask_fresh_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 0.514901226573442,
+        "max_pairwise_cosine": 0.5749966841829942,
+        "min_pairwise_cosine": 0.45367148888010317,
+        "mean_pairwise_l2": 45.295980278078666,
+        "max_pairwise_l2": 48.10576112997627,
+        "min_pairwise_l2": 41.59382985390949,
+        "interpretation": "Fresh pad alone scrambles values but reuses the same mask across requests."
+      },
+      "fresh_mask_fresh_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 0.000533235893720137,
+        "max_pairwise_cosine": 0.11674457785094955,
+        "min_pairwise_cosine": -0.09877313182415863,
+        "mean_pairwise_l2": 65.14491528561877,
+        "max_pairwise_l2": 69.04063319842828,
+        "min_pairwise_l2": 61.11319227952752,
+        "interpretation": "Fresh mask + fresh pad \u2014 lowest naive-linkability under this proxy."
+      }
+    },
+    "ranking_by_mean_cosine_descending": [
+      "fixed_mask_no_pad",
+      "fixed_mask_fresh_pad",
+      "fresh_mask_no_pad",
+      "fresh_mask_fresh_pad"
+    ],
+    "summary_note": "fixed_mask_no_pad is the highest naive-linkability risk; fresh pad reduces the stability of the GPU-visible tensor across requests with identical plaintext input. This is a proxy under a naive observer model only, not a security proof."
+  },
+  "mask_freshness_audit": {
+    "per_mask": [
+      {
+        "mask_name": "input_mask",
+        "expected_policy": "fresh_across_trials",
+        "num_generated": 32,
+        "num_unique_fingerprints": 32,
+        "unexpected_reuse_count": 0,
+        "condition_number_mean": 1.0000007444868262,
+        "condition_number_max": 1.0000008470413746,
+        "condition_number_min": 1.0000006552816887,
+        "fingerprint_algorithm": "sha256(float32_bytes)",
+        "leakage_note": "Only fingerprint counts are recorded; no mask tensor contents are emitted."
+      },
+      {
+        "mask_name": "output_mask",
+        "expected_policy": "fresh_across_trials",
+        "num_generated": 32,
+        "num_unique_fingerprints": 32,
+        "unexpected_reuse_count": 0,
+        "condition_number_mean": 1.0000007316485224,
+        "condition_number_max": 1.0000009219084314,
+        "condition_number_min": 1.0000006036581808,
+        "fingerprint_algorithm": "sha256(float32_bytes)",
+        "leakage_note": "Only fingerprint counts are recorded; no mask tensor contents are emitted."
+      },
+      {
+        "mask_name": "pad",
+        "expected_policy": "fresh_across_trials",
+        "num_generated": 32,
+        "num_unique_fingerprints": 32,
+        "unexpected_reuse_count": 0,
+        "condition_number_mean": 2.6337526721014743,
+        "condition_number_max": 3.0259352368682766,
+        "condition_number_min": 2.282432876817132,
+        "fingerprint_algorithm": "sha256(float32_bytes)",
+        "leakage_note": "Only fingerprint counts are recorded; no mask tensor contents are emitted."
+      },
+      {
+        "mask_name": "kv_cache_mask",
+        "expected_policy": "reused_within_session_fresh_across_sessions",
+        "num_generated": 64,
+        "num_unique_fingerprints": 32,
+        "unexpected_reuse_count": 0,
+        "condition_number_mean": 1.0000007247670815,
+        "condition_number_max": 1.0000008032550771,
+        "condition_number_min": 1.00000060352479,
+        "fingerprint_algorithm": "sha256(float32_bytes)",
+        "leakage_note": "Only fingerprint counts are recorded; no mask tensor contents are emitted."
+      },
+      {
+        "mask_name": "encoder_memory_mask",
+        "expected_policy": "reused_within_encoder_memory_fresh_across_sessions",
+        "num_generated": 64,
+        "num_unique_fingerprints": 32,
+        "unexpected_reuse_count": 0,
+        "condition_number_mean": 1.0000007341645651,
+        "condition_number_max": 1.0000008676358576,
+        "condition_number_min": 1.0000006374986816,
+        "fingerprint_algorithm": "sha256(float32_bytes)",
+        "leakage_note": "Only fingerprint counts are recorded; no mask tensor contents are emitted."
+      }
+    ],
+    "summary_note": "Only sha256 fingerprints of mask tensors are kept. The condition number stats are aggregate-only and do not expose any single mask. Unexpected reuse counts duplicates outside the declared session-reuse policy."
+  },
+  "boundary_leakage_accounting": {
+    "gpu_visible": [
+      {
+        "name": "obfuscated_input",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "X_tilde = (X - T) N_in or X N_in \u2014 never the plaintext input."
+      },
+      {
+        "name": "transformed_linear_weight",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "W_tilde = N_in_inv W N_out \u2014 depends on masks only."
+      },
+      {
+        "name": "transformed_lora_adapter",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "decoder_only",
+        "leakage_note": "A_tilde, B_tilde \u2014 adapter content depends on rank mask."
+      },
+      {
+        "name": "compensation_terms",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "C = T W N_out is GPU-visible; depends on pad and masks, not on plaintext X."
+      },
+      {
+        "name": "obfuscated_q",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "Q_tilde = Q N_Q (per-head block-diag mask)."
+      },
+      {
+        "name": "obfuscated_k",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "K_tilde = K N_K."
+      },
+      {
+        "name": "obfuscated_v",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "V_tilde = V N_V."
+      },
+      {
+        "name": "obfuscated_kv_cache",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "decoder_only",
+        "leakage_note": "Stage 4.8 ObfuscatedGPT2KVCache: GPU keeps only masked K/V."
+      },
+      {
+        "name": "obfuscated_encoder_memory_cache",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "encoder_decoder",
+        "leakage_note": "Stage 6.2 EncoderMemoryCache (probe-only) \u2014 GPU never sees K_plain/V_plain."
+      },
+      {
+        "name": "obfuscated_logits",
+        "visibility": "gpu_visible",
+        "contains_plaintext": "false",
+        "architecture_scope": "decoder_only",
+        "leakage_note": "logits_tilde = logits N_vocab; vocab mask is diagonal in Stage 4.7+."
+      }
+    ],
+    "trusted_only": [
+      {
+        "name": "plaintext_input",
+        "visibility": "trusted_only",
+        "contains_plaintext": "true",
+        "architecture_scope": "all",
+        "leakage_note": "Plaintext input never leaves SimulatedTEE."
+      },
+      {
+        "name": "plaintext_hidden_state",
+        "visibility": "trusted_only",
+        "contains_plaintext": "true",
+        "architecture_scope": "all",
+        "leakage_note": "Intermediate plaintext hidden states stay on trusted side."
+      },
+      {
+        "name": "plaintext_logits",
+        "visibility": "trusted_only",
+        "contains_plaintext": "true",
+        "architecture_scope": "all",
+        "leakage_note": "Recovered logits Y = Y_tilde N_out_inv stay trusted-only."
+      },
+      {
+        "name": "sampling_result",
+        "visibility": "trusted_only",
+        "contains_plaintext": "true",
+        "architecture_scope": "decoder_only",
+        "leakage_note": "Argmax / token id produced by greedy decode is trusted-only."
+      },
+      {
+        "name": "masks",
+        "visibility": "trusted_only",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "N_in, N_out, N_Q, N_K, N_V, N_vocab never sent to GPU."
+      },
+      {
+        "name": "mask_inverses",
+        "visibility": "trusted_only",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "N_*_inv held by SimulatedTEE for input transform and output recovery."
+      },
+      {
+        "name": "pads",
+        "visibility": "trusted_only",
+        "contains_plaintext": "false",
+        "architecture_scope": "all",
+        "leakage_note": "T held trusted-only; only T W N_out is sent across as compensation."
+      },
+      {
+        "name": "plaintext_lora_adapter",
+        "visibility": "trusted_only",
+        "contains_plaintext": "true",
+        "architecture_scope": "decoder_only",
+        "leakage_note": "Plain LoRA A, B held trusted-only; only A_tilde, B_tilde cross to GPU."
+      },
+      {
+        "name": "optimizer_state",
+        "visibility": "trusted_only",
+        "contains_plaintext": "true",
+        "architecture_scope": "all",
+        "leakage_note": "No optimizer state crosses the boundary in this inference-only stage."
+      }
+    ],
+    "num_gpu_visible": 10,
+    "num_trusted_only": 9,
+    "summary_notes": [
+      "compensation_terms are GPU-visible transcript objects.",
+      "security proxy does not prove semantic security.",
+      "real TEE isolation is not implemented in this stage."
+    ]
+  },
+  "cache_leakage_proxy": {
+    "kv_cache": {
+      "plain_to_plain_baseline": {
+        "top1_match_rate": 1.0,
+        "mean_correct_rank": 0.0,
+        "mean_cosine_correct_pair": 1.0,
+        "mean_cosine_best_wrong_pair": 0.3696742071124066,
+        "num_queries": 512
+      },
+      "obfuscated_to_plain": {
+        "top1_match_rate": 0.001953125,
+        "mean_correct_rank": 286.150390625,
+        "mean_cosine_correct_pair": -0.02514727138424796,
+        "mean_cosine_best_wrong_pair": 0.3700440242232851,
+        "num_queries": 512
+      },
+      "obfuscated_to_plain_v": {
+        "top1_match_rate": 0.005859375,
+        "mean_correct_rank": 224.279296875,
+        "mean_cosine_correct_pair": 0.027117785962379147,
+        "mean_cosine_best_wrong_pair": 0.36957561766068625,
+        "num_queries": 512
+      },
+      "shape_per_trial": [
+        2,
+        4,
+        8,
+        16
+      ],
+      "num_trials": 32
+    },
+    "encoder_memory_cache": {
+      "plain_to_plain_baseline": {
+        "top1_match_rate": 1.0,
+        "mean_correct_rank": 0.0,
+        "mean_cosine_correct_pair": 1.0,
+        "mean_cosine_best_wrong_pair": 0.3713268959876357,
+        "num_queries": 512
+      },
+      "obfuscated_to_plain": {
+        "top1_match_rate": 0.00390625,
+        "mean_correct_rank": 238.388671875,
+        "mean_cosine_correct_pair": 0.015096842455667666,
+        "mean_cosine_best_wrong_pair": 0.37185192822007396,
+        "num_queries": 512
+      },
+      "shape_per_trial": [
+        2,
+        8,
+        64
+      ],
+      "num_trials": 32
+    },
+    "interpretation_note": "This is a direct nearest-neighbour matching proxy under cosine similarity. It does not implement adaptive or learned inversion attacks. A low top1_match_rate for obfuscated\u2192plain only bounds the naive observer; the absence of a stronger attack here is not a guarantee."
+  },
+  "global_limitations": [
+    "These experiments are security proxies, not formal security proofs.",
+    "They do not implement adaptive attacks.",
+    "They do not implement learned inversion attacks.",
+    "They do not evaluate real TEE isolation.",
+    "They do not cover side channels.",
+    "They do not prove LoRA adapter extraction resistance."
+  ]
+}

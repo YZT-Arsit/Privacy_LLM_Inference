@@ -1,0 +1,287 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "require_existing_outputs": false
+  },
+  "architectures": [
+    {
+      "architecture_type": "decoder_only",
+      "status": "aggregated",
+      "model_id": "sshleifer/tiny-gpt2",
+      "model_class": "GPT2LMHeadModel",
+      "attention_kind": "causal_self_attention",
+      "cache_type": "autoregressive_kv_cache",
+      "source_file": "attention_experiments.json",
+      "trusted_shortcuts": [
+        "trusted_layernorm",
+        "trusted_gelu",
+        "lm_head_vocab_diag_mask_only"
+      ],
+      "limitations": [
+        "LayerNorm runs inside SimulatedTEE (trusted shortcut).",
+        "GELU runs inside SimulatedTEE (trusted shortcut).",
+        "LM head uses a diagonal vocab output mask only, no full pad.",
+        "Real TEE isolation is not implemented."
+      ],
+      "num_cells": 36,
+      "num_rows": 36,
+      "all_loaded_allclose": true,
+      "max_output_error": 9.2186382971704e-09,
+      "max_score_error": 2.764863893389702e-10,
+      "max_prob_error": 0.0,
+      "max_cache_error": 4.0978193283081055e-08,
+      "use_pad_supported": [
+        false,
+        true
+      ],
+      "padding_mask_supported": false,
+      "bias_present": {
+        "q": true,
+        "k": true,
+        "v": true,
+        "o": true
+      },
+      "has_relative_attention_bias": false,
+      "model_ids_seen": [
+        "sshleifer/tiny-gpt2"
+      ],
+      "coverage_spec": {
+        "has_encoder": false,
+        "has_decoder": true,
+        "has_cross_attention": false,
+        "supports_past_key_values": true,
+        "vocab_size": 50257,
+        "hidden_size": 2,
+        "num_layers": 2,
+        "num_heads": 2
+      },
+      "module_paths": {
+        "embedding": "transformer.wte",
+        "self_attention": "transformer.h.0.attn",
+        "cross_attention": null,
+        "ffn": "transformer.h.0.mlp",
+        "layernorm": "transformer.h.0.ln_1",
+        "output_head": "lm_head"
+      }
+    },
+    {
+      "architecture_type": "encoder_only",
+      "status": "aggregated",
+      "model_id": "hf-internal-testing/tiny-bert",
+      "model_class": "BertForMaskedLM",
+      "attention_kind": "bidirectional_self_attention",
+      "cache_type": "none",
+      "source_file": "encoder_attention_experiments.json",
+      "trusted_shortcuts": [
+        "trusted_layernorm",
+        "trusted_gelu",
+        "no_mlm_head_obfuscation"
+      ],
+      "limitations": [
+        "BERT obfuscated forward (LayerNorm / GELU / FFN / MLM head) is not implemented.",
+        "Only first-layer self-attention Q / K / V / O is validated.",
+        "Real TEE isolation is not implemented."
+      ],
+      "num_cells": 12,
+      "num_rows": 24,
+      "all_loaded_allclose": true,
+      "max_output_error": 6.139278411865234e-06,
+      "max_score_error": 3.337860107421875e-06,
+      "max_prob_error": 7.748603820800781e-07,
+      "max_cache_error": null,
+      "use_pad_supported": [
+        false,
+        true
+      ],
+      "padding_mask_supported": true,
+      "bias_present": {},
+      "has_relative_attention_bias": false,
+      "model_ids_seen": [
+        "hf-internal-testing/tiny-bert"
+      ],
+      "coverage_spec": {
+        "has_encoder": true,
+        "has_decoder": false,
+        "has_cross_attention": false,
+        "supports_past_key_values": false,
+        "vocab_size": 30522,
+        "hidden_size": 128,
+        "num_layers": 2,
+        "num_heads": 2
+      },
+      "module_paths": {
+        "embedding": "bert.embeddings.word_embeddings",
+        "self_attention": "bert.encoder.layer.0.attention.self",
+        "cross_attention": null,
+        "ffn": "bert.encoder.layer.0.intermediate",
+        "layernorm": "bert.encoder.layer.0.attention.output.LayerNorm",
+        "output_head": "cls.predictions"
+      }
+    },
+    {
+      "architecture_type": "encoder_decoder",
+      "status": "aggregated",
+      "model_id": "hf-internal-testing/tiny-random-t5",
+      "model_class": "T5ForConditionalGeneration",
+      "attention_kind": "cross_attention",
+      "cache_type": "encoder_memory_cache",
+      "source_file": "cross_attention_experiments.json",
+      "trusted_shortcuts": [
+        "trusted_layernorm",
+        "trusted_ffn_activation",
+        "no_decoder_self_attention_cache",
+        "no_relative_position_bias_obfuscation"
+      ],
+      "limitations": [
+        "T5/BART obfuscated forward (LayerNorm / FFN / activation / LM head) is not implemented.",
+        "Decoder self-attention KV cache is not implemented.",
+        "Encoder-decoder generation is not implemented.",
+        "Relative position bias is not obfuscated.",
+        "Real TEE isolation is not implemented."
+      ],
+      "num_cells": 24,
+      "num_rows": 48,
+      "all_loaded_allclose": true,
+      "max_output_error": 8.642673492431641e-07,
+      "max_score_error": 9.834766387939453e-07,
+      "max_prob_error": 2.086162567138672e-07,
+      "max_cache_error": 1.1920928955078125e-06,
+      "use_pad_supported": [
+        false,
+        true
+      ],
+      "padding_mask_supported": true,
+      "bias_present": {
+        "q": false,
+        "k": false,
+        "v": false,
+        "o": false
+      },
+      "has_relative_attention_bias": false,
+      "model_ids_seen": [
+        "hf-internal-testing/tiny-random-t5"
+      ],
+      "coverage_spec": {
+        "has_encoder": true,
+        "has_decoder": true,
+        "has_cross_attention": true,
+        "supports_past_key_values": true,
+        "vocab_size": 1103,
+        "hidden_size": 32,
+        "num_layers": 5,
+        "num_heads": 4
+      },
+      "module_paths": {
+        "embedding": "shared",
+        "self_attention": "encoder.block.0.layer.0.SelfAttention",
+        "cross_attention": "decoder.block.0.layer.1.EncDecAttention",
+        "ffn": "encoder.block.0.layer.1.DenseReluDense",
+        "layernorm": "encoder.block.0.layer.0.layer_norm",
+        "output_head": "lm_head"
+      }
+    }
+  ],
+  "workload": {
+    "status": "loaded",
+    "config": {
+      "model_id": "sshleifer/tiny-gpt2",
+      "batch_size": 2,
+      "prompt_len": 8,
+      "max_new_tokens": 4,
+      "use_pad": true,
+      "dtype": "float32",
+      "device": "cpu",
+      "seed": 42,
+      "warmup": 2,
+      "repeat": 5,
+      "cost_model": {
+        "tee_to_gpu_flops_ratio": 50.0,
+        "tee_bytes_per_ms": 1073741.824,
+        "tee_call_overhead_ms": 0.005,
+        "note": "Cost-model constants are coarse defaults. They are not derived from hardware measurements of any specific TEE. See limitations section."
+      }
+    },
+    "calibration": {
+      "gpu_flops_per_ms": 1159028.6121468372,
+      "calibrated_from": "plain_hf_gpu"
+    },
+    "methods": [
+      {
+        "method": "plain_hf_gpu",
+        "implemented": true,
+        "online_boundary_calls": 0,
+        "boundary_calls_formula": "0 (no boundary)",
+        "online_trusted_compute_ops": 0,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 0,
+        "measured_wall_time_ms": 3.825983201386407,
+        "wall_time_source": "measured"
+      },
+      {
+        "method": "tslp_trusted_nonlinear_baseline",
+        "implemented": false,
+        "online_boundary_calls": 32,
+        "boundary_calls_formula": "3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head)",
+        "online_trusted_compute_ops": 1110230,
+        "online_gpu_ops": 4429848,
+        "preprocessing_trusted_ops": 0,
+        "measured_wall_time_ms": null,
+        "wall_time_source": "projected_from_op_counts"
+      },
+      {
+        "method": "ours_current",
+        "implemented": true,
+        "online_boundary_calls": 36,
+        "boundary_calls_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
+        "online_trusted_compute_ops": 1116310,
+        "online_gpu_ops": 4429848,
+        "preprocessing_trusted_ops": 403784,
+        "measured_wall_time_ms": 6.169191800290719,
+        "wall_time_source": "measured"
+      },
+      {
+        "method": "ours_ideal_gpu_nonlinear",
+        "implemented": false,
+        "online_boundary_calls": 4,
+        "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
+        "online_trusted_compute_ops": 1105654,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 403784,
+        "measured_wall_time_ms": null,
+        "wall_time_source": "projected_from_op_counts"
+      },
+      {
+        "method": "amulet_style_reference",
+        "implemented": false,
+        "online_boundary_calls": 4,
+        "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
+        "online_trusted_compute_ops": 1105654,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 403784,
+        "measured_wall_time_ms": null,
+        "wall_time_source": "projected_from_op_counts"
+      }
+    ],
+    "paper_metrics": {
+      "boundary_call_reduction_vs_tslp": -0.125,
+      "trusted_transfer_reduction_vs_tslp": -0.0002782802281897871,
+      "online_trusted_compute_reduction_vs_tslp": -0.0054763427397926554,
+      "gpu_offload_ratio": 0.7987237291112154,
+      "preprocessing_amortized": true,
+      "boundary_calls_per_forward": {
+        "plain_hf_gpu": 0,
+        "tslp_trusted_nonlinear_baseline": 8,
+        "ours_current": 9,
+        "ours_ideal_gpu_nonlinear": 1,
+        "amulet_style_reference": 1
+      }
+    }
+  },
+  "global_summary": {
+    "num_architectures": 3,
+    "num_aggregated": 3,
+    "num_missing": 0,
+    "all_architectures_allclose": true
+  },
+  "stage_note": "Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encoder-only) and Stage 6.2 (encoder-decoder cross-attention) probe outputs plus the Stage 5.0.1 workload profile. It does not re-execute any probe."
+}
