@@ -1,0 +1,3988 @@
+{
+  "results": [
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 1,
+        "enc_seq_len": 4,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 6.407499313354492e-07,
+          "mean_abs_error": 2.4905602913349867e-07,
+          "relative_l2_error": 4.677625895510573e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 6.966292858123779e-07,
+          "mean_abs_error": 1.8539026314101648e-07,
+          "relative_l2_error": 4.649839695503033e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.8789683053910267e-07,
+          "relative_l2_error": 4.0613525698063313e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.172325134277344e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 6.966292858123779e-07,
+          "mean_abs_error": 1.8539026314101648e-07,
+          "relative_l2_error": 4.649839695503033e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.8789683053910267e-07,
+          "relative_l2_error": 4.0613525698063313e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 3.8743019104003906e-07,
+            "mean_abs_error": 1.576845534145832e-07,
+            "relative_l2_error": 5.056670033809496e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 3.818422555923462e-08,
+            "relative_l2_error": 2.1400612126853957e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.8743019104003906e-07,
+            "mean_abs_error": 1.180451363325119e-07,
+            "relative_l2_error": 4.834125775232678e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 6.556510925292969e-07,
+            "mean_abs_error": 2.6130510377697647e-07,
+            "relative_l2_error": 1.437861101294402e-06,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 3.8743019104003906e-07,
+            "mean_abs_error": 1.576845534145832e-07,
+            "relative_l2_error": 5.056670033809496e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 4.0046870708465576e-08,
+            "relative_l2_error": 1.8522942468734982e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.980232238769531e-07,
+            "mean_abs_error": 1.1084739526268095e-07,
+            "relative_l2_error": 4.1872601741488324e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.5821070671081543e-07,
+            "mean_abs_error": 1.2219243217259645e-07,
+            "relative_l2_error": 1.1177336318723974e-06,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 1,
+        "enc_seq_len": 4,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 4.172325134277344e-07,
+          "mean_abs_error": 1.815642463043332e-07,
+          "relative_l2_error": 3.4296567719138693e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.63975755640422e-07,
+          "relative_l2_error": 3.869235456477327e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.3743942872679327e-07,
+          "relative_l2_error": 3.133347092898475e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.172325134277344e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.63975755640422e-07,
+          "relative_l2_error": 3.869235456477327e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.3743942872679327e-07,
+          "relative_l2_error": 3.133347092898475e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 2.980232238769531e-07,
+            "mean_abs_error": 1.396401785314083e-07,
+            "relative_l2_error": 4.3662950588441163e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.960464477539063e-08,
+            "mean_abs_error": 3.3993273973464966e-08,
+            "relative_l2_error": 1.5445922940671153e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 7.662310963496566e-08,
+            "relative_l2_error": 3.0851902010908816e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.8312206268310547e-07,
+            "mean_abs_error": 9.254654287360609e-08,
+            "relative_l2_error": 5.398280791268917e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 2.980232238769531e-07,
+            "mean_abs_error": 1.396401785314083e-07,
+            "relative_l2_error": 4.3662950588441163e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 2.3283064365386963e-08,
+            "relative_l2_error": 1.288471338511954e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.2351741790771484e-07,
+            "mean_abs_error": 8.930601325118914e-08,
+            "relative_l2_error": 3.377194559561758e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.7508864402770996e-07,
+            "mean_abs_error": 7.690687198191881e-08,
+            "relative_l2_error": 6.003098746987234e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 1,
+        "enc_seq_len": 8,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.152557373046875e-07,
+          "mean_abs_error": 2.0314473658800125e-07,
+          "relative_l2_error": 4.070752765983343e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.9558501662686467e-07,
+          "relative_l2_error": 4.582692838539515e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.2162612367537804e-07,
+          "relative_l2_error": 4.905634796159575e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.172325134277344e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.9558501662686467e-07,
+          "relative_l2_error": 4.582692838539515e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.2162612367537804e-07,
+          "relative_l2_error": 4.905634796159575e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 5.21540641784668e-07,
+            "mean_abs_error": 1.736189005896449e-07,
+            "relative_l2_error": 7.542856224063144e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 1.979060471057892e-08,
+            "relative_l2_error": 2.0557625646233646e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.5331974029541016e-07,
+            "mean_abs_error": 9.540235623717308e-08,
+            "relative_l2_error": 5.1995527883264e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.3213367462158203e-07,
+            "mean_abs_error": 1.5024852473288774e-07,
+            "relative_l2_error": 1.2998982583667384e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 5.21540641784668e-07,
+            "mean_abs_error": 1.736189005896449e-07,
+            "relative_l2_error": 7.542856224063144e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 2.2118911147117615e-08,
+            "relative_l2_error": 2.3522618164406595e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.0547380447387695e-07,
+            "mean_abs_error": 9.98261384665966e-08,
+            "relative_l2_error": 4.7009177706058836e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.501772880554199e-07,
+            "mean_abs_error": 1.1781230568885803e-07,
+            "relative_l2_error": 8.562471407458361e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 1,
+        "enc_seq_len": 8,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 3.2782554626464844e-07,
+          "mean_abs_error": 1.1644442565739155e-07,
+          "relative_l2_error": 2.319071370493475e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.3621320249512792e-07,
+          "relative_l2_error": 3.2507921332580736e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 5.736947059631348e-07,
+          "mean_abs_error": 1.3511316865333356e-07,
+          "relative_l2_error": 3.0729992772648984e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.172325134277344e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.3621320249512792e-07,
+          "relative_l2_error": 3.2507921332580736e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 5.736947059631348e-07,
+          "mean_abs_error": 1.3511316865333356e-07,
+          "relative_l2_error": 3.0729992772648984e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 3.0174851417541504e-07,
+            "mean_abs_error": 8.837378118187189e-08,
+            "relative_l2_error": 3.9279387920032605e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.470348358154297e-08,
+            "mean_abs_error": 1.1292286217212677e-08,
+            "relative_l2_error": 1.1636518593149958e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.980232238769531e-07,
+            "mean_abs_error": 6.477057468146086e-08,
+            "relative_l2_error": 4.191688844912278e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.6391277313232422e-07,
+            "mean_abs_error": 6.381014827638865e-08,
+            "relative_l2_error": 5.620357796942699e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 3.0174851417541504e-07,
+            "mean_abs_error": 8.837378118187189e-08,
+            "relative_l2_error": 3.9279387920032605e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.470348358154297e-08,
+            "mean_abs_error": 9.778887033462524e-09,
+            "relative_l2_error": 1.0336670897004296e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 7.118796929717064e-08,
+            "relative_l2_error": 3.0914392823433445e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.341104507446289e-07,
+            "mean_abs_error": 5.326000973582268e-08,
+            "relative_l2_error": 3.587304320262774e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 1,
+        "enc_seq_len": 16,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 1.0132789611816406e-06,
+          "mean_abs_error": 3.105960786342621e-07,
+          "relative_l2_error": 6.165203672026109e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.1026859283447266e-06,
+          "mean_abs_error": 2.4031328393903095e-07,
+          "relative_l2_error": 5.617700935545145e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.9763865566346794e-07,
+          "relative_l2_error": 4.6006641696294537e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.76837158203125e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 1.1026859283447266e-06,
+          "mean_abs_error": 2.4031328393903095e-07,
+          "relative_l2_error": 5.617700935545145e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.9763865566346794e-07,
+          "relative_l2_error": 4.6006641696294537e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 4.917383193969727e-07,
+            "mean_abs_error": 1.851294655352831e-07,
+            "relative_l2_error": 7.851358532207087e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 3.3527612686157227e-08,
+            "mean_abs_error": 1.076841726899147e-08,
+            "relative_l2_error": 2.1081841339309904e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 6.068148650228977e-08,
+            "relative_l2_error": 5.444331918624812e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.3096799850463867e-07,
+            "mean_abs_error": 1.0830990504473448e-07,
+            "relative_l2_error": 1.4746045735591906e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 4.917383193969727e-07,
+            "mean_abs_error": 1.851294655352831e-07,
+            "relative_l2_error": 7.851358532207087e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.470348358154297e-08,
+            "mean_abs_error": 1.0128132998943329e-08,
+            "relative_l2_error": 1.9631900727290486e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.2351741790771484e-07,
+            "mean_abs_error": 6.401387508958578e-08,
+            "relative_l2_error": 4.377684490464162e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.0978193283081055e-07,
+            "mean_abs_error": 1.2447708286345005e-07,
+            "relative_l2_error": 1.3159801710571628e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 1,
+        "enc_seq_len": 16,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 2.604210749268532e-07,
+          "relative_l2_error": 5.216589897827362e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.407308900525095e-07,
+          "relative_l2_error": 3.299602155948378e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 8.568167686462402e-07,
+          "mean_abs_error": 1.7707452570903115e-07,
+          "relative_l2_error": 4.207861934446555e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 4.76837158203125e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.407308900525095e-07,
+          "relative_l2_error": 3.299602155948378e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 8.568167686462402e-07,
+          "mean_abs_error": 1.7707452570903115e-07,
+          "relative_l2_error": 4.207861934446555e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 5.364418029785156e-07,
+            "mean_abs_error": 1.3276803656481206e-07,
+            "relative_l2_error": 6.32086198493198e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.60770320892334e-08,
+            "mean_abs_error": 7.828930392861366e-09,
+            "relative_l2_error": 1.5679923137668084e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.564621925354004e-07,
+            "mean_abs_error": 5.2110408432781696e-08,
+            "relative_l2_error": 4.6038982759455394e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.2665987014770508e-07,
+            "mean_abs_error": 3.5201082937419415e-08,
+            "relative_l2_error": 5.662051307808724e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 5.364418029785156e-07,
+            "mean_abs_error": 1.3276803656481206e-07,
+            "relative_l2_error": 6.32086198493198e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.960464477539063e-08,
+            "mean_abs_error": 7.916241884231567e-09,
+            "relative_l2_error": 1.586202813541604e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 6.324262358248234e-08,
+            "relative_l2_error": 3.9615440527995816e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.043081283569336e-07,
+            "mean_abs_error": 3.534660208970308e-08,
+            "relative_l2_error": 3.824735586022143e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 4,
+        "enc_seq_len": 4,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 8.791685104370117e-07,
+          "mean_abs_error": 2.1091909729875624e-07,
+          "relative_l2_error": 4.98780707403057e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 2.5525514502078295e-07,
+          "relative_l2_error": 5.442932433652459e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 8.940696716308594e-07,
+          "mean_abs_error": 2.241067704744637e-07,
+          "relative_l2_error": 4.790848038283002e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 2.5525514502078295e-07,
+          "relative_l2_error": 5.442932433652459e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 8.940696716308594e-07,
+          "mean_abs_error": 2.241067704744637e-07,
+          "relative_l2_error": 4.790848038283002e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 4.6193599700927734e-07,
+            "mean_abs_error": 1.4845863915979862e-07,
+            "relative_l2_error": 6.57027271699917e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 3.5390257835388184e-08,
+            "relative_l2_error": 1.7925196971191326e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 4.246830940246582e-07,
+            "mean_abs_error": 1.310800143983215e-07,
+            "relative_l2_error": 5.090700483378896e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.066394805908203e-07,
+            "mean_abs_error": 1.644948497414589e-07,
+            "relative_l2_error": 1.174038175122405e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 4.6193599700927734e-07,
+            "mean_abs_error": 1.4845863915979862e-07,
+            "relative_l2_error": 6.57027271699917e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 3.3527612686157227e-08,
+            "relative_l2_error": 1.703062366686936e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 6.854534149169922e-07,
+            "mean_abs_error": 1.5505838746321388e-07,
+            "relative_l2_error": 4.902393015981943e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 7.152557373046875e-07,
+            "mean_abs_error": 1.7248203221242875e-07,
+            "relative_l2_error": 1.034038859870634e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 4,
+        "enc_seq_len": 4,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.6715421224944293e-07,
+          "relative_l2_error": 3.7760906934636296e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 5.364418029785156e-07,
+          "mean_abs_error": 1.6281046555377543e-07,
+          "relative_l2_error": 3.527258911617537e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.4169563655741513e-07,
+          "relative_l2_error": 3.1336304573414964e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 5.364418029785156e-07,
+          "mean_abs_error": 1.6281046555377543e-07,
+          "relative_l2_error": 3.527258911617537e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.4169563655741513e-07,
+          "relative_l2_error": 3.1336304573414964e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 4.0605664253234863e-07,
+            "mean_abs_error": 1.0292569641023874e-07,
+            "relative_l2_error": 4.810554514733667e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 2.8172507882118225e-08,
+            "relative_l2_error": 1.5032377120860474e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 8.944334695115685e-08,
+            "relative_l2_error": 3.370417971382267e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.3096799850463867e-07,
+            "mean_abs_error": 7.67595338402316e-08,
+            "relative_l2_error": 5.199548240852891e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 4.0605664253234863e-07,
+            "mean_abs_error": 1.0292569641023874e-07,
+            "relative_l2_error": 4.810554514733667e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 2.7008354663848877e-08,
+            "relative_l2_error": 1.4122805680472084e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 9.269024303648621e-08,
+            "relative_l2_error": 2.953171360786655e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.725290298461914e-07,
+            "mean_abs_error": 8.780170901445672e-08,
+            "relative_l2_error": 4.898803922515071e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 4,
+        "enc_seq_len": 8,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.152557373046875e-07,
+          "mean_abs_error": 1.9885192159563303e-07,
+          "relative_l2_error": 4.6467710035358323e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 8.642673492431641e-07,
+          "mean_abs_error": 2.220813257736154e-07,
+          "relative_l2_error": 5.055256337982428e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.119450073223561e-07,
+          "relative_l2_error": 4.946288640894636e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 8.642673492431641e-07,
+          "mean_abs_error": 2.220813257736154e-07,
+          "relative_l2_error": 5.055256337982428e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.119450073223561e-07,
+          "relative_l2_error": 4.946288640894636e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 8.344650268554688e-07,
+            "mean_abs_error": 1.7154798115370795e-07,
+            "relative_l2_error": 8.458203524241981e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 2.1012965589761734e-08,
+            "relative_l2_error": 2.368465317204027e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 4.172325134277344e-07,
+            "mean_abs_error": 9.641030374041293e-08,
+            "relative_l2_error": 5.119889010529732e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.760230123996735e-07,
+            "mean_abs_error": 1.6591957319178618e-07,
+            "relative_l2_error": 1.8359506839260575e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 8.344650268554688e-07,
+            "mean_abs_error": 1.7154798115370795e-07,
+            "relative_l2_error": 8.458203524241981e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 2.1187588572502136e-08,
+            "relative_l2_error": 2.3313988606332714e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.2782554626464844e-07,
+            "mean_abs_error": 1.2019336281809956e-07,
+            "relative_l2_error": 5.417529678197752e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.494803190231323e-07,
+            "mean_abs_error": 1.4610304788220674e-07,
+            "relative_l2_error": 1.479877028032206e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 4,
+        "enc_seq_len": 8,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.618609530851245e-07,
+          "relative_l2_error": 3.6525483437799267e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 7.003545761108398e-07,
+          "mean_abs_error": 1.624421201995574e-07,
+          "relative_l2_error": 3.732670279532613e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 5.234032869338989e-07,
+          "mean_abs_error": 1.3800672604702413e-07,
+          "relative_l2_error": 3.1887597629065567e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 7.003545761108398e-07,
+          "mean_abs_error": 1.624421201995574e-07,
+          "relative_l2_error": 3.732670279532613e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 5.234032869338989e-07,
+          "mean_abs_error": 1.3800672604702413e-07,
+          "relative_l2_error": 3.1887597629065567e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 8.344650268554688e-07,
+            "mean_abs_error": 1.1283009371254593e-07,
+            "relative_l2_error": 6.53791289551009e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 1.4028046280145645e-08,
+            "relative_l2_error": 1.71140911220391e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.682209014892578e-07,
+            "mean_abs_error": 6.075697456253693e-08,
+            "relative_l2_error": 3.320546397844737e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.3655593395233154e-07,
+            "mean_abs_error": 5.06320247950498e-08,
+            "relative_l2_error": 5.612920972453139e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 8.344650268554688e-07,
+            "mean_abs_error": 1.1283009371254593e-07,
+            "relative_l2_error": 6.53791289551009e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 1.4726538211107254e-08,
+            "relative_l2_error": 1.8151060032778332e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.129243850708008e-07,
+            "mean_abs_error": 7.47941157897003e-08,
+            "relative_l2_error": 3.84460065561143e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.3527536541223526e-07,
+            "mean_abs_error": 6.182472134241834e-08,
+            "relative_l2_error": 6.270133212638029e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 4,
+        "enc_seq_len": 16,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.450580596923828e-07,
+          "mean_abs_error": 2.2210042516235262e-07,
+          "relative_l2_error": 5.086897658657108e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.2394362986233318e-07,
+          "relative_l2_error": 5.053917675468256e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 1.1920928955078125e-06,
+          "mean_abs_error": 2.2139147404232062e-07,
+          "relative_l2_error": 5.195490189180418e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.2394362986233318e-07,
+          "relative_l2_error": 5.053917675468256e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 1.1920928955078125e-06,
+          "mean_abs_error": 2.2139147404232062e-07,
+          "relative_l2_error": 5.195490189180418e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 9.834766387939453e-07,
+            "mean_abs_error": 1.8745504348771647e-07,
+            "relative_l2_error": 9.012692885335127e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 7.450580596923828e-08,
+            "mean_abs_error": 1.1736119631677866e-08,
+            "relative_l2_error": 2.489038593012083e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 6.692732767987764e-08,
+            "relative_l2_error": 6.015789608682098e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.544854164123535e-07,
+            "mean_abs_error": 1.334014996245969e-07,
+            "relative_l2_error": 2.3683387553319335e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 9.834766387939453e-07,
+            "mean_abs_error": 1.8745504348771647e-07,
+            "relative_l2_error": 9.012692885335127e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.043081283569336e-07,
+            "mean_abs_error": 1.104490365833044e-08,
+            "relative_l2_error": 2.258992566339657e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.682209014892578e-07,
+            "mean_abs_error": 9.564928404870443e-08,
+            "relative_l2_error": 5.879243190065608e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.917383193969727e-07,
+            "mean_abs_error": 1.659932422626298e-07,
+            "relative_l2_error": 2.0142010725976434e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 1,
+        "dec_seq_len": 4,
+        "enc_seq_len": 16,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.5939986042212695e-07,
+          "relative_l2_error": 3.8140930769259285e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.5547436760243727e-07,
+          "relative_l2_error": 3.572566242837638e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.473003976570908e-07,
+          "relative_l2_error": 3.447692620284215e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.5547436760243727e-07,
+          "relative_l2_error": 3.572566242837638e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.473003976570908e-07,
+          "relative_l2_error": 3.447692620284215e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 1,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 5.960464477539062e-07,
+            "mean_abs_error": 1.3142152965883724e-07,
+            "relative_l2_error": 6.402648295988911e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.470348358154297e-08,
+            "mean_abs_error": 9.116774890571833e-09,
+            "relative_l2_error": 1.9252632910138345e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 4.4255102693568915e-08,
+            "relative_l2_error": 4.191732045910612e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.1175870895385742e-07,
+            "mean_abs_error": 3.345257937326096e-08,
+            "relative_l2_error": 5.636086370941484e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 5.960464477539062e-07,
+            "mean_abs_error": 1.3142152965883724e-07,
+            "relative_l2_error": 6.402648295988911e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.960464477539063e-08,
+            "mean_abs_error": 8.469214662909508e-09,
+            "relative_l2_error": 1.7550341624428256e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 4.8417291509395e-08,
+            "relative_l2_error": 3.1038447900755273e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.4156103134155273e-07,
+            "mean_abs_error": 3.840500539809e-08,
+            "relative_l2_error": 4.889437832389376e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 1,
+        "enc_seq_len": 4,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.003545761108398e-07,
+          "mean_abs_error": 2.4282053345814347e-07,
+          "relative_l2_error": 4.4301253865342005e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.9839853848679923e-07,
+          "relative_l2_error": 4.726386748643563e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 7.748603820800781e-07,
+          "mean_abs_error": 2.0478364604059607e-07,
+          "relative_l2_error": 4.713082830676285e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.9839853848679923e-07,
+          "relative_l2_error": 4.726386748643563e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 7.748603820800781e-07,
+          "mean_abs_error": 2.0478364604059607e-07,
+          "relative_l2_error": 4.713082830676285e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 5.960464477539062e-07,
+            "mean_abs_error": 1.8287391867488623e-07,
+            "relative_l2_error": 7.462010103154171e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 4.540197551250458e-08,
+            "relative_l2_error": 2.1786310355764726e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.8312206268310547e-07,
+            "mean_abs_error": 9.869108907878399e-08,
+            "relative_l2_error": 4.3199105448366026e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 1.4850229490548372e-07,
+            "relative_l2_error": 1.0535684396018041e-06,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 5.960464477539062e-07,
+            "mean_abs_error": 1.8287391867488623e-07,
+            "relative_l2_error": 7.462010103154171e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 3.841705620288849e-08,
+            "relative_l2_error": 1.750788669596659e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 1.4507531886920333e-07,
+            "relative_l2_error": 5.151264304004144e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 7.003545761108398e-07,
+            "mean_abs_error": 1.8873106455430388e-07,
+            "relative_l2_error": 1.0893307944570552e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 1,
+        "enc_seq_len": 4,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 4.76837158203125e-07,
+          "mean_abs_error": 2.0155130187049508e-07,
+          "relative_l2_error": 3.621787243446306e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.384009920002427e-07,
+          "relative_l2_error": 3.1840801284488407e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.467524270992726e-07,
+          "relative_l2_error": 3.338369367611449e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.384009920002427e-07,
+          "relative_l2_error": 3.1840801284488407e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.467524270992726e-07,
+          "relative_l2_error": 3.338369367611449e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 8.344650268554688e-07,
+            "mean_abs_error": 1.959706423804164e-07,
+            "relative_l2_error": 8.313704142892675e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 4.400499165058136e-08,
+            "relative_l2_error": 2.298665435773728e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.2782554626464844e-07,
+            "mean_abs_error": 1.0945950634777546e-07,
+            "relative_l2_error": 4.6215811266847595e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.8312206268310547e-07,
+            "mean_abs_error": 8.215283742174506e-08,
+            "relative_l2_error": 6.132822250037862e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 8.344650268554688e-07,
+            "mean_abs_error": 1.959706423804164e-07,
+            "relative_l2_error": 8.313704142892675e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 4.1676685214042664e-08,
+            "relative_l2_error": 2.3658358827560733e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 1.2302189134061337e-07,
+            "relative_l2_error": 4.559435069495521e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.2782554626464844e-07,
+            "mean_abs_error": 9.941140888258815e-08,
+            "relative_l2_error": 5.604982789009227e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 1,
+        "enc_seq_len": 8,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.152557373046875e-07,
+          "mean_abs_error": 2.3693428374826908e-07,
+          "relative_l2_error": 4.483902387164562e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.067889113277488e-07,
+          "relative_l2_error": 5.060306875748211e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 1.0132789611816406e-06,
+          "mean_abs_error": 2.0486254470597487e-07,
+          "relative_l2_error": 4.82411564917129e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.067889113277488e-07,
+          "relative_l2_error": 5.060306875748211e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 1.0132789611816406e-06,
+          "mean_abs_error": 2.0486254470597487e-07,
+          "relative_l2_error": 4.82411564917129e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 7.450580596923828e-07,
+            "mean_abs_error": 1.9660728867165744e-07,
+            "relative_l2_error": 7.798849992468604e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 2.6775524020195007e-08,
+            "relative_l2_error": 2.842011213033402e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.0547380447387695e-07,
+            "mean_abs_error": 9.089490049518645e-08,
+            "relative_l2_error": 5.581971436185995e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 3.650784492492676e-07,
+            "mean_abs_error": 1.2689997674897313e-07,
+            "relative_l2_error": 1.40262022796378e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 7.450580596923828e-07,
+            "mean_abs_error": 1.9660728867165744e-07,
+            "relative_l2_error": 7.798849992468604e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 2.6891939342021942e-08,
+            "relative_l2_error": 2.83542078705068e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.2782554626464844e-07,
+            "mean_abs_error": 1.0960138752125204e-07,
+            "relative_l2_error": 5.767725497207721e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.6938657760620117e-07,
+            "mean_abs_error": 1.5079297099873656e-07,
+            "relative_l2_error": 1.343681446996925e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 1,
+        "enc_seq_len": 8,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.553999027237296e-07,
+          "relative_l2_error": 3.035485462987708e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.6412369063800725e-07,
+          "relative_l2_error": 3.834971380456409e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 7.152557373046875e-07,
+          "mean_abs_error": 1.5773775885463692e-07,
+          "relative_l2_error": 3.7818659848198877e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.6412369063800725e-07,
+          "relative_l2_error": 3.834971380456409e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 7.152557373046875e-07,
+          "mean_abs_error": 1.5773775885463692e-07,
+          "relative_l2_error": 3.7818659848198877e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 6.258487701416016e-07,
+            "mean_abs_error": 1.4171200746204704e-07,
+            "relative_l2_error": 5.852116373716854e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 1.862645149230957e-08,
+            "relative_l2_error": 1.9096380299288285e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.514570951461792e-07,
+            "mean_abs_error": 8.170900400727987e-08,
+            "relative_l2_error": 4.801337922799576e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 5.0029484555125237e-08,
+            "relative_l2_error": 5.44746512787242e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 6.258487701416016e-07,
+            "mean_abs_error": 1.4171200746204704e-07,
+            "relative_l2_error": 5.852116373716854e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 1.7811544239521027e-08,
+            "relative_l2_error": 1.915718428335822e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 7.923517841845751e-08,
+            "relative_l2_error": 4.213559634536068e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.341104507446289e-07,
+            "mean_abs_error": 5.1772531151073053e-08,
+            "relative_l2_error": 4.606881987001543e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 1,
+        "enc_seq_len": 16,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 8.046627044677734e-07,
+          "mean_abs_error": 2.295564627274871e-07,
+          "relative_l2_error": 4.5367823986453004e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.043081283569336e-06,
+          "mean_abs_error": 2.0995071281504352e-07,
+          "relative_l2_error": 4.826412691727455e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 1.1622905731201172e-06,
+          "mean_abs_error": 2.3182940367405536e-07,
+          "relative_l2_error": 5.011503958485264e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 1.043081283569336e-06,
+          "mean_abs_error": 2.0995071281504352e-07,
+          "relative_l2_error": 4.826412691727455e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 1.1622905731201172e-06,
+          "mean_abs_error": 2.3182940367405536e-07,
+          "relative_l2_error": 5.011503958485264e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 8.903443813323975e-07,
+            "mean_abs_error": 1.9485014490783215e-07,
+            "relative_l2_error": 6.997232162575528e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 4.470348358154297e-08,
+            "mean_abs_error": 1.2048985809087753e-08,
+            "relative_l2_error": 2.43695268409283e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 6.126356311142445e-08,
+            "relative_l2_error": 4.7056693119884585e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.207249730825424e-07,
+            "mean_abs_error": 1.5502337191719562e-07,
+            "relative_l2_error": 2.075775000776048e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 8.903443813323975e-07,
+            "mean_abs_error": 1.9485014490783215e-07,
+            "relative_l2_error": 6.997232162575528e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 6.705522537231445e-08,
+            "mean_abs_error": 1.1903466656804085e-08,
+            "relative_l2_error": 2.3844927454774734e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 7.623020792379975e-08,
+            "relative_l2_error": 4.6461195779556874e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.3958425521850586e-07,
+            "mean_abs_error": 1.6820195014588535e-07,
+            "relative_l2_error": 1.7322189478363725e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 1,
+        "enc_seq_len": 16,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 6.854534149169922e-07,
+          "mean_abs_error": 1.6124977264553308e-07,
+          "relative_l2_error": 3.18662046083773e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 1.5628961591573898e-07,
+          "relative_l2_error": 3.57618773705326e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.4184001884132158e-07,
+          "relative_l2_error": 3.0854488386466983e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 1.5628961591573898e-07,
+          "relative_l2_error": 3.57618773705326e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.4184001884132158e-07,
+          "relative_l2_error": 3.0854488386466983e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 6.556510925292969e-07,
+            "mean_abs_error": 1.704038368188776e-07,
+            "relative_l2_error": 6.2577549897469e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.21540641784668e-08,
+            "mean_abs_error": 1.0273652151226997e-08,
+            "relative_l2_error": 2.1757817592060746e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 6.116169970482588e-08,
+            "relative_l2_error": 4.6266075059975265e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.4156103134155273e-07,
+            "mean_abs_error": 4.223875293973833e-08,
+            "relative_l2_error": 5.985676807540585e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 6.556510925292969e-07,
+            "mean_abs_error": 1.704038368188776e-07,
+            "relative_l2_error": 6.2577549897469e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 8.556526154279709e-09,
+            "relative_l2_error": 1.9772429027398175e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 6.394293450284749e-08,
+            "relative_l2_error": 3.8925566059333505e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.6391277313232422e-07,
+            "mean_abs_error": 4.4950866140425205e-08,
+            "relative_l2_error": 4.855051543017908e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 4,
+        "enc_seq_len": 4,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.301568984985352e-07,
+          "mean_abs_error": 2.1622690837830305e-07,
+          "relative_l2_error": 5.02796751788992e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.123920239682775e-07,
+          "relative_l2_error": 4.96785787618137e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 1.1026859283447266e-06,
+          "mean_abs_error": 2.373371899011545e-07,
+          "relative_l2_error": 6.148878810563474e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 2.123920239682775e-07,
+          "relative_l2_error": 4.96785787618137e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 1.1026859283447266e-06,
+          "mean_abs_error": 2.373371899011545e-07,
+          "relative_l2_error": 6.148878810563474e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 5.960464477539062e-07,
+            "mean_abs_error": 1.6346803022315726e-07,
+            "relative_l2_error": 7.520424674112292e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 3.958120942115784e-08,
+            "relative_l2_error": 1.941709655284285e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 4.2654573917388916e-07,
+            "mean_abs_error": 1.2731243259622715e-07,
+            "relative_l2_error": 6.552857030328596e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 6.407499313354492e-07,
+            "mean_abs_error": 1.4334818843053654e-07,
+            "relative_l2_error": 1.6286711570501211e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 5.960464477539062e-07,
+            "mean_abs_error": 1.6346803022315726e-07,
+            "relative_l2_error": 7.520424674112292e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 3.4691765904426575e-08,
+            "relative_l2_error": 1.78266446937414e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 4.3213367462158203e-07,
+            "mean_abs_error": 1.250200512004085e-07,
+            "relative_l2_error": 6.784584343222377e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.833564162254333e-07,
+            "mean_abs_error": 1.5772411643411033e-07,
+            "relative_l2_error": 1.6688135247022728e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 4,
+        "enc_seq_len": 4,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.3984390534460545e-07,
+          "relative_l2_error": 3.2465322874486446e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.464500201109331e-07,
+          "relative_l2_error": 3.398448882308003e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 4.76837158203125e-07,
+          "mean_abs_error": 1.330090526607819e-07,
+          "relative_l2_error": 3.3716420944074343e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 2.384185791015625e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "mean_abs_error": 1.464500201109331e-07,
+          "relative_l2_error": 3.398448882308003e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 4.76837158203125e-07,
+          "mean_abs_error": 1.330090526607819e-07,
+          "relative_l2_error": 3.3716420944074343e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 4,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 1.1918018572032452e-07,
+            "relative_l2_error": 5.75113745071576e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 2.7706846594810486e-08,
+            "relative_l2_error": 1.4413828353099234e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 7.175435712269973e-08,
+            "relative_l2_error": 3.830543278127152e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.9371509552001953e-07,
+            "mean_abs_error": 5.833589966641739e-08,
+            "relative_l2_error": 6.348065539896197e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 1.1918018572032452e-07,
+            "relative_l2_error": 5.75113745071576e-07,
+            "cosine_similarity": 0.9999998211860657,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.341104507446289e-07,
+            "mean_abs_error": 2.6775524020195007e-08,
+            "relative_l2_error": 1.3808460153086344e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.129243850708008e-07,
+            "mean_abs_error": 6.848540579085238e-08,
+            "relative_l2_error": 3.8987869288575894e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 6.093023330322467e-08,
+            "relative_l2_error": 6.11124789884343e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 4,
+        "enc_seq_len": 8,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.599592208862305e-07,
+          "mean_abs_error": 2.4744804250076413e-07,
+          "relative_l2_error": 5.539625931305636e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 1.0132789611816406e-06,
+          "mean_abs_error": 1.95900156541029e-07,
+          "relative_l2_error": 4.353481699581607e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 1.0728836059570312e-06,
+          "mean_abs_error": 2.497943683010817e-07,
+          "relative_l2_error": 5.44398972124327e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 1.0132789611816406e-06,
+          "mean_abs_error": 1.95900156541029e-07,
+          "relative_l2_error": 4.353481699581607e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 1.0728836059570312e-06,
+          "mean_abs_error": 2.497943683010817e-07,
+          "relative_l2_error": 5.44398972124327e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 7.37607479095459e-07,
+            "mean_abs_error": 1.7873662727652118e-07,
+            "relative_l2_error": 7.443419463015744e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.043081283569336e-07,
+            "mean_abs_error": 2.079468686133623e-08,
+            "relative_l2_error": 2.1553742612923088e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.8743019104003906e-07,
+            "mean_abs_error": 1.0557860719018208e-07,
+            "relative_l2_error": 8.352234885933285e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 8.642673492431641e-07,
+            "mean_abs_error": 1.699809217825532e-07,
+            "relative_l2_error": 2.6807138056028634e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 7.37607479095459e-07,
+            "mean_abs_error": 1.7873662727652118e-07,
+            "relative_l2_error": 7.443419463015744e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.1920928955078125e-07,
+            "mean_abs_error": 2.10275175049901e-08,
+            "relative_l2_error": 2.1533728045142198e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 1.11949390202426e-07,
+            "relative_l2_error": 8.579549444220902e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 6.109476089477539e-07,
+            "mean_abs_error": 1.4789111446589231e-07,
+            "relative_l2_error": 2.253481625302811e-06,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 4,
+        "enc_seq_len": 8,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 6.556510925292969e-07,
+          "mean_abs_error": 1.7563434084877372e-07,
+          "relative_l2_error": 3.92839837104475e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 6.258487701416016e-07,
+          "mean_abs_error": 1.4207898857421242e-07,
+          "relative_l2_error": 3.143812818962033e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.5192125601970474e-07,
+          "relative_l2_error": 3.3610641025916266e-07,
+          "cosine_similarity": 0.9999998211860657,
+          "allclose": true
+        },
+        "qk_constraint_error": 3.5762786865234375e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 6.258487701416016e-07,
+          "mean_abs_error": 1.4207898857421242e-07,
+          "relative_l2_error": 3.143812818962033e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.5192125601970474e-07,
+          "relative_l2_error": 3.3610641025916266e-07,
+          "cosine_similarity": 0.9999998211860657,
+          "allclose": true
+        },
+        "encoder_seq_len": 8,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 5.811452865600586e-07,
+            "mean_abs_error": 1.432886165275704e-07,
+            "relative_l2_error": 6.040195330569986e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 1.7025740817189217e-08,
+            "relative_l2_error": 1.8000631030190561e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 6.85709551362379e-08,
+            "relative_l2_error": 5.49215826595173e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 4.8414221964776516e-08,
+            "relative_l2_error": 7.474454832845367e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 5.811452865600586e-07,
+            "mean_abs_error": 1.432886165275704e-07,
+            "relative_l2_error": 6.040195330569986e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.940696716308594e-08,
+            "mean_abs_error": 1.737498678267002e-08,
+            "relative_l2_error": 1.8087614250816841e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 3.5762786865234375e-07,
+            "mean_abs_error": 6.673195684925304e-08,
+            "relative_l2_error": 5.262544391371193e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 4.6584318624809384e-08,
+            "relative_l2_error": 6.97287589446205e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 4,
+        "enc_seq_len": 16,
+        "use_pad": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 1.2665987014770508e-06,
+          "mean_abs_error": 2.4779001250863075e-07,
+          "relative_l2_error": 5.657019528371166e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 8.940696716308594e-07,
+          "mean_abs_error": 1.9504784631863004e-07,
+          "relative_l2_error": 4.3271299432490196e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 1.0728836059570312e-06,
+          "mean_abs_error": 2.1944329375855887e-07,
+          "relative_l2_error": 4.743712338495243e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "qk_constraint_error": 5.364418029785156e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 8.940696716308594e-07,
+          "mean_abs_error": 1.9504784631863004e-07,
+          "relative_l2_error": 4.3271299432490196e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 1.0728836059570312e-06,
+          "mean_abs_error": 2.1944329375855887e-07,
+          "relative_l2_error": 4.743712338495243e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 8.642673492431641e-07,
+            "mean_abs_error": 1.812054506444838e-07,
+            "relative_l2_error": 7.761635174574621e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 8.195638656616211e-08,
+            "mean_abs_error": 1.1583324521780014e-08,
+            "relative_l2_error": 2.4883416926968493e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 2.7567148208618164e-07,
+            "mean_abs_error": 7.499710363845224e-08,
+            "relative_l2_error": 6.315078167062893e-07,
+            "cosine_similarity": 0.9999999403953552,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 4.4517219066619873e-07,
+            "mean_abs_error": 1.1545944289537147e-07,
+            "relative_l2_error": 1.8400932049189578e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 8.642673492431641e-07,
+            "mean_abs_error": 1.812054506444838e-07,
+            "relative_l2_error": 7.761635174574621e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 1.043081283569336e-07,
+            "mean_abs_error": 1.0353687684983015e-08,
+            "relative_l2_error": 2.1206470535162225e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 4.3213367462158203e-07,
+            "mean_abs_error": 9.473274076299276e-08,
+            "relative_l2_error": 6.501671805381193e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 5.21540641784668e-07,
+            "mean_abs_error": 1.4140277926344424e-07,
+            "relative_l2_error": 1.932955001393566e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": true,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          },
+          "padding": {
+            "q_pad": true,
+            "k_pad": true,
+            "v_pad": true,
+            "o_pad": true
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    },
+    {
+      "config": {
+        "model_id": null,
+        "batch_size": 2,
+        "dec_seq_len": 4,
+        "enc_seq_len": 16,
+        "use_pad": false,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "model_loading": {
+        "status": "loaded",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "candidates_tried": [
+          "hf-internal-testing/tiny-random-t5"
+        ],
+        "model_class": "T5ForConditionalGeneration",
+        "family": "t5",
+        "hidden_size": 32,
+        "num_attention_heads": 4,
+        "head_dim": 8,
+        "inner_dim": 32,
+        "bias_present": {
+          "q": false,
+          "k": false,
+          "v": false,
+          "o": false
+        },
+        "cross_attention_has_relative_bias": false
+      },
+      "qkv_invariants": {
+        "q_metrics": {
+          "max_abs_error": 7.078051567077637e-07,
+          "mean_abs_error": 1.5582190826535225e-07,
+          "relative_l2_error": 3.637429415448423e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "k_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 1.6731166851968737e-07,
+          "relative_l2_error": 3.7835636135241657e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "v_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.602061701078128e-07,
+          "relative_l2_error": 3.5010768328902486e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "qk_constraint_error": 5.364418029785156e-07,
+        "qkv_allclose": true
+      },
+      "encoder_memory_cache": {
+        "key_metrics": {
+          "max_abs_error": 9.5367431640625e-07,
+          "mean_abs_error": 1.6731166851968737e-07,
+          "relative_l2_error": 3.7835636135241657e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true
+        },
+        "value_metrics": {
+          "max_abs_error": 8.344650268554688e-07,
+          "mean_abs_error": 1.602061701078128e-07,
+          "relative_l2_error": 3.5010768328902486e-07,
+          "cosine_similarity": 0.9999999403953552,
+          "allclose": true
+        },
+        "encoder_seq_len": 16,
+        "batch_size": 2,
+        "allclose": true
+      },
+      "results_per_mask": {
+        "all_ones": {
+          "score_metrics": {
+            "max_abs_error": 6.556510925292969e-07,
+            "mean_abs_error": 1.438386334484676e-07,
+            "relative_l2_error": 6.148233069325215e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 5.960464477539063e-08,
+            "mean_abs_error": 9.102222975343466e-09,
+            "relative_l2_error": 1.9181332788775762e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 4.8746983338787686e-08,
+            "relative_l2_error": 4.071475245837064e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.341104507446289e-07,
+            "mean_abs_error": 3.763489075936377e-08,
+            "relative_l2_error": 5.911677476433397e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        },
+        "padding": {
+          "score_metrics": {
+            "max_abs_error": 6.556510925292969e-07,
+            "mean_abs_error": 1.438386334484676e-07,
+            "relative_l2_error": 6.148233069325215e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "prob_metrics": {
+            "max_abs_error": 7.450580596923828e-08,
+            "mean_abs_error": 8.447386790066957e-09,
+            "relative_l2_error": 1.7498975068974687e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "v_aggr_metrics": {
+            "max_abs_error": 1.7881393432617188e-07,
+            "mean_abs_error": 5.381798473536037e-08,
+            "relative_l2_error": 3.632417531207466e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          },
+          "output_metrics": {
+            "max_abs_error": 1.4901161193847656e-07,
+            "mean_abs_error": 4.260346031514928e-08,
+            "relative_l2_error": 5.773550242338388e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          },
+          "allclose": true
+        }
+      },
+      "pad_report": {
+        "use_pad": false,
+        "per_mask": {
+          "all_ones": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          },
+          "padding": {
+            "q_pad": false,
+            "k_pad": false,
+            "v_pad": false,
+            "o_pad": false
+          }
+        },
+        "compensation_formula": "C = T W N_out"
+      },
+      "mask_structure": {
+        "attention_kind": "encoder_decoder_cross_attention",
+        "right_multiply_mask": true,
+        "qk_constraint": "N_Q_dec N_K_enc^T = I",
+        "value_mask": "per-head block-diagonal",
+        "decoder_query_input_mask_independent_from_encoder_kv_input_mask": true,
+        "cache_type": "encoder_memory_cache (probe-level)"
+      }
+    }
+  ]
+}
