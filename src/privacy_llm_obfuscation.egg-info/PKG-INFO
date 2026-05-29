@@ -1,0 +1,215 @@
+Metadata-Version: 2.4
+Name: privacy-llm-obfuscation
+Version: 0.1.0
+Summary: A PyTorch prototype for mask/pad obfuscated linear and LoRA-linear execution.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: torch>=2.0
+Provides-Extra: hf
+Requires-Dist: transformers>=4.40.0; extra == "hf"
+Requires-Dist: tokenizers; extra == "hf"
+Requires-Dist: safetensors; extra == "hf"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: transformers>=4.40.0; extra == "dev"
+Requires-Dist: tokenizers; extra == "dev"
+Requires-Dist: safetensors; extra == "dev"
+
+# privacy_llm_obfuscation
+
+`privacy_llm_obfuscation` is a PyTorch prototype for validating mask/pad obfuscated execution in privacy-preserving large-model inference.
+
+The prototype models two execution domains:
+
+- **Trusted side / Simulated TEE**: owns plaintext inputs, masks, pads, LoRA adapters, compensation generation, and output recovery.
+- **Untrusted GPU side**: sees only obfuscated inputs, transformed weights/adapters, compensation tensors, and obfuscated outputs.
+
+This stage uses Python classes to simulate the trusted boundary and keeps interfaces ready for a later real TEE backend.
+
+## Security Boundary
+
+`SimulatedTEE` is a Python simulation of trusted-side execution. It can access plaintext inputs, one-time pads, masks, mask inverses, private LoRA adapters, compensation terms, and output recovery state because those values model what would live inside a real trusted boundary.
+
+`UntrustedGPUExecutor` is a simulation of the untrusted GPU side. It only receives obfuscated inputs, transformed base weights, transformed LoRA adapters, `bias_tilde`, and compensation tensors. It does not generate masks or pads, does not create compensation, and does not recover plaintext outputs.
+
+This prototype validates algebraic correctness only. It does not claim to provide real security isolation, side-channel resistance, memory isolation, attestation, or production TEE guarantees.
+
+Stage 2 uses trusted LayerNorm as an engineering simplification. This is not the final security design. It is used to isolate and validate end-to-end Transformer correctness before implementing a fully obfuscated LayerNorm protocol.
+
+Stage 2 uses trusted GELU as an engineering simplification. The MLP linear layers are obfuscated, but GELU is evaluated after recovering the Linear1 output inside `SimulatedTEE`.
+
+Stage 3 keeps the same trusted LayerNorm and trusted GELU simplifications. It validates prefill/decode, KV cache masking, and greedy generation correctness, but it still does not implement real TEE isolation.
+
+Stage 4 adds a HuggingFace model-zoo abstraction for plain external model loading and inspection. It does not implement obfuscated GPT-2 yet; it only validates that GPT-2-like HuggingFace models can be loaded, inspected, run forward, and used for plain greedy generation.
+
+Stage 4.5 adds GPT-2 HuggingFace `Conv1D` adapter validation. It verifies that GPT-2 `Conv1D` modules follow the project's row-vector linear convention, validates fused `attn.c_attn` Q/K/V splitting, and emits a GPT-2 linear mapping report. It still does not replace GPT-2 modules or implement obfuscated GPT-2.
+
+Stage 4.6 adds a GPT-2 single-block obfuscated wrapper correctness check. It reads one HuggingFace GPT-2 block, uses fused `c_attn` with block-diagonal Q/K/V masks, keeps residual branches in a shared hidden mask space, and compares recovered hidden states against the original HF block. This stage still does not replace the HF model, implement KV cache, or run GPT-2 generation.
+
+Stage 4.6 also audits one-time pad compensation for the single-block wrapper. In `use_pad=True` mode, `attn.c_attn`, `attn.c_proj`, `mlp.c_fc`, and `mlp.c_proj` each use `X_tilde = (X - T) N_in` with compensation `C_T = T W N_out`.
+
+Stage 4.7 adds a GPT-2 model-level obfuscated wrapper. It composes per-block `ObfuscatedGPT2BlockWrapper` executions and applies a diagonal vocab output mask `N_vocab = diag(scale)` to the LM head logits. The HuggingFace model is never modified. `use_pad=True` enables Conv1D pad compensation in every block. LM head pad is not added in this stage (vocab dimension is large; vocab output mask is applied instead). KV cache and generation are not implemented in this stage. Trusted LayerNorm and trusted activation shortcuts are carried forward from Stage 4.6.
+
+## Mathematical Invariants
+
+The first-stage tests validate the following row-vector invariants:
+
+```text
+X_tilde = X N_in
+X_tilde = (X - T) N_in
+Y_tilde = Y N_out
+Y_hat = Y_tilde N_out^{-1}
+```
+
+For padded execution, trusted-side compensation cancels the contribution of `T` before recovery.
+
+## Current Scope
+
+Implemented in this first stage:
+
+- PyTorch package skeleton.
+- Invertible right-mask generation.
+- Fresh one-time pad generation.
+- Obfuscated execution for standard linear layers.
+- Obfuscated execution for LoRA linear layers with independent low-rank branches.
+- Pad compensation correctness checks.
+- Unit tests.
+- Correctness scripts that emit JSON metrics.
+
+Implemented in Stage 2:
+
+- A self-written tiny decoder-only Transformer.
+- Plain full-sequence forward pass.
+- Obfuscated full-sequence forward pass.
+- Obfuscated Q/K/V/O projections, MLP linears, and LM head.
+- End-to-end recovered logits correctness checks.
+- Token-wise top-1 match metrics for logits.
+
+Implemented in Stage 3:
+
+- Plain and obfuscated prefill/decode APIs for the tiny decoder-only Transformer.
+- Plain and obfuscated K/V cache containers.
+- Persistent per-layer, per-head K/V cache masks within a generation session.
+- K/V cache invariant checks for `K_tilde = K N_K` and `V_tilde = V N_V`.
+- Greedy generation correctness with token sequence matching.
+
+Implemented in Stage 4:
+
+- `model_zoo` abstraction for external model loaders.
+- HuggingFace loader for `sshleifer/tiny-gpt2`, `distilgpt2`, and `gpt2`-style causal LMs.
+- Tokenizer loading through HuggingFace `AutoTokenizer`.
+- Plain GPT-2 forward and greedy generation smoke scripts.
+- GPT-2 module inspection and structural spec reporting.
+- Recognition of HuggingFace GPT-2 `Conv1D` projection modules.
+
+Implemented in Stage 4.5:
+
+- GPT-2 `Conv1D` to internal row-vector Linear adapter helpers.
+- Equivalence checks for `hf_conv1d(x)` and `x @ W_internal + b_internal`.
+- Fused `attn.c_attn` Q/K/V weight and bias splitting.
+- Mapping report for `c_attn`, `c_proj`, `mlp.c_fc`, `mlp.c_proj`, embeddings, and `lm_head`.
+
+Implemented in Stage 4.6:
+
+- GPT-2 single-block obfuscated wrapper.
+- Fused `attn.c_attn` block-diagonal Q/K/V mask strategy.
+- Obfuscated `attn.c_proj`, `mlp.c_fc`, and `mlp.c_proj` through Conv1D-as-linear adapters.
+- Trusted LayerNorm and trusted activation shortcuts for block-level correctness isolation.
+- Single-block recovered hidden-state correctness script.
+- Pad compensation audit report for each GPT-2 Conv1D path in the single-block wrapper.
+
+## Not Included
+
+This project currently does **not** include:
+
+- RMSNorm
+- ModelScope integration
+- Real TEE integration
+- GPT-2 module replacement
+- HF cache alignment for obfuscated GPT-2
+- GPT-2 KV cache / prefill-decode / generation (planned Stage 4.8)
+- Obfuscated LayerNorm (trusted shortcut used in Stages 2–4.7)
+- Obfuscated GELU (trusted shortcut used in Stages 2–4.7)
+- LM head one-time pad (vocab output mask only in Stage 4.7)
+- Qwen2.5 / Llama / TinyLlama loading
+- Beam search, top-k, top-p, or sampling correctness
+
+## Installation
+
+```bash
+pip install -e ".[dev]"
+```
+
+The `dev` extra includes HuggingFace dependencies. You can also install them explicitly:
+
+```bash
+pip install -e ".[dev,hf]"
+```
+
+## Run Tests
+
+```bash
+pytest
+```
+
+## Run Correctness Scripts
+
+```bash
+python scripts/run_static_correctness.py
+python scripts/run_lora_correctness.py
+python scripts/run_tiny_transformer_correctness.py
+python scripts/run_kv_cache_correctness.py
+python scripts/run_generation_correctness.py
+python scripts/inspect_hf_model.py --model-id sshleifer/tiny-gpt2
+python scripts/run_hf_gpt2_smoke.py --model-id sshleifer/tiny-gpt2
+python scripts/run_gpt2_conv1d_mapping.py --model-id sshleifer/tiny-gpt2
+python scripts/run_gpt2_block_correctness.py --model-id sshleifer/tiny-gpt2
+python scripts/run_gpt2_model_correctness.py --model-id sshleifer/tiny-gpt2
+python scripts/run_gpt2_model_correctness.py --model-id sshleifer/tiny-gpt2 --use-pad false
+```
+
+Useful variants:
+
+```bash
+python scripts/run_static_correctness.py --dtype float32 --no-use-pad --no-bias
+python scripts/run_lora_correctness.py --dtype float32 --pad-scale 0.5
+python scripts/run_tiny_transformer_correctness.py --dtype float32
+python scripts/run_kv_cache_correctness.py --dtype float32
+python scripts/run_generation_correctness.py --dtype float32
+```
+
+By default, results are written to:
+
+- `outputs/static_correctness.json`
+- `outputs/lora_correctness.json`
+- `outputs/tiny_transformer_correctness.json`
+- `outputs/kv_cache_correctness.json`
+- `outputs/generation_correctness.json`
+- `outputs/hf_model_inspection.json`
+- `outputs/hf_gpt2_smoke.json`
+- `outputs/gpt2_conv1d_mapping.json`
+- `outputs/gpt2_block_correctness.json`
+- `outputs/gpt2_model_correctness.json`
+
+Each JSON file reports:
+
+- `max_abs_error`
+- `mean_abs_error`
+- `relative_l2_error`
+- `cosine_similarity`
+- `allclose`
+- `top1_match_rate` for the tiny Transformer logits script
+- `token_match_rate` and `sequence_exact_match` for greedy generation
+- cache invariant metrics for Stage 3 K/V cache checks
+
+## Next Stage Plan
+
+Planned extensions after Stage 4.7:
+
+- GPT-2 prefill / decode KV cache correctness (Stage 4.8)
+- GPT-2 greedy generation correctness
+- ModelScope loader
+- Qwen2.5-0.5B HuggingFace + ModelScope dual-source loading
+- Obfuscated LayerNorm protocol (replacing trusted shortcut)
+- Obfuscated GELU protocol (replacing trusted shortcut)
+- LoRA integration in HF model

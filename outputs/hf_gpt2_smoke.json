@@ -1,0 +1,46 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "device": "cpu",
+    "dtype": "float32",
+    "prompt": "Hello, my name is",
+    "max_new_tokens": 8
+  },
+  "forward": {
+    "input_ids_shape": [
+      1,
+      5
+    ],
+    "logits_shape": [
+      1,
+      5,
+      50257
+    ]
+  },
+  "generation": {
+    "generated_token_ids": [
+      [
+        15496,
+        11,
+        616,
+        1438,
+        318,
+        16046,
+        16046,
+        16046,
+        16046,
+        16046,
+        16046,
+        16046,
+        16046
+      ]
+    ],
+    "decoded_text": "Hello, my name is stairs stairs stairs stairs stairs stairs stairs stairs"
+  },
+  "stage4_scope": {
+    "plain_huggingface": true,
+    "obfuscated_gpt2": false,
+    "modelscope": false,
+    "real_tee": false
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "config": {
+    "batch_size": 2,
+    "seq_len": 16,
+    "vocab_size": 128,
+    "hidden_size": 64,
+    "num_layers": 2,
+    "num_heads": 4,
+    "ffn_dim": 256,
+    "dtype": "float64",
+    "device": "cpu",
+    "seed": 42,
+    "atol": 1e-08,
+    "rtol": 1e-06
+  },
+  "metrics": {
+    "shape_match": true,
+    "reference_shape": [
+      2,
+      16,
+      128
+    ],
+    "candidate_shape": [
+      2,
+      16,
+      128
+    ],
+    "max_abs_error": 1.1102230246251565e-14,
+    "mean_abs_error": 2.0620897192804346e-15,
+    "relative_l2_error": 1.609651174125052e-14,
+    "cosine_similarity": 0.9999999999999999,
+    "allclose": true,
+    "top1_match_rate": 1.0
+  },
+  "stage2_simplifications": {
+    "trusted_layernorm": true,
+    "trusted_gelu": true,
+    "kv_cache": false,
+    "huggingface": false,
+    "modelscope": false,
+    "real_tee": false
+  }
+}

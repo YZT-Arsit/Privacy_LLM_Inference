@@ -1,0 +1,35 @@
+{
+  "config": {
+    "batch_size": 2,
+    "prompt_len": 8,
+    "max_new_tokens": 8,
+    "vocab_size": 128,
+    "hidden_size": 64,
+    "num_layers": 2,
+    "num_heads": 4,
+    "ffn_dim": 256,
+    "dtype": "float32",
+    "device": "cpu",
+    "seed": 42,
+    "output": "outputs/generation_correctness.json"
+  },
+  "generation_metrics": {
+    "token_match_rate": 1.0,
+    "sequence_exact_match": 1.0,
+    "top1_match_rate": 1.0
+  },
+  "logits_metrics": {
+    "max_abs_error": 5.587935447692871e-06,
+    "relative_l2_error": 1.0959353858197574e-05,
+    "allclose": true
+  },
+  "stage3_scope": {
+    "prefill_decode": true,
+    "kv_cache": true,
+    "greedy_generation": true,
+    "sampling": false,
+    "huggingface": false,
+    "modelscope": false,
+    "real_tee": false
+  }
+}

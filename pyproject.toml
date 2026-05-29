@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "privacy-llm-obfuscation"
+version = "0.1.0"
+description = "A PyTorch prototype for mask/pad obfuscated linear and LoRA-linear execution."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+hf = [
+    "transformers>=4.40.0",
+    "tokenizers",
+    "safetensors",
+]
+dev = [
+    "pytest>=7.0",
+    "transformers>=4.40.0",
+    "tokenizers",
+    "safetensors",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

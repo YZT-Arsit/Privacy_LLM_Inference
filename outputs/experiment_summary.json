@@ -1,0 +1,519 @@
+{
+  "rerun": true,
+  "stages": [
+    {
+      "stage": "1",
+      "title": "Static Linear (mask + pad)",
+      "summary": "Right-multiply mask + one-time pad correctness for a standalone linear layer.",
+      "trusted_shortcuts": [
+        "Mask & pad generation lives in SimulatedTEE."
+      ],
+      "script": "scripts/run_static_correctness.py",
+      "has_pad_variants": true,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/static_pad_true.json",
+          "payload_present": true,
+          "config": {
+            "seq_len": 4,
+            "d_in": 16,
+            "d_out": 32,
+            "rank": 4,
+            "seed": 0,
+            "device": "cpu",
+            "dtype": "torch.float64",
+            "use_pad": true,
+            "pad_scale": 1.0,
+            "bias": true,
+            "atol": 1e-08,
+            "rtol": 1e-06
+          },
+          "metrics": {
+            "max_abs_error": 1.0658141036401503e-14,
+            "mean_abs_error": 2.936019483090746e-15,
+            "relative_l2_error": 8.130079355525403e-16,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          }
+        },
+        "use_pad=false": {
+          "source": "outputs/_summary_runs/static_pad_false.json",
+          "payload_present": true,
+          "config": {
+            "seq_len": 4,
+            "d_in": 16,
+            "d_out": 32,
+            "rank": 4,
+            "seed": 0,
+            "device": "cpu",
+            "dtype": "torch.float64",
+            "use_pad": false,
+            "pad_scale": 1.0,
+            "bias": true,
+            "atol": 1e-08,
+            "rtol": 1e-06
+          },
+          "metrics": {
+            "max_abs_error": 9.769962616701378e-15,
+            "mean_abs_error": 2.615963001773025e-15,
+            "relative_l2_error": 7.118409696408548e-16,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          }
+        }
+      }
+    },
+    {
+      "stage": "1-lora",
+      "title": "LoRA Linear (independent low-rank branch)",
+      "summary": "Mask + pad correctness for a LoRA-adapted linear where base weight and adapter are obfuscated separately.",
+      "trusted_shortcuts": [
+        "Mask & pad generation lives in SimulatedTEE."
+      ],
+      "script": "scripts/run_lora_correctness.py",
+      "has_pad_variants": true,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/lora_pad_true.json",
+          "payload_present": true,
+          "config": {
+            "seq_len": 4,
+            "d_in": 16,
+            "d_out": 32,
+            "rank": 4,
+            "seed": 0,
+            "device": "cpu",
+            "dtype": "torch.float64",
+            "use_pad": true,
+            "pad_scale": 1.0,
+            "bias": true,
+            "atol": 1e-08,
+            "rtol": 1e-06
+          },
+          "metrics": {
+            "max_abs_error": 2.708944180085382e-14,
+            "mean_abs_error": 7.0403752272518716e-15,
+            "relative_l2_error": 1.0483383225982752e-15,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          }
+        },
+        "use_pad=false": {
+          "source": "outputs/_summary_runs/lora_pad_false.json",
+          "payload_present": true,
+          "config": {
+            "seq_len": 4,
+            "d_in": 16,
+            "d_out": 32,
+            "rank": 4,
+            "seed": 0,
+            "device": "cpu",
+            "dtype": "torch.float64",
+            "use_pad": false,
+            "pad_scale": 1.0,
+            "bias": true,
+            "atol": 1e-08,
+            "rtol": 1e-06
+          },
+          "metrics": {
+            "max_abs_error": 1.9539925233402755e-14,
+            "mean_abs_error": 4.477321291496139e-15,
+            "relative_l2_error": 6.623176260294307e-16,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          }
+        }
+      }
+    },
+    {
+      "stage": "2",
+      "title": "Tiny decoder-only Transformer (full sequence)",
+      "summary": "End-to-end obfuscated forward through a hand-written tiny Transformer; logits compared against the plain reference.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm (Stage 2 shortcut).",
+        "Trusted GELU (MLP activation evaluated in plaintext)."
+      ],
+      "script": "scripts/run_tiny_transformer_correctness.py",
+      "has_pad_variants": false,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/tiny_transformer.json",
+          "payload_present": true,
+          "config": {
+            "batch_size": 2,
+            "seq_len": 16,
+            "vocab_size": 128,
+            "hidden_size": 64,
+            "num_layers": 2,
+            "num_heads": 4,
+            "ffn_dim": 256,
+            "dtype": "float64",
+            "device": "cpu",
+            "seed": 42,
+            "atol": 1e-08,
+            "rtol": 1e-06
+          },
+          "metrics": {
+            "max_abs_error": 1.1102230246251565e-14,
+            "mean_abs_error": 2.0620897192804346e-15,
+            "relative_l2_error": 1.609651174125052e-14,
+            "cosine_similarity": 0.9999999999999999,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        }
+      }
+    },
+    {
+      "stage": "3-cache",
+      "title": "Tiny Transformer prefill / decode / KV cache",
+      "summary": "Prefill + decode correctness with persistent obfuscated K/V cache; per-layer K_tilde / V_tilde invariants validated.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm carried forward from Stage 2.",
+        "Trusted GELU carried forward from Stage 2."
+      ],
+      "script": "scripts/run_kv_cache_correctness.py",
+      "has_pad_variants": false,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/kv_cache.json",
+          "payload_present": true,
+          "config": {
+            "batch_size": 2,
+            "prompt_len": 8,
+            "decode_steps": 4,
+            "vocab_size": 128,
+            "hidden_size": 64,
+            "num_layers": 2,
+            "num_heads": 4,
+            "ffn_dim": 256,
+            "dtype": "float64",
+            "device": "cpu",
+            "seed": 42,
+            "output": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/_summary_runs/kv_cache.json"
+          },
+          "metrics": {
+            "prefill_max_abs_error": 9.242606680004428e-15,
+            "prefill_allclose": true,
+            "prefill_top1": 1.0,
+            "decode_step_max_abs_error": 6.189493362285248e-15,
+            "decode_step_max_allclose": true,
+            "decode_step_max_top1": 1.0,
+            "cache_max_key_error": 6.696032617270475e-15,
+            "cache_max_value_error": 8.604228440844963e-15,
+            "cache_allclose": true
+          }
+        }
+      }
+    },
+    {
+      "stage": "3-gen",
+      "title": "Tiny Transformer greedy generation",
+      "summary": "Greedy generation correctness for the tiny Transformer. Compares plain vs obfuscated token sequences.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm carried forward from Stage 2.",
+        "Trusted GELU carried forward from Stage 2.",
+        "No sampling / beam search / EOS early-stop."
+      ],
+      "script": "scripts/run_generation_correctness.py",
+      "has_pad_variants": false,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/tiny_generation.json",
+          "payload_present": true,
+          "config": {
+            "batch_size": 2,
+            "prompt_len": 8,
+            "max_new_tokens": 8,
+            "vocab_size": 128,
+            "hidden_size": 64,
+            "num_layers": 2,
+            "num_heads": 4,
+            "ffn_dim": 256,
+            "dtype": "float64",
+            "device": "cpu",
+            "seed": 42,
+            "output": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/_summary_runs/tiny_generation.json"
+          },
+          "metrics": {
+            "token_match_rate": 1.0,
+            "sequence_exact_match": 1.0
+          }
+        }
+      }
+    },
+    {
+      "stage": "4.6",
+      "title": "GPT-2 single-block obfuscated wrapper",
+      "summary": "Single HuggingFace GPT-2 block obfuscated via fused c_attn block-diagonal Q/K/V masks; hidden states compared against the plain HF block.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm (ln_1 / ln_2 on plaintext).",
+        "Trusted GELU.",
+        "HF GPT-2 model is not modified (Conv1D-as-linear extraction)."
+      ],
+      "script": "scripts/run_gpt2_block_correctness.py",
+      "has_pad_variants": true,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/gpt2_block_pad_true.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "block_index": 0,
+            "batch_size": 2,
+            "seq_len": 8,
+            "hidden_size": 2,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": true,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "metrics": {
+            "max_abs_error": 2.384185791015625e-07,
+            "mean_abs_error": 6.484333425760269e-08,
+            "relative_l2_error": 7.845985550147816e-08,
+            "cosine_similarity": 1.0,
+            "allclose": true
+          }
+        },
+        "use_pad=false": {
+          "source": "outputs/_summary_runs/gpt2_block_pad_false.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "block_index": 0,
+            "batch_size": 2,
+            "seq_len": 8,
+            "hidden_size": 2,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": false,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "metrics": {
+            "max_abs_error": 4.76837158203125e-07,
+            "mean_abs_error": 1.4988472685217857e-07,
+            "relative_l2_error": 1.8276365665315097e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true
+          }
+        }
+      }
+    },
+    {
+      "stage": "4.7",
+      "title": "GPT-2 multi-block full forward logits",
+      "summary": "Full GPT-2 forward through chained ObfuscatedGPT2BlockWrapper instances; diagonal vocab output mask on the LM head.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm (ln_1 / ln_2 / ln_f on plaintext).",
+        "Trusted GELU.",
+        "LM head: diagonal vocab output mask only \u2014 no pad."
+      ],
+      "script": "scripts/run_gpt2_model_correctness.py",
+      "has_pad_variants": true,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/gpt2_model_pad_true.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "batch_size": 2,
+            "seq_len": 8,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": true
+          },
+          "metrics": {
+            "max_abs_error": 2.086162567138672e-07,
+            "mean_abs_error": 7.085752429247805e-09,
+            "relative_l2_error": 6.065895945539523e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        },
+        "use_pad=false": {
+          "source": "outputs/_summary_runs/gpt2_model_pad_false.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "batch_size": 2,
+            "seq_len": 8,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": false
+          },
+          "metrics": {
+            "max_abs_error": 8.195638656616211e-08,
+            "mean_abs_error": 3.7062866109494053e-09,
+            "relative_l2_error": 2.7010773351321404e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        }
+      }
+    },
+    {
+      "stage": "4.8",
+      "title": "GPT-2 prefill / decode / KV cache",
+      "summary": "Internal ObfuscatedGPT2KVCache, prefill + decode_step, per-head K/V mask reuse, K_tilde / V_tilde invariants.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm.",
+        "Trusted GELU.",
+        "LM head: vocab output mask only.",
+        "HF past_key_values used only as plaintext reference."
+      ],
+      "script": "scripts/run_gpt2_cache_correctness.py",
+      "has_pad_variants": true,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/gpt2_cache_pad_true.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "batch_size": 2,
+            "prompt_len": 8,
+            "decode_steps": 2,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": true
+          },
+          "metrics": {
+            "prefill_max_abs_error": 3.3527612686157227e-07,
+            "prefill_allclose": true,
+            "prefill_top1": 1.0,
+            "decode_max_abs_error_max": 2.7474015951156616e-07,
+            "decode_top1_min": 1.0,
+            "decode_allclose_all": true,
+            "cache_max_key_error": 9.313225746154785e-09,
+            "cache_max_value_error": 1.1175870895385742e-08,
+            "cache_allclose": true
+          }
+        },
+        "use_pad=false": {
+          "source": "outputs/_summary_runs/gpt2_cache_pad_false.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "batch_size": 2,
+            "prompt_len": 8,
+            "decode_steps": 2,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": false
+          },
+          "metrics": {
+            "prefill_max_abs_error": 1.0058283805847168e-07,
+            "prefill_allclose": true,
+            "prefill_top1": 1.0,
+            "decode_max_abs_error_max": 2.2351741790771484e-08,
+            "decode_top1_min": 1.0,
+            "decode_allclose_all": true,
+            "cache_max_key_error": 2.3283064365386963e-09,
+            "cache_max_value_error": 7.450580596923828e-09,
+            "cache_allclose": true
+          }
+        }
+      }
+    },
+    {
+      "stage": "4.9",
+      "title": "GPT-2 greedy generation",
+      "summary": "generate_greedy() built directly on prefill + decode_step. HF generate() is not called; no sampling / beam / EOS.",
+      "trusted_shortcuts": [
+        "Trusted LayerNorm.",
+        "Trusted GELU.",
+        "LM head: vocab output mask only.",
+        "Greedy only \u2014 no sampling / beam / EOS early-stop."
+      ],
+      "script": "scripts/run_gpt2_generation_correctness.py",
+      "has_pad_variants": true,
+      "variants": {
+        "use_pad=true": {
+          "source": "outputs/_summary_runs/gpt2_generation_pad_true.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "batch_size": 2,
+            "prompt_len": 8,
+            "max_new_tokens": 4,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": true
+          },
+          "metrics": {
+            "token_match_rate": 1.0,
+            "sequence_exact_match": 1.0,
+            "logits_max_abs_error_max": 2.2351741790771484e-08,
+            "logits_allclose_all": true,
+            "logits_top1_min": 1.0,
+            "cache_max_key_error": 4.190951585769653e-09,
+            "cache_max_value_error": 1.4901161193847656e-08,
+            "cache_allclose": true
+          }
+        },
+        "use_pad=false": {
+          "source": "outputs/_summary_runs/gpt2_generation_pad_false.json",
+          "payload_present": true,
+          "config": {
+            "model_id": "sshleifer/tiny-gpt2",
+            "batch_size": 2,
+            "prompt_len": 8,
+            "max_new_tokens": 4,
+            "device": "cpu",
+            "dtype": "float32",
+            "use_pad": false
+          },
+          "metrics": {
+            "token_match_rate": 1.0,
+            "sequence_exact_match": 1.0,
+            "logits_max_abs_error_max": 6.705522537231445e-08,
+            "logits_allclose_all": true,
+            "logits_top1_min": 1.0,
+            "cache_max_key_error": 1.862645149230957e-09,
+            "cache_max_value_error": 4.6566128730773926e-09,
+            "cache_allclose": true
+          }
+        }
+      }
+    }
+  ],
+  "pad_variant_coverage": {
+    "1": [
+      "use_pad=true",
+      "use_pad=false"
+    ],
+    "1-lora": [
+      "use_pad=true",
+      "use_pad=false"
+    ],
+    "2": [
+      "use_pad=true"
+    ],
+    "3-cache": [
+      "use_pad=true"
+    ],
+    "3-gen": [
+      "use_pad=true"
+    ],
+    "4.6": [
+      "use_pad=true",
+      "use_pad=false"
+    ],
+    "4.7": [
+      "use_pad=true",
+      "use_pad=false"
+    ],
+    "4.8": [
+      "use_pad=true",
+      "use_pad=false"
+    ],
+    "4.9": [
+      "use_pad=true",
+      "use_pad=false"
+    ]
+  }
+}

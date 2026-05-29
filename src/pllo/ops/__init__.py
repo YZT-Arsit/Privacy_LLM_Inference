@@ -1,0 +1,34 @@
+"""Plain and obfuscated tensor operations."""
+
+from pllo.ops.attention import (
+    causal_self_attention_obfuscated,
+    causal_self_attention_plain,
+    generate_head_block_mask,
+    generate_qk_mask_pair,
+    make_causal_mask,
+    qk_mask_constraint_error,
+)
+from pllo.ops.layernorm import layer_norm_plain, trusted_layer_norm
+from pllo.ops.linear import linear_plain, linear_obfuscated
+from pllo.ops.lm_head import lm_head_obfuscated, lm_head_plain
+from pllo.ops.lora_linear import lora_linear_plain, lora_linear_obfuscated
+from pllo.ops.mlp import mlp_obfuscated, mlp_plain
+
+__all__ = [
+    "causal_self_attention_obfuscated",
+    "causal_self_attention_plain",
+    "generate_qk_mask_pair",
+    "generate_head_block_mask",
+    "layer_norm_plain",
+    "linear_plain",
+    "linear_obfuscated",
+    "lm_head_obfuscated",
+    "lm_head_plain",
+    "lora_linear_plain",
+    "lora_linear_obfuscated",
+    "make_causal_mask",
+    "mlp_obfuscated",
+    "mlp_plain",
+    "qk_mask_constraint_error",
+    "trusted_layer_norm",
+]

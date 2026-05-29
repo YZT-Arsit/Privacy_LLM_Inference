@@ -1,0 +1,32 @@
+{
+  "config": {
+    "seq_len": 4,
+    "d_in": 16,
+    "d_out": 32,
+    "rank": 4,
+    "seed": 0,
+    "device": "cpu",
+    "dtype": "torch.float64",
+    "use_pad": false,
+    "pad_scale": 1.0,
+    "bias": true,
+    "atol": 1e-08,
+    "rtol": 1e-06
+  },
+  "metrics": {
+    "shape_match": true,
+    "reference_shape": [
+      4,
+      32
+    ],
+    "candidate_shape": [
+      4,
+      32
+    ],
+    "max_abs_error": 1.9539925233402755e-14,
+    "mean_abs_error": 4.477321291496139e-15,
+    "relative_l2_error": 6.623176260294307e-16,
+    "cosine_similarity": 1.0,
+    "allclose": true
+  }
+}

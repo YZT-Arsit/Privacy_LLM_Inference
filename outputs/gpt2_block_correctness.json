@@ -1,0 +1,64 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "block_index": 0,
+    "batch_size": 2,
+    "seq_len": 8,
+    "hidden_size": 2,
+    "device": "cpu",
+    "dtype": "float32",
+    "use_pad": true,
+    "atol": 0.0001,
+    "rtol": 0.0001
+  },
+  "metrics": {
+    "shape_match": true,
+    "reference_shape": [
+      2,
+      8,
+      2
+    ],
+    "candidate_shape": [
+      2,
+      8,
+      2
+    ],
+    "max_abs_error": 2.384185791015625e-07,
+    "mean_abs_error": 3.914465196430683e-08,
+    "relative_l2_error": 7.061042595069011e-08,
+    "cosine_similarity": 1.0000001192092896,
+    "allclose": true
+  },
+  "wrapper_scope": {
+    "trusted_layernorm": true,
+    "trusted_activation": true,
+    "kv_cache": false,
+    "generation": false,
+    "module_replacement": false,
+    "modelscope": false,
+    "real_tee": false
+  },
+  "attention_strategy": {
+    "c_attn": "fused_qkv_block_diagonal_mask",
+    "qk_constraint": "N_Q N_K^T = I",
+    "c_proj": "obfuscated_conv1d_as_linear"
+  },
+  "pad_report": {
+    "use_pad": true,
+    "attn_c_attn_pad": true,
+    "attn_c_proj_pad": true,
+    "mlp_c_fc_pad": true,
+    "mlp_c_proj_pad": true,
+    "compensation_formula": "C_T = T W N_out",
+    "input_form": "X_tilde = (X - T) N_in",
+    "pad_tensor_ids": [
+      6068907264,
+      6068995408,
+      6068907664,
+      6068905824
+    ],
+    "fresh_pad_count": 4,
+    "fresh_pad_unique": true,
+    "untrusted_receives_plain_pad": false
+  }
+}

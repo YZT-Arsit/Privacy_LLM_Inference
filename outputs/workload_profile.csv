@@ -1,0 +1,6 @@
+method,title,implemented,wall_time_source,measured_wall_time_ms,projected_wall_time_ms,online_boundary_calls,online_trusted_compute_ops,online_trusted_transfer_bytes,online_gpu_ops,preprocessing_trusted_ops,preprocessing_transfer_bytes,boundary_calls_formula
+plain_hf_gpu,Plain HuggingFace on GPU,True,measured,3.825983201386407,3.8259832013864066,0,0,0,4434424,0,0,0 (no boundary)
+tslp_trusted_nonlinear_baseline,TSLP-style trusted non-linear baseline,False,projected_from_op_counts,,56.00002760406776,32,1110230,4427192,4429848,0,0,3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head)
+ours_current,This work — current Stage 4.9 implementation,True,measured,6.169191800290719,56.28346360034757,36,1116310,4428424,4429848,403784,402440,4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)
+ours_ideal_gpu_nonlinear,This work — ideal: LN / GELU on GPU in masked domain,False,projected_from_op_counts,,55.66247123017912,4,1105654,4422792,4434424,403784,402440,1 per forward (single fused GPU pipeline round trip)
+amulet_style_reference,Amulet-style reference (cost model),False,projected_from_op_counts,,55.66247123017912,4,1105654,4422792,4434424,403784,402440,1 per forward (single fused GPU pipeline round trip)

@@ -1,0 +1,60 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "block_index": 0,
+    "batch_size": 2,
+    "seq_len": 8,
+    "hidden_size": 2,
+    "device": "cpu",
+    "dtype": "float32",
+    "use_pad": false,
+    "atol": 0.0001,
+    "rtol": 0.0001
+  },
+  "metrics": {
+    "shape_match": true,
+    "reference_shape": [
+      2,
+      8,
+      2
+    ],
+    "candidate_shape": [
+      2,
+      8,
+      2
+    ],
+    "max_abs_error": 4.76837158203125e-07,
+    "mean_abs_error": 1.380685716867447e-07,
+    "relative_l2_error": 1.7952635289475438e-07,
+    "cosine_similarity": 1.0000001192092896,
+    "allclose": true
+  },
+  "wrapper_scope": {
+    "trusted_layernorm": true,
+    "trusted_activation": true,
+    "kv_cache": false,
+    "generation": false,
+    "module_replacement": false,
+    "modelscope": false,
+    "real_tee": false
+  },
+  "attention_strategy": {
+    "c_attn": "fused_qkv_block_diagonal_mask",
+    "qk_constraint": "N_Q N_K^T = I",
+    "c_proj": "obfuscated_conv1d_as_linear"
+  },
+  "pad_report": {
+    "use_pad": false,
+    "attn_c_attn_pad": false,
+    "attn_c_proj_pad": false,
+    "mlp_c_fc_pad": false,
+    "mlp_c_proj_pad": false,
+    "compensation_formula": "C_T = T W N_out",
+    "input_form": "X_tilde = (X - T) N_in",
+    "pad_tensor_ids": [],
+    "fresh_pad_count": 0,
+    "fresh_pad_unique": true,
+    "untrusted_receives_plain_pad": false,
+    "reason": "use_pad is false; all GPT-2 Conv1D paths run mask-only"
+  }
+}

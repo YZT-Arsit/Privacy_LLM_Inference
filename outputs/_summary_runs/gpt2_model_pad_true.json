@@ -1,0 +1,57 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "batch_size": 2,
+    "seq_len": 8,
+    "device": "cpu",
+    "dtype": "float32",
+    "use_pad": true
+  },
+  "metrics": {
+    "shape_match": true,
+    "reference_shape": [
+      2,
+      8,
+      50257
+    ],
+    "candidate_shape": [
+      2,
+      8,
+      50257
+    ],
+    "max_abs_error": 2.086162567138672e-07,
+    "mean_abs_error": 7.085752429247805e-09,
+    "relative_l2_error": 6.065895945539523e-07,
+    "cosine_similarity": 1.0,
+    "allclose": true,
+    "top1_match_rate": 1.0
+  },
+  "scope": {
+    "multi_block": true,
+    "full_forward_logits": true,
+    "right_multiply_mask": true,
+    "trusted_layernorm": true,
+    "trusted_activation": true,
+    "kv_cache": false,
+    "generation": false,
+    "hf_module_replacement": false,
+    "modelscope": false,
+    "real_tee": false
+  },
+  "pad_report": {
+    "use_pad": true,
+    "block_conv1d_pad": true,
+    "lm_head_pad": false,
+    "lm_head_pad_reason": "vocab dimension is large; Stage 4.7 uses vocab output mask only",
+    "vocab_mask_type": "diagonal (scaling vector, memory-efficient)"
+  },
+  "lm_head_report": {
+    "tied_embedding": false,
+    "uses_runtime_weight_transform": true,
+    "modifies_lm_head_weight": false
+  },
+  "hf_model_integrity": {
+    "c_attn_class": "Conv1D",
+    "tied_embedding_preserved": false
+  }
+}

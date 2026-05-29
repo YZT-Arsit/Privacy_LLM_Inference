@@ -1,0 +1,714 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "batch_size": 2,
+    "prompt_len": 8,
+    "max_new_tokens": 4,
+    "use_pad": true,
+    "dtype": "float32",
+    "device": "cpu",
+    "seed": 42,
+    "warmup": 2,
+    "repeat": 5,
+    "cost_model": {
+      "tee_to_gpu_flops_ratio": 50.0,
+      "tee_bytes_per_ms": 1073741.824,
+      "tee_call_overhead_ms": 0.005,
+      "note": "Cost-model constants are coarse defaults. They are not derived from hardware measurements of any specific TEE. See limitations section."
+    }
+  },
+  "calibration": {
+    "gpu_flops_per_ms": 1159028.6121468372,
+    "calibrated_from": "plain_hf_gpu"
+  },
+  "methods": {
+    "plain_hf_gpu": {
+      "title": "Plain HuggingFace on GPU",
+      "summary": "Plaintext HF GPT-2 forward / greedy decode. No protection.",
+      "implemented": true,
+      "implementation_note": "Hand-written HF greedy loop over plain model().",
+      "citation_caveat": "No security; measured wall time is the GPU-only baseline.",
+      "online_boundary_calls": 0,
+      "online_trusted_compute_ops": 0,
+      "online_trusted_transfer_bytes": 0,
+      "online_gpu_ops": 4434424,
+      "preprocessing_trusted_ops": 0,
+      "preprocessing_transfer_bytes": 0,
+      "boundary_calls_formula": "0 (no boundary)",
+      "projected_wall_time_ms": 3.8259832013864066,
+      "measured_wall_time_ms": 3.825983201386407,
+      "measured_wall_time_ms_median": 3.709958000399638,
+      "measured_wall_time_ms_stdev": 0.901304881522745,
+      "wall_time_source": "measured"
+    },
+    "tslp_trusted_nonlinear_baseline": {
+      "title": "TSLP-style trusted non-linear baseline",
+      "summary": "Linear / attention on GPU, every LayerNorm and GELU activation makes a TEE round-trip. Modeled after the trusted non-linear split common in shielded-inference literature.",
+      "implemented": false,
+      "implementation_note": "No real implementation in this repo. Wall time is projected from op counts using a documented cost model \u2014 not a measurement of any specific published system.",
+      "citation_caveat": "TSLP-style is used here as a generic non-linear-in-TEE baseline. It is not a faithful re-implementation of any single published system. Adjust the cost model constants in WorkloadProfileConfig before drawing system-level conclusions.",
+      "online_boundary_calls": 32,
+      "online_trusted_compute_ops": 1110230,
+      "online_trusted_transfer_bytes": 4427192,
+      "online_gpu_ops": 4429848,
+      "preprocessing_trusted_ops": 0,
+      "preprocessing_transfer_bytes": 0,
+      "boundary_calls_formula": "3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head)",
+      "projected_wall_time_ms": 56.00002760406776,
+      "measured_wall_time_ms": null,
+      "measured_wall_time_ms_median": null,
+      "measured_wall_time_ms_stdev": null,
+      "wall_time_source": "projected_from_op_counts"
+    },
+    "ours_current": {
+      "title": "This work \u2014 current Stage 4.9 implementation",
+      "summary": "Right-multiply mask + per-block Conv1D pad compensation, trusted LayerNorm / GELU shortcuts, diagonal vocab output mask on the LM head, internal ObfuscatedGPT2KVCache.",
+      "implemented": true,
+      "implementation_note": "Wall time is measured against the real ObfuscatedGPT2ModelWrapper generation path.",
+      "citation_caveat": "Trusted LayerNorm / GELU are engineering shortcuts; their TEE cost is included in proxies but their security model is unprotected non-linearity. See Stage 5.1 / 5.2 roadmap.",
+      "online_boundary_calls": 36,
+      "online_trusted_compute_ops": 1116310,
+      "online_trusted_transfer_bytes": 4428424,
+      "online_gpu_ops": 4429848,
+      "preprocessing_trusted_ops": 403784,
+      "preprocessing_transfer_bytes": 402440,
+      "boundary_calls_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
+      "projected_wall_time_ms": 56.28346360034757,
+      "measured_wall_time_ms": 6.169191800290719,
+      "measured_wall_time_ms_median": 6.023249996360391,
+      "measured_wall_time_ms_stdev": 0.3110272648488894,
+      "wall_time_source": "measured"
+    },
+    "ours_ideal_gpu_nonlinear": {
+      "title": "This work \u2014 ideal: LN / GELU on GPU in masked domain",
+      "summary": "Same wrapper but with LayerNorm and GELU executed inside the obfuscated GPU domain. The trusted side only crosses the boundary to prepare the masked input and to recover the LM head logits. Used as an upper bound, not a measured system.",
+      "implemented": false,
+      "implementation_note": "Hypothetical. Op counts come from the same model graph; LN / GELU FLOPs are reattributed from TEE to GPU. Wall time is projected, not measured.",
+      "citation_caveat": "Upper bound. Real obfuscated LN / GELU primitives are deferred to Stage 5.1 / 5.2 and may carry additional overhead this estimate does not capture.",
+      "online_boundary_calls": 4,
+      "online_trusted_compute_ops": 1105654,
+      "online_trusted_transfer_bytes": 4422792,
+      "online_gpu_ops": 4434424,
+      "preprocessing_trusted_ops": 403784,
+      "preprocessing_transfer_bytes": 402440,
+      "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
+      "projected_wall_time_ms": 55.66247123017912,
+      "measured_wall_time_ms": null,
+      "measured_wall_time_ms_median": null,
+      "measured_wall_time_ms_stdev": null,
+      "wall_time_source": "projected_from_op_counts"
+    },
+    "amulet_style_reference": {
+      "title": "Amulet-style reference (cost model)",
+      "summary": "Input masking + GPU obfuscated forward + output unmasking, modeled after the high-level pattern in Amulet-style systems. Reference only, not a re-implementation.",
+      "implemented": false,
+      "implementation_note": "No implementation in this repo. Cost-model reference under the assumption that the entire obfuscated forward runs as a single GPU pipeline between trusted input masking and trusted output unmasking.",
+      "citation_caveat": "Amulet-style here means the abstract pattern of input mask + GPU forward + output recovery. Real Amulet systems may include primitives and overheads not captured by this proxy. Use with explicit attribution to assumptions.",
+      "online_boundary_calls": 4,
+      "online_trusted_compute_ops": 1105654,
+      "online_trusted_transfer_bytes": 4422792,
+      "online_gpu_ops": 4434424,
+      "preprocessing_trusted_ops": 403784,
+      "preprocessing_transfer_bytes": 402440,
+      "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
+      "projected_wall_time_ms": 55.66247123017912,
+      "measured_wall_time_ms": null,
+      "measured_wall_time_ms_median": null,
+      "measured_wall_time_ms_stdev": null,
+      "wall_time_source": "projected_from_op_counts"
+    }
+  },
+  "module_breakdown": {
+    "embedding": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 44,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 44,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 44,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 44,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 44,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "layernorm": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 1760,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 0,
+        "online_trusted_compute_ops": 1760,
+        "online_boundary_calls": 20,
+        "online_trusted_transfer_bytes": 1760,
+        "location": "tee"
+      },
+      "ours_current": {
+        "online_gpu_ops": 0,
+        "online_trusted_compute_ops": 1760,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "tee"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 1760,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 1760,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "attention_qkv": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 1056,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 1056,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 1056,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 1408,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 1056,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 1056,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "attention_score": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 3008,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 3008,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 3008,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 3008,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 3008,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "attention_output": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 352,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 352,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 352,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 704,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 352,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 352,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "mlp_fc": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 1760,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "activation": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 2816,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 0,
+        "online_trusted_compute_ops": 2816,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 2816,
+        "location": "tee"
+      },
+      "ours_current": {
+        "online_gpu_ops": 0,
+        "online_trusted_compute_ops": 2816,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "tee"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 2816,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 2816,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "mlp_proj": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 1760,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    },
+    "lm_head": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 4422616,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "location": "mixed"
+      },
+      "ours_current": {
+        "online_gpu_ops": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "location": "mixed"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "location": "mixed"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "location": "mixed"
+      }
+    },
+    "kv_cache_update": {
+      "plain_hf_gpu": {
+        "online_gpu_ops": 176,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_gpu_ops": 176,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_current": {
+        "online_gpu_ops": 176,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 176,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "amulet_style_reference": {
+        "online_gpu_ops": 176,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      }
+    }
+  },
+  "interaction_breakdown": {
+    "input_masking": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Not applicable."
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Not applicable."
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Bundled into per-linear round trips below."
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 176,
+        "online_trusted_compute_ops": 0,
+        "notes": "Trusted prepares masked hidden state, single OCALL per forward."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 176,
+        "online_trusted_compute_ops": 0,
+        "notes": "Trusted prepares masked hidden state, single OCALL per forward."
+      }
+    },
+    "trusted_layernorm": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 20,
+        "online_trusted_transfer_bytes": 1760,
+        "online_trusted_compute_ops": 1760,
+        "notes": "Each LN call is an explicit ECALL into TEE."
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 1760,
+        "notes": "Trusted shortcut: LN computed in trusted side without a separate boundary crossing (trusted already holds the plaintext)."
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "trusted_gelu": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 2816,
+        "online_trusted_compute_ops": 2816,
+        "notes": "Each GELU call is an explicit ECALL into TEE."
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 2816,
+        "notes": "Trusted shortcut, no separate boundary crossing."
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "lm_head_recovery": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Logits transferred to trusted side and multiplied by inverse vocab mask."
+      },
+      "ours_current": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Logits transferred to trusted side and multiplied by inverse vocab mask."
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Logits transferred to trusted side and multiplied by inverse vocab mask."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Logits transferred to trusted side and multiplied by inverse vocab mask."
+      }
+    },
+    "sampling": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Greedy argmax in trusted side; no extra boundary call."
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Greedy argmax in trusted side; no extra boundary call."
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Greedy argmax in trusted side; no extra boundary call."
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Greedy argmax in trusted side; no extra boundary call."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Greedy argmax in trusted side; no extra boundary call."
+      }
+    },
+    "preprocessing_weight_obfuscation": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Amortised over many sessions; not counted in online latency."
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Amortised over many sessions; not counted in online latency."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Amortised over many sessions; not counted in online latency."
+      }
+    }
+  },
+  "paper_metrics": {
+    "boundary_call_reduction_vs_tslp": -0.125,
+    "trusted_transfer_reduction_vs_tslp": -0.0002782802281897871,
+    "online_trusted_compute_reduction_vs_tslp": -0.0054763427397926554,
+    "gpu_offload_ratio": 0.7987237291112154,
+    "preprocessing_amortized": true,
+    "boundary_calls_per_forward": {
+      "plain_hf_gpu": 0,
+      "tslp_trusted_nonlinear_baseline": 8,
+      "ours_current": 9,
+      "ours_ideal_gpu_nonlinear": 1,
+      "amulet_style_reference": 1
+    }
+  },
+  "interpretation": {
+    "main_online_bottleneck": "lm_head",
+    "next_primitive_to_replace": "GELU",
+    "cost_model_warning": "simulated cost model, not real SGX"
+  },
+  "limitations": [
+    "Simulated TEE cost model \u2014 not real SGX wall-clock.",
+    "Wall time for tslp_baseline, ours_ideal, and amulet_style_reference is projected, not measured.",
+    "tiny-gpt2 (n_layer=2, n_embd=2, n_head=2) is far smaller than production GPT-2.",
+    "FLOP / byte proxies use coarse constants; absolute numbers are illustrative.",
+    "Qwen / Llama not yet covered \u2014 see Stage 5.4 roadmap.",
+    "amulet_style_reference is a reference cost model, not a re-implementation of any published system."
+  ]
+}

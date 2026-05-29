@@ -1,0 +1,377 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "device": "cpu",
+    "dtype": "float32",
+    "batch_size": 2,
+    "seq_len": 4
+  },
+  "mapping_report": {
+    "model_class": "GPT2LMHeadModel",
+    "num_layers": 2,
+    "hidden_size": 2,
+    "vocab_size": 50257,
+    "layers": [
+      {
+        "layer": 0,
+        "c_attn": {
+          "path": "transformer.h.0.attn.c_attn",
+          "is_conv1d": true,
+          "weight_shape": [
+            2,
+            6
+          ],
+          "bias_shape": [
+            6
+          ],
+          "qkv_split_shapes": {
+            "q": [
+              2,
+              2
+            ],
+            "k": [
+              2,
+              2
+            ],
+            "v": [
+              2,
+              2
+            ]
+          },
+          "requires_fused_qkv_handling": true
+        },
+        "c_proj": {
+          "path": "transformer.h.0.attn.c_proj",
+          "is_conv1d": true,
+          "weight_shape": [
+            2,
+            2
+          ]
+        },
+        "mlp_c_fc": {
+          "path": "transformer.h.0.mlp.c_fc",
+          "is_conv1d": true,
+          "weight_shape": [
+            2,
+            8
+          ]
+        },
+        "mlp_c_proj": {
+          "path": "transformer.h.0.mlp.c_proj",
+          "is_conv1d": true,
+          "weight_shape": [
+            8,
+            2
+          ]
+        }
+      },
+      {
+        "layer": 1,
+        "c_attn": {
+          "path": "transformer.h.1.attn.c_attn",
+          "is_conv1d": true,
+          "weight_shape": [
+            2,
+            6
+          ],
+          "bias_shape": [
+            6
+          ],
+          "qkv_split_shapes": {
+            "q": [
+              2,
+              2
+            ],
+            "k": [
+              2,
+              2
+            ],
+            "v": [
+              2,
+              2
+            ]
+          },
+          "requires_fused_qkv_handling": true
+        },
+        "c_proj": {
+          "path": "transformer.h.1.attn.c_proj",
+          "is_conv1d": true,
+          "weight_shape": [
+            2,
+            2
+          ]
+        },
+        "mlp_c_fc": {
+          "path": "transformer.h.1.mlp.c_fc",
+          "is_conv1d": true,
+          "weight_shape": [
+            2,
+            8
+          ]
+        },
+        "mlp_c_proj": {
+          "path": "transformer.h.1.mlp.c_proj",
+          "is_conv1d": true,
+          "weight_shape": [
+            8,
+            2
+          ]
+        }
+      }
+    ],
+    "lm_head": {
+      "path": "lm_head",
+      "is_nn_linear": true,
+      "weight_shape": [
+        50257,
+        2
+      ]
+    },
+    "token_embedding": {
+      "path": "transformer.wte",
+      "weight_shape": [
+        50257,
+        2
+      ]
+    },
+    "tied_embedding": true,
+    "mapping_limitations": [
+      "GPT-2 Conv1D must be adapted before using internal ObfuscatedLinear.",
+      "Fused c_attn must be split into Q/K/V or specially wrapped.",
+      "HF past_key_values format is not handled in this stage.",
+      "No module replacement is performed in this stage."
+    ]
+  },
+  "equivalence_checks": {
+    "layers": [
+      {
+        "layer": 0,
+        "attn_c_attn": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "attn_c_attn_split": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "split_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "attn_c_proj": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "mlp_c_fc": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            8
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            8
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "mlp_c_proj": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            8
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        }
+      },
+      {
+        "layer": 1,
+        "attn_c_attn": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "attn_c_attn_split": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "split_output_shape": [
+            2,
+            4,
+            6
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "attn_c_proj": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "mlp_c_fc": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            2
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            8
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            8
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        },
+        "mlp_c_proj": {
+          "module_class": "Conv1D",
+          "input_shape": [
+            2,
+            4,
+            8
+          ],
+          "hf_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "linear_output_shape": [
+            2,
+            4,
+            2
+          ],
+          "max_abs_error": 0.0,
+          "relative_l2_error": 0.0,
+          "allclose": true
+        }
+      }
+    ],
+    "all_conv1d_equivalent": true,
+    "all_c_attn_split_equivalent": true,
+    "max_abs_error_max": 0.0,
+    "c_attn_split_max_abs_error": 0.0
+  },
+  "stage4_5_scope": {
+    "conv1d_adapter": true,
+    "c_attn_split": true,
+    "obfuscated_gpt2": false,
+    "module_replacement": false,
+    "modelscope": false,
+    "real_tee": false
+  }
+}

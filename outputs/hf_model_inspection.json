@@ -1,0 +1,206 @@
+{
+  "config": {
+    "source": "huggingface",
+    "model_id": "sshleifer/tiny-gpt2",
+    "device": "cpu",
+    "dtype": "float32"
+  },
+  "tokenizer": {
+    "class": "GPT2Tokenizer",
+    "vocab_size": 50257
+  },
+  "inspection": {
+    "model_class": "GPT2LMHeadModel",
+    "total_parameters": 203228,
+    "trainable_parameters": 203228,
+    "module_type_counts": {
+      "Conv1D": 8,
+      "Dropout": 7,
+      "Embedding": 2,
+      "GPT2Attention": 2,
+      "GPT2Block": 2,
+      "GPT2MLP": 2,
+      "GPT2Model": 1,
+      "LayerNorm": 5,
+      "Linear": 1,
+      "ModuleList": 1,
+      "NewGELUActivation": 2
+    },
+    "linear_like_modules": [
+      {
+        "name": "transformer.h.0.attn.c_attn",
+        "type": "Conv1D",
+        "num_parameters": 18
+      },
+      {
+        "name": "transformer.h.0.attn.c_proj",
+        "type": "Conv1D",
+        "num_parameters": 6
+      },
+      {
+        "name": "transformer.h.0.mlp.c_fc",
+        "type": "Conv1D",
+        "num_parameters": 24
+      },
+      {
+        "name": "transformer.h.0.mlp.c_proj",
+        "type": "Conv1D",
+        "num_parameters": 18
+      },
+      {
+        "name": "transformer.h.1.attn.c_attn",
+        "type": "Conv1D",
+        "num_parameters": 18
+      },
+      {
+        "name": "transformer.h.1.attn.c_proj",
+        "type": "Conv1D",
+        "num_parameters": 6
+      },
+      {
+        "name": "transformer.h.1.mlp.c_fc",
+        "type": "Conv1D",
+        "num_parameters": 24
+      },
+      {
+        "name": "transformer.h.1.mlp.c_proj",
+        "type": "Conv1D",
+        "num_parameters": 18
+      },
+      {
+        "name": "lm_head",
+        "type": "Linear",
+        "num_parameters": 100514
+      }
+    ],
+    "layernorm_modules": [
+      {
+        "name": "transformer.h.0.ln_1",
+        "type": "LayerNorm",
+        "num_parameters": 4
+      },
+      {
+        "name": "transformer.h.0.ln_2",
+        "type": "LayerNorm",
+        "num_parameters": 4
+      },
+      {
+        "name": "transformer.h.1.ln_1",
+        "type": "LayerNorm",
+        "num_parameters": 4
+      },
+      {
+        "name": "transformer.h.1.ln_2",
+        "type": "LayerNorm",
+        "num_parameters": 4
+      },
+      {
+        "name": "transformer.ln_f",
+        "type": "LayerNorm",
+        "num_parameters": 4
+      }
+    ],
+    "embedding_modules": [
+      {
+        "name": "transformer.wte",
+        "type": "Embedding",
+        "num_parameters": 100514
+      },
+      {
+        "name": "transformer.wpe",
+        "type": "Embedding",
+        "num_parameters": 2048
+      }
+    ],
+    "lm_head_module": {
+      "name": "lm_head",
+      "type": "Linear",
+      "num_parameters": 100514
+    },
+    "attention_related_module_names": [
+      "transformer.h.0.attn",
+      "transformer.h.0.attn.c_attn",
+      "transformer.h.0.attn.c_proj",
+      "transformer.h.0.attn.attn_dropout",
+      "transformer.h.0.attn.resid_dropout",
+      "transformer.h.1.attn",
+      "transformer.h.1.attn.c_attn",
+      "transformer.h.1.attn.c_proj",
+      "transformer.h.1.attn.attn_dropout",
+      "transformer.h.1.attn.resid_dropout"
+    ],
+    "mlp_related_module_names": [
+      "transformer.h.0.mlp",
+      "transformer.h.0.mlp.c_fc",
+      "transformer.h.0.mlp.c_proj",
+      "transformer.h.0.mlp.act",
+      "transformer.h.0.mlp.dropout",
+      "transformer.h.1.mlp",
+      "transformer.h.1.mlp.c_fc",
+      "transformer.h.1.mlp.c_proj",
+      "transformer.h.1.mlp.act",
+      "transformer.h.1.mlp.dropout"
+    ],
+    "recognizes_hf_conv1d": true
+  },
+  "gpt2_spec": {
+    "model_class": "GPT2LMHeadModel",
+    "num_layers": 2,
+    "hidden_size": 2,
+    "vocab_size": 50257,
+    "max_position_embeddings": 1024,
+    "embedding_paths": {
+      "token_embedding": "transformer.wte",
+      "position_embedding": "transformer.wpe"
+    },
+    "block_paths": [
+      "transformer.h.0",
+      "transformer.h.1"
+    ],
+    "attention_projection_paths": [
+      {
+        "layer": 0,
+        "qkv_fused": "transformer.h.0.attn.c_attn",
+        "output": "transformer.h.0.attn.c_proj",
+        "projection_type": "transformers.pytorch_utils.Conv1D"
+      },
+      {
+        "layer": 1,
+        "qkv_fused": "transformer.h.1.attn.c_attn",
+        "output": "transformer.h.1.attn.c_proj",
+        "projection_type": "transformers.pytorch_utils.Conv1D"
+      }
+    ],
+    "mlp_projection_paths": [
+      {
+        "layer": 0,
+        "fc": "transformer.h.0.mlp.c_fc",
+        "proj": "transformer.h.0.mlp.c_proj",
+        "projection_type": "transformers.pytorch_utils.Conv1D"
+      },
+      {
+        "layer": 1,
+        "fc": "transformer.h.1.mlp.c_fc",
+        "proj": "transformer.h.1.mlp.c_proj",
+        "projection_type": "transformers.pytorch_utils.Conv1D"
+      }
+    ],
+    "layernorm_paths": {
+      "per_block": [
+        {
+          "layer": 0,
+          "ln_1": "transformer.h.0.ln_1",
+          "ln_2": "transformer.h.0.ln_2"
+        },
+        {
+          "layer": 1,
+          "ln_1": "transformer.h.1.ln_1",
+          "ln_2": "transformer.h.1.ln_2"
+        }
+      ],
+      "final": "transformer.ln_f"
+    },
+    "lm_head_path": "lm_head",
+    "lm_head_tied_with_token_embedding": true
+  }
+}

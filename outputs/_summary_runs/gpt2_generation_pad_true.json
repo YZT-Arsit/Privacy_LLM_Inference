@@ -1,0 +1,142 @@
+{
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "batch_size": 2,
+    "prompt_len": 8,
+    "max_new_tokens": 4,
+    "device": "cpu",
+    "dtype": "float32",
+    "use_pad": true
+  },
+  "generation_metrics": {
+    "token_match_rate": 1.0,
+    "sequence_exact_match": 1.0,
+    "top1_match_rate": 1.0,
+    "full_sequence_token_match_rate": 1.0
+  },
+  "logits_metrics": {
+    "per_step": [
+      {
+        "shape_match": true,
+        "reference_shape": [
+          2,
+          1,
+          50257
+        ],
+        "candidate_shape": [
+          2,
+          1,
+          50257
+        ],
+        "max_abs_error": 1.4901161193847656e-08,
+        "mean_abs_error": 1.1491402274188545e-09,
+        "relative_l2_error": 6.833027299535388e-08,
+        "cosine_similarity": 1.0,
+        "allclose": true,
+        "top1_match_rate": 1.0,
+        "step": 0,
+        "source": "prefill_last"
+      },
+      {
+        "shape_match": true,
+        "reference_shape": [
+          2,
+          1,
+          50257
+        ],
+        "candidate_shape": [
+          2,
+          1,
+          50257
+        ],
+        "max_abs_error": 1.4901161193847656e-08,
+        "mean_abs_error": 1.3227543504967798e-09,
+        "relative_l2_error": 7.495855669503726e-08,
+        "cosine_similarity": 1.0,
+        "allclose": true,
+        "top1_match_rate": 1.0,
+        "step": 1,
+        "source": "decode"
+      },
+      {
+        "shape_match": true,
+        "reference_shape": [
+          2,
+          1,
+          50257
+        ],
+        "candidate_shape": [
+          2,
+          1,
+          50257
+        ],
+        "max_abs_error": 2.2351741790771484e-08,
+        "mean_abs_error": 1.8607460017250332e-09,
+        "relative_l2_error": 9.60484101142356e-08,
+        "cosine_similarity": 0.9999998211860657,
+        "allclose": true,
+        "top1_match_rate": 1.0,
+        "step": 2,
+        "source": "decode"
+      },
+      {
+        "shape_match": true,
+        "reference_shape": [
+          2,
+          1,
+          50257
+        ],
+        "candidate_shape": [
+          2,
+          1,
+          50257
+        ],
+        "max_abs_error": 1.4901161193847656e-08,
+        "mean_abs_error": 9.891931718186697e-10,
+        "relative_l2_error": 6.175919509132655e-08,
+        "cosine_similarity": 1.0,
+        "allclose": true,
+        "top1_match_rate": 1.0,
+        "step": 3,
+        "source": "decode"
+      }
+    ],
+    "max_abs_error_max": 2.2351741790771484e-08,
+    "allclose_all": true,
+    "top1_match_rate_min": 1.0
+  },
+  "cache_invariant_metrics": {
+    "max_key_error": 4.190951585769653e-09,
+    "max_value_error": 1.4901161193847656e-08,
+    "mean_key_error": 8.83698142439826e-10,
+    "mean_value_error": 2.1933704019705402e-09,
+    "allclose": true
+  },
+  "cache_design": {
+    "uses_internal_obfuscated_cache": true,
+    "uses_hf_past_key_values_directly": false,
+    "uses_hf_generate": false,
+    "cache_shape": "[batch, heads, seq, head_dim]",
+    "session_seq_len_after_generation": 11
+  },
+  "scope": {
+    "gpt2_greedy_generation": true,
+    "sampling": false,
+    "beam_search": false,
+    "top_k_top_p": false,
+    "hf_generate": false,
+    "hf_module_replacement": false,
+    "trusted_layernorm": true,
+    "trusted_activation": true,
+    "modelscope": false,
+    "real_tee": false
+  },
+  "hf_model_integrity": {
+    "c_attn_class_before": "Conv1D",
+    "c_attn_class_after": "Conv1D",
+    "c_attn_class_unchanged": true,
+    "tied_embedding_before": false,
+    "tied_embedding_after": false,
+    "tied_embedding_status_unchanged": true
+  }
+}
