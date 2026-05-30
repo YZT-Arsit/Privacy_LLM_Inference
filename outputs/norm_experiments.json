@@ -1,0 +1,1422 @@
+{
+  "trusted_norm": [
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.1920928955078125e-06,
+        "mean_abs_error": 1.5598197933286428e-07,
+        "relative_l2_error": 1.3309579571796348e-07,
+        "cosine_similarity": 0.9999998211860657,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.76837158203125e-06,
+        "mean_abs_error": 3.697205102071166e-07,
+        "relative_l2_error": 3.742757712643652e-07,
+        "cosine_similarity": 0.9999998211860657,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 5.364418029785156e-07,
+        "mean_abs_error": 1.2978853192180395e-07,
+        "relative_l2_error": 1.1361139229393302e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.3118627723306417e-07,
+        "relative_l2_error": 2.2390248943793267e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.9073486328125e-06,
+        "mean_abs_error": 4.1356543079018593e-07,
+        "relative_l2_error": 3.6461838703871763e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 5.7220458984375e-06,
+        "mean_abs_error": 4.1824068830464967e-07,
+        "relative_l2_error": 4.872796353083686e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 3.1355261853605043e-07,
+        "relative_l2_error": 2.748049894307769e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 2.9917828214820474e-07,
+        "relative_l2_error": 3.3025594348146114e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.1920928955078125e-06,
+        "mean_abs_error": 2.789379323075991e-07,
+        "relative_l2_error": 2.60626762838001e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.384185791015625e-06,
+        "mean_abs_error": 3.333288987050764e-07,
+        "relative_l2_error": 3.7456757695508713e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.1359755919547752e-07,
+        "relative_l2_error": 2.0077457918432629e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 1.9073486328125e-06,
+        "mean_abs_error": 2.2192398319020867e-07,
+        "relative_l2_error": 2.4671902565387427e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.6226043701171875e-06,
+        "mean_abs_error": 3.9222504710778594e-07,
+        "relative_l2_error": 3.7148805631659343e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.291534423828125e-06,
+        "mean_abs_error": 4.0519898902857676e-07,
+        "relative_l2_error": 4.640114070753043e-07,
+        "cosine_similarity": 0.9999998211860657,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.6689300537109375e-06,
+        "mean_abs_error": 3.051059138670098e-07,
+        "relative_l2_error": 2.803716370181064e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 3.814697265625e-06,
+        "mean_abs_error": 3.2361276680603623e-07,
+        "relative_l2_error": 3.5345416904419835e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.1920928955078125e-06,
+        "mean_abs_error": 2.789379323075991e-07,
+        "relative_l2_error": 2.60626762838001e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.384185791015625e-06,
+        "mean_abs_error": 3.333288987050764e-07,
+        "relative_l2_error": 3.7456757695508713e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.1359755919547752e-07,
+        "relative_l2_error": 2.0077457918432629e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 1.9073486328125e-06,
+        "mean_abs_error": 2.2192398319020867e-07,
+        "relative_l2_error": 2.4671902565387427e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.6226043701171875e-06,
+        "mean_abs_error": 3.9222504710778594e-07,
+        "relative_l2_error": 3.7148805631659343e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.291534423828125e-06,
+        "mean_abs_error": 4.0519898902857676e-07,
+        "relative_l2_error": 4.640114070753043e-07,
+        "cosine_similarity": 0.9999998211860657,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.6689300537109375e-06,
+        "mean_abs_error": 3.051059138670098e-07,
+        "relative_l2_error": 2.803716370181064e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 3.814697265625e-06,
+        "mean_abs_error": 3.2361276680603623e-07,
+        "relative_l2_error": 3.5345416904419835e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.7881393432617188e-06,
+        "mean_abs_error": 2.773485903162509e-07,
+        "relative_l2_error": 2.54602724680808e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 3.5710399970412254e-07,
+        "relative_l2_error": 3.74241949430143e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999997615814209,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.205388227594085e-07,
+        "relative_l2_error": 2.0272513268082548e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.384185791015625e-06,
+        "mean_abs_error": 2.3321626940742135e-07,
+        "relative_l2_error": 2.6730211288850114e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999997615814209,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 3.793147698161192e-07,
+        "relative_l2_error": 3.763346967389225e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.5299530029296875e-06,
+        "mean_abs_error": 4.090102265763562e-07,
+        "relative_l2_error": 4.777697313329554e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "layernorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.9073486328125e-06,
+        "mean_abs_error": 3.0843776244182664e-07,
+        "relative_l2_error": 2.8495946935436223e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.291534423828125e-06,
+        "mean_abs_error": 3.123082024103496e-07,
+        "relative_l2_error": 3.737372651357873e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": true
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 9.5367431640625e-07,
+        "mean_abs_error": 1.5769364836160094e-07,
+        "relative_l2_error": 1.669421578753827e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 5.245208740234375e-06,
+        "mean_abs_error": 3.562196297934861e-07,
+        "relative_l2_error": 4.863940716859361e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 4.76837158203125e-07,
+        "mean_abs_error": 1.0695293894968927e-07,
+        "relative_l2_error": 1.2641585556139034e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 1.3113021850585938e-06,
+        "mean_abs_error": 2.226925062132068e-07,
+        "relative_l2_error": 2.9645940458067344e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.6226043701171875e-06,
+        "mean_abs_error": 3.1890613172436133e-07,
+        "relative_l2_error": 4.188982529740315e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 5.245208740234375e-06,
+        "mean_abs_error": 4.1608791434555314e-07,
+        "relative_l2_error": 6.852201863694063e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.384185791015625e-06,
+        "mean_abs_error": 2.4806053033898934e-07,
+        "relative_l2_error": 3.153264458433114e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.7418136596679688e-06,
+        "mean_abs_error": 3.0715511911694193e-07,
+        "relative_l2_error": 4.6211511062210775e-07,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.1206338374213374e-07,
+        "relative_l2_error": 2.796965077322966e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 3.3348146644129883e-07,
+        "relative_l2_error": 5.339144308891264e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.1920928955078125e-06,
+        "mean_abs_error": 1.662676254454709e-07,
+        "relative_l2_error": 2.1246529513518908e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 1.6689300537109375e-06,
+        "mean_abs_error": 2.1549340090132318e-07,
+        "relative_l2_error": 3.1002366540633375e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 3.3109887453974807e-07,
+        "relative_l2_error": 4.433642573076213e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.410743713378906e-06,
+        "mean_abs_error": 4.10785958138149e-07,
+        "relative_l2_error": 6.684562094960711e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 1,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.161082335305764e-07,
+        "relative_l2_error": 2.8576306476679747e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 3.337860107421875e-06,
+        "mean_abs_error": 3.2165510788217944e-07,
+        "relative_l2_error": 4.86247472508694e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.1206338374213374e-07,
+        "relative_l2_error": 2.796965077322966e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 3.3348146644129883e-07,
+        "relative_l2_error": 5.339144308891264e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.1920928955078125e-06,
+        "mean_abs_error": 1.662676254454709e-07,
+        "relative_l2_error": 2.1246529513518908e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 1.6689300537109375e-06,
+        "mean_abs_error": 2.1549340090132318e-07,
+        "relative_l2_error": 3.1002366540633375e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 2.86102294921875e-06,
+        "mean_abs_error": 3.3109887453974807e-07,
+        "relative_l2_error": 4.433642573076213e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.410743713378906e-06,
+        "mean_abs_error": 4.10785958138149e-07,
+        "relative_l2_error": 6.684562094960711e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 4,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.161082335305764e-07,
+        "relative_l2_error": 2.8576306476679747e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 3.337860107421875e-06,
+        "mean_abs_error": 3.2165510788217944e-07,
+        "relative_l2_error": 4.86247472508694e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 2.3362784418168303e-07,
+        "relative_l2_error": 2.9034066528765834e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.950429916381836e-06,
+        "mean_abs_error": 3.5794309383163636e-07,
+        "relative_l2_error": 5.146877128936467e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 0.9999998807907104,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.430511474609375e-06,
+        "mean_abs_error": 1.5707649936302914e-07,
+        "relative_l2_error": 2.1552550322212483e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 2.1457672119140625e-06,
+        "mean_abs_error": 2.31648840554044e-07,
+        "relative_l2_error": 3.7723739865214156e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": true,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.6689300537109375e-06,
+        "mean_abs_error": 2.957693823191221e-07,
+        "relative_l2_error": 4.324820395140705e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 4.291534423828125e-06,
+        "mean_abs_error": 4.108762823307188e-07,
+        "relative_l2_error": 7.049212626952794e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": true,
+        "pad_out": true
+      },
+      "weight_present": true,
+      "bias_present": false
+    },
+    {
+      "config": {
+        "norm_type": "rmsnorm",
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "eps": 1e-05,
+        "use_pad": false,
+        "use_weight": true,
+        "use_bias": true,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "metrics": {
+        "max_abs_error": 1.9073486328125e-06,
+        "mean_abs_error": 2.156572946887536e-07,
+        "relative_l2_error": 3.025314754268038e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "reference_metrics": {
+        "max_abs_error": 5.245208740234375e-06,
+        "mean_abs_error": 3.095647116424516e-07,
+        "relative_l2_error": 5.308842219164944e-07,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "y_tilde_invariant_metrics": {
+        "max_abs_error": 0.0,
+        "mean_abs_error": 0.0,
+        "relative_l2_error": 0.0,
+        "cosine_similarity": 1.0,
+        "allclose": true
+      },
+      "pad_present": {
+        "pad_in": false,
+        "pad_out": false
+      },
+      "weight_present": true,
+      "bias_present": false
+    }
+  ],
+  "rmsnorm_orthogonal": {
+    "64": {
+      "config": {
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 64,
+        "num_trials": 16,
+        "eps": 1e-06,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "num_trials": 16,
+      "orthogonality_error": 3.5762786865234375e-07,
+      "rms_preservation_error": 1.1920928955078125e-07,
+      "normalized_state_error": 1.6689300537109375e-06,
+      "gamma_commutation_error": {
+        "scalar_gamma_max": 2.384185791015625e-06,
+        "vector_gamma_max": 9.67932415008545
+      },
+      "allclose_without_gamma": true,
+      "allclose_with_scalar_gamma": true,
+      "allclose_with_vector_gamma": false,
+      "stats": {
+        "orthogonality_max": 3.5762786865234375e-07,
+        "orthogonality_mean": 2.7939677238464355e-07,
+        "rms_preservation_max": 1.1920928955078125e-07,
+        "rms_preservation_mean": 1.1175870895385742e-07,
+        "normalized_state_max": 1.6689300537109375e-06,
+        "normalized_state_mean": 1.2516975402832031e-06,
+        "scalar_gamma_max": 2.384185791015625e-06,
+        "scalar_gamma_mean": 1.3522803783416748e-06,
+        "vector_gamma_max": 9.67932415008545,
+        "vector_gamma_mean": 6.217690646648407
+      },
+      "note": "Vector gamma generally breaks simple right-mask commutation because gamma is a per-channel scaling on the post-normalisation axis. Only scalar gamma (a single broadcast scalar) commutes with the right multiply N."
+    },
+    "128": {
+      "config": {
+        "batch_size": 2,
+        "seq_len": 8,
+        "hidden_size": 128,
+        "num_trials": 16,
+        "eps": 1e-06,
+        "dtype": "float32",
+        "device": "cpu",
+        "seed": 42
+      },
+      "num_trials": 16,
+      "orthogonality_error": 5.960464477539062e-07,
+      "rms_preservation_error": 1.1920928955078125e-07,
+      "normalized_state_error": 2.6226043701171875e-06,
+      "gamma_commutation_error": {
+        "scalar_gamma_max": 3.814697265625e-06,
+        "vector_gamma_max": 11.162467956542969
+      },
+      "allclose_without_gamma": true,
+      "allclose_with_scalar_gamma": true,
+      "allclose_with_vector_gamma": false,
+      "stats": {
+        "orthogonality_max": 5.960464477539062e-07,
+        "orthogonality_mean": 4.172325134277344e-07,
+        "rms_preservation_max": 1.1920928955078125e-07,
+        "rms_preservation_mean": 1.1548399925231934e-07,
+        "normalized_state_max": 2.6226043701171875e-06,
+        "normalized_state_mean": 1.9297003746032715e-06,
+        "scalar_gamma_max": 3.814697265625e-06,
+        "scalar_gamma_mean": 2.2277235984802246e-06,
+        "vector_gamma_max": 11.162467956542969,
+        "vector_gamma_mean": 7.5225502252578735
+      },
+      "note": "Vector gamma generally breaks simple right-mask commutation because gamma is a per-channel scaling on the post-normalisation axis. Only scalar gamma (a single broadcast scalar) commutes with the right multiply N."
+    }
+  }
+}

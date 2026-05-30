@@ -10,6 +10,12 @@ from pllo.ops.attention import (
 )
 from pllo.ops.layernorm import layer_norm_plain, trusted_layer_norm
 from pllo.ops.linear import linear_plain, linear_obfuscated
+from pllo.ops.norm import (
+    TrustedNormConfig,
+    layer_norm_reference,
+    rms_norm_reference,
+    trusted_norm_forward,
+)
 from pllo.ops.lm_head import lm_head_obfuscated, lm_head_plain
 from pllo.ops.lora_linear import lora_linear_plain, lora_linear_obfuscated
 from pllo.ops.mlp import mlp_obfuscated, mlp_plain
@@ -31,4 +37,8 @@ __all__ = [
     "mlp_plain",
     "qk_mask_constraint_error",
     "trusted_layer_norm",
+    "TrustedNormConfig",
+    "layer_norm_reference",
+    "rms_norm_reference",
+    "trusted_norm_forward",
 ]

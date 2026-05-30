@@ -175,6 +175,13 @@ Implemented in Stage 6.2:
 - `scripts/run_cross_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `dec_seq_len ∈ {1, 4}`, `enc_seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (24 cells × 2 encoder-mask kinds = 48 metric rows) and writes `outputs/cross_attention_experiments.{json,csv,md}`. Cells whose model fails to load are recorded as `skipped`.
 - This stage continues to **not** implement full T5/BART obfuscated forward, decoder self-attention cache, encoder-decoder generation, LayerNorm / FFN / activation obfuscation, LM head, relative position bias, or real TEE security.
 
+Implemented in Stage 5.1:
+
+- `src/pllo/ops/norm.py` — unified trusted norm primitive. `TrustedNormConfig` + `trusted_norm_forward(x_tilde, n_in_inv, norm_weight, norm_bias, n_out, norm_type, eps, pad_in=None, pad_out=None)` recovers plaintext `X = x_tilde N_in_inv [+ T_in]`, runs LayerNorm or RMSNorm in the trusted side, then re-masks the output as `Y_tilde = Y N_out` (or `(Y - T_out) N_out`). RMSNorm is supported with `bias=None` (LLaMA / T5 / Qwen style). Returns `y_plain` / `y_tilde` / `y_recovered` plus the headline metric set.
+- `src/pllo/experiments/norm_probe.py` — two probes share this module: (1) `run_trusted_norm_probe` drives `trusted_norm_forward` over one `(norm_type, batch_size, seq_len, hidden_size, use_pad)` cell and verifies both the recovered-output invariant and the `y_tilde` shape invariant against a separate reference; (2) `run_rmsnorm_orthogonal_probe` samples QR-orthogonal masks `N` and verifies `N^T N ≈ I`, `rms(X N) ≈ rms(X)`, `normalize(X N) ≈ normalize(X) N`, scalar-gamma commutation, and *non*-commutation of vector gamma (the latter is the headline restriction).
+- `scripts/run_norm_experiments.py` sweeps `norm_type ∈ {layernorm, rmsnorm}`, `batch ∈ {1, 2}`, `seq ∈ {4, 8}`, `hidden ∈ {64, 128}`, `use_pad ∈ {true, false}` (32 trusted cells) plus two orthogonal-probe cells (`hidden ∈ {64, 128}`, 16 trials each). Writes `outputs/norm_experiments.{json,csv,md}` whose Markdown explicitly states **"General right masks do not commute with LayerNorm"** and **"Vector gamma breaks simple right-mask commutation"**.
+- This stage **standardises** the trusted LayerNorm shortcut behind one primitive name but does **not** yet eliminate trusted compute, does **not** implement a GPU-side norm protocol for the general right-mask family, and does **not** claim formal security. The orthogonal-mask result is a feasibility note for a future restricted-mask protocol — it is not used by any existing wrapper yet.
+
 Implemented in Stage 6.3:
 
 - `src/pllo/experiments/cross_architecture_summary.py` — pure aggregator over Stage 5.0 / 6.0 / 6.1 / 6.2 JSON artifacts plus the Stage 5.0.1 workload profile. Produces one unified summary across the three architectures with `architecture_type`, `model_id`, `attention_kind`, `cache_type`, `num_cells`, `num_rows`, `all_loaded_allclose`, `max_output_error` / `max_score_error` / `max_prob_error` / `max_cache_error`, `use_pad_supported`, `padding_mask_supported`, `bias_present`, `has_relative_attention_bias`, per-architecture trusted shortcuts and limitations. Missing upstream JSONs are recorded as `status="missing"` unless `require_existing_outputs=True`. `scripts/run_cross_architecture_summary.py` writes `outputs/cross_architecture_summary.{json,csv,md}`; an opt-in `--rerun-upstream` flag re-executes the upstream sweeps before aggregating.
@@ -241,6 +248,7 @@ python scripts/run_encoder_attention_experiments.py
 python scripts/run_cross_attention_experiments.py
 python scripts/run_cross_architecture_summary.py
 python scripts/run_security_proxy_experiments.py
+python scripts/run_norm_experiments.py
 ```
 
 Useful variants:
@@ -275,6 +283,7 @@ By default, results are written to:
 - `outputs/cross_attention_experiments.json` / `.csv` / `.md` (Stage 6.2 encoder-decoder cross-attention probe)
 - `outputs/cross_architecture_summary.json` / `.csv` / `.md` (Stage 6.3 cross-architecture coverage + correctness + workload aggregator)
 - `outputs/security_proxy_experiments.json` / `.csv` / `.md` (Stage 6.3 security proxy experiments — pad linkability, mask freshness, boundary leakage accounting, cache leakage proxy)
+- `outputs/norm_experiments.json` / `.csv` / `.md` (Stage 5.1 norm primitive — trusted LayerNorm / RMSNorm correctness + restricted RMSNorm orthogonal-mask feasibility probe)
 
 Each JSON file reports:
 
@@ -289,9 +298,8 @@ Each JSON file reports:
 
 ## Next Stage Plan
 
-Planned extensions after Stage 6.3:
+Planned extensions after Stage 5.1:
 
-- Stage 5.1 — GPU-side LayerNorm / RMSNorm primitive prototype (replaces the trusted LayerNorm shortcut shared across all three architectures)
-- Stage 5.2 — GELU / activation primitive feasibility (replaces the trusted activation shortcut)
-- Stage 5.3 — stronger leakage experiments (adaptive observer / learned inverter; the Stage 6.3 proxies are naive-observer bounds only)
-- Stage 6.4 — Qwen / ModelScope migration on top of Stage 6.0+'s architecture scaffold
+- Stage 5.2 — Activation primitive feasibility (GELU / SwiGLU / ReLU) — mirrors Stage 5.1: trusted primitive wrapper first, restricted-mask feasibility probe second
+- Stage 5.3 — Stronger leakage experiments (adaptive observer / learned inverter, plus a security profile for the orthogonal-mask restriction proposed in Stage 5.1)
+- Stage 6.4 — Qwen / ModelScope migration once a GPU-side norm primitive exists for the per-channel-gamma case

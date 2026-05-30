@@ -15,6 +15,12 @@ from pllo.experiments.encoder_attention_probe import (
     EncoderAttentionProbeConfig,
     run_encoder_attention_probe,
 )
+from pllo.experiments.norm_probe import (
+    RMSNormOrthogonalProbeConfig,
+    TrustedNormProbeConfig,
+    run_rmsnorm_orthogonal_probe,
+    run_trusted_norm_probe,
+)
 from pllo.experiments.experiment_registry import (
     ATTENTION_SWEEP,
     DEFAULT_COST_MODEL,
@@ -55,6 +61,10 @@ __all__ = [
     "GPU_VISIBLE_TENSORS",
     "TRUSTED_ONLY_TENSORS",
     "MASK_AUDIT_SPECS",
+    "TrustedNormProbeConfig",
+    "run_trusted_norm_probe",
+    "RMSNormOrthogonalProbeConfig",
+    "run_rmsnorm_orthogonal_probe",
     "WorkloadProfileConfig",
     "run_workload_profile",
     "ATTENTION_SWEEP",
