@@ -1,0 +1,130 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "num_sessions": 8,
+    "num_samples_per_session": 32,
+    "num_trials": 32,
+    "hidden_size": 64,
+    "batch_size": 2,
+    "seq_len": 4,
+    "pad_scale": 1.0,
+    "dtype": "float32",
+    "device": "cpu",
+    "seed": 2025
+  },
+  "permutation_recovery_proxy": {
+    "num_sessions": 8,
+    "num_samples_per_session": 32,
+    "hidden_size": 64,
+    "per_strategy": {
+      "fixed_permutation": {
+        "permutation_recovery_top1": 0.21875,
+        "permutation_recovery_top5": 0.625,
+        "mean_channel_signature_error": 0.03514305313156333
+      },
+      "fresh_permutation_per_session": {
+        "permutation_recovery_top1": 0.123046875,
+        "permutation_recovery_top5": 0.470703125,
+        "mean_channel_signature_error": 0.07108580064124731
+      },
+      "permutation_pool": {
+        "permutation_recovery_top1": 0.11328125,
+        "permutation_recovery_top5": 0.5078125,
+        "mean_channel_signature_error": 0.05496653118541177,
+        "pool_size": 4
+      },
+      "dense_sandwich_reference": {
+        "permutation_recovery_top1": 0.015625,
+        "permutation_recovery_top5": 0.07421875,
+        "mean_channel_signature_error": 0.3159298648723478
+      }
+    },
+    "interpretation": "fixed_permutation lets per-channel signatures align across sessions, so a naive attacker can match columns above chance. fresh_permutation_per_session breaks that alignment and drives top1 back toward 1/H. dense_sandwich_reference adds dense linear mixing on both sides and erases the column statistics entirely."
+  },
+  "island_linkability_proxy": {
+    "per_strategy": {
+      "fixed_perm_no_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 1.0,
+        "max_pairwise_cosine": 1.0,
+        "min_pairwise_cosine": 1.0,
+        "mean_pairwise_l2": 0.0
+      },
+      "fixed_perm_with_linear_boundary_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 0.5173126297970201,
+        "max_pairwise_cosine": 0.6109290202390454,
+        "min_pairwise_cosine": 0.44119345448693176,
+        "mean_pairwise_l2": 32.155117754357526
+      },
+      "fresh_perm_with_linear_boundary_pad": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 0.008268829204243712,
+        "max_pairwise_cosine": 0.13211126971610082,
+        "min_pairwise_cosine": -0.127941795526157,
+        "mean_pairwise_l2": 46.191034795728086
+      },
+      "dense_to_perm_to_dense_sandwich": {
+        "num_trials": 32,
+        "mean_pairwise_cosine": 0.0035463043288685393,
+        "max_pairwise_cosine": 0.14220421421437263,
+        "min_pairwise_cosine": -0.1317988126793627,
+        "mean_pairwise_l2": 33.32798305746384
+      }
+    },
+    "linkability_rank_high_to_low": [
+      "fixed_perm_no_pad",
+      "fixed_perm_with_linear_boundary_pad",
+      "fresh_perm_with_linear_boundary_pad",
+      "dense_to_perm_to_dense_sandwich"
+    ],
+    "interpretation": "fixed_perm_no_pad is the highest naive linkability because the GPU-visible tensor is a deterministic function of the plaintext. Adding pad at the Linear boundary collapses the value-level stability; sandwiching with a fresh dense mask removes the coordinate-multiset signal entirely."
+  },
+  "mask_family_accounting": {
+    "table": [
+      {
+        "mask_family": "dense_invertible",
+        "where_used": "Linear / Attention / KV cache boundaries",
+        "preserved_invariants": "none beyond invertibility",
+        "leakage_note": "Strong linear mixing; right multiply by a fresh dense N erases the per-channel signal."
+      },
+      {
+        "mask_family": "orthogonal",
+        "where_used": "RMSNorm core",
+        "preserved_invariants": "row L2 norm (||X N||_2 = ||X||_2)",
+        "leakage_note": "Norm-preserving by design \u2014 observer can recover row norms."
+      },
+      {
+        "mask_family": "mean_preserving_orthogonal",
+        "where_used": "LayerNorm core",
+        "preserved_invariants": "row mean (X N \u00b7 1 = X \u00b7 1) AND row centered L2 norm",
+        "leakage_note": "Mean + centered-norm preserved by design; an attacker observing many samples sees stable per-row mean and centered norm."
+      },
+      {
+        "mask_family": "permutation",
+        "where_used": "Activation island (GELU / ReLU / SiLU)",
+        "preserved_invariants": "coordinate-value multiset (the sorted set of channel values is unchanged)",
+        "leakage_note": "Permutation islands hide channel identity but do not hide coordinate-value multisets. Same multiset across sessions \u2192 permutation can be recovered by per-channel statistics if the permutation is reused."
+      },
+      {
+        "mask_family": "paired_permutation",
+        "where_used": "SwiGLU island (shared P for up and gate branches)",
+        "preserved_invariants": "paired coordinate multiset for (up, gate) tuples",
+        "leakage_note": "Same multiset leakage as permutation; additionally exposes that the up- and gate-branches use the *same* P (paired alignment)."
+      }
+    ],
+    "summary_notes": [
+      "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+      "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+      "Security depends on freshness, dense-mask sandwiching, and pad at Linear boundaries.",
+      "Real TEE isolation is not implemented in this stage."
+    ]
+  },
+  "global_limitations": [
+    "These are proxy attacks, not adaptive learned attacks.",
+    "Fresh permutation reduces stable statistical recovery but does not provide dense linear mixing.",
+    "Coordinate-value multiset leakage exists inside activation islands.",
+    "Security depends on limiting island lifetime and sandwiching with dense masks.",
+    "No real TEE isolation is implemented."
+  ]
+}

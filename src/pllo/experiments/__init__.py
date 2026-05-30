@@ -15,6 +15,15 @@ from pllo.experiments.encoder_attention_probe import (
     EncoderAttentionProbeConfig,
     run_encoder_attention_probe,
 )
+from pllo.experiments.nonlinear_island_probe import (
+    NonlinearIslandProbeConfig,
+    run_nonlinear_island_experiments,
+)
+from pllo.experiments.nonlinear_island_security import (
+    MASK_FAMILY_ACCOUNTING,
+    NonlinearIslandSecurityConfig,
+    run_nonlinear_island_security_experiments,
+)
 from pllo.experiments.norm_probe import (
     RMSNormOrthogonalProbeConfig,
     TrustedNormProbeConfig,
@@ -65,6 +74,11 @@ __all__ = [
     "run_trusted_norm_probe",
     "RMSNormOrthogonalProbeConfig",
     "run_rmsnorm_orthogonal_probe",
+    "NonlinearIslandProbeConfig",
+    "run_nonlinear_island_experiments",
+    "NonlinearIslandSecurityConfig",
+    "run_nonlinear_island_security_experiments",
+    "MASK_FAMILY_ACCOUNTING",
     "WorkloadProfileConfig",
     "run_workload_profile",
     "ATTENTION_SWEEP",

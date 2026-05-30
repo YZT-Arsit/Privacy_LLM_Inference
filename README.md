@@ -175,6 +175,15 @@ Implemented in Stage 6.2:
 - `scripts/run_cross_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `dec_seq_len ∈ {1, 4}`, `enc_seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (24 cells × 2 encoder-mask kinds = 48 metric rows) and writes `outputs/cross_attention_experiments.{json,csv,md}`. Cells whose model fails to load are recorded as `skipped`.
 - This stage continues to **not** implement full T5/BART obfuscated forward, decoder self-attention cache, encoder-decoder generation, LayerNorm / FFN / activation obfuscation, LM head, relative position bias, or real TEE security.
 
+Implemented in Stage 5.2:
+
+- `src/pllo/ops/compatible_masks.py` — operator-compatible mask family generators: `generate_dense_invertible`, `generate_orthogonal`, `generate_mean_preserving_orthogonal` (orthonormal-basis construction with the all-ones direction as the first vector, so `N 1 = 1` and `N^T C N = C`), and `generate_permutation` (returns both index form `perm`/`inv_perm` and dense matrix form). Plus `orthogonal_error`, `mean_preservation_error`, `centered_orthogonality_error`, `center_matrix`, `matrix_fingerprint` helpers.
+- `src/pllo/ops/nonlinear_islands.py` — nonlinear island ops: `layernorm_core` / `rmsnorm_core` (no-affine references), `fold_layernorm_affine_into_linear` / `fold_rmsnorm_affine_into_linear` (offline gamma/beta folding into the following Linear), and the island forwards: `run_rmsnorm_orthogonal_island`, `run_layernorm_mean_preserving_island`, `run_activation_permutation_island` (GELU / ReLU / SiLU), `run_swiglu_paired_permutation_island`, `run_gelu_mlp_island`, `run_swiglu_mlp_island`. Every island folds mask + permutation transitions into the masked weight tensors offline; `online_extra_matmul_count = 0` for every MLP island cell.
+- `src/pllo/experiments/nonlinear_island_probe.py` + `scripts/run_nonlinear_island_experiments.py` — 28-cell sweep across norm-compatible, activation-permutation, SwiGLU paired-permutation, and full MLP islands. Writes `outputs/nonlinear_island_experiments.{json,csv,md}`. Markdown explicitly states **"Operator-Compatible Mask Families"**, **"Pad Placement Rule"**, **"Compatible mask families are weaker than unrestricted dense masks"**, and **"Permutation islands hide channel identity but do not hide coordinate-value multisets"**.
+- `src/pllo/experiments/nonlinear_island_security.py` + `scripts/run_nonlinear_island_security.py` — three nonlinear-island security proxies: (1) permutation recovery by per-channel signature under fixed / fresh / pool / dense-sandwich strategies; (2) island linkability across `fixed_perm_no_pad` / `fixed_perm_with_linear_boundary_pad` / `fresh_perm_with_linear_boundary_pad` / `dense_to_perm_to_dense_sandwich`; (3) static mask-family security accounting (`dense_invertible` / `orthogonal` / `mean_preserving_orthogonal` / `permutation` / `paired_permutation`, each with a preserved-invariants + leakage-note record).
+- **Pad placement rule**: pad is applied only at Linear boundaries and compensated via `C = T W N_out`; pad is never pushed through an activation. The island input is `(X - T_in) N_in`, the activation input is `Z P` (pad-free), and the island output leaves through another Linear at which downstream code may re-introduce a fresh pad.
+- This stage continues to **not** implement full T5 / BART / Qwen wrapper, real TEE isolation, adaptive permutation-recovery attacks, or formal security proofs. The mask families used inside nonlinear islands are weaker than unrestricted dense masks, and the report's security section spells out the per-family leakage profile.
+
 Implemented in Stage 5.1:
 
 - `src/pllo/ops/norm.py` — unified trusted norm primitive. `TrustedNormConfig` + `trusted_norm_forward(x_tilde, n_in_inv, norm_weight, norm_bias, n_out, norm_type, eps, pad_in=None, pad_out=None)` recovers plaintext `X = x_tilde N_in_inv [+ T_in]`, runs LayerNorm or RMSNorm in the trusted side, then re-masks the output as `Y_tilde = Y N_out` (or `(Y - T_out) N_out`). RMSNorm is supported with `bias=None` (LLaMA / T5 / Qwen style). Returns `y_plain` / `y_tilde` / `y_recovered` plus the headline metric set.
@@ -249,6 +258,8 @@ python scripts/run_cross_attention_experiments.py
 python scripts/run_cross_architecture_summary.py
 python scripts/run_security_proxy_experiments.py
 python scripts/run_norm_experiments.py
+python scripts/run_nonlinear_island_experiments.py
+python scripts/run_nonlinear_island_security.py
 ```
 
 Useful variants:
@@ -284,6 +295,8 @@ By default, results are written to:
 - `outputs/cross_architecture_summary.json` / `.csv` / `.md` (Stage 6.3 cross-architecture coverage + correctness + workload aggregator)
 - `outputs/security_proxy_experiments.json` / `.csv` / `.md` (Stage 6.3 security proxy experiments — pad linkability, mask freshness, boundary leakage accounting, cache leakage proxy)
 - `outputs/norm_experiments.json` / `.csv` / `.md` (Stage 5.1 norm primitive — trusted LayerNorm / RMSNorm correctness + restricted RMSNorm orthogonal-mask feasibility probe)
+- `outputs/nonlinear_island_experiments.json` / `.csv` / `.md` (Stage 5.2 nonlinear-island correctness — norm-compatible / activation-permutation / SwiGLU paired / full MLP)
+- `outputs/nonlinear_island_security.json` / `.csv` / `.md` (Stage 5.2 nonlinear-island security proxies — permutation recovery, island linkability, mask family accounting)
 
 Each JSON file reports:
 
@@ -298,8 +311,8 @@ Each JSON file reports:
 
 ## Next Stage Plan
 
-Planned extensions after Stage 5.1:
+Planned extensions after Stage 5.2:
 
-- Stage 5.2 — Activation primitive feasibility (GELU / SwiGLU / ReLU) — mirrors Stage 5.1: trusted primitive wrapper first, restricted-mask feasibility probe second
-- Stage 5.3 — Stronger leakage experiments (adaptive observer / learned inverter, plus a security profile for the orthogonal-mask restriction proposed in Stage 5.1)
-- Stage 6.4 — Qwen / ModelScope migration once a GPU-side norm primitive exists for the per-channel-gamma case
+- Stage 5.3 — Stronger leakage experiments: adaptive / learned-inverter attackers targeting the compatible mask family boundaries (Stage 5.2 proxies are naive-observer bounds)
+- Stage 5.4 — Integration of nonlinear islands into existing GPT-2 / BERT / T5 wrappers (replace `trusted_layer_norm` and `trusted_gelu` shortcuts with the Stage 5.1 / 5.2 primitives where applicable, behind a feature flag)
+- Stage 6.4 — Qwen / TinyLlama migration. The Stage 5.1 RMSNorm primitive + Stage 5.2 RMSNorm orthogonal island + SwiGLU paired-permutation island land exactly the two operators Qwen / LLaMA need
