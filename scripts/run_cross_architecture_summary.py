@@ -261,7 +261,96 @@ def _build_markdown(summary: dict) -> str:
         out.append(markdown_table(headers, rows))
     out.append("")
 
-    # 6. Trusted shortcuts per architecture
+    # 6. Compatible Nonlinear Island Workload Projection (Stage 5.2c)
+    out.append("## Compatible Nonlinear Island Workload Projection")
+    out.append("")
+    proj = summary.get("compatible_island_projection", {})
+    if proj.get("status") != "available":
+        out.append(
+            "_Compatible nonlinear island workload projection is unavailable —"
+            " upstream workload_profile.json does not yet contain the"
+            " `ours_compatible_nonlinear_islands` method._"
+        )
+    else:
+        record = proj.get("method_record", {})
+        out.append(
+            "ours_compatible_nonlinear_islands is a projected method based on"
+            " Stage 5.2a correctness probes (28 cells, all_allclose=True,"
+            " `online_extra_matmul_count = 0`) and Stage 5.2b security"
+            " proxies. It is not yet integrated into GPT-2 / BERT / T5"
+            " wrappers — Stage 5.3 is the integration step. Per-architecture"
+            " status is `projected_from_probe`."
+        )
+        out.append("")
+        out.append(
+            f"- Boundary formula: `{record.get('boundary_calls_formula', 'n/a')}`"
+        )
+        out.append(
+            f"- `online_extra_matmul_count` = {record.get('online_extra_matmul_count', 0)}"
+        )
+        out.append(
+            f"- `security_profile` = `{record.get('security_profile', 'n/a')}`"
+        )
+        out.append("")
+        headers = [
+            "architecture",
+            "model_id",
+            "attention_kind",
+            "current method",
+            "current formula",
+            "compatible formula",
+            "boundary reduction",
+            "trusted compute reduction",
+            "online extra matmul",
+            "status",
+            "security_proxy_status",
+        ]
+        rows = []
+        for entry in proj.get("per_architecture", []):
+            rows.append(
+                [
+                    entry["architecture_type"],
+                    entry["model_id"],
+                    entry["attention_kind"],
+                    entry["current_method"],
+                    entry["current_boundary_formula"],
+                    entry["compatible_boundary_formula"],
+                    f"{entry['boundary_call_reduction']:.2%}"
+                    if entry["boundary_call_reduction"] is not None
+                    else "—",
+                    f"{entry['trusted_compute_reduction']:.2%}"
+                    if entry["trusted_compute_reduction"] is not None
+                    else "—",
+                    entry["online_extra_matmul_count"],
+                    entry["status"],
+                    entry["security_proxy_status"],
+                ]
+            )
+        out.append(markdown_table(headers, rows))
+        out.append("")
+        out.append(
+            "Security proxy caveats (from Stage 5.2b, applied to every"
+            " architecture row above):"
+        )
+        out.append(
+            "- Compatible mask families are weaker than unrestricted dense"
+            " masks inside nonlinear islands."
+        )
+        out.append(
+            "- Permutation islands hide channel identity but do not hide"
+            " coordinate-value multisets."
+        )
+        out.append(
+            "- Fresh permutation, dense sandwiching, and pad at Linear"
+            " boundaries are required mitigations."
+        )
+        out.append(
+            "- Not yet integrated into the GPT-2 / BERT / T5 wrappers"
+            " (`projected_from_probe`, not measured). No real TEE isolation."
+        )
+        out.append("")
+
+    # 7. Trusted shortcuts per architecture
     out.append("## Trusted shortcuts still in place per architecture")
     out.append("")
     for a in summary["architectures"]:

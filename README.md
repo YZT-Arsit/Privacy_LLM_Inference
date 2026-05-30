@@ -175,6 +175,34 @@ Implemented in Stage 6.2:
 - `scripts/run_cross_attention_experiments.py` sweeps `batch_size ∈ {1, 2}`, `dec_seq_len ∈ {1, 4}`, `enc_seq_len ∈ {4, 8, 16}`, `use_pad ∈ {true, false}` (24 cells × 2 encoder-mask kinds = 48 metric rows) and writes `outputs/cross_attention_experiments.{json,csv,md}`. Cells whose model fails to load are recorded as `skipped`.
 - This stage continues to **not** implement full T5/BART obfuscated forward, decoder self-attention cache, encoder-decoder generation, LayerNorm / FFN / activation obfuscation, LM head, relative position bias, or real TEE security.
 
+Implemented in Stage 5.3a:
+
+- `src/pllo/hf_wrappers/nonlinear_modes.py` — feature-flag enum `nonlinear_mode ∈ {"trusted", "compatible_islands"}` plus `DEFAULT_NONLINEAR_MODE = "trusted"`. Default behaviour is byte-for-byte identical to Stage 4.6 / 4.7 / 4.9; existing tests run unchanged.
+- `src/pllo/hf_wrappers/gpt2_block_wrapper.py` — `ObfuscatedGPT2BlockWrapper` now accepts `nonlinear_mode=...` and dispatches its MLP path. Under `nonlinear_mode="compatible_islands"` the GELU MLP is routed through Stage 5.2a's permutation island: a per-call fresh permutation `P` of size `intermediate_size` is absorbed into adjacent Conv1D weights (`W_fc[:, perm]` and `W_proj[perm, :]`), `Z_tilde = X_tilde W_fc_tilde + b_fc_tilde + C_fc = Z P`, `A_tilde = GELU(Z_tilde) = GELU(Z) P` runs on GPU, and `Y_tilde = A_tilde (W_proj[perm, :] @ N_out) + b_proj N_out = Y N_out`. Pad compensation is applied only at the `c_fc` Linear boundary; the pad is never pushed through GELU.
+- New per-block `island_report` audit struct exposes `nonlinear_mode`, `mlp_gelu_island_active`, `mlp_island_permutation_dim` (== `intermediate_size`, not `hidden_size`), `mlp_island_pad_placement` (`"linear_boundary_only"` when `use_pad=True`, else `"n/a"`), `mlp_island_uses_fresh_permutation=True`, `mlp_island_permutation_draws`, `online_extra_matmul_count = 0`, `layernorm_remains_trusted=True`, `lm_head_not_modified=True`, `generation_path_not_modified=True`, `security_profile="proxy-evaluated, not formal"`, and the Stage 5.2b security caveats.
+- Scope kept tight: LayerNorm remains trusted, the LM head is untouched, the KV cache and `prefill` / `decode_step` paths are not modified, the `ObfuscatedGPT2ModelWrapper` is not modified, BERT / T5 wrappers are not modified, and `compatible_islands` is **not** the default — `trusted` remains the default mode.
+- `scripts/run_gpt2_compatible_island_smoke.py` runs one block under both `use_pad=False` and `use_pad=True`, writes `outputs/gpt2_compatible_island_smoke.{json,md}`, and verifies `allclose=True`, `permutation_dim == intermediate_size`, `pad_placement == "linear_boundary_only"` when padded, and `online_extra_matmul_count == 0`. On `sshleifer/tiny-gpt2` (block 0, batch=2, seq=8, fp32): `max_abs_error ≈ 4.77e-7`, `cosine_similarity = 1.0`, `permutation_dim = 8` (= `intermediate_size = 4 * n_embd`).
+- `tests/test_gpt2_compatible_islands.py` — 17 tests covering: mode-enum validity, invalid-mode rejection, default-mode byte-for-byte equality with explicit `"trusted"`, trusted-mode `island_report` inactivity, compatible-island correctness vs plain block (`use_pad=False` / `use_pad=True`, float32 / float64), permutation-dim equals `intermediate_size`, `online_extra_matmul_count == 0`, `pad_placement == "linear_boundary_only"`, fresh permutation per forward call, security-caveat reporting, both modes co-existing, HF modules untouched, and block-level `prefill` + `decode_step` recovering plain semantics under `compatible_islands`.
+- `src/pllo/experiments/workload_profiler.py` — `methods.ours_compatible_nonlinear_islands` now carries `partial_implementation=True` plus `wrapper_integration_status = {"gpt2_single_block": "implemented", "gpt2_model_level": "not_yet", "bert": "not_yet", "t5": "not_yet"}`. The same dict is mirrored at the top-level `wrapper_integration_status` field. `ours_compatible_nonlinear_islands` is **not** marked `implemented=True` — full-model measured runtime is pending Stage 5.3b.
+- `outputs/workload_profile.md` gains a **Stage 5.3a Wrapper Integration Status** subsection under the Compatible Nonlinear Islands Method section, with the integration matrix, the "default mode remains `trusted`" reminder, and the phrase **GPT-2 single-block integration available; full-model measured runtime pending Stage 5.3b**.
+- Stage 5.3a does **not** claim formal security; `compatible_islands` remains `proxy-evaluated, not formal` and must stay behind a feature flag in production. Stage 5.2b's mitigations (fresh permutation per session, dense sandwich at Linear boundaries, pad at Linear boundaries only) remain required.
+
+Implemented in Stage 5.2c:
+
+- New workload method `ours_compatible_nonlinear_islands` added to the Stage 5.0.1 registry. It is a *projected* (not measured, not wrapper-integrated) method that models the boundary-call / trusted-compute / preprocessing profile of executing Stage 5.2a's operator-compatible nonlinear islands. Marked `implemented=False`, `wall_time_source="projected_from_op_counts"`, `online_extra_matmul_count=0`, `security_profile="proxy-evaluated, not formal"`. The dataclass extension is purely additive — every pre-existing method gets default `uses_compatible_nonlinear_islands=False` / `online_extra_matmul_count=0` / `security_profile="n/a"`, so Stage 5.0.1 behaviour is preserved.
+- Boundary-call formula: **`L + 2`** per forward (1 input mask + L per-layer dense-mask transition between Norm / Activation / MLP islands + 1 LM head). Conservatively modeled: between `ours_current` (`4L + 1`) and `ours_ideal_gpu_nonlinear` (`1`). On `sshleifer/tiny-gpt2` (L=2, 4 forwards, batch=2): 36 → **16** boundary calls vs `ours_current` (55.6% reduction). Trusted-compute drops from 1,116,310 ops (`ours_current`) to **1,105,830 ops** (only LM head recovery + dense-mask residual carry; LN and GELU now run on GPU). GPU ops match `ours_ideal_gpu_nonlinear` (LN / GELU included).
+- New interaction-breakdown categories: `preprocessing_affine_folding`, `preprocessing_permutation_absorption`, `compatible_norm_core_gpu`, `compatible_activation_island_gpu`, `dense_sandwich_transition`, `security_proxy_requirements`. The last category carries the Stage 5.2b mitigations (fresh permutation, dense sandwich, pad at Linear boundaries) and the "compatible mask families are weaker than dense" caveat.
+- Method-level `paper_metrics.ours_compatible_nonlinear_islands` records `boundary_call_reduction_vs_ours_current`, `trusted_compute_reduction_vs_ours_current`, `preprocessing_cost_increase_vs_ours_current`, `online_extra_matmul_count`, `gpu_offload_ratio`, `projected_not_measured=True`, `security_proxy_available=True`, plus a `security_proxy_caveats` list.
+- `outputs/workload_profile.md` now has a dedicated **Compatible Nonlinear Islands Method** section with Boundary Call Formulas / Trusted Compute Reduction / Preprocessing Cost Increase / Online Extra Matmul Count / Security Proxy Caveats subsections, plus the required phrases `"ours_compatible_nonlinear_islands is a projected method"`, `"not yet integrated into GPT-2 / BERT / T5 wrappers"`, `"Compatible mask families are weaker than unrestricted dense masks"`, `"Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations"`, `"online_extra_matmul_count = 0"`, and `"not a real TEE measurement"`.
+- `outputs/cross_architecture_summary.md` now has a dedicated **Compatible Nonlinear Island Workload Projection** section emitting one row per architecture (decoder_only / encoder_only / encoder_decoder), each marked `projected_from_probe` with the current vs compatible boundary formulas, trusted-compute / boundary reductions, `online_extra_matmul_count = 0`, and `security_proxy_status = "proxy-evaluated, not formal"`. The Stage 5.2b security caveats are quoted in the same section.
+
+Implemented in Stage 5.2b:
+
+- `src/pllo/experiments/nonlinear_island_security.py` — three security proxies over the Stage 5.2a operator-compatible mask scheme: (1) **permutation recovery** via per-channel ``(mean, std, median, q25, q75, mean_abs)`` signature matched by greedy cosine nearest-neighbour, compared across `fixed_permutation` / `fresh_permutation_per_session` / `permutation_pool` / `dense_sandwich_reference`; (2) **island linkability** of the GPU-visible tensor across requests under `fixed_perm_no_pad` / `fixed_perm_with_linear_boundary_pad` (dual view — boundary + activation) / `fresh_perm_with_linear_boundary_pad` (dual view) / `dense_to_perm_to_dense_sandwich` (triple view); (3) static **mask family security accounting** for `dense_invertible` / `orthogonal` / `mean_preserving_orthogonal` / `permutation` / `paired_permutation`, each with `used_for` / `correctness_role` / `preserved_statistics` / `gpu_visible_leakage` / `mitigation` / `security_strength_relative_to_dense` / `notes` fields.
+- `scripts/run_nonlinear_island_security.py` writes `outputs/nonlinear_island_security.{json,csv,md}` (long-format CSV `section,strategy,metric,value,notes`). The Markdown includes a Threat Model section, the three proxy tables, an Interpretation summary, and the spec-mandated Limitations bullet list (security proxies, weaker-than-dense, multiset leakage, fresh-permutation, dense sandwiching, no adaptive attacks, no real TEE, no semantic security claim).
+- Output safety: only aggregate metrics, sha-256 fingerprints (where used), and short text are emitted. `tests/test_nonlinear_island_security.py::test_outputs_contain_no_full_mask_tensors` programmatically rejects any numeric array of length ≥ hidden_size in the JSON, plus any `tensor(` / `torch.Tensor` markers in the JSON / CSV / Markdown bodies. No secret mask tensor leaves the trusted side.
+- Stage 5.2b validates Stage 5.2a's predicted relations: fixed permutation top-1 recovery (~0.25 at hidden=64) clearly exceeds fresh (~0.10) and the dense sandwich (~0.02, ≈ random chance 1/64); fixed-no-pad linkability cosine ≈ 1.0 vs fresh-with-pad ≈ 0.02 vs sandwich ≈ 0.002. These are *naive-observer upper bounds only* — Stage 5.4 adaptive attackers remain out of scope.
+
 Implemented in Stage 5.2a:
 
 - `src/pllo/ops/compatible_masks.py` — operator-compatible mask family generators: `generate_dense_invertible`, `generate_orthogonal`, `generate_mean_preserving_orthogonal` (orthonormal-basis construction with the all-ones direction as the first vector, so `N 1 = 1` and `N^T C N = C`), and `generate_permutation` (returns both index form `perm`/`inv_perm` and dense matrix form). Plus `orthogonal_error`, `mean_preservation_error`, `centered_orthogonality_error`, `center_matrix`, `matrix_fingerprint` helpers.
@@ -251,6 +279,7 @@ python scripts/run_gpt2_generation_correctness.py --model-id sshleifer/tiny-gpt2
 python scripts/run_experiment_summary.py --rerun
 python scripts/run_attention_experiments.py
 python scripts/run_workload_profile.py
+python scripts/run_gpt2_compatible_island_smoke.py
 python scripts/run_architecture_coverage.py
 python scripts/run_encoder_attention_experiments.py
 python scripts/run_cross_attention_experiments.py
@@ -258,6 +287,7 @@ python scripts/run_cross_architecture_summary.py
 python scripts/run_security_proxy_experiments.py
 python scripts/run_norm_experiments.py
 python scripts/run_nonlinear_island_experiments.py
+python scripts/run_nonlinear_island_security.py
 ```
 
 Useful variants:
@@ -294,6 +324,7 @@ By default, results are written to:
 - `outputs/security_proxy_experiments.json` / `.csv` / `.md` (Stage 6.3 security proxy experiments — pad linkability, mask freshness, boundary leakage accounting, cache leakage proxy)
 - `outputs/norm_experiments.json` / `.csv` / `.md` (Stage 5.1 norm primitive — trusted LayerNorm / RMSNorm correctness + restricted RMSNorm orthogonal-mask feasibility probe)
 - `outputs/nonlinear_island_experiments.json` / `.csv` / `.md` (Stage 5.2a nonlinear-island correctness — norm-compatible / activation-permutation / SwiGLU paired / full MLP)
+- `outputs/nonlinear_island_security.json` / `.csv` / `.md` (Stage 5.2b nonlinear-island security proxies — permutation recovery, island linkability dual/triple views, mask family accounting)
 
 Each JSON file reports:
 
@@ -308,9 +339,8 @@ Each JSON file reports:
 
 ## Next Stage Plan
 
-Planned extensions after Stage 5.2a:
+Planned extensions after Stage 5.3a:
 
-- Stage 5.2b — Nonlinear-island security proxy experiments (permutation recovery by per-channel signature, island linkability, mask-family security accounting)
-- Stage 5.3 — Stronger leakage experiments: adaptive / learned-inverter attackers targeting the compatible mask family boundaries
-- Stage 5.4 — Integration of nonlinear islands into existing GPT-2 / BERT / T5 wrappers (replace `trusted_layer_norm` and `trusted_gelu` shortcuts with the Stage 5.1 / 5.2a primitives where applicable, behind a feature flag)
-- Stage 6.4 — Qwen / TinyLlama migration. The Stage 5.1 RMSNorm primitive + Stage 5.2a RMSNorm orthogonal island + SwiGLU paired-permutation island land exactly the two operators Qwen / LLaMA need
+- Stage 5.3b — GPT-2 model-level wrapper integration of the same `nonlinear_mode` feature flag (default `trusted`), followed by BERT and T5 wrappers. After 5.3b lands the measured runtime path, `ours_compatible_nonlinear_islands.implemented` can flip to `True` and `wall_time_source` to `measured`.
+- Stage 5.4 — Adaptive / learned-inverter attackers targeting the compatible mask family boundaries (Stage 5.2b proxies are naive-observer bounds only). Can run in parallel with 5.3b.
+- Stage 6.4 — Qwen / TinyLlama migration. The Stage 5.1 RMSNorm primitive + Stage 5.2a RMSNorm orthogonal island + SwiGLU paired-permutation island + Stage 5.2c cost model + Stage 5.3a / 5.3b wrapper integration pattern land exactly the two operators Qwen / LLaMA need.

@@ -2,7 +2,7 @@
 
 ## Experiment scope
 
-Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encoder-only) and Stage 6.2 (encoder-decoder cross-attention) probe outputs plus the Stage 5.0.1 workload profile. It does not re-execute any probe.
+Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encoder-only) and Stage 6.2 (encoder-decoder cross-attention) probe outputs plus the Stage 5.0.1 / 5.2c workload profile. It does not re-execute any probe.
 
 ## Cross-architecture coverage table
 
@@ -40,11 +40,32 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 3.826e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 3.198e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.169e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.198e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
+| ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
+
+## Compatible Nonlinear Island Workload Projection
+
+ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a correctness probes (28 cells, all_allclose=True, `online_extra_matmul_count = 0`) and Stage 5.2b security proxies. It is not yet integrated into GPT-2 / BERT / T5 wrappers — Stage 5.3 is the integration step. Per-architecture status is `projected_from_probe`.
+
+- Boundary formula: `L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)`
+- `online_extra_matmul_count` = 0
+- `security_profile` = `proxy-evaluated, not formal`
+
+| architecture | model_id | attention_kind | current method | current formula | compatible formula | boundary reduction | trusted compute reduction | online extra matmul | status | security_proxy_status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| decoder_only | sshleifer/tiny-gpt2 | causal_self_attention | ours_current | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 55.56% | 0.94% | 0 | projected_from_probe | proxy-evaluated, not formal |
+| encoder_only | hf-internal-testing/tiny-bert | bidirectional_self_attention | stage6_probe_plus_trusted_shortcuts | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 55.56% | 0.94% | 0 | projected_from_probe | proxy-evaluated, not formal |
+| encoder_decoder | hf-internal-testing/tiny-random-t5 | cross_attention | stage6_probe_plus_trusted_shortcuts | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 55.56% | 0.94% | 0 | projected_from_probe | proxy-evaluated, not formal |
+
+Security proxy caveats (from Stage 5.2b, applied to every architecture row above):
+- Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.
+- Permutation islands hide channel identity but do not hide coordinate-value multisets.
+- Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.
+- Not yet integrated into the GPT-2 / BERT / T5 wrappers (`projected_from_probe`, not measured). No real TEE isolation.
 
 ## Trusted shortcuts still in place per architecture
 

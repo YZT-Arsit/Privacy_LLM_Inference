@@ -1,0 +1,101 @@
+section,strategy,metric,value,notes
+permutation_recovery,fixed_permutation,top1_recovery_rate,0.25,high (stable across sessions; aggregate signature is sharp)
+permutation_recovery,fixed_permutation,top5_recovery_rate,0.8125,high (stable across sessions; aggregate signature is sharp)
+permutation_recovery,fixed_permutation,mean_correct_rank,2.515625,high (stable across sessions; aggregate signature is sharp)
+permutation_recovery,fixed_permutation,mean_signature_error,0.017081558993859068,high (stable across sessions; aggregate signature is sharp)
+permutation_recovery,fresh_permutation_per_session,top1_recovery_rate,0.1005859375,moderate (per-session recovery only; no cross-session alignment)
+permutation_recovery,fresh_permutation_per_session,top5_recovery_rate,0.474609375,moderate (per-session recovery only; no cross-session alignment)
+permutation_recovery,fresh_permutation_per_session,mean_correct_rank,7.1943359375,moderate (per-session recovery only; no cross-session alignment)
+permutation_recovery,fresh_permutation_per_session,mean_signature_error,0.05077203536291895,moderate (per-session recovery only; no cross-session alignment)
+permutation_recovery,permutation_pool,top1_recovery_rate,0.21875,moderate-to-high (per-perm signature is sharper than fresh but weaker than fixed)
+permutation_recovery,permutation_pool,top5_recovery_rate,0.67578125,moderate-to-high (per-perm signature is sharper than fresh but weaker than fixed)
+permutation_recovery,permutation_pool,mean_correct_rank,4.17578125,moderate-to-high (per-perm signature is sharper than fresh but weaker than fixed)
+permutation_recovery,permutation_pool,mean_signature_error,0.02729351019878576,moderate-to-high (per-perm signature is sharper than fresh but weaker than fixed)
+permutation_recovery,dense_sandwich_reference,top1_recovery_rate,0.0205078125,near random chance (column statistics destroyed by dense mixing)
+permutation_recovery,dense_sandwich_reference,top5_recovery_rate,0.0869140625,near random chance (column statistics destroyed by dense mixing)
+permutation_recovery,dense_sandwich_reference,mean_correct_rank,30.6533203125,near random chance (column statistics destroyed by dense mixing)
+permutation_recovery,dense_sandwich_reference,mean_signature_error,0.23861021355215928,near random chance (column statistics destroyed by dense mixing)
+permutation_recovery,_meta,random_chance_top1,0.015625,1 / hidden_size
+island_linkability,fixed_perm_no_pad,mean_pairwise_cosine,1.0000000000000016,highest
+island_linkability,fixed_perm_no_pad,max_pairwise_cosine,1.0000000000000013,highest
+island_linkability,fixed_perm_no_pad,min_pairwise_cosine,1.000000000000001,highest
+island_linkability,fixed_perm_no_pad,mean_pairwise_l2,0.0,highest
+island_linkability,fixed_perm_no_pad,max_pairwise_l2,0.0,highest
+island_linkability,fixed_perm_no_pad,min_pairwise_l2,0.0,highest
+island_linkability,fixed_perm_with_linear_boundary_pad,boundary_input_visible.mean_pairwise_cosine,-0.00040125320191670397,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,boundary_input_visible.max_pairwise_cosine,0.09808751441811851,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,boundary_input_visible.min_pairwise_cosine,-0.07229608193618374,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,boundary_input_visible.mean_pairwise_l2,63.21180819110758,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,boundary_input_visible.max_pairwise_l2,66.54361728806448,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,boundary_input_visible.min_pairwise_l2,60.522841843947965,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,activation_input_visible.mean_pairwise_cosine,1.0000000000000016,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,activation_input_visible.max_pairwise_cosine,1.0000000000000013,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,activation_input_visible.min_pairwise_cosine,1.000000000000001,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,activation_input_visible.mean_pairwise_l2,0.0,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,activation_input_visible.max_pairwise_l2,0.0,boundary low / activation high
+island_linkability,fixed_perm_with_linear_boundary_pad,activation_input_visible.min_pairwise_l2,0.0,boundary low / activation high
+island_linkability,fresh_perm_with_linear_boundary_pad,boundary_input_visible.mean_pairwise_cosine,0.001349266878315098,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,boundary_input_visible.max_pairwise_cosine,0.0774596017500818,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,boundary_input_visible.min_pairwise_cosine,-0.07215036612269864,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,boundary_input_visible.mean_pairwise_l2,63.53080457994561,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,boundary_input_visible.max_pairwise_l2,66.25041444188749,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,boundary_input_visible.min_pairwise_l2,59.99004191759734,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,activation_input_visible.mean_pairwise_cosine,0.02457349694730232,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,activation_input_visible.max_pairwise_cosine,0.13215816936135052,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,activation_input_visible.min_pairwise_cosine,-0.07868166836450505,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,activation_input_visible.mean_pairwise_l2,43.92492448581796,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,activation_input_visible.max_pairwise_l2,46.19975782910053,low on both views
+island_linkability,fresh_perm_with_linear_boundary_pad,activation_input_visible.min_pairwise_l2,41.439388658869056,low on both views
+island_linkability,dense_to_perm_to_dense_sandwich,pre_island_dense_visible.mean_pairwise_cosine,0.003852468150874787,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,pre_island_dense_visible.max_pairwise_cosine,0.08505701825136243,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,pre_island_dense_visible.min_pairwise_cosine,-0.0876758008882843,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,pre_island_dense_visible.mean_pairwise_l2,44.38934989628797,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,pre_island_dense_visible.max_pairwise_l2,46.39196699823665,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,pre_island_dense_visible.min_pairwise_l2,42.549069508719064,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,island_visible.mean_pairwise_cosine,0.02131374933246675,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,island_visible.max_pairwise_cosine,0.1454221855312893,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,island_visible.min_pairwise_cosine,-0.0703839482270202,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,island_visible.mean_pairwise_l2,43.99982051990723,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,island_visible.max_pairwise_l2,46.02171978827833,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,island_visible.min_pairwise_l2,41.1214913663609,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,post_island_dense_visible.mean_pairwise_cosine,0.002078614483503677,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,post_island_dense_visible.max_pairwise_cosine,0.10950041782742834,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,post_island_dense_visible.min_pairwise_cosine,-0.057311207977378695,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,post_island_dense_visible.mean_pairwise_l2,44.4302697669045,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,post_island_dense_visible.max_pairwise_l2,45.73982076562438,lowest
+island_linkability,dense_to_perm_to_dense_sandwich,post_island_dense_visible.min_pairwise_l2,41.97685510514999,lowest
+mask_family_accounting,dense_invertible,used_for,Linear / Attention / KV cache boundaries,
+mask_family_accounting,dense_invertible,correctness_role,right-multiply mask for arbitrary invertible linear ops,
+mask_family_accounting,dense_invertible,preserved_statistics,"rank, dimension, algebraic relations under same mask",
+mask_family_accounting,dense_invertible,gpu_visible_leakage,channel identity hidden via dense mixing; algebraic structure preserved only under reuse,
+mask_family_accounting,dense_invertible,mitigation,fresh mask across sessions; pad at Linear boundaries,
+mask_family_accounting,dense_invertible,security_strength_relative_to_dense,baseline (this IS dense),
+mask_family_accounting,dense_invertible,notes,Strongest of the listed families; the reference against which the others are compared.,
+mask_family_accounting,orthogonal,used_for,RMSNorm core,
+mask_family_accounting,orthogonal,correctness_role,commutes with rms(.) and right-rotates the normalised state,
+mask_family_accounting,orthogonal,preserved_statistics,row L2 norm (||X N||_2 = ||X||_2); pairwise dot products if the same mask is reused,
+mask_family_accounting,orthogonal,gpu_visible_leakage,row L2 norm preserved by design; coordinate identity hidden under rotation,
+mask_family_accounting,orthogonal,mitigation,restrict island lifetime; sandwich with dense masks at Linear boundaries,
+mask_family_accounting,orthogonal,security_strength_relative_to_dense,weaker (row L2 norm always preserved),
+mask_family_accounting,orthogonal,notes,Designed to preserve rms; an attacker observing many samples can always read row norms.,
+mask_family_accounting,mean_preserving_orthogonal,used_for,LayerNorm core,
+mask_family_accounting,mean_preserving_orthogonal,correctness_role,commutes with LayerNorm core (mean + centered variance preserved),
+mask_family_accounting,mean_preserving_orthogonal,preserved_statistics,row mean (X N · 1 = X · 1); row centered L2 norm,
+mask_family_accounting,mean_preserving_orthogonal,gpu_visible_leakage,row mean and centered norm preserved by design,
+mask_family_accounting,mean_preserving_orthogonal,mitigation,sandwich with dense masks at Linear boundaries; avoid reuse across sessions,
+mask_family_accounting,mean_preserving_orthogonal,security_strength_relative_to_dense,weaker (mean + centered norm always preserved),
+mask_family_accounting,mean_preserving_orthogonal,notes,Strict subset of orthogonal masks: also preserves the all-ones direction.,
+mask_family_accounting,permutation,used_for,GELU / ReLU / SiLU activation island,
+mask_family_accounting,permutation,correctness_role,commutes exactly with element-wise activations: f(X P) = f(X) P,
+mask_family_accounting,permutation,preserved_statistics,coordinate-value multiset; per-token sorted values,
+mask_family_accounting,permutation,gpu_visible_leakage,channel identity hidden if P is secret; multiset always leaks,
+mask_family_accounting,permutation,mitigation,fresh permutation per session; permutation pool; dense sandwich at Linear boundaries,
+mask_family_accounting,permutation,security_strength_relative_to_dense,weaker (multiset and sorted values always preserved),
+mask_family_accounting,permutation,notes,Permutation islands hide channel identity but do not hide coordinate-value multisets.,
+mask_family_accounting,paired_permutation,used_for,SwiGLU up / gate branches (shared P),
+mask_family_accounting,paired_permutation,correctness_role,commutes with SwiGLU when up and gate use the same P,
+mask_family_accounting,paired_permutation,preserved_statistics,"coordinate-value multiset; paired (up, gate) alignment per channel",
+mask_family_accounting,paired_permutation,gpu_visible_leakage,"same as permutation, plus paired alignment exposes that up and gate share P",
+mask_family_accounting,paired_permutation,mitigation,fresh paired permutation; branch-consistency checks; dense sandwich,
+mask_family_accounting,paired_permutation,security_strength_relative_to_dense,weaker (paired multiset always preserved),
+mask_family_accounting,paired_permutation,notes,Inherits permutation leakage; the paired structure is an additional small leakage channel.,

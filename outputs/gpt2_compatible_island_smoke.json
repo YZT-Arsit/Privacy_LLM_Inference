@@ -1,0 +1,76 @@
+{
+  "report_version": "stage-5.3a-v1",
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "block_index": 0,
+    "batch_size": 2,
+    "seq_len": 8,
+    "device": "cpu",
+    "dtype": "float32",
+    "seed": 2026
+  },
+  "runs": [
+    {
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "max_abs_error": 4.76837158203125e-07,
+      "relative_l2_error": 1.7434125254567334e-07,
+      "cosine_similarity": 1.0,
+      "allclose": true,
+      "mlp_gelu_island_active": true,
+      "permutation_dim": 8,
+      "intermediate_size": 8,
+      "pad_placement": "n/a",
+      "uses_fresh_permutation": true,
+      "online_extra_matmul_count": 0,
+      "layernorm_remains_trusted": true,
+      "lm_head_not_modified": true,
+      "generation_path_not_modified": true,
+      "security_profile": "proxy-evaluated, not formal",
+      "security_caveats": [
+        "Compatible mask families are weaker than unrestricted dense masks.",
+        "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+        "This is not a real TEE measurement."
+      ],
+      "mlp_c_fc_pad": false,
+      "mlp_c_proj_pad": false
+    },
+    {
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "max_abs_error": 4.76837158203125e-07,
+      "relative_l2_error": 1.494123864631547e-07,
+      "cosine_similarity": 1.0,
+      "allclose": true,
+      "mlp_gelu_island_active": true,
+      "permutation_dim": 8,
+      "intermediate_size": 8,
+      "pad_placement": "linear_boundary_only",
+      "uses_fresh_permutation": true,
+      "online_extra_matmul_count": 0,
+      "layernorm_remains_trusted": true,
+      "lm_head_not_modified": true,
+      "generation_path_not_modified": true,
+      "security_profile": "proxy-evaluated, not formal",
+      "security_caveats": [
+        "Compatible mask families are weaker than unrestricted dense masks.",
+        "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+        "This is not a real TEE measurement."
+      ],
+      "mlp_c_fc_pad": true,
+      "mlp_c_proj_pad": false
+    }
+  ],
+  "wrapper_integration_status": {
+    "gpt2_single_block": "implemented",
+    "gpt2_model_level": "not_yet",
+    "bert": "not_yet",
+    "t5": "not_yet"
+  },
+  "caveats": [
+    "Compatible mask families are weaker than unrestricted dense masks.",
+    "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+    "This is not a real TEE measurement.",
+    "Compatible nonlinear island is not yet enabled by default."
+  ]
+}

@@ -202,7 +202,7 @@
       }
     },
     "calibration": {
-      "gpu_flops_per_ms": 1159028.6121468372,
+      "gpu_flops_per_ms": 1386602.460089486,
       "calibrated_from": "plain_hf_gpu"
     },
     "methods": [
@@ -214,8 +214,11 @@
         "online_trusted_compute_ops": 0,
         "online_gpu_ops": 4434424,
         "preprocessing_trusted_ops": 0,
-        "measured_wall_time_ms": 3.825983201386407,
-        "wall_time_source": "measured"
+        "measured_wall_time_ms": 3.1980500018107705,
+        "wall_time_source": "measured",
+        "online_extra_matmul_count": 0,
+        "uses_compatible_nonlinear_islands": false,
+        "security_profile": "n/a"
       },
       {
         "method": "tslp_trusted_nonlinear_baseline",
@@ -226,7 +229,10 @@
         "online_gpu_ops": 4429848,
         "preprocessing_trusted_ops": 0,
         "measured_wall_time_ms": null,
-        "wall_time_source": "projected_from_op_counts"
+        "wall_time_source": "projected_from_op_counts",
+        "online_extra_matmul_count": 0,
+        "uses_compatible_nonlinear_islands": false,
+        "security_profile": "n/a"
       },
       {
         "method": "ours_current",
@@ -236,8 +242,11 @@
         "online_trusted_compute_ops": 1116310,
         "online_gpu_ops": 4429848,
         "preprocessing_trusted_ops": 403784,
-        "measured_wall_time_ms": 6.169191800290719,
-        "wall_time_source": "measured"
+        "measured_wall_time_ms": 6.197958598204423,
+        "wall_time_source": "measured",
+        "online_extra_matmul_count": 0,
+        "uses_compatible_nonlinear_islands": false,
+        "security_profile": "n/a"
       },
       {
         "method": "ours_ideal_gpu_nonlinear",
@@ -248,7 +257,24 @@
         "online_gpu_ops": 4434424,
         "preprocessing_trusted_ops": 403784,
         "measured_wall_time_ms": null,
-        "wall_time_source": "projected_from_op_counts"
+        "wall_time_source": "projected_from_op_counts",
+        "online_extra_matmul_count": 0,
+        "uses_compatible_nonlinear_islands": false,
+        "security_profile": "n/a"
+      },
+      {
+        "method": "ours_compatible_nonlinear_islands",
+        "implemented": false,
+        "online_boundary_calls": 16,
+        "boundary_calls_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+        "online_trusted_compute_ops": 1105830,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 403992,
+        "measured_wall_time_ms": null,
+        "wall_time_source": "projected_from_op_counts",
+        "online_extra_matmul_count": 0,
+        "uses_compatible_nonlinear_islands": true,
+        "security_profile": "proxy-evaluated, not formal"
       },
       {
         "method": "amulet_style_reference",
@@ -259,7 +285,10 @@
         "online_gpu_ops": 4434424,
         "preprocessing_trusted_ops": 403784,
         "measured_wall_time_ms": null,
-        "wall_time_source": "projected_from_op_counts"
+        "wall_time_source": "projected_from_op_counts",
+        "online_extra_matmul_count": 0,
+        "uses_compatible_nonlinear_islands": false,
+        "security_profile": "n/a"
       }
     ],
     "paper_metrics": {
@@ -273,15 +302,126 @@
         "tslp_trusted_nonlinear_baseline": 8,
         "ours_current": 9,
         "ours_ideal_gpu_nonlinear": 1,
+        "ours_compatible_nonlinear_islands": 4,
         "amulet_style_reference": 1
+      },
+      "ours_compatible_nonlinear_islands": {
+        "boundary_call_reduction_vs_ours_current": 0.5555555555555556,
+        "boundary_call_reduction_vs_tslp": 0.5,
+        "trusted_compute_reduction_vs_ours_current": 0.009388073205471598,
+        "trusted_compute_reduction_vs_tslp": 0.003963142772218369,
+        "preprocessing_cost_increase_vs_ours_current": 0.000515126899530442,
+        "online_extra_matmul_count": 0,
+        "gpu_offload_ratio": 0.800400848047761,
+        "projected_not_measured": true,
+        "security_proxy_available": true,
+        "security_proxy_caveats": [
+          "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+          "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "This is not a real TEE measurement."
+        ]
       }
+    }
+  },
+  "compatible_island_projection": {
+    "status": "available",
+    "per_architecture": [
+      {
+        "architecture_type": "decoder_only",
+        "model_id": "sshleifer/tiny-gpt2",
+        "attention_kind": "causal_self_attention",
+        "current_method": "ours_current",
+        "compatible_island_method": "ours_compatible_nonlinear_islands",
+        "current_boundary_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
+        "compatible_boundary_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+        "trusted_compute_reduction": 0.009388073205471598,
+        "boundary_call_reduction": 0.5555555555555556,
+        "online_extra_matmul_count": 0,
+        "security_proxy_status": "proxy-evaluated, not formal",
+        "status": "projected_from_probe",
+        "limitations": [
+          "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Not yet integrated into the GPT-2 / BERT / T5 wrappers.",
+          "Projected, not measured. No real TEE isolation."
+        ]
+      },
+      {
+        "architecture_type": "encoder_only",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "attention_kind": "bidirectional_self_attention",
+        "current_method": "stage6_probe_plus_trusted_shortcuts",
+        "compatible_island_method": "ours_compatible_nonlinear_islands",
+        "current_boundary_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
+        "compatible_boundary_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+        "trusted_compute_reduction": 0.009388073205471598,
+        "boundary_call_reduction": 0.5555555555555556,
+        "online_extra_matmul_count": 0,
+        "security_proxy_status": "proxy-evaluated, not formal",
+        "status": "projected_from_probe",
+        "limitations": [
+          "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Not yet integrated into the GPT-2 / BERT / T5 wrappers.",
+          "Projected, not measured. No real TEE isolation."
+        ]
+      },
+      {
+        "architecture_type": "encoder_decoder",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "attention_kind": "cross_attention",
+        "current_method": "stage6_probe_plus_trusted_shortcuts",
+        "compatible_island_method": "ours_compatible_nonlinear_islands",
+        "current_boundary_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
+        "compatible_boundary_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+        "trusted_compute_reduction": 0.009388073205471598,
+        "boundary_call_reduction": 0.5555555555555556,
+        "online_extra_matmul_count": 0,
+        "security_proxy_status": "proxy-evaluated, not formal",
+        "status": "projected_from_probe",
+        "limitations": [
+          "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Not yet integrated into the GPT-2 / BERT / T5 wrappers.",
+          "Projected, not measured. No real TEE isolation."
+        ]
+      }
+    ],
+    "method_record": {
+      "title": "ours_compatible_nonlinear_islands",
+      "implemented": false,
+      "boundary_calls_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+      "online_boundary_calls": 16,
+      "online_trusted_compute_ops": 1105830,
+      "online_extra_matmul_count": 0,
+      "security_profile": "proxy-evaluated, not formal",
+      "wall_time_source": "projected_from_op_counts"
+    },
+    "paper_metrics": {
+      "boundary_call_reduction_vs_ours_current": 0.5555555555555556,
+      "boundary_call_reduction_vs_tslp": 0.5,
+      "trusted_compute_reduction_vs_ours_current": 0.009388073205471598,
+      "trusted_compute_reduction_vs_tslp": 0.003963142772218369,
+      "preprocessing_cost_increase_vs_ours_current": 0.000515126899530442,
+      "online_extra_matmul_count": 0,
+      "gpu_offload_ratio": 0.800400848047761,
+      "projected_not_measured": true,
+      "security_proxy_available": true,
+      "security_proxy_caveats": [
+        "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+        "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+        "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+        "This is not a real TEE measurement."
+      ]
     }
   },
   "global_summary": {
     "num_architectures": 3,
     "num_aggregated": 3,
     "num_missing": 0,
-    "all_architectures_allclose": true
+    "all_architectures_allclose": true,
+    "compatible_island_projection_available": true
   },
-  "stage_note": "Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encoder-only) and Stage 6.2 (encoder-decoder cross-attention) probe outputs plus the Stage 5.0.1 workload profile. It does not re-execute any probe."
+  "stage_note": "Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encoder-only) and Stage 6.2 (encoder-decoder cross-attention) probe outputs plus the Stage 5.0.1 / 5.2c workload profile. It does not re-execute any probe."
 }

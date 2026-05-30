@@ -19,6 +19,13 @@ from pllo.experiments.nonlinear_island_probe import (
     NonlinearIslandProbeConfig,
     run_nonlinear_island_experiments,
 )
+from pllo.experiments.nonlinear_island_security import (
+    MASK_FAMILY_ACCOUNTING,
+    NonlinearIslandSecurityConfig,
+    compute_channel_signature,
+    recover_permutation_by_signature,
+    run_nonlinear_island_security,
+)
 from pllo.experiments.norm_probe import (
     RMSNormOrthogonalProbeConfig,
     TrustedNormProbeConfig,
@@ -71,6 +78,11 @@ __all__ = [
     "run_rmsnorm_orthogonal_probe",
     "NonlinearIslandProbeConfig",
     "run_nonlinear_island_experiments",
+    "NonlinearIslandSecurityConfig",
+    "run_nonlinear_island_security",
+    "compute_channel_signature",
+    "recover_permutation_by_signature",
+    "MASK_FAMILY_ACCOUNTING",
     "WorkloadProfileConfig",
     "run_workload_profile",
     "ATTENTION_SWEEP",

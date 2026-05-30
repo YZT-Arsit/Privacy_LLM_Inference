@@ -72,6 +72,9 @@ CSV_FIELDS = (
     "preprocessing_trusted_ops",
     "preprocessing_transfer_bytes",
     "boundary_calls_formula",
+    "online_extra_matmul_count",
+    "uses_compatible_nonlinear_islands",
+    "security_profile",
 )
 
 
@@ -93,6 +96,13 @@ def _method_rows(profile: dict) -> list[dict]:
                 "preprocessing_trusted_ops": payload["preprocessing_trusted_ops"],
                 "preprocessing_transfer_bytes": payload["preprocessing_transfer_bytes"],
                 "boundary_calls_formula": payload["boundary_calls_formula"],
+                "online_extra_matmul_count": payload.get(
+                    "online_extra_matmul_count", 0
+                ),
+                "uses_compatible_nonlinear_islands": payload.get(
+                    "uses_compatible_nonlinear_islands", False
+                ),
+                "security_profile": payload.get("security_profile", "n/a"),
             }
         )
     return rows
@@ -212,6 +222,118 @@ def _build_markdown(profile: dict) -> str:
             rows.append(row)
         out.append(markdown_table(headers, rows))
         out.append("")
+
+    # ---- Stage 5.2c: Compatible Nonlinear Islands Method ----
+    islands_pm = profile["paper_metrics"].get("ours_compatible_nonlinear_islands")
+    islands_record = profile["methods"].get("ours_compatible_nonlinear_islands")
+    if islands_pm is not None and islands_record is not None:
+        out.append("## Compatible Nonlinear Islands Method")
+        out.append("")
+        out.append(
+            "ours_compatible_nonlinear_islands is a projected method based on"
+            " Stage 5.2a correctness probes and Stage 5.2b security proxies."
+            " It is not yet integrated into GPT-2 / BERT / T5 wrappers — Stage"
+            " 5.3 is the integration step."
+        )
+        out.append("")
+        out.append("### Boundary Call Formulas")
+        out.append("")
+        out.append(
+            f"- `ours_current`: {profile['methods']['ours_current']['boundary_calls_formula']}"
+        )
+        out.append(
+            f"- `ours_compatible_nonlinear_islands`: {islands_record['boundary_calls_formula']}"
+        )
+        out.append(
+            f"- `ours_ideal_gpu_nonlinear`: {profile['methods']['ours_ideal_gpu_nonlinear']['boundary_calls_formula']}"
+        )
+        out.append("")
+        out.append("### Trusted Compute Reduction")
+        out.append("")
+        out.append(
+            f"- vs `ours_current`: {islands_pm['trusted_compute_reduction_vs_ours_current']:.2%}"
+        )
+        out.append(
+            f"- vs `tslp_trusted_nonlinear_baseline`: {islands_pm['trusted_compute_reduction_vs_tslp']:.2%}"
+        )
+        out.append(
+            f"- vs `ours_current` boundary call count: "
+            f"{islands_pm['boundary_call_reduction_vs_ours_current']:.2%}"
+        )
+        out.append("")
+        out.append("### Preprocessing Cost Increase")
+        out.append("")
+        pre_increase = islands_pm.get("preprocessing_cost_increase_vs_ours_current")
+        if pre_increase is None:
+            out.append(
+                "- Preprocessing increase vs ours_current: not computable"
+                " (ours_current preprocessing is zero)."
+            )
+        else:
+            out.append(
+                f"- Preprocessing increase vs `ours_current`: {pre_increase:.2%}"
+                " (affine folding + permutation absorption + compatible mask"
+                " generation, all amortised over many sessions)."
+            )
+        pb = islands_record.get("preprocessing_breakdown", {})
+        if pb:
+            out.append("")
+            out.append("- Preprocessing breakdown (ops):")
+            out.append(
+                f"  - base weight obfuscation: {pb.get('base_weight_obfuscation_ops', 0)}"
+            )
+            out.append(
+                f"  - affine folding: {pb.get('affine_folding_ops', 0)}"
+            )
+            out.append(
+                f"  - permutation absorption: {pb.get('permutation_absorption_ops', 0)}"
+            )
+            out.append(
+                f"  - compatible mask generation: {pb.get('compatible_mask_generation_ops', 0)}"
+            )
+        out.append("")
+        out.append("### Online Extra Matmul Count")
+        out.append("")
+        out.append(
+            f"- `online_extra_matmul_count = {islands_pm['online_extra_matmul_count']}`."
+            " Stage 5.2a verified this across every MLP island cell —"
+            " operator-compatible mask transitions are folded into adjacent"
+            " Linear weights offline and add zero online matmuls."
+        )
+        out.append("")
+        out.append("### Security Proxy Caveats")
+        out.append("")
+        for caveat in islands_pm.get("security_proxy_caveats", []):
+            out.append(f"- {caveat}")
+        out.append(
+            "- This is not a real TEE measurement."
+        )
+        out.append("")
+
+        # ---- Stage 5.3a: Wrapper Integration Status -----------------------
+        wrapper_status = islands_record.get("wrapper_integration_status")
+        if wrapper_status is not None:
+            out.append("### Stage 5.3a Wrapper Integration Status")
+            out.append("")
+            out.append(
+                "- `partial_implementation = "
+                f"{islands_record.get('partial_implementation', False)}` — "
+                "the GPT-2 single-block wrapper now exposes a "
+                "`nonlinear_mode=\"compatible_islands\"` feature flag, but "
+                "the GPT-2 model-level wrapper, BERT, and T5 paths are not "
+                "yet wired up."
+            )
+            for target in ("gpt2_single_block", "gpt2_model_level", "bert", "t5"):
+                out.append(f"- `{target}`: `{wrapper_status[target]}`")
+            out.append(
+                "- Default mode remains `trusted`; compatible_islands must"
+                " not be enabled by default."
+            )
+            out.append(
+                "- GPT-2 single-block integration available; full-model"
+                " measured runtime pending Stage 5.3b."
+            )
+            out.append("")
 
     pm = profile["paper_metrics"]
     out.append("## Paper metrics")

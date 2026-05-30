@@ -47,6 +47,12 @@ class WorkloadMethod:
     implemented: bool
     implementation_note: str
     citation_caveat: str
+    # ---- Stage 5.2c extensions (optional fields, default-False for existing methods) ----
+    uses_compatible_nonlinear_islands: bool = False
+    uses_dense_sandwich: bool = False
+    uses_fresh_permutation: bool = False
+    online_extra_matmul_count: int = 0
+    security_profile: str = "n/a"
 
 
 WORKLOAD_METHODS: tuple[WorkloadMethod, ...] = (
@@ -142,6 +148,49 @@ WORKLOAD_METHODS: tuple[WorkloadMethod, ...] = (
             " Stage 5.1 / 5.2 and may carry additional overhead this estimate"
             " does not capture."
         ),
+    ),
+    WorkloadMethod(
+        name="ours_compatible_nonlinear_islands",
+        title="This work — projected: operator-compatible nonlinear islands",
+        summary=(
+            "Modeled / projected method. RMSNorm core uses an orthogonal mask,"
+            " LayerNorm core uses a mean-preserving orthogonal mask, GELU /"
+            " ReLU / SiLU activations use permutation masks, and SwiGLU uses a"
+            " paired permutation. Every mask transition is folded into adjacent"
+            " Linear weights offline, so the masked forward executes with the"
+            " same number of matmuls as the plaintext forward (Stage 5.2a"
+            " verified ``online_extra_matmul_count = 0`` for every MLP island"
+            " cell). Trusted shortcuts for LN and GELU are removed."
+        ),
+        layernorm_in_tee=False,
+        activation_in_tee=False,
+        linear_obfuscated=True,
+        uses_pad=True,
+        lm_head_recovered_in_tee=True,
+        # Not a single fused pipeline — there is still per-layer dense-mask"
+        # transition bookkeeping at the Linear boundaries between islands.
+        fuses_gpu_pipeline=False,
+        implemented=False,
+        implementation_note=(
+            "Projected, not measured. Stage 5.2a verified the correctness probe"
+            " (28 cells, all_allclose=True, max_online_extra_matmul=0). Stage"
+            " 5.2b validated the security proxy (fresh permutation + dense"
+            " sandwich + pad at Linear boundaries are required mitigations)."
+            " Not yet integrated into the GPT-2 / BERT / T5 wrappers — Stage"
+            " 5.3 is the integration step."
+        ),
+        citation_caveat=(
+            "Compatible mask families are weaker than unrestricted dense"
+            " masks inside nonlinear islands. The Stage 5.2b security proxy"
+            " quantified per-strategy linkability and permutation recovery,"
+            " but the result is a naive-observer upper bound, NOT a formal"
+            " security proof and NOT a real TEE measurement."
+        ),
+        uses_compatible_nonlinear_islands=True,
+        uses_dense_sandwich=True,
+        uses_fresh_permutation=True,
+        online_extra_matmul_count=0,
+        security_profile="proxy-evaluated, not formal",
     ),
     WorkloadMethod(
         name="amulet_style_reference",
@@ -252,4 +301,11 @@ INTERACTION_CATEGORIES: tuple[str, ...] = (
     "lm_head_recovery",
     "sampling",
     "preprocessing_weight_obfuscation",
+    # ---- Stage 5.2c additions for ``ours_compatible_nonlinear_islands`` ----
+    "preprocessing_affine_folding",
+    "preprocessing_permutation_absorption",
+    "compatible_norm_core_gpu",
+    "compatible_activation_island_gpu",
+    "dense_sandwich_transition",
+    "security_proxy_requirements",
 )

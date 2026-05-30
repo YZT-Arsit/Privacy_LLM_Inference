@@ -1,0 +1,276 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "num_sessions": 16,
+    "samples_per_session": 32,
+    "batch_size": 2,
+    "seq_len": 8,
+    "hidden_size": 64,
+    "pad_scale": 1.0,
+    "permutation_pool_size": 4,
+    "dtype": "float32",
+    "device": "cpu",
+    "seed": 2026
+  },
+  "threat_model": "Naive-observer adversary: sees only GPU-visible tensors produced by the masked forward (post-mask Linear inputs / outputs and the activation island's permuted input). Has prior knowledge of the plaintext channel distribution but does NOT execute adaptive or learned inversion attacks, does NOT observe trusted-side tensors, and does NOT use side channels.",
+  "permutation_recovery": {
+    "random_chance_top1": 0.015625,
+    "per_strategy": {
+      "fixed_permutation": {
+        "strategy": "fixed_permutation",
+        "num_sessions": 16,
+        "samples_per_session": 32,
+        "hidden_size": 64,
+        "expected_risk_level": "high (stable across sessions; aggregate signature is sharp)",
+        "interpretation": "Fixed permutation lets the attacker accumulate samples across sessions; the per-channel signature converges to the true permuted distribution and greedy matching recovers above chance.",
+        "top1_recovery_rate": 0.25,
+        "top5_recovery_rate": 0.8125,
+        "mean_correct_rank": 2.515625,
+        "mean_signature_error": 0.017081558993859068
+      },
+      "fresh_permutation_per_session": {
+        "strategy": "fresh_permutation_per_session",
+        "num_sessions": 16,
+        "samples_per_session": 32,
+        "hidden_size": 64,
+        "expected_risk_level": "moderate (per-session recovery only; no cross-session alignment)",
+        "interpretation": "Fresh permutation breaks cross-session alignment, so the attacker only has M = samples_per_session points per per-session signature.",
+        "top1_recovery_rate": 0.1005859375,
+        "top5_recovery_rate": 0.474609375,
+        "mean_correct_rank": 7.1943359375,
+        "mean_signature_error": 0.05077203536291895
+      },
+      "permutation_pool": {
+        "strategy": "permutation_pool",
+        "num_sessions": 16,
+        "samples_per_session": 32,
+        "hidden_size": 64,
+        "expected_risk_level": "moderate-to-high (per-perm signature is sharper than fresh but weaker than fixed)",
+        "interpretation": "Each pool entry gets sessions_per_perm \u00d7 M samples \u2014 between fixed and fresh in signature sharpness.",
+        "top1_recovery_rate": 0.21875,
+        "top5_recovery_rate": 0.67578125,
+        "mean_correct_rank": 4.17578125,
+        "mean_signature_error": 0.02729351019878576,
+        "pool_size": 4,
+        "sessions_per_perm": 4
+      },
+      "dense_sandwich_reference": {
+        "strategy": "dense_sandwich_reference",
+        "num_sessions": 16,
+        "samples_per_session": 32,
+        "hidden_size": 64,
+        "expected_risk_level": "near random chance (column statistics destroyed by dense mixing)",
+        "interpretation": "Dense linear mixing on both sides of the permutation destroys the per-channel signature; recovery drops to ~ 1/H random chance.",
+        "top1_recovery_rate": 0.0205078125,
+        "top5_recovery_rate": 0.0869140625,
+        "mean_correct_rank": 30.6533203125,
+        "mean_signature_error": 0.23861021355215928
+      }
+    },
+    "ranking_by_top1_descending": [
+      "fixed_permutation",
+      "permutation_pool",
+      "fresh_permutation_per_session",
+      "dense_sandwich_reference"
+    ]
+  },
+  "island_linkability": {
+    "per_strategy": {
+      "fixed_perm_no_pad": {
+        "strategy": "fixed_perm_no_pad",
+        "num_trials": 16,
+        "view": "activation_input_visible",
+        "mean_pairwise_cosine": 1.0000000000000016,
+        "max_pairwise_cosine": 1.0000000000000013,
+        "min_pairwise_cosine": 1.000000000000001,
+        "mean_pairwise_l2": 0.0,
+        "max_pairwise_l2": 0.0,
+        "min_pairwise_l2": 0.0,
+        "expected_linkability": "highest",
+        "interpretation": "Same plaintext + same permutation \u2192 identical GPU-visible tensor every request; pairwise cosine collapses to 1."
+      },
+      "fixed_perm_with_linear_boundary_pad": {
+        "strategy": "fixed_perm_with_linear_boundary_pad",
+        "num_trials": 16,
+        "view": "dual",
+        "boundary_input_visible": {
+          "mean_pairwise_cosine": -0.00040125320191670397,
+          "max_pairwise_cosine": 0.09808751441811851,
+          "min_pairwise_cosine": -0.07229608193618374,
+          "mean_pairwise_l2": 63.21180819110758,
+          "max_pairwise_l2": 66.54361728806448,
+          "min_pairwise_l2": 60.522841843947965
+        },
+        "activation_input_visible": {
+          "mean_pairwise_cosine": 1.0000000000000016,
+          "max_pairwise_cosine": 1.0000000000000013,
+          "min_pairwise_cosine": 1.000000000000001,
+          "mean_pairwise_l2": 0.0,
+          "max_pairwise_l2": 0.0,
+          "min_pairwise_l2": 0.0
+        },
+        "expected_linkability": "boundary low / activation high",
+        "interpretation": "Fresh pad and mask at the Linear boundary collapse linkability on (X - T) N_in, but the activation input Z P remains identical across requests because the permutation is fixed."
+      },
+      "fresh_perm_with_linear_boundary_pad": {
+        "strategy": "fresh_perm_with_linear_boundary_pad",
+        "num_trials": 16,
+        "view": "dual",
+        "boundary_input_visible": {
+          "mean_pairwise_cosine": 0.001349266878315098,
+          "max_pairwise_cosine": 0.0774596017500818,
+          "min_pairwise_cosine": -0.07215036612269864,
+          "mean_pairwise_l2": 63.53080457994561,
+          "max_pairwise_l2": 66.25041444188749,
+          "min_pairwise_l2": 59.99004191759734
+        },
+        "activation_input_visible": {
+          "mean_pairwise_cosine": 0.02457349694730232,
+          "max_pairwise_cosine": 0.13215816936135052,
+          "min_pairwise_cosine": -0.07868166836450505,
+          "mean_pairwise_l2": 43.92492448581796,
+          "max_pairwise_l2": 46.19975782910053,
+          "min_pairwise_l2": 41.439388658869056
+        },
+        "expected_linkability": "low on both views",
+        "interpretation": "Fresh permutation per trial scrambles the activation input as well; cosine across trials drops because Z P_i \u2260 Z P_j."
+      },
+      "dense_to_perm_to_dense_sandwich": {
+        "strategy": "dense_to_perm_to_dense_sandwich",
+        "num_trials": 16,
+        "view": "post_island_dense_visible",
+        "pre_island_dense_visible": {
+          "mean_pairwise_cosine": 0.003852468150874787,
+          "max_pairwise_cosine": 0.08505701825136243,
+          "min_pairwise_cosine": -0.0876758008882843,
+          "mean_pairwise_l2": 44.38934989628797,
+          "max_pairwise_l2": 46.39196699823665,
+          "min_pairwise_l2": 42.549069508719064
+        },
+        "island_visible": {
+          "mean_pairwise_cosine": 0.02131374933246675,
+          "max_pairwise_cosine": 0.1454221855312893,
+          "min_pairwise_cosine": -0.0703839482270202,
+          "mean_pairwise_l2": 43.99982051990723,
+          "max_pairwise_l2": 46.02171978827833,
+          "min_pairwise_l2": 41.1214913663609
+        },
+        "post_island_dense_visible": {
+          "mean_pairwise_cosine": 0.002078614483503677,
+          "max_pairwise_cosine": 0.10950041782742834,
+          "min_pairwise_cosine": -0.057311207977378695,
+          "mean_pairwise_l2": 44.4302697669045,
+          "max_pairwise_l2": 45.73982076562438,
+          "min_pairwise_l2": 41.97685510514999
+        },
+        "expected_linkability": "lowest",
+        "interpretation": "Fresh dense masks around the permutation island destroy coordinate-value alignment; the post-island visible tensor has near-zero pairwise cosine across requests."
+      }
+    },
+    "main_metric_per_strategy": {
+      "metric": "mean_pairwise_cosine over the principal visible view",
+      "values": {
+        "fixed_perm_no_pad": 1.0000000000000016,
+        "fixed_perm_with_linear_boundary_pad": 1.0000000000000016,
+        "fresh_perm_with_linear_boundary_pad": 0.02457349694730232,
+        "dense_to_perm_to_dense_sandwich": 0.002078614483503677
+      }
+    },
+    "linkability_rank_high_to_low": [
+      "fixed_perm_no_pad",
+      "fixed_perm_with_linear_boundary_pad",
+      "fresh_perm_with_linear_boundary_pad",
+      "dense_to_perm_to_dense_sandwich"
+    ],
+    "notes": [
+      "Activation island permutation preserves the coordinate-value multiset.",
+      "Boundary pad does not protect the activation input when P is fixed.",
+      "Dense sandwich is the strongest of the four under naive observers."
+    ]
+  },
+  "mask_family_accounting": {
+    "table": [
+      {
+        "mask_family": "dense_invertible",
+        "used_for": "Linear / Attention / KV cache boundaries",
+        "correctness_role": "right-multiply mask for arbitrary invertible linear ops",
+        "preserved_statistics": "rank, dimension, algebraic relations under same mask",
+        "gpu_visible_leakage": "channel identity hidden via dense mixing; algebraic structure preserved only under reuse",
+        "mitigation": "fresh mask across sessions; pad at Linear boundaries",
+        "security_strength_relative_to_dense": "baseline (this IS dense)",
+        "notes": "Strongest of the listed families; the reference against which the others are compared."
+      },
+      {
+        "mask_family": "orthogonal",
+        "used_for": "RMSNorm core",
+        "correctness_role": "commutes with rms(.) and right-rotates the normalised state",
+        "preserved_statistics": "row L2 norm (||X N||_2 = ||X||_2); pairwise dot products if the same mask is reused",
+        "gpu_visible_leakage": "row L2 norm preserved by design; coordinate identity hidden under rotation",
+        "mitigation": "restrict island lifetime; sandwich with dense masks at Linear boundaries",
+        "security_strength_relative_to_dense": "weaker (row L2 norm always preserved)",
+        "notes": "Designed to preserve rms; an attacker observing many samples can always read row norms."
+      },
+      {
+        "mask_family": "mean_preserving_orthogonal",
+        "used_for": "LayerNorm core",
+        "correctness_role": "commutes with LayerNorm core (mean + centered variance preserved)",
+        "preserved_statistics": "row mean (X N \u00b7 1 = X \u00b7 1); row centered L2 norm",
+        "gpu_visible_leakage": "row mean and centered norm preserved by design",
+        "mitigation": "sandwich with dense masks at Linear boundaries; avoid reuse across sessions",
+        "security_strength_relative_to_dense": "weaker (mean + centered norm always preserved)",
+        "notes": "Strict subset of orthogonal masks: also preserves the all-ones direction."
+      },
+      {
+        "mask_family": "permutation",
+        "used_for": "GELU / ReLU / SiLU activation island",
+        "correctness_role": "commutes exactly with element-wise activations: f(X P) = f(X) P",
+        "preserved_statistics": "coordinate-value multiset; per-token sorted values",
+        "gpu_visible_leakage": "channel identity hidden if P is secret; multiset always leaks",
+        "mitigation": "fresh permutation per session; permutation pool; dense sandwich at Linear boundaries",
+        "security_strength_relative_to_dense": "weaker (multiset and sorted values always preserved)",
+        "notes": "Permutation islands hide channel identity but do not hide coordinate-value multisets."
+      },
+      {
+        "mask_family": "paired_permutation",
+        "used_for": "SwiGLU up / gate branches (shared P)",
+        "correctness_role": "commutes with SwiGLU when up and gate use the same P",
+        "preserved_statistics": "coordinate-value multiset; paired (up, gate) alignment per channel",
+        "gpu_visible_leakage": "same as permutation, plus paired alignment exposes that up and gate share P",
+        "mitigation": "fresh paired permutation; branch-consistency checks; dense sandwich",
+        "security_strength_relative_to_dense": "weaker (paired multiset always preserved)",
+        "notes": "Inherits permutation leakage; the paired structure is an additional small leakage channel."
+      }
+    ],
+    "summary_notes": [
+      "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+      "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+      "Orthogonal masks preserve row norms by design.",
+      "Mean-preserving orthogonal masks preserve row means and centered norms by design.",
+      "Dense sandwiching and pad at Linear boundaries are required mitigations."
+    ]
+  },
+  "global_summary": {
+    "fixed_perm_recovery_top1": 0.25,
+    "fresh_perm_recovery_top1": 0.1005859375,
+    "sandwich_perm_recovery_top1": 0.0205078125,
+    "random_chance_top1": 0.015625,
+    "fixed_perm_no_pad_linkability_cos": 1.0000000000000016,
+    "fresh_perm_with_pad_linkability_cos": 0.02457349694730232,
+    "dense_sandwich_linkability_cos": 0.002078614483503677,
+    "fixed_permutation_is_more_recoverable_than_fresh": true,
+    "fixed_permutation_is_more_recoverable_than_sandwich": true,
+    "fixed_no_pad_more_linkable_than_fresh_with_pad": true
+  },
+  "limitations": [
+    "These experiments are security proxies, not formal security proofs.",
+    "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+    "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+    "Orthogonal masks preserve row norms by design.",
+    "Mean-preserving orthogonal masks preserve row means and centered norms by design.",
+    "Fresh permutation reduces stable statistical recovery but does not provide dense linear mixing.",
+    "Dense sandwiching and pad at Linear boundaries are required mitigations.",
+    "This stage does not implement adaptive learned inversion attacks.",
+    "This stage does not implement real TEE isolation.",
+    "This stage does not prove semantic security."
+  ]
+}

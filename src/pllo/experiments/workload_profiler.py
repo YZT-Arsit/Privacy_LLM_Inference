@@ -154,15 +154,26 @@ def _per_forward_boundary_calls(method: WorkloadMethod, layers: int) -> int:
 
     Formulas (documented for the paper):
 
-    * ``plain_hf_gpu``               : 0   (no boundary)
-    * ``tslp_trusted_nonlinear``     : 3L + 2  (LN_1 + LN_2 + GELU per layer + ln_f + LM head)
-    * ``ours_current``               : 4L + 1  (4 obfuscated linears per layer + LM head)
-    * ``ours_ideal_gpu_nonlinear``   : 1      (single fused GPU pipeline round trip)
-    * ``amulet_style_reference``     : 1      (single fused GPU pipeline round trip)
+    * ``plain_hf_gpu``                      : 0       (no boundary)
+    * ``tslp_trusted_nonlinear``            : 3L + 2  (LN_1 + LN_2 + GELU per layer + ln_f + LM head)
+    * ``ours_current``                      : 4L + 1  (4 obfuscated linears per layer + LM head)
+    * ``ours_compatible_nonlinear_islands`` : L + 2   (1 input mask + L per-layer dense-mask
+                                                       transition between islands + 1 LM head;
+                                                       projected, conservative model)
+    * ``ours_ideal_gpu_nonlinear``          : 1       (single fused GPU pipeline round trip)
+    * ``amulet_style_reference``            : 1       (single fused GPU pipeline round trip)
     """
     if not method.linear_obfuscated and not method.layernorm_in_tee and not method.activation_in_tee:
         # plain
         return 0
+    # Compatible nonlinear islands: model conservatively as L + 2 per forward.
+    # 1 input masking call + L per-layer dense-mask transition between islands
+    # (Attention output → Norm island → MLP island residual entry) + 1 LM head.
+    if method.name == "ours_compatible_nonlinear_islands":
+        crossings = layers + 1  # L per-layer + 1 input mask
+        if method.lm_head_recovered_in_tee:
+            crossings += 1
+        return crossings
     if method.fuses_gpu_pipeline and method.linear_obfuscated and not method.layernorm_in_tee:
         # ours_ideal / amulet — single fused GPU pipeline
         return 1
@@ -210,6 +221,10 @@ def _per_forward_trusted_transfer_bytes(
         per_layer = 4 * hidden + 2 * hidden + (hidden + inter) + (inter + hidden)
         # LM head: hidden in + vocab logits out (vocab mask recovery in trusted)
         return tokens * db * (layers * per_layer + hidden + vocab)
+    if method.name == "ours_compatible_nonlinear_islands":
+        # Input mask (hidden) + per-layer dense-mask transition residual carry
+        # (2 * hidden per layer: in + out) + LM head logits recovery (vocab).
+        return tokens * db * (hidden + 2 * hidden * layers + vocab)
     if method.name in ("ours_ideal_gpu_nonlinear", "amulet_style_reference"):
         # Input mask (hidden) + LM head logits recovery (vocab).
         return tokens * db * (hidden + vocab)
@@ -246,6 +261,20 @@ def _per_forward_trusted_compute_ops(
 
     # LM head recovery (vocab mask) — element-wise multiply on the vocab dim.
     lm_head_recovery = tokens * vocab if method.lm_head_recovered_in_tee else 0
+
+    # Compatible nonlinear islands path: LN and GELU now run on GPU (so
+    # ln_total = gelu_total = 0 above). The trusted side still pays for
+    # sampling + LM head recovery + the per-layer dense-mask residual
+    # bookkeeping. Mask-state creation and pad compensation generation are
+    # attributed to preprocessing (Stage 5.2a folded mask transitions into
+    # the masked weights offline).
+    if method.name == "ours_compatible_nonlinear_islands":
+        # Per-layer dense-mask transition bookkeeping between Norm /
+        # Activation islands and Attention / KV — modeled as one small
+        # residual transform per layer. Sampling FLOPs live in the
+        # interaction breakdown, not in the aggregate online compute.
+        dense_sandwich_residual = tokens * layers * 2 * hidden
+        return ln_total + gelu_total + lm_head_recovery + dense_sandwich_residual
 
     # For ours_current the trusted side also performs attention scores,
     # softmax, value aggregation, mask-state creation, and (optionally) pad
@@ -336,8 +365,37 @@ def _preprocessing(method: WorkloadMethod, consts: dict[str, int]) -> dict[str, 
         + inter * hidden
     ) * db
     total_transfer_bytes = layers * weight_bytes_per_layer + hidden * vocab * db
+    base_trusted_ops = layers * per_layer_ops
+
+    # Stage 5.2c — ``ours_compatible_nonlinear_islands`` carries additional
+    # preprocessing-only trusted cost:
+    #   * affine folding: diag(gamma) @ W and beta @ W + b per LayerNorm
+    #     (2L + 1 LNs; each fold is O(hidden^2)).
+    #   * permutation absorption: W[:, perm] / W[perm, :] is a reindex; we
+    #     model it as the memory-movement cost of the four MLP weight tensors
+    #     (O(hidden * inter) each).
+    #   * compatible mask generation: orthogonal / mean-preserving orthogonal
+    #     / permutation per island, via QR (O(hidden^3) per LN site).
+    if method.name == "ours_compatible_nonlinear_islands":
+        affine_folding_ops = (2 * layers + 1) * 2 * hidden * hidden
+        permutation_absorption_ops = layers * 4 * hidden * inter
+        compatible_mask_generation_ops = (2 * layers + 1) * hidden * hidden * hidden
+        extra = (
+            affine_folding_ops
+            + permutation_absorption_ops
+            + compatible_mask_generation_ops
+        )
+        # Transfer cost only goes up by the new transformed-weight bytes,
+        # which are already covered by ``total_transfer_bytes`` above.
+        return {
+            "trusted_ops": base_trusted_ops + extra,
+            "transfer_bytes": total_transfer_bytes,
+            "affine_folding_ops": affine_folding_ops,
+            "permutation_absorption_ops": permutation_absorption_ops,
+            "compatible_mask_generation_ops": compatible_mask_generation_ops,
+        }
     return {
-        "trusted_ops": layers * per_layer_ops,
+        "trusted_ops": base_trusted_ops,
         "transfer_bytes": total_transfer_bytes,
     }
 
@@ -498,7 +556,11 @@ def _interaction_breakdown(
     }
 
     # --- input_masking ---
-    if method.name in ("ours_ideal_gpu_nonlinear", "amulet_style_reference"):
+    if method.name in (
+        "ours_ideal_gpu_nonlinear",
+        "amulet_style_reference",
+        "ours_compatible_nonlinear_islands",
+    ):
         out["input_masking"].online_boundary_calls = len(forwards)
         out["input_masking"].online_trusted_transfer_bytes = (
             total_tokens * hidden * db * batch_size
@@ -571,6 +633,55 @@ def _interaction_breakdown(
         out["preprocessing_weight_obfuscation"].online_trusted_compute_ops = 0
         out["preprocessing_weight_obfuscation"].notes = (
             "Amortised over many sessions; not counted in online latency."
+        )
+
+    # ---- Stage 5.2c: extra slices for ``ours_compatible_nonlinear_islands`` ----
+    if method.name == "ours_compatible_nonlinear_islands":
+        pre = _preprocessing(method, consts)
+        out["preprocessing_affine_folding"].online_trusted_compute_ops = 0
+        out["preprocessing_affine_folding"].notes = (
+            f"Amortised offline: diag(gamma) @ W and beta @ W + b per LN"
+            f" ({pre.get('affine_folding_ops', 0)} ops); not counted in online latency."
+        )
+        out["preprocessing_permutation_absorption"].online_trusted_compute_ops = 0
+        out["preprocessing_permutation_absorption"].notes = (
+            f"Amortised offline: W[:, perm] / W[perm, :] reindex for each MLP"
+            f" weight ({pre.get('permutation_absorption_ops', 0)} ops)."
+        )
+        # GPU LN / GELU compute now lives in compatible_norm_core_gpu /
+        # compatible_activation_island_gpu instead of trusted_layernorm /
+        # trusted_gelu. We don't add boundary or transfer here — those live in
+        # input_masking and lm_head_recovery.
+        out["compatible_norm_core_gpu"].notes = (
+            "RMSNorm / LayerNorm core executes on GPU under an orthogonal"
+            " (resp. mean-preserving orthogonal) mask; affine parameters are"
+            " folded into the following Linear offline."
+        )
+        out["compatible_activation_island_gpu"].notes = (
+            "GELU / ReLU / SiLU commutes with a permutation mask on the channel"
+            " dimension; SwiGLU uses a paired permutation on the up- and gate-"
+            "branches. Activation runs on GPU in the masked domain."
+        )
+        out["dense_sandwich_transition"].online_boundary_calls = (
+            len(forwards) * layers
+        )
+        out["dense_sandwich_transition"].online_trusted_transfer_bytes = (
+            total_tokens * layers * 2 * hidden * db * batch_size
+        )
+        out["dense_sandwich_transition"].online_trusted_compute_ops = (
+            total_tokens * layers * 2 * hidden * batch_size
+        )
+        out["dense_sandwich_transition"].notes = (
+            "Per-layer dense-mask transition between Attention output and the"
+            " Norm/MLP island sits at a Linear boundary; modeled conservatively"
+            " as one residual transition per layer."
+        )
+        out["security_proxy_requirements"].notes = (
+            "Required mitigations under Stage 5.2b: fresh permutation per"
+            " session, dense-mask sandwiching at Linear boundaries, and pad"
+            " never pushed through an activation. Compatible mask families"
+            " are weaker than unrestricted dense masks inside nonlinear"
+            " islands; this is a projected method, not a real TEE measurement."
         )
 
     return out
@@ -748,7 +859,38 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             "preprocessing_trusted_ops": pre["trusted_ops"],
             "preprocessing_transfer_bytes": pre["transfer_bytes"],
             "boundary_calls_formula": _boundary_calls_formula(method, consts["layers"]),
+            "uses_compatible_nonlinear_islands": method.uses_compatible_nonlinear_islands,
+            "uses_dense_sandwich": method.uses_dense_sandwich,
+            "uses_fresh_permutation": method.uses_fresh_permutation,
+            "online_extra_matmul_count": method.online_extra_matmul_count,
+            "security_profile": method.security_profile,
         }
+        if method.name == "ours_compatible_nonlinear_islands":
+            # Stage 5.3a — the method is now partially wrapper-integrated at
+            # the GPT-2 single-block level (behind a feature flag). The
+            # full-model / BERT / T5 paths are still projected.
+            record["partial_implementation"] = True
+            record["wrapper_integration_status"] = {
+                "gpt2_single_block": "implemented",
+                "gpt2_model_level": "not_yet",
+                "bert": "not_yet",
+                "t5": "not_yet",
+            }
+            record["preprocessing_breakdown"] = {
+                "base_weight_obfuscation_ops": pre.get(
+                    "trusted_ops", 0
+                )
+                - pre.get("affine_folding_ops", 0)
+                - pre.get("permutation_absorption_ops", 0)
+                - pre.get("compatible_mask_generation_ops", 0),
+                "affine_folding_ops": pre.get("affine_folding_ops", 0),
+                "permutation_absorption_ops": pre.get(
+                    "permutation_absorption_ops", 0
+                ),
+                "compatible_mask_generation_ops": pre.get(
+                    "compatible_mask_generation_ops", 0
+                ),
+            }
         projected = _project_wall_time_ms(agg, gpu_flops_per_ms, config.cost_model)
         record["projected_wall_time_ms"] = float(projected)
         if method.name == "plain_hf_gpu":
@@ -815,6 +957,55 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
         },
     }
 
+    # Stage 5.2c — extra paper_metrics for ``ours_compatible_nonlinear_islands``.
+    islands_agg = online_aggregates.get("ours_compatible_nonlinear_islands")
+    islands_pre = preprocessing_aggregates.get("ours_compatible_nonlinear_islands")
+    ours_pre = preprocessing_aggregates.get("ours_current")
+    if islands_agg is not None and islands_pre is not None and ours_pre is not None:
+        islands_gpu_offload = islands_agg["online_gpu_ops"] / max(
+            islands_agg["online_gpu_ops"]
+            + islands_agg["online_trusted_compute_ops"],
+            1,
+        )
+        pre_increase = (
+            (islands_pre["trusted_ops"] - ours_pre["trusted_ops"])
+            / max(ours_pre["trusted_ops"], 1)
+            if ours_pre["trusted_ops"] > 0
+            else None
+        )
+        paper_metrics["ours_compatible_nonlinear_islands"] = {
+            "boundary_call_reduction_vs_ours_current": _reduction(
+                ours_agg["online_boundary_calls"],
+                islands_agg["online_boundary_calls"],
+            ),
+            "boundary_call_reduction_vs_tslp": _reduction(
+                tslp_agg["online_boundary_calls"],
+                islands_agg["online_boundary_calls"],
+            ),
+            "trusted_compute_reduction_vs_ours_current": _reduction(
+                ours_agg["online_trusted_compute_ops"],
+                islands_agg["online_trusted_compute_ops"],
+            ),
+            "trusted_compute_reduction_vs_tslp": _reduction(
+                tslp_agg["online_trusted_compute_ops"],
+                islands_agg["online_trusted_compute_ops"],
+            ),
+            "preprocessing_cost_increase_vs_ours_current": pre_increase,
+            "online_extra_matmul_count": 0,
+            "gpu_offload_ratio": float(islands_gpu_offload),
+            "projected_not_measured": True,
+            "security_proxy_available": True,
+            "security_proxy_caveats": [
+                "Compatible mask families are weaker than unrestricted dense"
+                " masks inside nonlinear islands.",
+                "Permutation islands hide channel identity but do not hide"
+                " coordinate-value multisets.",
+                "Fresh permutation, dense sandwiching, and pad at Linear"
+                " boundaries are required mitigations.",
+                "This is not a real TEE measurement.",
+            ],
+        }
+
     # ---- Interpretation ----
     main_online_bottleneck = max(
         MODULE_CATEGORIES,
@@ -841,6 +1032,23 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
         "module_breakdown": module_json,
         "interaction_breakdown": interaction_json,
         "paper_metrics": paper_metrics,
+        "wrapper_integration_status": {
+            "ours_compatible_nonlinear_islands": {
+                "gpt2_single_block": "implemented",
+                "gpt2_model_level": "not_yet",
+                "bert": "not_yet",
+                "t5": "not_yet",
+                "note": (
+                    "Stage 5.3a integrates the compatible GELU MLP island"
+                    " into the GPT-2 single-block wrapper behind a"
+                    " nonlinear_mode feature flag. Default mode remains"
+                    " 'trusted'; ours_compatible_nonlinear_islands is still"
+                    " marked partial_implementation=True because the GPT-2"
+                    " model-level wrapper, BERT, and T5 are not yet wired"
+                    " up. Full-model measured runtime is pending Stage 5.3b."
+                ),
+            },
+        },
         "interpretation": {
             "main_online_bottleneck": main_online_bottleneck,
             "next_primitive_to_replace": next_primitive,
@@ -865,6 +1073,11 @@ def _boundary_calls_formula(method: WorkloadMethod, layers: int) -> str:
         return f"3L + 2 = {3 * layers + 2} per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head)"
     if method.name == "ours_current":
         return f"4L + 1 = {4 * layers + 1} per forward (4 obfuscated linears per layer + LM head)"
+    if method.name == "ours_compatible_nonlinear_islands":
+        return (
+            f"L + 2 = {layers + 2} per forward (1 input mask + L per-layer dense-mask"
+            f" transition between islands + 1 LM head; projected, conservative model)"
+        )
     if method.name == "ours_ideal_gpu_nonlinear":
         return "1 per forward (single fused GPU pipeline round trip)"
     if method.name == "amulet_style_reference":

@@ -18,7 +18,7 @@
     }
   },
   "calibration": {
-    "gpu_flops_per_ms": 1159028.6121468372,
+    "gpu_flops_per_ms": 1386602.460089486,
     "calibrated_from": "plain_hf_gpu"
   },
   "methods": {
@@ -35,10 +35,15 @@
       "preprocessing_trusted_ops": 0,
       "preprocessing_transfer_bytes": 0,
       "boundary_calls_formula": "0 (no boundary)",
-      "projected_wall_time_ms": 3.8259832013864066,
-      "measured_wall_time_ms": 3.825983201386407,
-      "measured_wall_time_ms_median": 3.709958000399638,
-      "measured_wall_time_ms_stdev": 0.901304881522745,
+      "uses_compatible_nonlinear_islands": false,
+      "uses_dense_sandwich": false,
+      "uses_fresh_permutation": false,
+      "online_extra_matmul_count": 0,
+      "security_profile": "n/a",
+      "projected_wall_time_ms": 3.1980500018107705,
+      "measured_wall_time_ms": 3.1980500018107705,
+      "measured_wall_time_ms_median": 3.023916004167404,
+      "measured_wall_time_ms_stdev": 0.6307987053636837,
       "wall_time_source": "measured"
     },
     "tslp_trusted_nonlinear_baseline": {
@@ -54,7 +59,12 @@
       "preprocessing_trusted_ops": 0,
       "preprocessing_transfer_bytes": 0,
       "boundary_calls_formula": "3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head)",
-      "projected_wall_time_ms": 56.00002760406776,
+      "uses_compatible_nonlinear_islands": false,
+      "uses_dense_sandwich": false,
+      "uses_fresh_permutation": false,
+      "online_extra_matmul_count": 0,
+      "security_profile": "n/a",
+      "projected_wall_time_ms": 47.5120791272156,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -73,10 +83,15 @@
       "preprocessing_trusted_ops": 403784,
       "preprocessing_transfer_bytes": 402440,
       "boundary_calls_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
-      "projected_wall_time_ms": 56.28346360034757,
-      "measured_wall_time_ms": 6.169191800290719,
-      "measured_wall_time_ms_median": 6.023249996360391,
-      "measured_wall_time_ms_stdev": 0.3110272648488894,
+      "uses_compatible_nonlinear_islands": false,
+      "uses_dense_sandwich": false,
+      "uses_fresh_permutation": false,
+      "online_extra_matmul_count": 0,
+      "security_profile": "n/a",
+      "projected_wall_time_ms": 47.752467437331205,
+      "measured_wall_time_ms": 6.197958598204423,
+      "measured_wall_time_ms_median": 6.196709000505507,
+      "measured_wall_time_ms_stdev": 0.19575434164362707,
       "wall_time_source": "measured"
     },
     "ours_ideal_gpu_nonlinear": {
@@ -92,7 +107,49 @@
       "preprocessing_trusted_ops": 403784,
       "preprocessing_transfer_bytes": 402440,
       "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
-      "projected_wall_time_ms": 55.66247123017912,
+      "uses_compatible_nonlinear_islands": false,
+      "uses_dense_sandwich": false,
+      "uses_fresh_permutation": false,
+      "online_extra_matmul_count": 0,
+      "security_profile": "n/a",
+      "projected_wall_time_ms": 47.2062738203746,
+      "measured_wall_time_ms": null,
+      "measured_wall_time_ms_median": null,
+      "measured_wall_time_ms_stdev": null,
+      "wall_time_source": "projected_from_op_counts"
+    },
+    "ours_compatible_nonlinear_islands": {
+      "title": "This work \u2014 projected: operator-compatible nonlinear islands",
+      "summary": "Modeled / projected method. RMSNorm core uses an orthogonal mask, LayerNorm core uses a mean-preserving orthogonal mask, GELU / ReLU / SiLU activations use permutation masks, and SwiGLU uses a paired permutation. Every mask transition is folded into adjacent Linear weights offline, so the masked forward executes with the same number of matmuls as the plaintext forward (Stage 5.2a verified ``online_extra_matmul_count = 0`` for every MLP island cell). Trusted shortcuts for LN and GELU are removed.",
+      "implemented": false,
+      "implementation_note": "Projected, not measured. Stage 5.2a verified the correctness probe (28 cells, all_allclose=True, max_online_extra_matmul=0). Stage 5.2b validated the security proxy (fresh permutation + dense sandwich + pad at Linear boundaries are required mitigations). Not yet integrated into the GPT-2 / BERT / T5 wrappers \u2014 Stage 5.3 is the integration step.",
+      "citation_caveat": "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands. The Stage 5.2b security proxy quantified per-strategy linkability and permutation recovery, but the result is a naive-observer upper bound, NOT a formal security proof and NOT a real TEE measurement.",
+      "online_boundary_calls": 16,
+      "online_trusted_compute_ops": 1105830,
+      "online_trusted_transfer_bytes": 4423496,
+      "online_gpu_ops": 4434424,
+      "preprocessing_trusted_ops": 403992,
+      "preprocessing_transfer_bytes": 402440,
+      "boundary_calls_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+      "uses_compatible_nonlinear_islands": true,
+      "uses_dense_sandwich": true,
+      "uses_fresh_permutation": true,
+      "online_extra_matmul_count": 0,
+      "security_profile": "proxy-evaluated, not formal",
+      "partial_implementation": true,
+      "wrapper_integration_status": {
+        "gpt2_single_block": "implemented",
+        "gpt2_model_level": "not_yet",
+        "bert": "not_yet",
+        "t5": "not_yet"
+      },
+      "preprocessing_breakdown": {
+        "base_weight_obfuscation_ops": 403784,
+        "affine_folding_ops": 40,
+        "permutation_absorption_ops": 128,
+        "compatible_mask_generation_ops": 40
+      },
+      "projected_wall_time_ms": 47.2732759191717,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -111,7 +168,12 @@
       "preprocessing_trusted_ops": 403784,
       "preprocessing_transfer_bytes": 402440,
       "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
-      "projected_wall_time_ms": 55.66247123017912,
+      "uses_compatible_nonlinear_islands": false,
+      "uses_dense_sandwich": false,
+      "uses_fresh_permutation": false,
+      "online_extra_matmul_count": 0,
+      "security_profile": "n/a",
+      "projected_wall_time_ms": 47.2062738203746,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -142,6 +204,13 @@
         "location": "gpu"
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 44,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_gpu_ops": 44,
         "online_trusted_compute_ops": 0,
         "online_boundary_calls": 0,
@@ -185,6 +254,13 @@
         "online_trusted_transfer_bytes": 0,
         "location": "gpu"
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_gpu_ops": 1760,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
       "amulet_style_reference": {
         "online_gpu_ops": 1760,
         "online_trusted_compute_ops": 0,
@@ -222,6 +298,13 @@
         "online_trusted_transfer_bytes": 0,
         "location": "gpu"
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_gpu_ops": 1056,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 1408,
+        "location": "gpu"
+      },
       "amulet_style_reference": {
         "online_gpu_ops": 1056,
         "online_trusted_compute_ops": 0,
@@ -253,6 +336,13 @@
         "location": "gpu"
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 3008,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_gpu_ops": 3008,
         "online_trusted_compute_ops": 0,
         "online_boundary_calls": 0,
@@ -296,6 +386,13 @@
         "online_trusted_transfer_bytes": 0,
         "location": "gpu"
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_gpu_ops": 352,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 704,
+        "location": "gpu"
+      },
       "amulet_style_reference": {
         "online_gpu_ops": 352,
         "online_trusted_compute_ops": 0,
@@ -333,6 +430,13 @@
         "online_trusted_transfer_bytes": 0,
         "location": "gpu"
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 1760,
+        "location": "gpu"
+      },
       "amulet_style_reference": {
         "online_gpu_ops": 1408,
         "online_trusted_compute_ops": 0,
@@ -364,6 +468,13 @@
         "location": "tee"
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 2816,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_gpu_ops": 2816,
         "online_trusted_compute_ops": 0,
         "online_boundary_calls": 0,
@@ -407,6 +518,13 @@
         "online_trusted_transfer_bytes": 0,
         "location": "gpu"
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_gpu_ops": 1408,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 1760,
+        "location": "gpu"
+      },
       "amulet_style_reference": {
         "online_gpu_ops": 1408,
         "online_trusted_compute_ops": 0,
@@ -438,6 +556,13 @@
         "location": "mixed"
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_gpu_ops": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "location": "mixed"
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_gpu_ops": 4422616,
         "online_trusted_compute_ops": 1105654,
         "online_boundary_calls": 4,
@@ -481,6 +606,13 @@
         "online_trusted_transfer_bytes": 0,
         "location": "gpu"
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_gpu_ops": 176,
+        "online_trusted_compute_ops": 0,
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "location": "gpu"
+      },
       "amulet_style_reference": {
         "online_gpu_ops": 176,
         "online_trusted_compute_ops": 0,
@@ -511,6 +643,12 @@
         "notes": "Bundled into per-linear round trips below."
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 176,
+        "online_trusted_compute_ops": 0,
+        "notes": "Trusted prepares masked hidden state, single OCALL per forward."
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_boundary_calls": 4,
         "online_trusted_transfer_bytes": 176,
         "online_trusted_compute_ops": 0,
@@ -548,6 +686,12 @@
         "online_trusted_compute_ops": 0,
         "notes": ""
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
       "amulet_style_reference": {
         "online_boundary_calls": 0,
         "online_trusted_transfer_bytes": 0,
@@ -575,6 +719,12 @@
         "notes": "Trusted shortcut, no separate boundary crossing."
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_boundary_calls": 0,
         "online_trusted_transfer_bytes": 0,
         "online_trusted_compute_ops": 0,
@@ -612,6 +762,12 @@
         "online_trusted_compute_ops": 1105654,
         "notes": "Logits transferred to trusted side and multiplied by inverse vocab mask."
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 4,
+        "online_trusted_transfer_bytes": 4422616,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Logits transferred to trusted side and multiplied by inverse vocab mask."
+      },
       "amulet_style_reference": {
         "online_boundary_calls": 4,
         "online_trusted_transfer_bytes": 4422616,
@@ -639,6 +795,12 @@
         "notes": "Greedy argmax in trusted side; no extra boundary call."
       },
       "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 1105654,
+        "notes": "Greedy argmax in trusted side; no extra boundary call."
+      },
+      "ours_compatible_nonlinear_islands": {
         "online_boundary_calls": 0,
         "online_trusted_transfer_bytes": 0,
         "online_trusted_compute_ops": 1105654,
@@ -676,11 +838,245 @@
         "online_trusted_compute_ops": 0,
         "notes": "Amortised over many sessions; not counted in online latency."
       },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Amortised over many sessions; not counted in online latency."
+      },
       "amulet_style_reference": {
         "online_boundary_calls": 0,
         "online_trusted_transfer_bytes": 0,
         "online_trusted_compute_ops": 0,
         "notes": "Amortised over many sessions; not counted in online latency."
+      }
+    },
+    "preprocessing_affine_folding": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Amortised offline: diag(gamma) @ W and beta @ W + b per LN (40 ops); not counted in online latency."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "preprocessing_permutation_absorption": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Amortised offline: W[:, perm] / W[perm, :] reindex for each MLP weight (128 ops)."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "compatible_norm_core_gpu": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "RMSNorm / LayerNorm core executes on GPU under an orthogonal (resp. mean-preserving orthogonal) mask; affine parameters are folded into the following Linear offline."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "compatible_activation_island_gpu": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "GELU / ReLU / SiLU commutes with a permutation mask on the channel dimension; SwiGLU uses a paired permutation on the up- and gate-branches. Activation runs on GPU in the masked domain."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "dense_sandwich_transition": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 8,
+        "online_trusted_transfer_bytes": 704,
+        "online_trusted_compute_ops": 176,
+        "notes": "Per-layer dense-mask transition between Attention output and the Norm/MLP island sits at a Linear boundary; modeled conservatively as one residual transition per layer."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      }
+    },
+    "security_proxy_requirements": {
+      "plain_hf_gpu": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_current": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
+      },
+      "ours_compatible_nonlinear_islands": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": "Required mitigations under Stage 5.2b: fresh permutation per session, dense-mask sandwiching at Linear boundaries, and pad never pushed through an activation. Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands; this is a projected method, not a real TEE measurement."
+      },
+      "amulet_style_reference": {
+        "online_boundary_calls": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_trusted_compute_ops": 0,
+        "notes": ""
       }
     }
   },
@@ -695,7 +1091,34 @@
       "tslp_trusted_nonlinear_baseline": 8,
       "ours_current": 9,
       "ours_ideal_gpu_nonlinear": 1,
+      "ours_compatible_nonlinear_islands": 4,
       "amulet_style_reference": 1
+    },
+    "ours_compatible_nonlinear_islands": {
+      "boundary_call_reduction_vs_ours_current": 0.5555555555555556,
+      "boundary_call_reduction_vs_tslp": 0.5,
+      "trusted_compute_reduction_vs_ours_current": 0.009388073205471598,
+      "trusted_compute_reduction_vs_tslp": 0.003963142772218369,
+      "preprocessing_cost_increase_vs_ours_current": 0.000515126899530442,
+      "online_extra_matmul_count": 0,
+      "gpu_offload_ratio": 0.800400848047761,
+      "projected_not_measured": true,
+      "security_proxy_available": true,
+      "security_proxy_caveats": [
+        "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+        "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+        "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+        "This is not a real TEE measurement."
+      ]
+    }
+  },
+  "wrapper_integration_status": {
+    "ours_compatible_nonlinear_islands": {
+      "gpt2_single_block": "implemented",
+      "gpt2_model_level": "not_yet",
+      "bert": "not_yet",
+      "t5": "not_yet",
+      "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag. Default mode remains 'trusted'; ours_compatible_nonlinear_islands is still marked partial_implementation=True because the GPT-2 model-level wrapper, BERT, and T5 are not yet wired up. Full-model measured runtime is pending Stage 5.3b."
     }
   },
   "interpretation": {
