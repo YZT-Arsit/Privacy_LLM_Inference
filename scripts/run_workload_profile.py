@@ -343,6 +343,59 @@ def _build_markdown(profile: dict) -> str:
                     "- BERT/T5 are probe-level integrations, not full"
                     " wrappers."
                 )
+                qwen_status = wrapper_status.get("qwen_or_modern_decoder")
+                if qwen_status == "implemented_probe_level":
+                    out.append(
+                        "- Qwen / TinyLlama / modern decoder-only is a"
+                        " probe-level migration (Stage 6.4): RMSNorm +"
+                        " SwiGLU + RoPE-post-mask + GQA/MQA tensor probes."
+                    )
+                    out.append(
+                        "- modern_decoder_probe: `implemented` (default"
+                        " synthetic; HF model load is opt-in)."
+                    )
+                if islands_record.get("mitigation_bundle_selectable"):
+                    out.append("")
+                    out.append("### Stage 5.3e Dense-Sandwich Mitigation Integration")
+                    out.append("")
+                    out.append(
+                        "- `mitigation_bundle_selectable = True`."
+                    )
+                    out.append(
+                        "- `default_mitigation_bundle = "
+                        f"\"{islands_record['default_mitigation_bundle']}\"`"
+                        " (preserves backward compatibility for every Stage"
+                        " 5.3a / 5.3b / 5.3c / 6.4 caller that omits the"
+                        " bundle argument)."
+                    )
+                    out.append(
+                        "- `recommended_default_on_bundle = "
+                        f"\"{islands_record['recommended_default_on_bundle']}\"`."
+                    )
+                    out.append(
+                        "- `recommended_default_on_status = "
+                        f"\"{islands_record['recommended_default_on_status']}\"`"
+                        " (per Stage 5.4 adaptive proxy attackers — NOT a"
+                        " formal security claim)."
+                    )
+                    out.append(
+                        "- `dense_sandwich_supported = "
+                        f"{islands_record['dense_sandwich_supported']}`,"
+                        " `boundary_pad_required = "
+                        f"{islands_record['boundary_pad_required']}`,"
+                        " `fresh_permutation_required = "
+                        f"{islands_record['fresh_permutation_required']}`."
+                    )
+                    out.append(
+                        "- `compatible_islands` remains feature-flagged"
+                        " behind `nonlinear_mode`; default mode is still"
+                        " `\"trusted\"`."
+                    )
+                    out.append(
+                        "- security is `adaptive-proxy-mitigated, not"
+                        " formal` when the full bundle is enabled; this is"
+                        " not a real TEE measurement."
+                    )
                 scope = islands_record.get("measured_integration_scope")
                 if scope:
                     out.append(

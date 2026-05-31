@@ -35,6 +35,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir", type=Path, default=PROJECT_ROOT / "outputs"
     )
+    parser.add_argument(
+        "--both-bundles",
+        action="store_true",
+        help=(
+            "Acknowledge the Stage 5.3e mitigation bundle dimension. The"
+            " island math is identical between bundles (the bundle is"
+            " metadata over the same per-call fresh-mask sampling), so the"
+            " sweep numbers do not change; this flag adds a"
+            " ``mitigation_bundle_note`` to the output but does NOT"
+            " duplicate the sweep."
+        ),
+    )
     return parser.parse_args()
 
 

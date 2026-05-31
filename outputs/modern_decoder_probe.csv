@@ -1,0 +1,63 @@
+section,probe,use_pad,metric,value,notes
+model_loading,model_loading,n/a,status,synthetic_only,attempt_real_model_load=False (default); modern_decoder probe uses synthetic tensors to avoid network downloads.
+architecture_spec,architecture_spec,n/a,architecture_type,decoder_only,
+architecture_spec,architecture_spec,n/a,model_family,synthetic_modern_decoder,
+architecture_spec,architecture_spec,n/a,norm_type,rmsnorm,
+architecture_spec,architecture_spec,n/a,activation_type,swiglu,
+architecture_spec,architecture_spec,n/a,position_encoding_type,rotary,
+architecture_spec,architecture_spec,n/a,attention_variant,gqa,
+architecture_spec,architecture_spec,n/a,hidden_size,128,
+architecture_spec,architecture_spec,n/a,intermediate_size,512,
+architecture_spec,architecture_spec,n/a,num_query_heads,4,
+architecture_spec,architecture_spec,n/a,num_kv_heads,2,
+architecture_spec,architecture_spec,n/a,head_dim,32,
+rmsnorm_probe,rmsnorm,False,rms_core_max_abs_error,2.6226043701171875e-06,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,False,folded_output_max_abs_error,2.86102294921875e-06,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,False,relative_l2_error,5.130823979015986e-07,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,False,cosine_similarity,1.000000238418579,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,False,allclose,True,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,False,online_extra_matmul_count,0,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,True,rms_core_max_abs_error,5.245208740234375e-06,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,True,folded_output_max_abs_error,2.384185791015625e-06,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,True,relative_l2_error,5.090635113447206e-07,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,True,cosine_similarity,0.9999999403953552,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,True,allclose,True,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+rmsnorm_probe,rmsnorm,True,online_extra_matmul_count,0,RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.
+swiglu_probe,swiglu,False,max_abs_error,8.106231689453125e-06,
+swiglu_probe,swiglu,False,relative_l2_error,1.0240628398605622e-06,
+swiglu_probe,swiglu,False,cosine_similarity,0.9999996423721313,
+swiglu_probe,swiglu,False,allclose,True,
+swiglu_probe,swiglu,False,online_extra_matmul_count,0,
+swiglu_probe,swiglu,False,permutation_dim,512,
+swiglu_probe,swiglu,False,shared_permutation_for_up_gate,True,
+swiglu_probe,swiglu,False,pad_placement,n/a,
+swiglu_probe,swiglu,True,max_abs_error,1.2874603271484375e-05,
+swiglu_probe,swiglu,True,relative_l2_error,1.234191927323991e-06,
+swiglu_probe,swiglu,True,cosine_similarity,1.000000238418579,
+swiglu_probe,swiglu,True,allclose,True,
+swiglu_probe,swiglu,True,online_extra_matmul_count,0,
+swiglu_probe,swiglu,True,permutation_dim,512,
+swiglu_probe,swiglu,True,shared_permutation_for_up_gate,True,
+swiglu_probe,swiglu,True,pad_placement,linear_boundary_only,
+rope_probe,rope_post_mask,n/a,max_abs_error,6.67572021484375e-06,scores_tilde ≈ scores_plain after Q/K masking
+rope_probe,rope_post_mask,n/a,relative_l2_error,2.739724322964321e-07,scores_tilde ≈ scores_plain after Q/K masking
+rope_probe,rope_post_mask,n/a,allclose,True,scores_tilde ≈ scores_plain after Q/K masking
+rope_probe,rope_pre_mask:dense_invertible,n/a,max_abs_error,5.05151891708374,feasibility / negative-result probe
+rope_probe,rope_pre_mask:dense_invertible,n/a,commutes,False,feasibility / negative-result probe
+rope_probe,rope_pre_mask:dense_invertible,n/a,expected_behavior,expected_failure,feasibility / negative-result probe
+rope_probe,rope_pre_mask:orthogonal,n/a,max_abs_error,5.5168256759643555,feasibility / negative-result probe
+rope_probe,rope_pre_mask:orthogonal,n/a,commutes,False,feasibility / negative-result probe
+rope_probe,rope_pre_mask:orthogonal,n/a,expected_behavior,expected_failure,feasibility / negative-result probe
+rope_probe,rope_pre_mask:block_diagonal_rotation,n/a,max_abs_error,2.384185791015625e-07,feasibility / negative-result probe
+rope_probe,rope_pre_mask:block_diagonal_rotation,n/a,commutes,True,feasibility / negative-result probe
+rope_probe,rope_pre_mask:block_diagonal_rotation,n/a,expected_behavior,expected_to_commute,feasibility / negative-result probe
+gqa_probe,gqa,n/a,attention_variant,gqa,
+gqa_probe,gqa,n/a,group_size,2,
+gqa_probe,gqa,n/a,mask_dimension,32,
+gqa_probe,gqa,n/a,qk_constraint_max_error_per_q_head,3.5762786865234375e-07,
+gqa_probe,gqa:score_path,n/a,max_abs_error,8.344650268554688e-07,
+gqa_probe,gqa:score_path,n/a,relative_l2_error,3.023083365860657e-07,
+gqa_probe,gqa:score_path,n/a,allclose,True,
+gqa_probe,gqa:value_path,n/a,max_abs_error,8.344650268554688e-07,
+gqa_probe,gqa:value_path,n/a,relative_l2_error,2.718595339956664e-07,
+gqa_probe,gqa:value_path,n/a,allclose,True,

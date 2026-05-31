@@ -438,6 +438,64 @@ def _build_markdown(summary: dict) -> str:
                 out.append(f"  - {lim}")
         out.append("")
 
+        # Stage 5.3e — Mitigation Bundle Support table.
+        bundle_support = integ.get("mitigation_bundle_support", [])
+        if bundle_support:
+            out.append("## Mitigation Bundle Support")
+            out.append("")
+            out.append(
+                "Stage 5.3e — per-architecture support for the two"
+                " mitigation bundles."
+                f" `default_mitigation_bundle = {integ['default_mitigation_bundle']!r}`"
+                " (preserves backward compatibility);"
+                f" `recommended_default_on_bundle = {integ['recommended_default_on_bundle']!r}`"
+                f" → `{integ['recommended_default_on_status']}` per Stage 5.4"
+                " adaptive proxy attackers. `compatible_islands` remains"
+                " feature-flagged behind `nonlinear_mode`; default mode"
+                " stays `\"trusted\"`."
+            )
+            out.append("")
+            headers = [
+                "architecture",
+                "integration_level",
+                "fresh_perm_only",
+                "fresh_perm_plus_sandwich_plus_pad",
+                "use_pad_supported",
+                "dense_sandwich_enabled",
+                "online_extra_matmul_count",
+                "default_on_candidate",
+                "security_profile",
+            ]
+            rows = [
+                [
+                    str(entry["architecture"]),
+                    str(entry["integration_level"]),
+                    str(entry["fresh_perm_only"]),
+                    str(entry["fresh_perm_plus_sandwich_plus_pad"]),
+                    str(entry["use_pad_supported"]),
+                    str(entry["dense_sandwich_enabled"]),
+                    str(entry["online_extra_matmul_count"]),
+                    str(entry["default_on_candidate"]),
+                    str(entry["security_profile"]),
+                ]
+                for entry in bundle_support
+            ]
+            out.append(markdown_table(headers, rows))
+            out.append("")
+            out.append(
+                "- Bundle support is probe-level / wrapper-level: enabling"
+                " the full bundle does NOT change the wrapper's default"
+                " `nonlinear_mode` and does NOT promote"
+                " `ours_compatible_nonlinear_islands.implemented` to"
+                " `True`."
+            )
+            out.append(
+                "- security is `adaptive-proxy-mitigated, not formal` when"
+                " the full bundle is enabled; this is not a real TEE"
+                " measurement."
+            )
+            out.append("")
+
     # 7. Trusted shortcuts per architecture
     out.append("## Trusted shortcuts still in place per architecture")
     out.append("")

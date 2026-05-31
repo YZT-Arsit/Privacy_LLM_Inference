@@ -4,7 +4,7 @@
 - seq_len: 8
 - dtype: float32
 - seed: 2026
-- report_version: stage-5.3c-v1
+- report_version: stage-5.3e-v1
 
 ## Integration headline per architecture
 
@@ -20,6 +20,8 @@
 |---|---|---|---|---|---|---|
 | False | True | 4.470e-08 | 1.0 | 2 | 0 | `n/a` |
 | True | True | 6.706e-08 | 1.0 | 2 | 0 | `linear_boundary_only` |
+| False | True | 6.706e-08 | 1.0 | 2 | 0 | `n/a` |
+| True | True | 2.794e-08 | 1.0 | 2 | 0 | `linear_boundary_only` |
 
 ## BERT (encoder_only) — probe-level integrated
 

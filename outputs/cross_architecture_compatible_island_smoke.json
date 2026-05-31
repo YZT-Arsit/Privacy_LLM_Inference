@@ -1,5 +1,5 @@
 {
-  "report_version": "stage-5.3c-v1",
+  "report_version": "stage-5.3e-v1",
   "config": {
     "batch_size": 2,
     "seq_len": 8,
@@ -38,6 +38,32 @@
           "online_extra_matmul_count": 0,
           "pad_placement": "linear_boundary_only",
           "layernorm_remains_trusted": true
+        },
+        {
+          "use_pad": false,
+          "full_forward_allclose": true,
+          "full_forward_max_abs_error": 6.705522537231445e-08,
+          "generation_token_match_rate": 1.0,
+          "generation_sequence_exact_match": 1.0,
+          "generation_top1_match_rate": 1.0,
+          "blocks_with_compatible_islands": 2,
+          "total_mlp_island_permutation_draws": 2,
+          "online_extra_matmul_count": 0,
+          "pad_placement": "n/a",
+          "layernorm_remains_trusted": true
+        },
+        {
+          "use_pad": true,
+          "full_forward_allclose": true,
+          "full_forward_max_abs_error": 2.7939677238464355e-08,
+          "generation_token_match_rate": 1.0,
+          "generation_sequence_exact_match": 1.0,
+          "generation_top1_match_rate": 1.0,
+          "blocks_with_compatible_islands": 2,
+          "total_mlp_island_permutation_draws": 2,
+          "online_extra_matmul_count": 0,
+          "pad_placement": "linear_boundary_only",
+          "layernorm_remains_trusted": true
         }
       ]
     },
@@ -62,7 +88,8 @@
           "layernorm_remains_trusted": true,
           "mlm_head_not_modified": true,
           "pooler_not_modified": true,
-          "classifier_not_modified": true
+          "classifier_not_modified": true,
+          "mitigation_bundle": "fresh_perm_only"
         },
         {
           "use_pad": true,
@@ -79,7 +106,8 @@
           "layernorm_remains_trusted": true,
           "mlm_head_not_modified": true,
           "pooler_not_modified": true,
-          "classifier_not_modified": true
+          "classifier_not_modified": true,
+          "mitigation_bundle": "fresh_perm_only"
         }
       ]
     },
@@ -107,7 +135,8 @@
           "lm_head_not_modified": true,
           "encoder_decoder_generation_not_modified": true,
           "cross_attention_probe_not_modified": true,
-          "unsupported_reason": null
+          "unsupported_reason": null,
+          "mitigation_bundle": "fresh_perm_only"
         },
         {
           "use_pad": true,
@@ -126,7 +155,8 @@
           "lm_head_not_modified": true,
           "encoder_decoder_generation_not_modified": true,
           "cross_attention_probe_not_modified": true,
-          "unsupported_reason": null
+          "unsupported_reason": null,
+          "mitigation_bundle": "fresh_perm_only"
         }
       ]
     }
@@ -141,6 +171,202 @@
   "measured_integration_scope": "cross_architecture_probe_level",
   "all_architecture_probe_level_implemented": true,
   "full_runtime_integrated": false,
+  "mitigation_bundles_evaluated": [
+    "fresh_perm_only",
+    "fresh_perm_plus_sandwich_plus_pad"
+  ],
+  "mitigation_bundle_runs": {
+    "fresh_perm_only": {
+      "encoder_only": {
+        "status": "implemented_probe_level",
+        "architecture_type": "encoder_only",
+        "model_id": null,
+        "activation_type": "gelu",
+        "runs": [
+          {
+            "use_pad": false,
+            "status": "loaded",
+            "activation_type": "gelu",
+            "permutation_dim": 512,
+            "intermediate_size": 512,
+            "max_abs_error": 4.76837158203125e-06,
+            "relative_l2_error": 1.1207299621673883e-06,
+            "cosine_similarity": 0.9999996423721313,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "n/a",
+            "layernorm_remains_trusted": true,
+            "mlm_head_not_modified": true,
+            "pooler_not_modified": true,
+            "classifier_not_modified": true,
+            "mitigation_bundle": "fresh_perm_only"
+          },
+          {
+            "use_pad": true,
+            "status": "loaded",
+            "activation_type": "gelu",
+            "permutation_dim": 512,
+            "intermediate_size": 512,
+            "max_abs_error": 6.198883056640625e-06,
+            "relative_l2_error": 1.3514913916878868e-06,
+            "cosine_similarity": 0.9999996423721313,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "linear_boundary_only",
+            "layernorm_remains_trusted": true,
+            "mlm_head_not_modified": true,
+            "pooler_not_modified": true,
+            "classifier_not_modified": true,
+            "mitigation_bundle": "fresh_perm_only"
+          }
+        ]
+      },
+      "encoder_decoder": {
+        "status": "implemented_probe_level",
+        "architecture_type": "encoder_decoder",
+        "ffn_type": "t5_dense_relu_dense",
+        "activation_type": "relu",
+        "is_gated": false,
+        "runs": [
+          {
+            "use_pad": false,
+            "status": "loaded",
+            "ffn_type": "t5_dense_relu_dense",
+            "is_gated": false,
+            "activation_type": "relu",
+            "permutation_dim": 37,
+            "intermediate_size": 37,
+            "max_abs_error": 3.725290298461914e-07,
+            "relative_l2_error": 4.3587354525698174e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "n/a",
+            "lm_head_not_modified": true,
+            "encoder_decoder_generation_not_modified": true,
+            "cross_attention_probe_not_modified": true,
+            "unsupported_reason": null,
+            "mitigation_bundle": "fresh_perm_only"
+          },
+          {
+            "use_pad": true,
+            "status": "loaded",
+            "ffn_type": "t5_dense_relu_dense",
+            "is_gated": false,
+            "activation_type": "relu",
+            "permutation_dim": 37,
+            "intermediate_size": 37,
+            "max_abs_error": 5.066394805908203e-07,
+            "relative_l2_error": 5.473455644278147e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "linear_boundary_only",
+            "lm_head_not_modified": true,
+            "encoder_decoder_generation_not_modified": true,
+            "cross_attention_probe_not_modified": true,
+            "unsupported_reason": null,
+            "mitigation_bundle": "fresh_perm_only"
+          }
+        ]
+      }
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "encoder_only": {
+        "status": "implemented_probe_level",
+        "architecture_type": "encoder_only",
+        "model_id": null,
+        "activation_type": "gelu",
+        "runs": [
+          {
+            "use_pad": false,
+            "status": "loaded",
+            "activation_type": "gelu",
+            "permutation_dim": 512,
+            "intermediate_size": 512,
+            "max_abs_error": 4.76837158203125e-06,
+            "relative_l2_error": 1.1207299621673883e-06,
+            "cosine_similarity": 0.9999996423721313,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "n/a",
+            "layernorm_remains_trusted": true,
+            "mlm_head_not_modified": true,
+            "pooler_not_modified": true,
+            "classifier_not_modified": true,
+            "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad"
+          },
+          {
+            "use_pad": true,
+            "status": "loaded",
+            "activation_type": "gelu",
+            "permutation_dim": 512,
+            "intermediate_size": 512,
+            "max_abs_error": 6.198883056640625e-06,
+            "relative_l2_error": 1.3514913916878868e-06,
+            "cosine_similarity": 0.9999996423721313,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "linear_boundary_only",
+            "layernorm_remains_trusted": true,
+            "mlm_head_not_modified": true,
+            "pooler_not_modified": true,
+            "classifier_not_modified": true,
+            "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad"
+          }
+        ]
+      },
+      "encoder_decoder": {
+        "status": "implemented_probe_level",
+        "architecture_type": "encoder_decoder",
+        "ffn_type": "t5_dense_relu_dense",
+        "activation_type": "relu",
+        "is_gated": false,
+        "runs": [
+          {
+            "use_pad": false,
+            "status": "loaded",
+            "ffn_type": "t5_dense_relu_dense",
+            "is_gated": false,
+            "activation_type": "relu",
+            "permutation_dim": 37,
+            "intermediate_size": 37,
+            "max_abs_error": 3.725290298461914e-07,
+            "relative_l2_error": 4.3587354525698174e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "n/a",
+            "lm_head_not_modified": true,
+            "encoder_decoder_generation_not_modified": true,
+            "cross_attention_probe_not_modified": true,
+            "unsupported_reason": null,
+            "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad"
+          },
+          {
+            "use_pad": true,
+            "status": "loaded",
+            "ffn_type": "t5_dense_relu_dense",
+            "is_gated": false,
+            "activation_type": "relu",
+            "permutation_dim": 37,
+            "intermediate_size": 37,
+            "max_abs_error": 5.066394805908203e-07,
+            "relative_l2_error": 5.473455644278147e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true,
+            "online_extra_matmul_count": 0,
+            "pad_placement": "linear_boundary_only",
+            "lm_head_not_modified": true,
+            "encoder_decoder_generation_not_modified": true,
+            "cross_attention_probe_not_modified": true,
+            "unsupported_reason": null,
+            "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad"
+          }
+        ]
+      }
+    }
+  },
   "caveats": [
     "GPT-2: model-level integrated.",
     "BERT: probe-level integrated.",

@@ -6,7 +6,7 @@
 - max_new_tokens: 4
 - dtype: float32
 - seed: 2026
-- report_version: stage-5.3b-v1
+- report_version: stage-5.3e-v1
 
 ## Full-model forward correctness
 
@@ -14,6 +14,8 @@
 |---|---|---|---|---|---|
 | False | True | 4.470e-08 | 1.582e-07 | 1.000054 | 1.0000 |
 | True | True | 6.706e-08 | 2.275e-07 | 1.000054 | 1.0000 |
+| False | True | 6.706e-08 | 1.701e-07 | 1.000054 | 1.0000 |
+| True | True | 2.794e-08 | 1.065e-07 | 1.000054 | 1.0000 |
 
 ## Greedy generation correctness
 
@@ -21,11 +23,15 @@
 |---|---|---|---|---|---|
 | False | 4 | 1.0000 | 1.0000 | 1.0000 | 2.980e-08 |
 | True | 4 | 1.0000 | 1.0000 | 1.0000 | 3.725e-08 |
+| False | 4 | 1.0000 | 1.0000 | 1.0000 | 2.980e-08 |
+| True | 4 | 1.0000 | 1.0000 | 1.0000 | 3.725e-08 |
 
 ## Island audit summary
 
 | use_pad | num_blocks | blocks_with_compatible_islands | total_mlp_island_permutation_draws | online_extra_matmul_count | pad_placement | layernorm_remains_trusted |
 |---|---|---|---|---|---|---|
+| False | 2 | 2 | 2 | 0 | `n/a` | True |
+| True | 2 | 2 | 2 | 0 | `linear_boundary_only` | True |
 | False | 2 | 2 | 2 | 0 | `n/a` | True |
 | True | 2 | 2 | 2 | 0 | `linear_boundary_only` | True |
 

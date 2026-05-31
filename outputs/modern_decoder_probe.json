@@ -1,0 +1,371 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "model_id": null,
+    "use_synthetic_if_unavailable": true,
+    "attempt_real_model_load": false,
+    "batch_size": 2,
+    "seq_len": 8,
+    "hidden_size": 128,
+    "intermediate_size": 512,
+    "num_query_heads": 4,
+    "num_kv_heads": 2,
+    "head_dim": 32,
+    "use_pad_values": [
+      false,
+      true
+    ],
+    "mitigation_bundle": "fresh_perm_only",
+    "dtype": "float32",
+    "device": "cpu",
+    "seed": 2026
+  },
+  "model_loading": {
+    "status": "synthetic_only",
+    "reason": "attempt_real_model_load=False (default); modern_decoder probe uses synthetic tensors to avoid network downloads.",
+    "candidates_tried": [],
+    "model_id": null,
+    "model_family": null
+  },
+  "architecture_spec": {
+    "architecture_type": "decoder_only",
+    "model_family": "synthetic_modern_decoder",
+    "norm_type": "rmsnorm",
+    "activation_type": "swiglu",
+    "position_encoding_type": "rotary",
+    "attention_variant": "gqa",
+    "hidden_size": 128,
+    "intermediate_size": 512,
+    "num_query_heads": 4,
+    "num_kv_heads": 2,
+    "head_dim": 32
+  },
+  "rmsnorm_probe": {
+    "status": "ok",
+    "norm_type": "rmsnorm",
+    "mask_family": "orthogonal",
+    "online_extra_matmul_count": 0,
+    "mitigation_bundle": "fresh_perm_only",
+    "per_use_pad": {
+      "False": {
+        "use_pad": false,
+        "use_pad_note": "RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.",
+        "rms_core_max_abs_error": 2.6226043701171875e-06,
+        "folded_output_max_abs_error": 2.86102294921875e-06,
+        "relative_l2_error": 5.130823979015986e-07,
+        "cosine_similarity": 1.000000238418579,
+        "allclose": true,
+        "online_extra_matmul_count": 0,
+        "permutation_dim": null,
+        "norm_type": "rmsnorm",
+        "mask_family": "orthogonal",
+        "mitigation_bundle": "fresh_perm_only",
+        "mitigation_bundle_metadata_note": "RMSNorm island does not itself add a permutation; the mitigation bundle is inherited from the adjacent MLP island (SwiGLU). The bundle label is propagated here for consistency only."
+      },
+      "True": {
+        "use_pad": true,
+        "use_pad_note": "RMSNorm island has no per-pair pad slot; pad is reserved for the adjacent Linear boundary.",
+        "rms_core_max_abs_error": 5.245208740234375e-06,
+        "folded_output_max_abs_error": 2.384185791015625e-06,
+        "relative_l2_error": 5.090635113447206e-07,
+        "cosine_similarity": 0.9999999403953552,
+        "allclose": true,
+        "online_extra_matmul_count": 0,
+        "permutation_dim": null,
+        "norm_type": "rmsnorm",
+        "mask_family": "orthogonal",
+        "mitigation_bundle": "fresh_perm_only",
+        "mitigation_bundle_metadata_note": "RMSNorm island does not itself add a permutation; the mitigation bundle is inherited from the adjacent MLP island (SwiGLU). The bundle label is propagated here for consistency only."
+      }
+    },
+    "allclose": true
+  },
+  "swiglu_probe": {
+    "status": "ok",
+    "activation_type": "swiglu",
+    "online_extra_matmul_count": 0,
+    "shared_permutation_for_up_gate": true,
+    "mitigation_bundle": "fresh_perm_only",
+    "per_use_pad": {
+      "False": {
+        "use_pad": false,
+        "pad_placement": "n/a",
+        "max_abs_error": 8.106231689453125e-06,
+        "relative_l2_error": 1.0240628398605622e-06,
+        "cosine_similarity": 0.9999996423721313,
+        "allclose": true,
+        "online_extra_matmul_count": 0,
+        "permutation_dim": 512,
+        "intermediate_size": 512,
+        "shared_permutation_for_up_gate": true,
+        "gated_intermediate_invariant": {
+          "max_abs_error": 6.67572021484375e-06,
+          "allclose": true
+        },
+        "mitigation_bundle": "fresh_perm_only",
+        "mitigation_bundle_metadata": {
+          "mitigation_bundle": "fresh_perm_only",
+          "fresh_permutation_enabled": true,
+          "dense_sandwich_enabled": false,
+          "boundary_pad_required": false,
+          "boundary_pad_enabled": false,
+          "activation_pad_forbidden": true,
+          "pad_placement": "n/a",
+          "activation_input_form": "ZP",
+          "post_island_dense_mask": false,
+          "island_view_lifetime": "short_lived",
+          "default_on_candidate_under_stage_5_4": false,
+          "risk_level_from_stage_5_4": "medium",
+          "default_on_recommendation": "needs_more_evaluation",
+          "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+          "online_extra_matmul_count": 0,
+          "preprocessing_only_transformations": [
+            "permutation_absorbed_into_weights"
+          ]
+        },
+        "dense_sandwich_enabled": false,
+        "fresh_permutation_enabled": true,
+        "boundary_pad_enabled": false,
+        "default_on_candidate_under_stage_5_4": false,
+        "activation_input_form": "ZP"
+      },
+      "True": {
+        "use_pad": true,
+        "pad_placement": "linear_boundary_only",
+        "max_abs_error": 1.2874603271484375e-05,
+        "relative_l2_error": 1.234191927323991e-06,
+        "cosine_similarity": 1.000000238418579,
+        "allclose": true,
+        "online_extra_matmul_count": 0,
+        "permutation_dim": 512,
+        "intermediate_size": 512,
+        "shared_permutation_for_up_gate": true,
+        "gated_intermediate_invariant": {
+          "max_abs_error": 1.430511474609375e-05,
+          "allclose": true
+        },
+        "mitigation_bundle": "fresh_perm_only",
+        "mitigation_bundle_metadata": {
+          "mitigation_bundle": "fresh_perm_only",
+          "fresh_permutation_enabled": true,
+          "dense_sandwich_enabled": false,
+          "boundary_pad_required": false,
+          "boundary_pad_enabled": true,
+          "activation_pad_forbidden": true,
+          "pad_placement": "linear_boundary_only",
+          "activation_input_form": "ZP",
+          "post_island_dense_mask": false,
+          "island_view_lifetime": "short_lived",
+          "default_on_candidate_under_stage_5_4": false,
+          "risk_level_from_stage_5_4": "medium",
+          "default_on_recommendation": "needs_more_evaluation",
+          "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+          "online_extra_matmul_count": 0,
+          "preprocessing_only_transformations": [
+            "permutation_absorbed_into_weights"
+          ]
+        },
+        "dense_sandwich_enabled": false,
+        "fresh_permutation_enabled": true,
+        "boundary_pad_enabled": true,
+        "default_on_candidate_under_stage_5_4": false,
+        "activation_input_form": "ZP"
+      }
+    },
+    "allclose": true
+  },
+  "rope_probe": {
+    "config": {
+      "batch_size": 2,
+      "num_heads": 4,
+      "seq_len": 8,
+      "head_dim": 32,
+      "base": 10000.0,
+      "dtype": "float32",
+      "device": "cpu",
+      "seed": 2226
+    },
+    "status": "ok",
+    "qk_constraint_error": 4.76837158203125e-07,
+    "probe_a_post_rope_masking_invariant": {
+      "scores_shape": [
+        2,
+        4,
+        8,
+        8
+      ],
+      "requirement": "scores_tilde \u2248 scores_plain after Q/K masking",
+      "max_abs_error": 6.67572021484375e-06,
+      "relative_l2_error": 2.739724322964321e-07,
+      "allclose": true
+    },
+    "probe_b_pre_rope_mask_commutation": {
+      "requirement": "Feasibility/negative-result probe. RoPE(Q N) ?= RoPE(Q) N holds iff N commutes with the RoPE block rotation.",
+      "per_family": {
+        "dense_invertible": {
+          "mask_family": "dense_invertible",
+          "expected_behavior": "expected_failure",
+          "max_abs_error": 5.05151891708374,
+          "relative_l2_error": 0.8259696960449219,
+          "allclose": false,
+          "commutes": false
+        },
+        "orthogonal": {
+          "mask_family": "orthogonal",
+          "expected_behavior": "expected_failure",
+          "max_abs_error": 5.5168256759643555,
+          "relative_l2_error": 0.8410189151763916,
+          "allclose": false,
+          "commutes": false
+        },
+        "block_diagonal_rotation": {
+          "mask_family": "block_diagonal_rotation",
+          "expected_behavior": "expected_to_commute",
+          "max_abs_error": 2.384185791015625e-07,
+          "relative_l2_error": 6.302845179106953e-08,
+          "allclose": true,
+          "commutes": true
+        }
+      },
+      "rope_mask_compatibility_notes": "Only masks that act as 2D rotations in the same planes as RoPE commute with RoPE. Generic dense and generic orthogonal masks DO NOT commute. The required path uses probe A (post-RoPE masking)."
+    },
+    "limitations": [
+      "RoPE is handled conservatively by masking after RoPE in the required probe.",
+      "Mask-before-RoPE commutation is only a feasibility / negative result.",
+      "This is not a real TEE measurement."
+    ]
+  },
+  "gqa_probe": {
+    "config": {
+      "batch_size": 2,
+      "num_query_heads": 4,
+      "num_kv_heads": 2,
+      "seq_len": 8,
+      "head_dim": 32,
+      "dtype": "float32",
+      "device": "cpu",
+      "seed": 2326
+    },
+    "status": "ok",
+    "attention_variant": "gqa",
+    "shapes": {
+      "Q": [
+        2,
+        4,
+        8,
+        32
+      ],
+      "K": [
+        2,
+        2,
+        8,
+        32
+      ],
+      "V": [
+        2,
+        2,
+        8,
+        32
+      ],
+      "K_rep": [
+        2,
+        4,
+        8,
+        32
+      ],
+      "V_rep": [
+        2,
+        4,
+        8,
+        32
+      ],
+      "scores_plain": [
+        2,
+        4,
+        8,
+        8
+      ]
+    },
+    "mask_dimension": 32,
+    "mask_is_per_head_not_hidden_size": true,
+    "mask_is_per_head_not_num_heads": true,
+    "group_size": 2,
+    "qk_constraint_max_error_per_q_head": 3.5762786865234375e-07,
+    "score_path": {
+      "max_abs_error": 8.344650268554688e-07,
+      "relative_l2_error": 3.023083365860657e-07,
+      "allclose": true
+    },
+    "value_path": {
+      "max_abs_error": 8.344650268554688e-07,
+      "relative_l2_error": 2.718595339956664e-07,
+      "allclose": true
+    },
+    "allclose": true,
+    "limitations": [
+      "Tensor-level probe; no KV cache runtime is implemented.",
+      "No generation path is exercised.",
+      "Synthetic Q/K/V \u2014 not extracted from a real Qwen / LLaMA layer."
+    ]
+  },
+  "global_summary": {
+    "architecture_type": "decoder_only",
+    "model_family": "synthetic_modern_decoder",
+    "norm_type": "rmsnorm",
+    "activation_type": "swiglu",
+    "position_encoding_type": "rotary",
+    "attention_variant": "gqa",
+    "all_required_probes_allclose": true,
+    "online_extra_matmul_count": 0,
+    "integration_level": "probe_level",
+    "security_profile": "inherits Stage 5.4 caveats",
+    "default_nonlinear_mode": "trusted",
+    "mitigation_bundle": "fresh_perm_only",
+    "default_mitigation_bundle": "fresh_perm_only",
+    "mitigation_applies_to": "nonlinear islands (RMSNorm / SwiGLU). RoPE and GQA probes are mask-mathematics independent of the mitigation bundle."
+  },
+  "limitations": [
+    "Compatible mask families are weaker than unrestricted dense masks.",
+    "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+    "Probe-level migration only \u2014 not a full Qwen / TinyLlama wrapper integration.",
+    "No Qwen / TinyLlama generation path is implemented.",
+    "GQA / MQA is tensor-level only, not full runtime KV cache integration.",
+    "Compatible islands inherit Stage 5.4 mitigation requirements: fresh permutation + dense sandwich + pad at Linear boundaries.",
+    "This is not a real TEE measurement.",
+    "This is not formal security."
+  ],
+  "both_bundles_summary": {
+    "fresh_perm_only": {
+      "architecture_type": "decoder_only",
+      "model_family": "synthetic_modern_decoder",
+      "norm_type": "rmsnorm",
+      "activation_type": "swiglu",
+      "position_encoding_type": "rotary",
+      "attention_variant": "gqa",
+      "all_required_probes_allclose": true,
+      "online_extra_matmul_count": 0,
+      "integration_level": "probe_level",
+      "security_profile": "inherits Stage 5.4 caveats",
+      "default_nonlinear_mode": "trusted",
+      "mitigation_bundle": "fresh_perm_only",
+      "default_mitigation_bundle": "fresh_perm_only",
+      "mitigation_applies_to": "nonlinear islands (RMSNorm / SwiGLU). RoPE and GQA probes are mask-mathematics independent of the mitigation bundle."
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "architecture_type": "decoder_only",
+      "model_family": "synthetic_modern_decoder",
+      "norm_type": "rmsnorm",
+      "activation_type": "swiglu",
+      "position_encoding_type": "rotary",
+      "attention_variant": "gqa",
+      "all_required_probes_allclose": true,
+      "online_extra_matmul_count": 0,
+      "integration_level": "probe_level",
+      "security_profile": "inherits Stage 5.4 caveats",
+      "default_nonlinear_mode": "trusted",
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "default_mitigation_bundle": "fresh_perm_only",
+      "mitigation_applies_to": "nonlinear islands (RMSNorm / SwiGLU). RoPE and GQA probes are mask-mathematics independent of the mitigation bundle."
+    }
+  }
+}

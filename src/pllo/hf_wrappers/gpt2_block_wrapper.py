@@ -21,6 +21,13 @@ from pllo.hf_wrappers.nonlinear_modes import (
     VALID_NONLINEAR_MODES,
     normalize_nonlinear_mode,
 )
+from pllo.ops.mitigation_bundles import (
+    DEFAULT_MITIGATION_BUNDLE,
+    VALID_MITIGATION_BUNDLES,
+    bundle_metadata,
+    describe_mitigation_bundle,
+    normalize_mitigation_bundle,
+)
 
 
 class ObfuscatedGPT2BlockWrapper:
@@ -39,6 +46,7 @@ class ObfuscatedGPT2BlockWrapper:
         use_pad: bool = False,
         pad_scale: float = 1.0,
         nonlinear_mode: str = DEFAULT_NONLINEAR_MODE,
+        mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE,
     ) -> None:
         self.block = block
         self.config = config
@@ -47,6 +55,7 @@ class ObfuscatedGPT2BlockWrapper:
         self.use_pad = use_pad
         self.pad_scale = pad_scale
         self.nonlinear_mode = normalize_nonlinear_mode(nonlinear_mode)
+        self.mitigation_bundle = normalize_mitigation_bundle(mitigation_bundle)
         self.tee = SimulatedTEE(dtype=dtype, device=self.device)
         self.executor = UntrustedGPUExecutor()
         self.pad_report: dict[str, object] = self._new_pad_report()
@@ -75,9 +84,17 @@ class ObfuscatedGPT2BlockWrapper:
             self.pad_report["reason"] = "use_pad is false; all GPT-2 Conv1D paths run mask-only"
 
     def _new_island_report(self) -> dict[str, object]:
-        return {
+        bundle_desc = describe_mitigation_bundle(self.mitigation_bundle)
+        bundle_meta = bundle_metadata(
+            self.mitigation_bundle,
+            use_pad=self.use_pad,
+            online_extra_matmul_count=0,
+        )
+        report = {
             "nonlinear_mode": self.nonlinear_mode,
             "valid_nonlinear_modes": list(VALID_NONLINEAR_MODES),
+            "mitigation_bundle": self.mitigation_bundle,
+            "valid_mitigation_bundles": list(VALID_MITIGATION_BUNDLES),
             "mlp_gelu_island_active": False,
             "mlp_island_permutation_dim": None,
             "mlp_island_intermediate_size": None,
@@ -88,8 +105,31 @@ class ObfuscatedGPT2BlockWrapper:
             "layernorm_remains_trusted": True,
             "lm_head_not_modified": True,
             "generation_path_not_modified": True,
+            # Bundle-level flags (independent of nonlinear_mode so trusted
+            # users can still inspect what bundle would have been applied).
+            "dense_sandwich_enabled": bundle_desc.dense_sandwich_enabled,
+            "fresh_permutation_enabled": bundle_desc.fresh_permutation_enabled,
+            "boundary_pad_required": bundle_desc.boundary_pad_required,
+            "boundary_pad_enabled": bool(self.use_pad),
+            "activation_input_form": bundle_desc.activation_input_form,
+            "activation_pad_forbidden": bundle_desc.activation_pad_forbidden,
+            "island_view_lifetime": bundle_desc.island_view_lifetime,
+            "post_island_dense_mask": bundle_desc.post_island_dense_mask,
+            "default_on_candidate_under_stage_5_4": (
+                bundle_desc.default_on_candidate_under_stage_5_4
+                and (self.use_pad or not bundle_desc.boundary_pad_required)
+                and self.nonlinear_mode == "compatible_islands"
+            ),
+            "risk_level_from_stage_5_4": bundle_desc.risk_level_from_stage_5_4,
+            "default_on_recommendation": bundle_desc.default_on_recommendation,
+            "mitigation_bundle_metadata": bundle_meta,
             "security_profile": (
                 "proxy-evaluated, not formal"
+                if self.nonlinear_mode == "compatible_islands"
+                else "n/a"
+            ),
+            "security_profile_detail": (
+                bundle_desc.security_profile_detail
                 if self.nonlinear_mode == "compatible_islands"
                 else "n/a"
             ),
@@ -103,6 +143,7 @@ class ObfuscatedGPT2BlockWrapper:
                 else []
             ),
         }
+        return report
 
     def _initial_hidden_state(self, hidden_states: torch.Tensor) -> tuple[MaskState, torch.Tensor]:
         flat = hidden_states.reshape(-1, hidden_states.shape[-1])
@@ -228,6 +269,12 @@ class ObfuscatedGPT2BlockWrapper:
         )
         self.island_report["mlp_island_permutation_draws"] = (
             int(self.island_report.get("mlp_island_permutation_draws", 0)) + 1
+        )
+        # Refresh bundle metadata to reflect actual per-call pad use.
+        self.island_report["mitigation_bundle_metadata"] = bundle_metadata(
+            self.mitigation_bundle,
+            use_pad=self.use_pad,
+            online_extra_matmul_count=0,
         )
 
         w_fc_perm = w_fc.index_select(dim=-1, index=perm)          # W_fc @ P

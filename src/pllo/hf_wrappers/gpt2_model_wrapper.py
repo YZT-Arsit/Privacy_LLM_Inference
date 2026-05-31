@@ -10,6 +10,10 @@ from pllo.hf_wrappers.nonlinear_modes import (
     DEFAULT_NONLINEAR_MODE,
     normalize_nonlinear_mode,
 )
+from pllo.ops.mitigation_bundles import (
+    DEFAULT_MITIGATION_BUNDLE,
+    normalize_mitigation_bundle,
+)
 
 
 class ObfuscatedGPT2ModelWrapper:
@@ -41,6 +45,7 @@ class ObfuscatedGPT2ModelWrapper:
         use_pad: bool = True,
         pad_scale: float = 1.0,
         nonlinear_mode: str = DEFAULT_NONLINEAR_MODE,
+        mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE,
     ) -> None:
         self.model = model
         self.dtype = dtype
@@ -48,12 +53,14 @@ class ObfuscatedGPT2ModelWrapper:
         self.use_pad = use_pad
         self.pad_scale = pad_scale
         self.nonlinear_mode = normalize_nonlinear_mode(nonlinear_mode)
+        self.mitigation_bundle = normalize_mitigation_bundle(mitigation_bundle)
 
         model.eval()
 
         # Per-block obfuscated wrappers (one per transformer block). Every
-        # block receives the same ``nonlinear_mode``; Stage 5.3b does not
-        # support per-block mode mixing.
+        # block receives the same ``nonlinear_mode`` and
+        # ``mitigation_bundle``; Stage 5.3b / 5.3e do not support per-block
+        # mode / bundle mixing.
         self.block_wrappers = [
             ObfuscatedGPT2BlockWrapper(
                 block=block,
@@ -63,6 +70,7 @@ class ObfuscatedGPT2ModelWrapper:
                 use_pad=use_pad,
                 pad_scale=pad_scale,
                 nonlinear_mode=self.nonlinear_mode,
+                mitigation_bundle=self.mitigation_bundle,
             )
             for block in model.transformer.h
         ]
@@ -140,8 +148,30 @@ class ObfuscatedGPT2ModelWrapper:
         else:
             security_profile = "n/a"
             security_caveats = []
+        # Bundle is the same across all blocks (model-level enforced).
+        bundles = sorted({str(r.get("mitigation_bundle")) for r in reports if r.get("mitigation_bundle")})
+        bundle_summary = bundles[0] if len(bundles) == 1 else "/".join(bundles)
+        dense_sandwich_enabled = all(
+            bool(r.get("dense_sandwich_enabled", False)) for r in reports
+        ) if reports else False
+        fresh_permutation_enabled = all(
+            bool(r.get("fresh_permutation_enabled", True)) for r in reports
+        ) if reports else True
+        boundary_pad_enabled = all(
+            bool(r.get("boundary_pad_enabled", False)) for r in reports
+        ) if reports else False
+        default_on_candidate = (
+            self.nonlinear_mode == "compatible_islands"
+            and all(
+                bool(r.get("default_on_candidate_under_stage_5_4", False))
+                for r in reports
+            )
+            if reports
+            else False
+        )
         return {
             "nonlinear_mode": self.nonlinear_mode,
+            "mitigation_bundle": bundle_summary or self.mitigation_bundle,
             "num_blocks": num_blocks,
             "blocks_with_compatible_islands": blocks_active,
             "total_mlp_island_permutation_draws": permutation_draws,
@@ -150,6 +180,10 @@ class ObfuscatedGPT2ModelWrapper:
             "lm_head_not_modified": lm_head_untouched,
             "generation_path_not_modified": generation_untouched,
             "pad_placement": pad_placement,
+            "dense_sandwich_enabled": dense_sandwich_enabled,
+            "fresh_permutation_enabled": fresh_permutation_enabled,
+            "boundary_pad_enabled": boundary_pad_enabled,
+            "default_on_candidate_under_stage_5_4": default_on_candidate,
             "security_profile": security_profile,
             "security_caveats": security_caveats,
             "wrapper_integration_scope": "gpt2_model_level",

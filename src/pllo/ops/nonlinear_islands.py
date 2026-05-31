@@ -22,6 +22,11 @@ from typing import Callable
 import torch
 import torch.nn.functional as F
 
+from pllo.ops.mitigation_bundles import (
+    DEFAULT_MITIGATION_BUNDLE,
+    bundle_metadata,
+)
+
 
 # ---------------------------------------------------------------------------
 # Norm cores (no affine)
@@ -280,6 +285,7 @@ def run_gelu_mlp_island(
     n_out: torch.Tensor,
     activation_type: str,
     pad_in: torch.Tensor | None = None,
+    mitigation_bundle: str | None = None,
 ) -> dict[str, torch.Tensor]:
     """Two-layer MLP with operator-compatible masks at the activation.
 
@@ -337,6 +343,10 @@ def run_gelu_mlp_island(
     if b2 is not None:
         Y_tilde = Y_tilde + b2 @ n_out
 
+    bundle = mitigation_bundle or DEFAULT_MITIGATION_BUNDLE
+    bundle_meta = bundle_metadata(
+        bundle, use_pad=pad_in is not None, online_extra_matmul_count=0
+    )
     return {
         "y_plain": Y,
         "y_tilde": Y_tilde,
@@ -346,6 +356,7 @@ def run_gelu_mlp_island(
         "a_tilde": A_tilde,
         "a_plain_permuted": A.index_select(dim=-1, index=perm),
         "used_input_pad": pad_in is not None,
+        "mitigation_bundle_metadata": bundle_meta,
     }
 
 
@@ -362,6 +373,7 @@ def run_swiglu_mlp_island(
     permutation: torch.Tensor,
     n_out: torch.Tensor,
     pad_in: torch.Tensor | None = None,
+    mitigation_bundle: str | None = None,
 ) -> dict[str, torch.Tensor]:
     """SwiGLU MLP with paired permutation on the up- and gate-branches.
 
@@ -426,6 +438,10 @@ def run_swiglu_mlp_island(
     if b_down is not None:
         Y_tilde = Y_tilde + b_down @ n_out
 
+    bundle = mitigation_bundle or DEFAULT_MITIGATION_BUNDLE
+    bundle_meta = bundle_metadata(
+        bundle, use_pad=pad_in is not None, online_extra_matmul_count=0
+    )
     return {
         "y_plain": Y,
         "y_tilde": Y_tilde,
@@ -433,6 +449,7 @@ def run_swiglu_mlp_island(
         "g_tilde": G_tilde,
         "g_plain_permuted": G.index_select(dim=-1, index=perm),
         "used_input_pad": pad_in is not None,
+        "mitigation_bundle_metadata": bundle_meta,
     }
 
 

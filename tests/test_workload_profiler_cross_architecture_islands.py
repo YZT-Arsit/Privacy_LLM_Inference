@@ -52,7 +52,12 @@ def test_workload_measured_integration_scope_cross_architecture(
     profile_payload,
 ) -> None:
     m = profile_payload["methods"][METHOD_NAME]
-    assert m["measured_integration_scope"] == "cross_architecture_probe_level"
+    # Stage 5.3c value: "cross_architecture_probe_level".
+    # Stage 6.4 value: "cross_architecture_plus_modern_decoder_probe_level".
+    assert m["measured_integration_scope"] in (
+        "cross_architecture_probe_level",
+        "cross_architecture_plus_modern_decoder_probe_level",
+    )
 
 
 def test_workload_all_architecture_probe_level_implemented(profile_payload) -> None:
@@ -77,7 +82,10 @@ def test_workload_top_level_status_mirrors(profile_payload) -> None:
     assert top is not None
     assert top["bert"] == "implemented_probe_level"
     assert top["t5"] == "implemented_probe_level"
-    assert top["measured_integration_scope"] == "cross_architecture_probe_level"
+    assert top["measured_integration_scope"] in (
+        "cross_architecture_probe_level",
+        "cross_architecture_plus_modern_decoder_probe_level",
+    )
     assert top["full_runtime_integrated"] is False
     assert top["all_architecture_probe_level_implemented"] is True
 
@@ -89,7 +97,7 @@ def test_workload_markdown_contains_required_phrases() -> None:
     for phrase in (
         "GPT-2 model-level integration is available",
         "BERT/T5 are probe-level integrations, not full wrappers",
-        "measured_integration_scope = \"cross_architecture_probe_level\"",
+        # measured_integration_scope is Stage 5.3c or Stage 6.4-extended.
         "full_runtime_integrated = False",
         "all_architecture_probe_level_implemented = True",
     ):
@@ -266,6 +274,12 @@ def test_script_markdown_contains_compatible_island_integration_status(
     assert "not full BERT/T5 wrapper integration" in md
     for arch in ("decoder_only", "encoder_only", "encoder_decoder"):
         assert arch in md
-    assert "`measured_integration_scope = \"cross_architecture_probe_level\"`" in md
+    assert any(
+        phrase in md
+        for phrase in (
+            "`measured_integration_scope = \"cross_architecture_probe_level\"`",
+            "`measured_integration_scope = \"cross_architecture_plus_modern_decoder_probe_level\"`",
+        )
+    )
     assert "`full_runtime_integrated = False`" in md
     assert "`all_architecture_probe_level_implemented = True`" in md

@@ -531,9 +531,91 @@ def _compatible_island_integration_status(
             }
         )
 
+    modern_decoder_status = (
+        effective_status.get("qwen_or_modern_decoder")
+        or effective_status.get("modern_decoder_probe")
+    )
+    modern_decoder_row = None
+    if modern_decoder_status:
+        modern_decoder_row = {
+            # Logical type stays ``decoder_only`` (per architecture taxonomy);
+            # ``modern_decoder_only`` is a display label so the integration
+            # table can distinguish this row from the GPT-2 / decoder_only row.
+            "architecture_type": "modern_decoder_only",
+            "logical_architecture_type": "decoder_only",
+            "model_id": "qwen_like / llama_like / synthetic_modern_decoder",
+            "model_family": "qwen_like / llama_like / synthetic_modern_decoder",
+            "nonlinear_mode_available": ["trusted", "compatible_islands"],
+            "use_pad_supported": True,
+            "integration_level": _STATUS_TO_LEVEL.get(
+                str(modern_decoder_status), str(modern_decoder_status)
+            ),
+            "norm_type": "rmsnorm",
+            "activation_type": "swiglu",
+            "position_encoding_type": "rotary",
+            "attention_variant": "mha/gqa/mqa",
+            "online_extra_matmul_count": online_extra_matmul,
+            "security_proxy_status": (
+                method.get("security_profile_detail")
+                or security_profile
+            ),
+            "modern_decoder_probe_status": str(
+                effective_status.get("modern_decoder_probe", "not_yet")
+            ),
+            "limitations": [
+                "Probe-level migration only; not a full Qwen / TinyLlama wrapper.",
+                "RoPE is handled by masking after RoPE in the required probe.",
+                "GQA / MQA is tensor-level only, not full runtime KV cache.",
+                "Inherits Stage 5.4 mitigation requirements.",
+                "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
+            ],
+        }
+        per_architecture.append(modern_decoder_row)
+    # Stage 5.3e — surface the mitigation bundle support table.
+    mitigation_bundle_selectable = bool(
+        method.get("mitigation_bundle_selectable")
+        or top_status.get("mitigation_bundle_selectable")
+    )
+    default_bundle = (
+        method.get("default_mitigation_bundle")
+        or top_status.get("default_mitigation_bundle")
+        or "fresh_perm_only"
+    )
+    recommended_bundle = (
+        method.get("recommended_default_on_bundle")
+        or top_status.get("recommended_default_on_bundle")
+        or "fresh_perm_plus_sandwich_plus_pad"
+    )
+    recommended_status = (
+        method.get("recommended_default_on_status")
+        or top_status.get("recommended_default_on_status")
+        or "acceptable_with_mitigation_under_adaptive_proxy"
+    )
+    mitigation_bundle_support: list[dict[str, Any]] = []
+    if mitigation_bundle_selectable:
+        for entry in per_architecture:
+            mitigation_bundle_support.append(
+                {
+                    "architecture": entry["architecture_type"],
+                    "integration_level": entry["integration_level"],
+                    "fresh_perm_only": "supported",
+                    "fresh_perm_plus_sandwich_plus_pad": "supported",
+                    "use_pad_supported": entry.get("use_pad_supported", True),
+                    "dense_sandwich_enabled": True,
+                    "online_extra_matmul_count": entry.get(
+                        "online_extra_matmul_count", 0
+                    ),
+                    "default_on_candidate": recommended_bundle,
+                    "security_profile": entry.get(
+                        "security_proxy_status", security_profile
+                    ),
+                }
+            )
+
     return {
         "status": "available",
         "per_architecture": per_architecture,
+        "modern_decoder_row": modern_decoder_row,
         "measured_integration_scope": (
             method.get("measured_integration_scope")
             or top_status.get("measured_integration_scope")
@@ -548,6 +630,11 @@ def _compatible_island_integration_status(
             if "all_architecture_probe_level_implemented" in method
             else top_status.get("all_architecture_probe_level_implemented")
         ),
+        "mitigation_bundle_selectable": mitigation_bundle_selectable,
+        "default_mitigation_bundle": default_bundle,
+        "recommended_default_on_bundle": recommended_bundle,
+        "recommended_default_on_status": recommended_status,
+        "mitigation_bundle_support": mitigation_bundle_support,
         "security_profile": security_profile,
         "note": top_status.get("note"),
     }

@@ -37,9 +37,13 @@ from pllo.evaluation.correctness import (
 )
 from pllo.hf_wrappers import ObfuscatedGPT2ModelWrapper
 from pllo.model_zoo import ExternalModelConfig, get_model_loader, torch_dtype_from_string
+from pllo.ops.mitigation_bundles import (
+    DEFAULT_MITIGATION_BUNDLE,
+    VALID_MITIGATION_BUNDLES,
+)
 
 
-REPORT_VERSION = "stage-5.3b-v1"
+REPORT_VERSION = "stage-5.3e-v1"
 
 
 def parse_bool(value: str | None) -> bool:
@@ -64,6 +68,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument(
         "--output-dir", type=Path, default=PROJECT_ROOT / "outputs"
+    )
+    parser.add_argument(
+        "--mitigation-bundle",
+        default=DEFAULT_MITIGATION_BUNDLE,
+        choices=list(VALID_MITIGATION_BUNDLES),
+        help="Mitigation bundle to evaluate (default fresh_perm_only).",
+    )
+    parser.add_argument(
+        "--both-bundles",
+        action="store_true",
+        help="Evaluate BOTH mitigation bundles (overrides --mitigation-bundle).",
     )
     return parser.parse_args()
 
@@ -108,6 +123,7 @@ def _run_single(
     use_pad: bool,
     max_new_tokens: int,
     seed: int,
+    mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE,
 ) -> dict:
     torch.manual_seed(seed)
     plain_logits = model(input_ids).logits
@@ -122,6 +138,7 @@ def _run_single(
         device=device,
         use_pad=use_pad,
         nonlinear_mode="compatible_islands",
+        mitigation_bundle=mitigation_bundle,
     )
 
     with torch.no_grad():
@@ -159,6 +176,18 @@ def _run_single(
     return {
         "use_pad": bool(use_pad),
         "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": mitigation_bundle,
+        "dense_sandwich_enabled": bool(summary.get("dense_sandwich_enabled")),
+        "fresh_permutation_enabled": bool(summary.get("fresh_permutation_enabled")),
+        "boundary_pad_enabled": bool(summary.get("boundary_pad_enabled")),
+        "default_on_candidate_under_stage_5_4": bool(
+            summary.get("default_on_candidate_under_stage_5_4")
+        ),
+        "risk_level_from_stage_5_4": (
+            "low"
+            if mitigation_bundle == "fresh_perm_plus_sandwich_plus_pad" and use_pad
+            else "medium"
+        ),
         "full_forward": {
             "max_abs_error": float(forward_metrics["max_abs_error"]),
             "relative_l2_error": float(forward_metrics["relative_l2_error"]),
@@ -318,19 +347,24 @@ def main() -> None:
         0, model.config.vocab_size, (args.batch_size, args.seq_len), device=device
     )
 
+    bundles = (
+        list(VALID_MITIGATION_BUNDLES) if args.both_bundles else [args.mitigation_bundle]
+    )
     runs: list[dict] = []
-    for idx, use_pad in enumerate((False, True)):
-        runs.append(
-            _run_single(
-                model,
-                input_ids,
-                dtype=dtype,
-                device=device,
-                use_pad=use_pad,
-                max_new_tokens=args.max_new_tokens,
-                seed=args.seed + idx,
+    for b_idx, bundle in enumerate(bundles):
+        for idx, use_pad in enumerate((False, True)):
+            runs.append(
+                _run_single(
+                    model,
+                    input_ids,
+                    dtype=dtype,
+                    device=device,
+                    use_pad=use_pad,
+                    max_new_tokens=args.max_new_tokens,
+                    seed=args.seed + b_idx * 10 + idx,
+                    mitigation_bundle=bundle,
+                )
             )
-        )
 
     payload = {
         "report_version": REPORT_VERSION,
@@ -342,6 +376,7 @@ def main() -> None:
             "device": args.device,
             "dtype": args.dtype,
             "seed": args.seed,
+            "mitigation_bundles_evaluated": bundles,
         },
         "runs": runs,
         "wrapper_integration_status": {

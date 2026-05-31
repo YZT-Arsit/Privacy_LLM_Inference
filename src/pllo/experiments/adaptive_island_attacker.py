@@ -103,6 +103,9 @@ STRATEGIES: tuple[str, ...] = (
     "dense_sandwich",
     "boundary_pad_only_boundary_view",
     "boundary_pad_only_activation_view",
+    # Stage 5.3e — full mitigation bundle: dense sandwich + fresh
+    # permutation + pad at every Linear boundary.
+    "fresh_perm_plus_sandwich_plus_pad",
 )
 
 
@@ -111,6 +114,7 @@ PERMUTATION_RECOVERY_STRATEGIES: tuple[str, ...] = (
     "fresh_permutation_per_session",
     "permutation_pool",
     "dense_sandwich",
+    "fresh_perm_plus_sandwich_plus_pad",
 )
 
 
@@ -303,6 +307,25 @@ def _build_dataset(
         def per_session(n):
             x = sample(n)
             v = x.index_select(dim=-1, index=perm)
+            return x, v
+
+        X_train, V_train = cat_sessions(train_sizes, per_session)
+        X_test, V_test = cat_sessions(test_sizes, per_session)
+        return X_train, V_train, X_test, V_test
+
+    if strategy == "fresh_perm_plus_sandwich_plus_pad":
+        # Full mitigation bundle: per-session pad T, dense N_left, fresh
+        # permutation P, dense N_right.  Visible boundary tensor is
+        # ``(X - T) @ N_left @ P @ N_right`` — the attacker never sees the
+        # internal ``ZP`` view because the dense sandwich rotates it back
+        # into a dense-masked coordinate system that changes every session.
+        def per_session(n):
+            x = sample(n)
+            T = generate_pad(tuple(x.shape), dtype, device, pad_scale)
+            N_left, _ = generate_invertible_matrix(hidden, dtype, device)
+            perm = generate_permutation(hidden, dtype=dtype, device=device)["perm"]
+            N_right, _ = generate_invertible_matrix(hidden, dtype, device)
+            v = ((x - T) @ N_left).index_select(dim=-1, index=perm) @ N_right
             return x, v
 
         X_train, V_train = cat_sessions(train_sizes, per_session)
@@ -508,6 +531,19 @@ def _build_permutation_visible(
             sig_acc.append(compute_channel_signature(v))
         return ref_plain, torch.stack(sig_acc, dim=0).mean(dim=0)
 
+    if strategy == "fresh_perm_plus_sandwich_plus_pad":
+        sig_acc: list[torch.Tensor] = []
+        for _ in range(num_sessions):
+            perm = generate_permutation(hidden, dtype=dtype, device=device)["perm"]
+            N_left, _ = generate_invertible_matrix(hidden, dtype, device)
+            N_right, _ = generate_invertible_matrix(hidden, dtype, device)
+            x = sample(samples_per_session)
+            from pllo.masks.pad_generator import generate_pad as _pad
+            T = _pad(tuple(x.shape), dtype, device, 1.0)
+            v = ((x - T) @ N_left).index_select(dim=-1, index=perm) @ N_right
+            sig_acc.append(compute_channel_signature(v))
+        return ref_plain, torch.stack(sig_acc, dim=0).mean(dim=0)
+
     raise ValueError(f"unknown permutation-recovery strategy: {strategy}")
 
 
@@ -642,6 +678,12 @@ _STRATEGY_REQUIRED_MITIGATIONS: dict[str, list[str]] = {
         "boundary pad does NOT protect this view",
         "must replace with fresh permutation + dense sandwich",
     ],
+    "fresh_perm_plus_sandwich_plus_pad": [
+        "fresh permutation per session is mandatory",
+        "dense sandwich on both sides of the permutation island is mandatory",
+        "pad must remain at Linear boundaries only — never pushed through the activation",
+        "remains gated behind the ``nonlinear_mode`` feature flag",
+    ],
 }
 
 
@@ -701,6 +743,9 @@ def _build_mitigation_summary(
         else:
             perm_key = strategy
         perm_top1 = _best_perm_top1(perm_key)
+        is_recommended_bundle = (
+            strategy == "fresh_perm_plus_sandwich_plus_pad"
+        )
         risk, recommendation = _classify_risk(
             linear["relative_l2_error"],
             mlp["relative_l2_error"],
@@ -730,15 +775,32 @@ def _build_mitigation_summary(
                 ),
                 "risk_level": risk,
                 "default_on_recommendation": recommendation,
+                "is_recommended_default_on_bundle": is_recommended_bundle,
                 "required_mitigations": list(
                     _STRATEGY_REQUIRED_MITIGATIONS.get(strategy, [])
                 ),
             }
         )
+    full_bundle_row = next(
+        (
+            r for r in per_strategy
+            if r["strategy"] == "fresh_perm_plus_sandwich_plus_pad"
+        ),
+        None,
+    )
     return {
         "budgets": budgets,
         "random_chance_top1": random_chance,
         "per_strategy": per_strategy,
+        "recommended_default_on_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "recommended_default_on_bundle_status": (
+            full_bundle_row["default_on_recommendation"]
+            if full_bundle_row is not None
+            else None
+        ),
+        "recommended_default_on_bundle_risk_level": (
+            full_bundle_row["risk_level"] if full_bundle_row is not None else None
+        ),
         "recommended_default_on_candidate": (
             "fresh_permutation + dense_sandwich + pad at Linear boundaries"
         ),

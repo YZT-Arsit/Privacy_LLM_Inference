@@ -127,7 +127,10 @@ def test_profile_method_records_wrapper_integration_status(profile_payload) -> N
     # BERT / T5 are probe-level only — method must NOT be marked fully implemented.
     assert m["implemented"] is False
     assert m["wall_time_source"] == "projected_from_op_counts"
-    assert m.get("measured_integration_scope") == "cross_architecture_probe_level"
+    assert m.get("measured_integration_scope") in (
+        "cross_architecture_probe_level",
+        "cross_architecture_plus_modern_decoder_probe_level",
+    )
     assert m.get("all_architecture_probe_level_implemented") is True
     assert m.get("full_runtime_integrated") is False
     status = m.get("wrapper_integration_status")
@@ -207,9 +210,17 @@ def test_workload_profile_markdown_contains_required_phrases() -> None:
         "Stage 5.3a Wrapper Integration Status",
         "GPT-2 model-level integration is available",
         "BERT/T5 are probe-level integrations, not full wrappers",
-        "measured_integration_scope = \"cross_architecture_probe_level\"",
+        # Stage 5.3c value or Stage 6.4-extended value.
         "full_runtime_integrated = False",
         "all_architecture_probe_level_implemented = True",
         "security_profile` remains `proxy-evaluated, not formal`",
     ):
         assert phrase in md, f"missing phrase: {phrase!r}"
+    # measured_integration_scope must be present in one of two valid forms.
+    assert any(
+        phrase in md
+        for phrase in (
+            "measured_integration_scope = \"cross_architecture_probe_level\"",
+            "measured_integration_scope = \"cross_architecture_plus_modern_decoder_probe_level\"",
+        )
+    )

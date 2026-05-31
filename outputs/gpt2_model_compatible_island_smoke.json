@@ -1,5 +1,5 @@
 {
-  "report_version": "stage-5.3b-v1",
+  "report_version": "stage-5.3e-v1",
   "config": {
     "model_id": "sshleifer/tiny-gpt2",
     "batch_size": 2,
@@ -7,12 +7,22 @@
     "max_new_tokens": 4,
     "device": "cpu",
     "dtype": "float32",
-    "seed": 2026
+    "seed": 2026,
+    "mitigation_bundles_evaluated": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ]
   },
   "runs": [
     {
       "use_pad": false,
       "nonlinear_mode": "compatible_islands",
+      "mitigation_bundle": "fresh_perm_only",
+      "dense_sandwich_enabled": false,
+      "fresh_permutation_enabled": true,
+      "boundary_pad_enabled": false,
+      "default_on_candidate_under_stage_5_4": false,
+      "risk_level_from_stage_5_4": "medium",
       "full_forward": {
         "max_abs_error": 4.470348358154297e-08,
         "relative_l2_error": 1.5815130893770402e-07,
@@ -57,6 +67,7 @@
       },
       "island_summary": {
         "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
         "num_blocks": 2,
         "blocks_with_compatible_islands": 2,
         "total_mlp_island_permutation_draws": 2,
@@ -65,6 +76,10 @@
         "lm_head_not_modified": true,
         "generation_path_not_modified": true,
         "pad_placement": "n/a",
+        "dense_sandwich_enabled": false,
+        "fresh_permutation_enabled": true,
+        "boundary_pad_enabled": false,
+        "default_on_candidate_under_stage_5_4": false,
         "security_profile": "proxy-evaluated, not formal",
         "security_caveats": [
           "Compatible mask families are weaker than unrestricted dense masks.",
@@ -86,6 +101,12 @@
     {
       "use_pad": true,
       "nonlinear_mode": "compatible_islands",
+      "mitigation_bundle": "fresh_perm_only",
+      "dense_sandwich_enabled": false,
+      "fresh_permutation_enabled": true,
+      "boundary_pad_enabled": true,
+      "default_on_candidate_under_stage_5_4": false,
+      "risk_level_from_stage_5_4": "medium",
       "full_forward": {
         "max_abs_error": 6.705522537231445e-08,
         "relative_l2_error": 2.2750039363472752e-07,
@@ -130,6 +151,7 @@
       },
       "island_summary": {
         "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
         "num_blocks": 2,
         "blocks_with_compatible_islands": 2,
         "total_mlp_island_permutation_draws": 2,
@@ -138,6 +160,178 @@
         "lm_head_not_modified": true,
         "generation_path_not_modified": true,
         "pad_placement": "linear_boundary_only",
+        "dense_sandwich_enabled": false,
+        "fresh_permutation_enabled": true,
+        "boundary_pad_enabled": true,
+        "default_on_candidate_under_stage_5_4": false,
+        "security_profile": "proxy-evaluated, not formal",
+        "security_caveats": [
+          "Compatible mask families are weaker than unrestricted dense masks.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Only GPT-2 model-level wrapper is integrated; BERT/T5 not integrated.",
+          "This is not a real TEE measurement."
+        ],
+        "wrapper_integration_scope": "gpt2_model_level"
+      },
+      "pad_report_mlp_c_fc_pad_per_block": [
+        true,
+        true
+      ],
+      "pad_report_mlp_c_proj_pad_per_block": [
+        false,
+        false
+      ]
+    },
+    {
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "dense_sandwich_enabled": true,
+      "fresh_permutation_enabled": true,
+      "boundary_pad_enabled": false,
+      "default_on_candidate_under_stage_5_4": false,
+      "risk_level_from_stage_5_4": "medium",
+      "full_forward": {
+        "max_abs_error": 6.705522537231445e-08,
+        "relative_l2_error": 1.7010074770951178e-07,
+        "cosine_similarity": 1.000054121017456,
+        "allclose": true,
+        "top1_match_rate": 1.0
+      },
+      "generation": {
+        "max_new_tokens": 4,
+        "sequence_exact_match": 1.0,
+        "token_match_rate": 1.0,
+        "top1_match_rate": 1.0,
+        "max_logits_error": 2.9802322387695312e-08,
+        "generated_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ],
+        "plain_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ]
+      },
+      "island_summary": {
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "num_blocks": 2,
+        "blocks_with_compatible_islands": 2,
+        "total_mlp_island_permutation_draws": 2,
+        "online_extra_matmul_count": 0,
+        "layernorm_remains_trusted": true,
+        "lm_head_not_modified": true,
+        "generation_path_not_modified": true,
+        "pad_placement": "n/a",
+        "dense_sandwich_enabled": true,
+        "fresh_permutation_enabled": true,
+        "boundary_pad_enabled": false,
+        "default_on_candidate_under_stage_5_4": false,
+        "security_profile": "proxy-evaluated, not formal",
+        "security_caveats": [
+          "Compatible mask families are weaker than unrestricted dense masks.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Only GPT-2 model-level wrapper is integrated; BERT/T5 not integrated.",
+          "This is not a real TEE measurement."
+        ],
+        "wrapper_integration_scope": "gpt2_model_level"
+      },
+      "pad_report_mlp_c_fc_pad_per_block": [
+        false,
+        false
+      ],
+      "pad_report_mlp_c_proj_pad_per_block": [
+        false,
+        false
+      ]
+    },
+    {
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "dense_sandwich_enabled": true,
+      "fresh_permutation_enabled": true,
+      "boundary_pad_enabled": true,
+      "default_on_candidate_under_stage_5_4": true,
+      "risk_level_from_stage_5_4": "low",
+      "full_forward": {
+        "max_abs_error": 2.7939677238464355e-08,
+        "relative_l2_error": 1.065425010438048e-07,
+        "cosine_similarity": 1.000054121017456,
+        "allclose": true,
+        "top1_match_rate": 1.0
+      },
+      "generation": {
+        "max_new_tokens": 4,
+        "sequence_exact_match": 1.0,
+        "token_match_rate": 1.0,
+        "top1_match_rate": 1.0,
+        "max_logits_error": 3.725290298461914e-08,
+        "generated_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ],
+        "plain_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ]
+      },
+      "island_summary": {
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "num_blocks": 2,
+        "blocks_with_compatible_islands": 2,
+        "total_mlp_island_permutation_draws": 2,
+        "online_extra_matmul_count": 0,
+        "layernorm_remains_trusted": true,
+        "lm_head_not_modified": true,
+        "generation_path_not_modified": true,
+        "pad_placement": "linear_boundary_only",
+        "dense_sandwich_enabled": true,
+        "fresh_permutation_enabled": true,
+        "boundary_pad_enabled": true,
+        "default_on_candidate_under_stage_5_4": true,
         "security_profile": "proxy-evaluated, not formal",
         "security_caveats": [
           "Compatible mask families are weaker than unrestricted dense masks.",

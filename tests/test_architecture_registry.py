@@ -35,11 +35,14 @@ def test_architecture_type_enum_has_three_families_plus_unknown() -> None:
 
 
 def test_registry_covers_three_architecture_keys() -> None:
-    assert set(DEFAULT_ARCHITECTURE_MODELS.keys()) == {
+    # Stage 6.0 mandates the three base architecture keys exist; Stage 6.4
+    # adds ``modern_decoder_only`` as an additive subtype (logical type still
+    # ``decoder_only``).
+    assert {
         "decoder_only",
         "encoder_only",
         "encoder_decoder",
-    }
+    } <= set(DEFAULT_ARCHITECTURE_MODELS.keys())
 
 
 def test_registry_includes_gpt2_for_decoder_only() -> None:

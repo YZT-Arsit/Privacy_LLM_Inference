@@ -37,6 +37,11 @@ from pllo.masks.mask_generator import generate_invertible_matrix
 from pllo.masks.pad_generator import generate_pad
 from pllo.model_zoo.base import torch_dtype_from_string
 from pllo.ops.compatible_masks import generate_permutation
+from pllo.ops.mitigation_bundles import (
+    DEFAULT_MITIGATION_BUNDLE,
+    bundle_metadata,
+    normalize_mitigation_bundle,
+)
 from pllo.ops.nonlinear_islands import get_activation, run_gelu_mlp_island
 
 
@@ -59,6 +64,7 @@ class EncoderFFNIslandProbeConfig:
     seq_len: int = 8
     use_pad: bool = True
     nonlinear_mode: str = DEFAULT_NONLINEAR_MODE
+    mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE
     dtype: str = "float32"
     device: str = "cpu"
     seed: int = 42
@@ -148,6 +154,7 @@ def run_encoder_ffn_island_probe(
 ) -> dict[str, Any]:
     """Run one BERT FFN compatible-island probe cell."""
     nonlinear_mode = normalize_nonlinear_mode(config.nonlinear_mode)
+    mitigation_bundle = normalize_mitigation_bundle(config.mitigation_bundle)
     torch.manual_seed(config.seed)
     dtype = torch_dtype_from_string(config.dtype, config.device)
     device = torch.device(config.device)
@@ -192,6 +199,9 @@ def run_encoder_ffn_island_probe(
     Y_plain_flat = _plain_ffn(x_flat, W_int, b_int, W_out, b_out, activation_type)
     Y_plain = Y_plain_flat.reshape(config.batch_size, config.seq_len, hidden_size)
 
+    bundle_meta = bundle_metadata(
+        mitigation_bundle, use_pad=config.use_pad, online_extra_matmul_count=0
+    )
     base_payload = {
         "config": asdict(config),
         "status": "loaded",
@@ -202,6 +212,14 @@ def run_encoder_ffn_island_probe(
         "intermediate_size": intermediate_size,
         "activation_type": activation_type,
         "nonlinear_mode": nonlinear_mode,
+        "mitigation_bundle": mitigation_bundle,
+        "mitigation_bundle_metadata": bundle_meta,
+        "dense_sandwich_enabled": bundle_meta["dense_sandwich_enabled"],
+        "fresh_permutation_enabled": bundle_meta["fresh_permutation_enabled"],
+        "boundary_pad_enabled": bundle_meta["boundary_pad_enabled"],
+        "default_on_candidate_under_stage_5_4": bundle_meta[
+            "default_on_candidate_under_stage_5_4"
+        ] and nonlinear_mode == "compatible_islands",
         "layernorm_remains_trusted": True,
         "mlm_head_not_modified": True,
         "pooler_not_modified": True,
@@ -251,6 +269,7 @@ def run_encoder_ffn_island_probe(
         n_out=N_out,
         activation_type=activation_type,
         pad_in=pad_in,
+        mitigation_bundle=mitigation_bundle,
     )
     Y_tilde_flat = island["y_tilde"]
     expected_Y_tilde = island["expected_y_tilde"]

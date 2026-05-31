@@ -82,14 +82,16 @@ def test_permutation_recovery_has_both_attacks(fast_report) -> None:
     rec = fast_report["permutation_recovery"]
     assert "signature_matching" in rec
     assert "soft_assignment" in rec
-    expected = {
+    # Stage 5.4 baseline (4 strategies). Stage 5.3e additionally evaluates
+    # the recommended ``fresh_perm_plus_sandwich_plus_pad`` bundle.
+    baseline = {
         "fixed_permutation",
         "fresh_permutation_per_session",
         "permutation_pool",
         "dense_sandwich",
     }
-    assert set(rec["signature_matching"].keys()) == expected
-    assert set(rec["soft_assignment"].keys()) == expected
+    assert baseline <= set(rec["signature_matching"].keys())
+    assert baseline <= set(rec["soft_assignment"].keys())
 
 
 # ---------------------------------------------------------------------------
@@ -191,12 +193,13 @@ def test_default_on_caveat_disclaims_formal_security(fast_report) -> None:
 
 def test_comparison_with_naive_proxy_has_uplift_field(fast_report) -> None:
     comp = fast_report["comparison_with_naive_proxy"]["per_strategy"]
+    # Stage 5.4 baseline; Stage 5.3e adds ``fresh_perm_plus_sandwich_plus_pad``.
     assert {
         "fixed_permutation",
         "fresh_permutation_per_session",
         "permutation_pool",
         "dense_sandwich",
-    } == set(comp.keys())
+    } <= set(comp.keys())
     for r in comp.values():
         assert "naive_signature_matching_top1" in r
         assert "adaptive_soft_assignment_top1" in r

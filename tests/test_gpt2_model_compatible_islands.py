@@ -375,9 +375,12 @@ def test_workload_profile_records_gpt2_model_level_integration() -> None:
     assert method.get("partial_implementation") is True
     assert method["implemented"] is False  # Probe-level only, not full runtime.
     assert method["wall_time_source"] == "projected_from_op_counts"
-    # measured_integration_scope was "gpt2_model_level" in 5.3b and is
-    # "cross_architecture_probe_level" in 5.3c. Either is acceptable.
+    # measured_integration_scope evolved across stages:
+    # - Stage 5.3b: "gpt2_model_level"
+    # - Stage 5.3c: "cross_architecture_probe_level"
+    # - Stage 6.4: "cross_architecture_plus_modern_decoder_probe_level"
     assert method.get("measured_integration_scope") in (
         "gpt2_model_level",
         "cross_architecture_probe_level",
+        "cross_architecture_plus_modern_decoder_probe_level",
     )

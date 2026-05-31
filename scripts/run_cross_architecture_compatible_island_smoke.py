@@ -39,9 +39,13 @@ from pllo.experiments.encoder_decoder_ffn_island_probe import (  # noqa: E402
     EncoderDecoderFFNIslandProbeConfig,
     run_encoder_decoder_ffn_island_probe,
 )
+from pllo.ops.mitigation_bundles import (  # noqa: E402
+    DEFAULT_MITIGATION_BUNDLE,
+    VALID_MITIGATION_BUNDLES,
+)
 
 
-REPORT_VERSION = "stage-5.3c-v1"
+REPORT_VERSION = "stage-5.3e-v1"
 
 
 def parse_args() -> argparse.Namespace:
@@ -59,6 +63,17 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=PROJECT_ROOT / "outputs" / "gpt2_model_compatible_island_smoke.json",
         help="Path to the Stage 5.3b GPT-2 model-level smoke JSON.",
+    )
+    parser.add_argument(
+        "--mitigation-bundle",
+        default=DEFAULT_MITIGATION_BUNDLE,
+        choices=list(VALID_MITIGATION_BUNDLES),
+        help="Mitigation bundle for BERT/T5 probes (default fresh_perm_only).",
+    )
+    parser.add_argument(
+        "--both-bundles",
+        action="store_true",
+        help="Run both mitigation bundles back-to-back for BERT and T5.",
     )
     return parser.parse_args()
 
@@ -97,7 +112,7 @@ def _condense_gpt2(payload: dict) -> dict:
     }
 
 
-def _run_bert(batch_size: int, seq_len: int, dtype: str, device: str, seed: int) -> dict:
+def _run_bert(batch_size: int, seq_len: int, dtype: str, device: str, seed: int, mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE) -> dict:
     runs = []
     for use_pad in (False, True):
         cfg = EncoderFFNIslandProbeConfig(
@@ -105,6 +120,7 @@ def _run_bert(batch_size: int, seq_len: int, dtype: str, device: str, seed: int)
             seq_len=seq_len,
             use_pad=use_pad,
             nonlinear_mode="compatible_islands",
+            mitigation_bundle=mitigation_bundle,
             dtype=dtype,
             device=device,
             seed=seed,
@@ -150,7 +166,7 @@ def _run_bert(batch_size: int, seq_len: int, dtype: str, device: str, seed: int)
     }
 
 
-def _run_t5(batch_size: int, seq_len: int, dtype: str, device: str, seed: int) -> dict:
+def _run_t5(batch_size: int, seq_len: int, dtype: str, device: str, seed: int, mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE) -> dict:
     runs = []
     statuses: list[str] = []
     for use_pad in (False, True):
@@ -159,6 +175,7 @@ def _run_t5(batch_size: int, seq_len: int, dtype: str, device: str, seed: int) -
             seq_len=seq_len,
             use_pad=use_pad,
             nonlinear_mode="compatible_islands",
+            mitigation_bundle=mitigation_bundle,
             dtype=dtype,
             device=device,
             seed=seed,
@@ -351,12 +368,29 @@ def main() -> None:
                 " Run scripts/run_gpt2_model_compatible_island_smoke.py first."
             ),
         }
-    bert_block = _run_bert(
-        args.batch_size, args.seq_len, args.dtype, args.device, args.seed
+    bundles = (
+        list(VALID_MITIGATION_BUNDLES) if args.both_bundles else [args.mitigation_bundle]
     )
-    t5_block = _run_t5(
-        args.batch_size, args.seq_len, args.dtype, args.device, args.seed
+    bert_blocks: dict[str, dict] = {}
+    t5_blocks: dict[str, dict] = {}
+    for bundle in bundles:
+        bert_blocks[bundle] = _run_bert(
+            args.batch_size, args.seq_len, args.dtype, args.device, args.seed,
+            mitigation_bundle=bundle,
+        )
+        t5_blocks[bundle] = _run_t5(
+            args.batch_size, args.seq_len, args.dtype, args.device, args.seed,
+            mitigation_bundle=bundle,
+        )
+        for r in bert_blocks[bundle].get("runs", []):
+            r["mitigation_bundle"] = bundle
+        for r in t5_blocks[bundle].get("runs", []):
+            r["mitigation_bundle"] = bundle
+    primary_bundle = (
+        args.mitigation_bundle if not args.both_bundles else DEFAULT_MITIGATION_BUNDLE
     )
+    bert_block = bert_blocks[primary_bundle]
+    t5_block = t5_blocks[primary_bundle]
     # tiny-random-t5 ID for the headline table.
     t5_model_id = None
     for r in t5_block["runs"]:
@@ -394,6 +428,14 @@ def main() -> None:
         "measured_integration_scope": "cross_architecture_probe_level",
         "all_architecture_probe_level_implemented": True,
         "full_runtime_integrated": False,
+        "mitigation_bundles_evaluated": bundles,
+        "mitigation_bundle_runs": {
+            bundle: {
+                "encoder_only": bert_blocks[bundle],
+                "encoder_decoder": t5_blocks[bundle],
+            }
+            for bundle in bundles
+        },
         "caveats": [
             "GPT-2: model-level integrated.",
             "BERT: probe-level integrated.",
