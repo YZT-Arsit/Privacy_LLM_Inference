@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `1.387e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `2.206e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 3.198 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 47.512 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 6.198 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 47.206 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 47.273 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 47.206 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 2.010 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 31.455 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 6.539 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 31.209 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 31.274 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 31.209 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -177,11 +177,16 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 
 - `partial_implementation = True` — the GPT-2 single-block wrapper now exposes a `nonlinear_mode="compatible_islands"` feature flag, but the GPT-2 model-level wrapper, BERT, and T5 paths are not yet wired up.
 - `gpt2_single_block`: `implemented`
-- `gpt2_model_level`: `not_yet`
-- `bert`: `not_yet`
-- `t5`: `not_yet`
+- `gpt2_model_level`: `implemented`
+- `bert`: `implemented_probe_level`
+- `t5`: `implemented_probe_level`
 - Default mode remains `trusted`; compatible_islands must not be enabled by default.
-- GPT-2 single-block integration available; full-model measured runtime pending Stage 5.3b.
+- GPT-2 model-level integration is available.
+- BERT/T5 are probe-level integrations, not full wrappers.
+- `measured_integration_scope = "cross_architecture_probe_level"`.
+- `full_runtime_integrated = False`.
+- `all_architecture_probe_level_implemented = True`.
+- `security_profile` remains `proxy-evaluated, not formal`.
 
 ## Paper metrics
 

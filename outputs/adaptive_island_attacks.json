@@ -1,0 +1,447 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "hidden_size": 64,
+    "num_train_samples": 512,
+    "num_test_samples": 256,
+    "num_sessions": 16,
+    "samples_per_session": 32,
+    "permutation_pool_size": 4,
+    "pad_scale": 1.0,
+    "attacker_steps": 200,
+    "attacker_lr": 0.01,
+    "mlp_hidden_size": 128,
+    "mlp_batch_size": 64,
+    "ridge_lambda": 0.001,
+    "soft_assignment_iters": 50,
+    "soft_assignment_temperature": 0.05,
+    "dtype": "float32",
+    "device": "cpu"
+  },
+  "threat_model": "Adaptive-proxy adversary: observes the GPU-visible nonlinear-island tensor across many sessions and has a labelled (visible, plaintext) training pool. May fit a ridge-regularised linear inverter, a small MLP inverter, and a Sinkhorn-style soft-assignment over per-channel signatures. Does NOT see trusted-side tensors, does NOT use side channels, does NOT query an actual deployed LLM, and does NOT have formal-security guarantees.",
+  "structured_data": {
+    "num_train_samples": 512,
+    "num_test_samples": 256,
+    "hidden_size": 64,
+    "samples_per_session": 32,
+    "channel_mean_range": [
+      -2.0,
+      2.0
+    ],
+    "channel_scale_range": [
+      0.5,
+      3.0
+    ],
+    "channel_skew_profile": "0.5 * cos(linspace(0, pi, hidden))",
+    "distribution_summary": "X[:, j] = mean_j + scale_j * (noise + skew_j * (noise**2 - 1))"
+  },
+  "linear_inverter": {
+    "strategies": {
+      "fixed_permutation": {
+        "strategy": "fixed_permutation",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "ridge_lambda": 0.001,
+        "mse": 2.5233300691984706e-12,
+        "relative_l2_error": 6.590830139430182e-07,
+        "cosine_similarity": 0.9999999403953552
+      },
+      "fresh_permutation_per_session": {
+        "strategy": "fresh_permutation_per_session",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "ridge_lambda": 0.001,
+        "mse": 7.787092208862305,
+        "relative_l2_error": 1.1335065364837646,
+        "cosine_similarity": 0.060307566076517105
+      },
+      "permutation_pool": {
+        "strategy": "permutation_pool",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "ridge_lambda": 0.001,
+        "mse": 3.4741296768188477,
+        "relative_l2_error": 0.7582023739814758,
+        "cosine_similarity": 0.6605978608131409
+      },
+      "dense_sandwich": {
+        "strategy": "dense_sandwich",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "ridge_lambda": 0.001,
+        "mse": 7.9357099533081055,
+        "relative_l2_error": 1.1277813911437988,
+        "cosine_similarity": 0.04646383598446846
+      },
+      "boundary_pad_only_boundary_view": {
+        "strategy": "boundary_pad_only_boundary_view",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "ridge_lambda": 0.001,
+        "mse": 7.799078464508057,
+        "relative_l2_error": 1.1228511333465576,
+        "cosine_similarity": 0.02828245609998703
+      },
+      "boundary_pad_only_activation_view": {
+        "strategy": "boundary_pad_only_activation_view",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "ridge_lambda": 0.001,
+        "mse": 2.7661987284099965e-12,
+        "relative_l2_error": 6.8018130150449e-07,
+        "cosine_similarity": 0.9999995231628418
+      }
+    },
+    "ranking_by_relative_l2_error_ascending": [
+      "fixed_permutation",
+      "boundary_pad_only_activation_view",
+      "permutation_pool",
+      "boundary_pad_only_boundary_view",
+      "dense_sandwich",
+      "fresh_permutation_per_session"
+    ],
+    "weakest_mitigation": "fixed_permutation"
+  },
+  "mlp_inverter": {
+    "strategies": {
+      "fixed_permutation": {
+        "strategy": "fixed_permutation",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "attacker_steps": 200,
+        "attacker_lr": 0.01,
+        "mlp_hidden_size": 128,
+        "final_train_loss": 0.022289033979177475,
+        "first_train_loss": 6.208306312561035,
+        "mse": 0.0647723525762558,
+        "relative_l2_error": 0.1055961549282074,
+        "cosine_similarity": 0.9945759773254395
+      },
+      "fresh_permutation_per_session": {
+        "strategy": "fresh_permutation_per_session",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "attacker_steps": 200,
+        "attacker_lr": 0.01,
+        "mlp_hidden_size": 128,
+        "final_train_loss": 1.5483028888702393,
+        "first_train_loss": 5.888875961303711,
+        "mse": 8.437782287597656,
+        "relative_l2_error": 1.1799147129058838,
+        "cosine_similarity": 0.2465561032295227
+      },
+      "permutation_pool": {
+        "strategy": "permutation_pool",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "attacker_steps": 200,
+        "attacker_lr": 0.01,
+        "mlp_hidden_size": 128,
+        "final_train_loss": 0.7282900810241699,
+        "first_train_loss": 5.97139310836792,
+        "mse": 2.5793251991271973,
+        "relative_l2_error": 0.6533039808273315,
+        "cosine_similarity": 0.7690016627311707
+      },
+      "dense_sandwich": {
+        "strategy": "dense_sandwich",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "attacker_steps": 200,
+        "attacker_lr": 0.01,
+        "mlp_hidden_size": 128,
+        "final_train_loss": 1.3710978031158447,
+        "first_train_loss": 6.1742262840271,
+        "mse": 9.002411842346191,
+        "relative_l2_error": 1.2011888027191162,
+        "cosine_similarity": 0.20434360206127167
+      },
+      "boundary_pad_only_boundary_view": {
+        "strategy": "boundary_pad_only_boundary_view",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "attacker_steps": 200,
+        "attacker_lr": 0.01,
+        "mlp_hidden_size": 128,
+        "final_train_loss": 1.6892406940460205,
+        "first_train_loss": 6.219832897186279,
+        "mse": 9.14616584777832,
+        "relative_l2_error": 1.2159621715545654,
+        "cosine_similarity": 0.2229117751121521
+      },
+      "boundary_pad_only_activation_view": {
+        "strategy": "boundary_pad_only_activation_view",
+        "num_train_samples": 512,
+        "num_test_samples": 256,
+        "attacker_steps": 200,
+        "attacker_lr": 0.01,
+        "mlp_hidden_size": 128,
+        "final_train_loss": 0.022290624678134918,
+        "first_train_loss": 6.353137493133545,
+        "mse": 0.09055955708026886,
+        "relative_l2_error": 0.12306942045688629,
+        "cosine_similarity": 0.9926706552505493
+      }
+    },
+    "improvement_over_linear": {
+      "fixed_permutation": {
+        "linear_relative_l2_error": 6.590830139430182e-07,
+        "mlp_relative_l2_error": 0.1055961549282074,
+        "mlp_minus_linear_relative_l2_error": 0.10559549584519345,
+        "mlp_improves_over_linear": false
+      },
+      "fresh_permutation_per_session": {
+        "linear_relative_l2_error": 1.1335065364837646,
+        "mlp_relative_l2_error": 1.1799147129058838,
+        "mlp_minus_linear_relative_l2_error": 0.04640817642211914,
+        "mlp_improves_over_linear": false
+      },
+      "permutation_pool": {
+        "linear_relative_l2_error": 0.7582023739814758,
+        "mlp_relative_l2_error": 0.6533039808273315,
+        "mlp_minus_linear_relative_l2_error": -0.10489839315414429,
+        "mlp_improves_over_linear": true
+      },
+      "dense_sandwich": {
+        "linear_relative_l2_error": 1.1277813911437988,
+        "mlp_relative_l2_error": 1.2011888027191162,
+        "mlp_minus_linear_relative_l2_error": 0.07340741157531738,
+        "mlp_improves_over_linear": false
+      },
+      "boundary_pad_only_boundary_view": {
+        "linear_relative_l2_error": 1.1228511333465576,
+        "mlp_relative_l2_error": 1.2159621715545654,
+        "mlp_minus_linear_relative_l2_error": 0.09311103820800781,
+        "mlp_improves_over_linear": false
+      },
+      "boundary_pad_only_activation_view": {
+        "linear_relative_l2_error": 6.8018130150449e-07,
+        "mlp_relative_l2_error": 0.12306942045688629,
+        "mlp_minus_linear_relative_l2_error": 0.12306874027558479,
+        "mlp_improves_over_linear": false
+      }
+    },
+    "ranking_by_relative_l2_error_ascending": [
+      "fixed_permutation",
+      "boundary_pad_only_activation_view",
+      "permutation_pool",
+      "fresh_permutation_per_session",
+      "dense_sandwich",
+      "boundary_pad_only_boundary_view"
+    ],
+    "weakest_mitigation": "fixed_permutation"
+  },
+  "permutation_recovery": {
+    "random_chance_top1": 0.015625,
+    "signature_matching": {
+      "fixed_permutation": {
+        "top1_recovery_rate": 0.265625,
+        "top5_recovery_rate": 0.8125,
+        "mean_correct_rank": 2.984375,
+        "mean_signature_error": 0.018164238884724845
+      },
+      "fresh_permutation_per_session": {
+        "top1_recovery_rate": 0.25,
+        "top5_recovery_rate": 0.78125,
+        "mean_correct_rank": 3.078125,
+        "mean_signature_error": 0.02039220169526339
+      },
+      "permutation_pool": {
+        "top1_recovery_rate": 0.25,
+        "top5_recovery_rate": 0.78125,
+        "mean_correct_rank": 3.390625,
+        "mean_signature_error": 0.020825998720997066
+      },
+      "dense_sandwich": {
+        "top1_recovery_rate": 0.03125,
+        "top5_recovery_rate": 0.078125,
+        "mean_correct_rank": 32.859375,
+        "mean_signature_error": 0.2407432213461224
+      }
+    },
+    "soft_assignment": {
+      "fixed_permutation": {
+        "top1_recovery_rate": 0.1875,
+        "top5_recovery_rate": 0.71875,
+        "mean_correct_rank": 3.453125,
+        "iterations": 50,
+        "temperature": 0.05
+      },
+      "fresh_permutation_per_session": {
+        "top1_recovery_rate": 0.140625,
+        "top5_recovery_rate": 0.65625,
+        "mean_correct_rank": 3.984375,
+        "iterations": 50,
+        "temperature": 0.05
+      },
+      "permutation_pool": {
+        "top1_recovery_rate": 0.140625,
+        "top5_recovery_rate": 0.671875,
+        "mean_correct_rank": 3.984375,
+        "iterations": 50,
+        "temperature": 0.05
+      },
+      "dense_sandwich": {
+        "top1_recovery_rate": 0.015625,
+        "top5_recovery_rate": 0.0625,
+        "mean_correct_rank": 36.15625,
+        "iterations": 50,
+        "temperature": 0.05
+      }
+    },
+    "ranking_by_soft_assignment_top1_descending": [
+      "fixed_permutation",
+      "fresh_permutation_per_session",
+      "permutation_pool",
+      "dense_sandwich"
+    ]
+  },
+  "mitigation_summary": {
+    "budgets": {
+      "linear_recovery_high_threshold": 0.2,
+      "linear_recovery_medium_threshold": 0.6,
+      "perm_high_threshold": 0.5,
+      "perm_medium_factor": 4.0
+    },
+    "random_chance_top1": 0.015625,
+    "per_strategy": [
+      {
+        "strategy": "fixed_permutation",
+        "best_linear_relative_l2_error": 6.590830139430182e-07,
+        "best_linear_cosine_similarity": 0.9999999403953552,
+        "best_mlp_relative_l2_error": 0.1055961549282074,
+        "best_mlp_cosine_similarity": 0.9945759773254395,
+        "best_soft_assignment_top1": 0.1875,
+        "best_signature_matching_top1": 0.265625,
+        "best_permutation_recovery_top1": 0.265625,
+        "risk_level": "high",
+        "default_on_recommendation": "unsafe_default_on",
+        "required_mitigations": [
+          "do not deploy without per-session fresh permutation",
+          "must add a dense sandwich at Linear boundaries",
+          "must pad at Linear boundaries"
+        ]
+      },
+      {
+        "strategy": "fresh_permutation_per_session",
+        "best_linear_relative_l2_error": 1.1335065364837646,
+        "best_linear_cosine_similarity": 0.060307566076517105,
+        "best_mlp_relative_l2_error": 1.1799147129058838,
+        "best_mlp_cosine_similarity": 0.2465561032295227,
+        "best_soft_assignment_top1": 0.140625,
+        "best_signature_matching_top1": 0.25,
+        "best_permutation_recovery_top1": 0.25,
+        "risk_level": "medium",
+        "default_on_recommendation": "needs_more_evaluation",
+        "required_mitigations": [
+          "must combine with pad at Linear boundaries",
+          "should add a dense sandwich on at least one side",
+          "short island lifetime + per-session rotation"
+        ]
+      },
+      {
+        "strategy": "permutation_pool",
+        "best_linear_relative_l2_error": 0.7582023739814758,
+        "best_linear_cosine_similarity": 0.6605978608131409,
+        "best_mlp_relative_l2_error": 0.6533039808273315,
+        "best_mlp_cosine_similarity": 0.7690016627311707,
+        "best_soft_assignment_top1": 0.140625,
+        "best_signature_matching_top1": 0.25,
+        "best_permutation_recovery_top1": 0.25,
+        "risk_level": "medium",
+        "default_on_recommendation": "needs_more_evaluation",
+        "required_mitigations": [
+          "pool size must be large; treat as fixed_permutation for small pools",
+          "rotate the pool frequently",
+          "must combine with pad and dense sandwich"
+        ]
+      },
+      {
+        "strategy": "dense_sandwich",
+        "best_linear_relative_l2_error": 1.1277813911437988,
+        "best_linear_cosine_similarity": 0.04646383598446846,
+        "best_mlp_relative_l2_error": 1.2011888027191162,
+        "best_mlp_cosine_similarity": 0.20434360206127167,
+        "best_soft_assignment_top1": 0.015625,
+        "best_signature_matching_top1": 0.03125,
+        "best_permutation_recovery_top1": 0.03125,
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "required_mitigations": [
+          "still requires fresh permutation per session",
+          "still requires pad at Linear boundaries",
+          "not formally secure; default-on only under tested adaptive proxy"
+        ]
+      },
+      {
+        "strategy": "boundary_pad_only_boundary_view",
+        "best_linear_relative_l2_error": 1.1228511333465576,
+        "best_linear_cosine_similarity": 0.02828245609998703,
+        "best_mlp_relative_l2_error": 1.2159621715545654,
+        "best_mlp_cosine_similarity": 0.2229117751121521,
+        "best_soft_assignment_top1": null,
+        "best_signature_matching_top1": null,
+        "best_permutation_recovery_top1": null,
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "required_mitigations": [
+          "pad protects the boundary view only",
+          "must combine with dense sandwich or fresh permutation for activation view"
+        ]
+      },
+      {
+        "strategy": "boundary_pad_only_activation_view",
+        "best_linear_relative_l2_error": 6.8018130150449e-07,
+        "best_linear_cosine_similarity": 0.9999995231628418,
+        "best_mlp_relative_l2_error": 0.12306942045688629,
+        "best_mlp_cosine_similarity": 0.9926706552505493,
+        "best_soft_assignment_top1": 0.1875,
+        "best_signature_matching_top1": 0.265625,
+        "best_permutation_recovery_top1": 0.265625,
+        "risk_level": "high",
+        "default_on_recommendation": "unsafe_default_on",
+        "required_mitigations": [
+          "boundary pad does NOT protect this view",
+          "must replace with fresh permutation + dense sandwich"
+        ]
+      }
+    ],
+    "recommended_default_on_candidate": "fresh_permutation + dense_sandwich + pad at Linear boundaries",
+    "default_on_caveat": "Safe-to-default-on only means \"within the tested adaptive proxy attackers (ridge linear inverter, small MLP inverter, Sinkhorn-style permutation recovery)\". This is NOT a formal security claim and NOT a TEE measurement."
+  },
+  "comparison_with_naive_proxy": {
+    "per_strategy": {
+      "fixed_permutation": {
+        "naive_signature_matching_top1": 0.265625,
+        "adaptive_soft_assignment_top1": 0.1875,
+        "absolute_uplift": -0.078125
+      },
+      "fresh_permutation_per_session": {
+        "naive_signature_matching_top1": 0.25,
+        "adaptive_soft_assignment_top1": 0.140625,
+        "absolute_uplift": -0.109375
+      },
+      "permutation_pool": {
+        "naive_signature_matching_top1": 0.25,
+        "adaptive_soft_assignment_top1": 0.140625,
+        "absolute_uplift": -0.109375
+      },
+      "dense_sandwich": {
+        "naive_signature_matching_top1": 0.03125,
+        "adaptive_soft_assignment_top1": 0.015625,
+        "absolute_uplift": -0.015625
+      }
+    },
+    "note": "Stage 5.4 reproduces Stage 5.2b's signature-matching proxy on the same data and compares it against the Sinkhorn-style soft-assignment adaptive attacker. Larger uplift means the adaptive attacker is strictly stronger on that strategy."
+  },
+  "limitations": [
+    "These are adaptive/proxy attacks, not formal security proofs.",
+    "The attacks use synthetic structured channel data, not full real-model activation traces.",
+    "No adaptive black-box querying of a deployed LLM is implemented.",
+    "No side-channel attack is implemented.",
+    "No real TEE isolation is evaluated.",
+    "Dense sandwiching reduces tested recovery but does not imply semantic security.",
+    "Default-on recommendations are conditional on the tested threat model only."
+  ]
+}

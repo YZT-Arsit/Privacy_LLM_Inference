@@ -329,10 +329,59 @@ def _build_markdown(profile: dict) -> str:
                 "- Default mode remains `trusted`; compatible_islands must"
                 " not be enabled by default."
             )
-            out.append(
-                "- GPT-2 single-block integration available; full-model"
-                " measured runtime pending Stage 5.3b."
-            )
+            bert_status = wrapper_status.get("bert", "not_yet")
+            t5_status = wrapper_status.get("t5", "not_yet")
+            if (
+                wrapper_status.get("gpt2_model_level") == "implemented"
+                and bert_status == "implemented_probe_level"
+                and t5_status == "implemented_probe_level"
+            ):
+                out.append(
+                    "- GPT-2 model-level integration is available."
+                )
+                out.append(
+                    "- BERT/T5 are probe-level integrations, not full"
+                    " wrappers."
+                )
+                scope = islands_record.get("measured_integration_scope")
+                if scope:
+                    out.append(
+                        f"- `measured_integration_scope = \"{scope}\"`."
+                    )
+                if "full_runtime_integrated" in islands_record:
+                    out.append(
+                        "- `full_runtime_integrated = "
+                        f"{islands_record['full_runtime_integrated']}`."
+                    )
+                if "all_architecture_probe_level_implemented" in islands_record:
+                    out.append(
+                        "- `all_architecture_probe_level_implemented = "
+                        f"{islands_record['all_architecture_probe_level_implemented']}`."
+                    )
+                out.append(
+                    "- `security_profile` remains `proxy-evaluated, not"
+                    " formal`."
+                )
+            elif wrapper_status.get("gpt2_model_level") == "implemented":
+                out.append(
+                    "- GPT-2 model-level compatible island integration"
+                    " available (Stage 5.3b); BERT/T5 integration pending"
+                    " Stage 5.3c."
+                )
+                out.append(
+                    "- measured GPT-2 model-level smoke, not full"
+                    " cross-architecture measurement."
+                )
+                scope = islands_record.get("measured_integration_scope")
+                if scope:
+                    out.append(
+                        f"- `measured_integration_scope = \"{scope}\"`."
+                    )
+            else:
+                out.append(
+                    "- GPT-2 single-block integration available; full-model"
+                    " measured runtime pending Stage 5.3b."
+                )
             out.append("")
 
     pm = profile["paper_metrics"]

@@ -121,19 +121,30 @@ def test_profile_method_ordering_between_ours_current_and_ours_ideal(
 
 
 def test_profile_method_records_wrapper_integration_status(profile_payload) -> None:
-    """Stage 5.3a — partial wrapper integration must be visible per-method."""
+    """Stage 5.3a / 5.3b / 5.3c — partial wrapper integration must be visible per-method."""
     m = profile_payload["methods"][METHOD_NAME]
     assert m.get("partial_implementation") is True
+    # BERT / T5 are probe-level only — method must NOT be marked fully implemented.
+    assert m["implemented"] is False
+    assert m["wall_time_source"] == "projected_from_op_counts"
+    assert m.get("measured_integration_scope") == "cross_architecture_probe_level"
+    assert m.get("all_architecture_probe_level_implemented") is True
+    assert m.get("full_runtime_integrated") is False
     status = m.get("wrapper_integration_status")
     assert status is not None
     assert status["gpt2_single_block"] == "implemented"
-    assert status["gpt2_model_level"] == "not_yet"
-    assert status["bert"] == "not_yet"
-    assert status["t5"] == "not_yet"
+    assert status["gpt2_model_level"] == "implemented"
+    assert status["bert"] == "implemented_probe_level"
+    assert status["t5"] == "implemented_probe_level"
     # Top-level summary mirrors the per-method status.
     top = profile_payload.get("wrapper_integration_status", {}).get(METHOD_NAME)
     assert top is not None
     assert top["gpt2_single_block"] == "implemented"
+    assert top["gpt2_model_level"] == "implemented"
+    assert top["bert"] == "implemented_probe_level"
+    assert top["t5"] == "implemented_probe_level"
+    assert top.get("full_runtime_integrated") is False
+    assert top.get("all_architecture_probe_level_implemented") is True
 
 
 def test_profile_method_preprocessing_breakdown_present(profile_payload) -> None:
@@ -192,8 +203,13 @@ def test_workload_profile_markdown_contains_required_phrases() -> None:
         "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations",
         "online_extra_matmul_count = 0",
         "not a real TEE measurement",
-        # Stage 5.3a — partial wrapper integration must be reported.
+        # Stage 5.3a / 5.3b / 5.3c — cross-architecture probe-level integration.
         "Stage 5.3a Wrapper Integration Status",
-        "GPT-2 single-block integration available; full-model measured runtime pending",
+        "GPT-2 model-level integration is available",
+        "BERT/T5 are probe-level integrations, not full wrappers",
+        "measured_integration_scope = \"cross_architecture_probe_level\"",
+        "full_runtime_integrated = False",
+        "all_architecture_probe_level_implemented = True",
+        "security_profile` remains `proxy-evaluated, not formal`",
     ):
         assert phrase in md, f"missing phrase: {phrase!r}"

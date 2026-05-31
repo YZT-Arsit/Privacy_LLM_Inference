@@ -350,6 +350,94 @@ def _build_markdown(summary: dict) -> str:
         )
         out.append("")
 
+    # 6.5 Stage 5.3c — Compatible Island Integration Status (per architecture)
+    integ = summary.get("compatible_island_integration_status", {})
+    if integ.get("status") == "available":
+        out.append("## Compatible Island Integration Status")
+        out.append("")
+        out.append(
+            "Stage 5.3c — per-architecture status of the operator-compatible"
+            " nonlinear-island integration. Default mode remains `trusted`"
+            " for every wrapper; `compatible_islands` is gated behind a"
+            " `nonlinear_mode` feature flag."
+        )
+        out.append("")
+        rows: list[list[str]] = []
+        headers = [
+            "architecture_type",
+            "model_id",
+            "integration_level",
+            "nonlinear_mode_available",
+            "use_pad_supported",
+            "online_extra_matmul_count",
+            "security_proxy_status",
+        ]
+        for entry in integ.get("per_architecture", []):
+            rows.append(
+                [
+                    entry["architecture_type"],
+                    entry["model_id"],
+                    entry["integration_level"],
+                    "/".join(entry["nonlinear_mode_available"]),
+                    str(entry["use_pad_supported"]),
+                    str(entry["online_extra_matmul_count"]),
+                    str(entry["security_proxy_status"]),
+                ]
+            )
+        out.append(markdown_table(headers, rows))
+        out.append("")
+        scope = integ.get("measured_integration_scope")
+        if scope:
+            out.append(
+                f"- `measured_integration_scope = \"{scope}\"`."
+            )
+        if "full_runtime_integrated" in integ:
+            out.append(
+                f"- `full_runtime_integrated = {integ['full_runtime_integrated']}`."
+            )
+        if "all_architecture_probe_level_implemented" in integ:
+            out.append(
+                "- `all_architecture_probe_level_implemented = "
+                f"{integ['all_architecture_probe_level_implemented']}`."
+            )
+        out.append(
+            "- GPT-2 model-level integration is available."
+        )
+        out.append(
+            "- BERT/T5 are probe-level integrations, not full wrappers."
+        )
+        out.append(
+            "- default mode remains `trusted`."
+        )
+        out.append(
+            "- LayerNorm remains trusted unless explicitly stated otherwise."
+        )
+        out.append(
+            "- no generation changes for BERT/T5."
+        )
+        out.append(
+            "- security follows Stage 5.2b caveats (fresh permutation per"
+            " session, dense sandwich at Linear boundaries, pad at Linear"
+            " boundaries only)."
+        )
+        out.append(
+            "- `security_profile` remains `proxy-evaluated, not formal`."
+        )
+        out.append(
+            "- not a real TEE measurement."
+        )
+        out.append(
+            "- not full BERT/T5 wrapper integration."
+        )
+        out.append("")
+        out.append("### Per-architecture limitations")
+        out.append("")
+        for entry in integ.get("per_architecture", []):
+            out.append(f"- **{entry['architecture_type']}**:")
+            for lim in entry["limitations"]:
+                out.append(f"  - {lim}")
+        out.append("")
+
     # 7. Trusted shortcuts per architecture
     out.append("## Trusted shortcuts still in place per architecture")
     out.append("")

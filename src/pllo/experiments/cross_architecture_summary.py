@@ -322,6 +322,8 @@ def _read_workload(out_dir: Path) -> dict[str, Any]:
         "calibration": payload.get("calibration"),
         "methods": methods_summary,
         "paper_metrics": payload.get("paper_metrics"),
+        "wrapper_integration_status": payload.get("wrapper_integration_status"),
+        "method_records_full": methods_payload,
     }
 
 
@@ -419,6 +421,139 @@ def _compatible_island_projection(
 
 
 # ---------------------------------------------------------------------------
+# Stage 5.3c — Compatible Island Integration Status (per architecture)
+# ---------------------------------------------------------------------------
+
+
+_ARCH_TO_INTEGRATION_KEYS: dict[str, tuple[str, ...]] = {
+    "decoder_only": ("gpt2_model_level", "gpt2_single_block"),
+    "encoder_only": ("bert",),
+    "encoder_decoder": ("t5",),
+}
+
+
+_STATUS_TO_LEVEL: dict[str, str] = {
+    "implemented": "model_level",
+    "implemented_probe_level": "probe_level",
+    "not_yet": "not_yet",
+    "missing": "not_yet",
+}
+
+
+def _resolve_integration_level(arch_key: str, wrapper_status: dict[str, Any]) -> str:
+    keys = _ARCH_TO_INTEGRATION_KEYS.get(arch_key, ())
+    for k in keys:
+        raw = str(wrapper_status.get(k, "not_yet"))
+        level = _STATUS_TO_LEVEL.get(raw, raw)
+        if level != "not_yet":
+            return level
+    return "not_yet"
+
+
+def _compatible_island_integration_status(
+    architectures: list[dict[str, Any]],
+    workload: dict[str, Any],
+) -> dict[str, Any]:
+    """Stage 5.3c — per-architecture compatible-island integration table.
+
+    Reads ``workload_profile.json``'s ``wrapper_integration_status`` for
+    ``ours_compatible_nonlinear_islands`` and emits one row per architecture
+    with the integration level (``model_level`` / ``probe_level`` /
+    ``not_yet``), available nonlinear modes, pad support, online extra
+    matmul count, the Stage 5.2b security proxy status, and the
+    documented per-architecture limitations.
+    """
+    method_records = workload.get("method_records_full") or {}
+    method = method_records.get("ours_compatible_nonlinear_islands", {}) or {}
+    wrapper_status = method.get("wrapper_integration_status") or {}
+    top_status = (
+        workload.get("wrapper_integration_status") or {}
+    ).get("ours_compatible_nonlinear_islands") or {}
+    # Prefer per-method wrapper status; fall back to top-level mirror.
+    effective_status = {**top_status, **wrapper_status}
+
+    if not effective_status:
+        return {
+            "status": "workload_missing_or_method_absent",
+            "per_architecture": [],
+            "measured_integration_scope": None,
+            "full_runtime_integrated": None,
+            "all_architecture_probe_level_implemented": None,
+            "security_profile": method.get("security_profile"),
+        }
+
+    online_extra_matmul = int(method.get("online_extra_matmul_count", 0) or 0)
+    security_profile = method.get("security_profile") or top_status.get(
+        "security_profile"
+    )
+
+    per_architecture: list[dict[str, Any]] = []
+    for arch in architectures:
+        arch_key = arch["architecture_type"]
+        level = _resolve_integration_level(arch_key, effective_status)
+        if arch_key == "decoder_only":
+            nonlinear_modes = ["trusted", "compatible_islands"]
+            limitations = [
+                "GPT-2 model-level integration is measured smoke, not a real TEE measurement.",
+                "LayerNorm remains trusted.",
+                "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
+            ]
+        elif arch_key == "encoder_only":
+            nonlinear_modes = ["trusted", "compatible_islands"]
+            limitations = [
+                "BERT is probe-level integration, not a full BERT wrapper.",
+                "MLM head, pooler, and classifier are not modified.",
+                "LayerNorm remains trusted.",
+                "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
+            ]
+        elif arch_key == "encoder_decoder":
+            nonlinear_modes = ["trusted", "compatible_islands"]
+            limitations = [
+                "T5 / BART is probe-level integration, not a full wrapper.",
+                "LM head and encoder-decoder generation are not modified.",
+                "Cross-attention probe invariants (Stage 6.2) are not modified.",
+                "Gated-GELU is not yet supported (Stage 5.2a only covers SiLU gated MLP island).",
+                "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
+            ]
+        else:
+            nonlinear_modes = []
+            limitations = []
+        per_architecture.append(
+            {
+                "architecture_type": arch_key,
+                "model_id": arch["model_id"],
+                "integration_level": level,
+                "nonlinear_mode_available": nonlinear_modes,
+                "use_pad_supported": True,
+                "online_extra_matmul_count": online_extra_matmul,
+                "security_proxy_status": security_profile,
+                "limitations": limitations,
+            }
+        )
+
+    return {
+        "status": "available",
+        "per_architecture": per_architecture,
+        "measured_integration_scope": (
+            method.get("measured_integration_scope")
+            or top_status.get("measured_integration_scope")
+        ),
+        "full_runtime_integrated": (
+            method.get("full_runtime_integrated")
+            if "full_runtime_integrated" in method
+            else top_status.get("full_runtime_integrated")
+        ),
+        "all_architecture_probe_level_implemented": (
+            method.get("all_architecture_probe_level_implemented")
+            if "all_architecture_probe_level_implemented" in method
+            else top_status.get("all_architecture_probe_level_implemented")
+        ),
+        "security_profile": security_profile,
+        "note": top_status.get("note"),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
 
@@ -497,12 +632,16 @@ def run_cross_architecture_summary(
     compatible_island_projection = _compatible_island_projection(
         architectures, workload
     )
+    compatible_island_integration_status = _compatible_island_integration_status(
+        architectures, workload
+    )
 
     return {
         "config": asdict(config),
         "architectures": architectures,
         "workload": workload,
         "compatible_island_projection": compatible_island_projection,
+        "compatible_island_integration_status": compatible_island_integration_status,
         "global_summary": {
             "num_architectures": len(architectures),
             "num_aggregated": sum(
@@ -521,6 +660,21 @@ def run_cross_architecture_summary(
             else None,
             "compatible_island_projection_available": (
                 compatible_island_projection.get("status") == "available"
+            ),
+            "compatible_island_integration_status_available": (
+                compatible_island_integration_status.get("status") == "available"
+            ),
+            "compatible_island_full_runtime_integrated": (
+                compatible_island_integration_status.get("full_runtime_integrated")
+                if compatible_island_integration_status.get("status") == "available"
+                else None
+            ),
+            "compatible_island_all_architecture_probe_level_implemented": (
+                compatible_island_integration_status.get(
+                    "all_architecture_probe_level_implemented"
+                )
+                if compatible_island_integration_status.get("status") == "available"
+                else None
             ),
         },
         "stage_note": (

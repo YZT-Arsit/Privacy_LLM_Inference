@@ -6,6 +6,10 @@ import torch
 
 from pllo.hf_wrappers.gpt2_block_wrapper import ObfuscatedGPT2BlockWrapper
 from pllo.hf_wrappers.gpt2_cache import ObfuscatedGPT2KVCache
+from pllo.hf_wrappers.nonlinear_modes import (
+    DEFAULT_NONLINEAR_MODE,
+    normalize_nonlinear_mode,
+)
 
 
 class ObfuscatedGPT2ModelWrapper:
@@ -36,16 +40,20 @@ class ObfuscatedGPT2ModelWrapper:
         device: str | torch.device = "cpu",
         use_pad: bool = True,
         pad_scale: float = 1.0,
+        nonlinear_mode: str = DEFAULT_NONLINEAR_MODE,
     ) -> None:
         self.model = model
         self.dtype = dtype
         self.device = torch.device(device)
         self.use_pad = use_pad
         self.pad_scale = pad_scale
+        self.nonlinear_mode = normalize_nonlinear_mode(nonlinear_mode)
 
         model.eval()
 
-        # Per-block obfuscated wrappers (one per transformer block)
+        # Per-block obfuscated wrappers (one per transformer block). Every
+        # block receives the same ``nonlinear_mode``; Stage 5.3b does not
+        # support per-block mode mixing.
         self.block_wrappers = [
             ObfuscatedGPT2BlockWrapper(
                 block=block,
@@ -54,6 +62,7 @@ class ObfuscatedGPT2ModelWrapper:
                 device=self.device,
                 use_pad=use_pad,
                 pad_scale=pad_scale,
+                nonlinear_mode=self.nonlinear_mode,
             )
             for block in model.transformer.h
         ]
@@ -79,6 +88,72 @@ class ObfuscatedGPT2ModelWrapper:
     def pad_reports(self) -> list[dict]:
         """Per-block pad audit reports (populated after each forward call)."""
         return [w.pad_report for w in self.block_wrappers]
+
+    @property
+    def island_reports(self) -> list[dict]:
+        """Per-block compatible-island audit reports."""
+        return [w.island_report for w in self.block_wrappers]
+
+    @property
+    def island_summary(self) -> dict[str, object]:
+        """Stage 5.3b — aggregate island audit across all blocks.
+
+        Populated from each block's ``island_report``. When
+        ``nonlinear_mode == "compatible_islands"`` every entry in
+        ``blocks_with_compatible_islands`` flips to ``True`` after the first
+        ``forward()`` / ``prefill()`` / ``decode_step()`` call. The summary
+        is recomputed on every read, so callers do not need to invalidate
+        it.
+        """
+        reports = self.island_reports
+        num_blocks = len(reports)
+        blocks_active = sum(1 for r in reports if r.get("mlp_gelu_island_active"))
+        permutation_draws = sum(
+            int(r.get("mlp_island_permutation_draws", 0)) for r in reports
+        )
+        extra_matmul = sum(
+            int(r.get("online_extra_matmul_count", 0)) for r in reports
+        )
+        layernorm_trusted = all(
+            bool(r.get("layernorm_remains_trusted", True)) for r in reports
+        )
+        lm_head_untouched = all(
+            bool(r.get("lm_head_not_modified", True)) for r in reports
+        )
+        generation_untouched = all(
+            bool(r.get("generation_path_not_modified", True)) for r in reports
+        )
+        pad_placements = sorted({
+            str(r.get("mlp_island_pad_placement", "n/a")) for r in reports
+        })
+        pad_placement = (
+            pad_placements[0] if len(pad_placements) == 1 else "/".join(pad_placements)
+        )
+        if self.nonlinear_mode == "compatible_islands":
+            security_profile = "proxy-evaluated, not formal"
+            security_caveats = [
+                "Compatible mask families are weaker than unrestricted dense masks.",
+                "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+                "Only GPT-2 model-level wrapper is integrated; BERT/T5 not integrated.",
+                "This is not a real TEE measurement.",
+            ]
+        else:
+            security_profile = "n/a"
+            security_caveats = []
+        return {
+            "nonlinear_mode": self.nonlinear_mode,
+            "num_blocks": num_blocks,
+            "blocks_with_compatible_islands": blocks_active,
+            "total_mlp_island_permutation_draws": permutation_draws,
+            "online_extra_matmul_count": extra_matmul,
+            "layernorm_remains_trusted": layernorm_trusted,
+            "lm_head_not_modified": lm_head_untouched,
+            "generation_path_not_modified": generation_untouched,
+            "pad_placement": pad_placement,
+            "security_profile": security_profile,
+            "security_caveats": security_caveats,
+            "wrapper_integration_scope": "gpt2_model_level",
+        }
 
     # ------------------------------------------------------------------
     # Internal: LM head with vocab output mask (shared by forward / prefill / decode)

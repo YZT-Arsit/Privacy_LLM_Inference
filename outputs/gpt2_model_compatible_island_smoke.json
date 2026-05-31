@@ -1,0 +1,177 @@
+{
+  "report_version": "stage-5.3b-v1",
+  "config": {
+    "model_id": "sshleifer/tiny-gpt2",
+    "batch_size": 2,
+    "seq_len": 8,
+    "max_new_tokens": 4,
+    "device": "cpu",
+    "dtype": "float32",
+    "seed": 2026
+  },
+  "runs": [
+    {
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "full_forward": {
+        "max_abs_error": 4.470348358154297e-08,
+        "relative_l2_error": 1.5815130893770402e-07,
+        "cosine_similarity": 1.0000542402267456,
+        "allclose": true,
+        "top1_match_rate": 1.0
+      },
+      "generation": {
+        "max_new_tokens": 4,
+        "sequence_exact_match": 1.0,
+        "token_match_rate": 1.0,
+        "top1_match_rate": 1.0,
+        "max_logits_error": 2.9802322387695312e-08,
+        "generated_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ],
+        "plain_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ]
+      },
+      "island_summary": {
+        "nonlinear_mode": "compatible_islands",
+        "num_blocks": 2,
+        "blocks_with_compatible_islands": 2,
+        "total_mlp_island_permutation_draws": 2,
+        "online_extra_matmul_count": 0,
+        "layernorm_remains_trusted": true,
+        "lm_head_not_modified": true,
+        "generation_path_not_modified": true,
+        "pad_placement": "n/a",
+        "security_profile": "proxy-evaluated, not formal",
+        "security_caveats": [
+          "Compatible mask families are weaker than unrestricted dense masks.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Only GPT-2 model-level wrapper is integrated; BERT/T5 not integrated.",
+          "This is not a real TEE measurement."
+        ],
+        "wrapper_integration_scope": "gpt2_model_level"
+      },
+      "pad_report_mlp_c_fc_pad_per_block": [
+        false,
+        false
+      ],
+      "pad_report_mlp_c_proj_pad_per_block": [
+        false,
+        false
+      ]
+    },
+    {
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "full_forward": {
+        "max_abs_error": 6.705522537231445e-08,
+        "relative_l2_error": 2.2750039363472752e-07,
+        "cosine_similarity": 1.0000542402267456,
+        "allclose": true,
+        "top1_match_rate": 1.0
+      },
+      "generation": {
+        "max_new_tokens": 4,
+        "sequence_exact_match": 1.0,
+        "token_match_rate": 1.0,
+        "top1_match_rate": 1.0,
+        "max_logits_error": 3.725290298461914e-08,
+        "generated_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ],
+        "plain_token_ids": [
+          [
+            5087,
+            5087,
+            5087,
+            5087
+          ],
+          [
+            16046,
+            16046,
+            16046,
+            16046
+          ]
+        ]
+      },
+      "island_summary": {
+        "nonlinear_mode": "compatible_islands",
+        "num_blocks": 2,
+        "blocks_with_compatible_islands": 2,
+        "total_mlp_island_permutation_draws": 2,
+        "online_extra_matmul_count": 0,
+        "layernorm_remains_trusted": true,
+        "lm_head_not_modified": true,
+        "generation_path_not_modified": true,
+        "pad_placement": "linear_boundary_only",
+        "security_profile": "proxy-evaluated, not formal",
+        "security_caveats": [
+          "Compatible mask families are weaker than unrestricted dense masks.",
+          "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+          "Only GPT-2 model-level wrapper is integrated; BERT/T5 not integrated.",
+          "This is not a real TEE measurement."
+        ],
+        "wrapper_integration_scope": "gpt2_model_level"
+      },
+      "pad_report_mlp_c_fc_pad_per_block": [
+        true,
+        true
+      ],
+      "pad_report_mlp_c_proj_pad_per_block": [
+        false,
+        false
+      ]
+    }
+  ],
+  "wrapper_integration_status": {
+    "gpt2_single_block": "implemented",
+    "gpt2_model_level": "implemented",
+    "bert": "not_yet",
+    "t5": "not_yet"
+  },
+  "measured_integration_scope": "gpt2_model_level",
+  "caveats": [
+    "LayerNorm remains trusted.",
+    "Only GPT-2 model-level wrapper is integrated; BERT/T5 not integrated.",
+    "Security relies on Stage 5.2b mitigations.",
+    "Compatible mask families are weaker than unrestricted dense masks.",
+    "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+    "This is not a real TEE measurement.",
+    "compatible_islands is not enabled by default.",
+    "Measured GPT-2 model-level smoke, not full cross-architecture measurement."
+  ]
+}

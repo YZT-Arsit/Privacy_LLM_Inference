@@ -18,7 +18,7 @@
     }
   },
   "calibration": {
-    "gpu_flops_per_ms": 1386602.460089486,
+    "gpu_flops_per_ms": 2206034.4639592757,
     "calibrated_from": "plain_hf_gpu"
   },
   "methods": {
@@ -40,10 +40,10 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 3.1980500018107705,
-      "measured_wall_time_ms": 3.1980500018107705,
-      "measured_wall_time_ms_median": 3.023916004167404,
-      "measured_wall_time_ms_stdev": 0.6307987053636837,
+      "projected_wall_time_ms": 2.0101336005609483,
+      "measured_wall_time_ms": 2.0101336005609483,
+      "measured_wall_time_ms_median": 1.9722919969353825,
+      "measured_wall_time_ms_stdev": 0.11176367859623305,
       "wall_time_source": "measured"
     },
     "tslp_trusted_nonlinear_baseline": {
@@ -64,7 +64,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 47.5120791272156,
+      "projected_wall_time_ms": 31.45468127752346,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -88,10 +88,10 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 47.752467437331205,
-      "measured_wall_time_ms": 6.197958598204423,
-      "measured_wall_time_ms_median": 6.196709000505507,
-      "measured_wall_time_ms_stdev": 0.19575434164362707,
+      "projected_wall_time_ms": 31.613632497730666,
+      "measured_wall_time_ms": 6.53880859608762,
+      "measured_wall_time_ms_median": 6.581666995771229,
+      "measured_wall_time_ms_stdev": 0.19913736800735948,
       "wall_time_source": "measured"
     },
     "ours_ideal_gpu_nonlinear": {
@@ -112,7 +112,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 47.2062738203746,
+      "projected_wall_time_ms": 31.208942253733834,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -137,11 +137,18 @@
       "online_extra_matmul_count": 0,
       "security_profile": "proxy-evaluated, not formal",
       "partial_implementation": true,
+      "measured_integration_scope": "cross_architecture_probe_level",
+      "measured_wall_time_scope": "gpt2_model_level_smoke",
+      "all_architecture_probe_level_implemented": true,
+      "full_runtime_integrated": false,
+      "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+      "adaptive_proxy_evaluated": true,
+      "adaptive_proxy_artifact": "outputs/adaptive_island_attacks.json",
       "wrapper_integration_status": {
         "gpt2_single_block": "implemented",
-        "gpt2_model_level": "not_yet",
-        "bert": "not_yet",
-        "t5": "not_yet"
+        "gpt2_model_level": "implemented",
+        "bert": "implemented_probe_level",
+        "t5": "implemented_probe_level"
       },
       "preprocessing_breakdown": {
         "base_weight_obfuscation_ops": 403784,
@@ -149,7 +156,7 @@
         "permutation_absorption_ops": 128,
         "compatible_mask_generation_ops": 40
       },
-      "projected_wall_time_ms": 47.2732759191717,
+      "projected_wall_time_ms": 31.273586963086224,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -173,7 +180,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 47.2062738203746,
+      "projected_wall_time_ms": 31.208942253733834,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -1115,10 +1122,13 @@
   "wrapper_integration_status": {
     "ours_compatible_nonlinear_islands": {
       "gpt2_single_block": "implemented",
-      "gpt2_model_level": "not_yet",
-      "bert": "not_yet",
-      "t5": "not_yet",
-      "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag. Default mode remains 'trusted'; ours_compatible_nonlinear_islands is still marked partial_implementation=True because the GPT-2 model-level wrapper, BERT, and T5 are not yet wired up. Full-model measured runtime is pending Stage 5.3b."
+      "gpt2_model_level": "implemented",
+      "bert": "implemented_probe_level",
+      "t5": "implemented_probe_level",
+      "measured_integration_scope": "cross_architecture_probe_level",
+      "all_architecture_probe_level_implemented": true,
+      "full_runtime_integrated": false,
+      "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag; Stage 5.3b propagates the same flag through the GPT-2 model-level wrapper (full forward + prefill / decode_step + greedy generation). Stage 5.3c extends the same flag to probe-level BERT (Stage 6.1) and T5 / BART (Stage 6.2) FFN island probes \u2014 encoder GELU / ReLU MLP islands and gated-SiLU MLP islands, with explicit unsupported status for gated-GELU which Stage 5.2a does not yet cover. Default mode remains 'trusted'; ours_compatible_nonlinear_islands stays partial_implementation=True because BERT / T5 are probe-level integrations, not full wrappers (full_runtime_integrated=False). This is a measured GPT-2 model-level smoke plus BERT / T5 probe-level correctness, not a full cross-architecture measurement."
     }
   },
   "interpretation": {

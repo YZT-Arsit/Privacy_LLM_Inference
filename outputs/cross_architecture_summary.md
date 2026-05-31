@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 3.198e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.010e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.198e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.539e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -66,6 +66,47 @@ Security proxy caveats (from Stage 5.2b, applied to every architecture row above
 - Permutation islands hide channel identity but do not hide coordinate-value multisets.
 - Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.
 - Not yet integrated into the GPT-2 / BERT / T5 wrappers (`projected_from_probe`, not measured). No real TEE isolation.
+
+## Compatible Island Integration Status
+
+Stage 5.3c — per-architecture status of the operator-compatible nonlinear-island integration. Default mode remains `trusted` for every wrapper; `compatible_islands` is gated behind a `nonlinear_mode` feature flag.
+
+| architecture_type | model_id | integration_level | nonlinear_mode_available | use_pad_supported | online_extra_matmul_count | security_proxy_status |
+|---|---|---|---|---|---|---|
+| decoder_only | sshleifer/tiny-gpt2 | model_level | trusted/compatible_islands | True | 0 | proxy-evaluated, not formal |
+| encoder_only | hf-internal-testing/tiny-bert | probe_level | trusted/compatible_islands | True | 0 | proxy-evaluated, not formal |
+| encoder_decoder | hf-internal-testing/tiny-random-t5 | probe_level | trusted/compatible_islands | True | 0 | proxy-evaluated, not formal |
+
+- `measured_integration_scope = "cross_architecture_probe_level"`.
+- `full_runtime_integrated = False`.
+- `all_architecture_probe_level_implemented = True`.
+- GPT-2 model-level integration is available.
+- BERT/T5 are probe-level integrations, not full wrappers.
+- default mode remains `trusted`.
+- LayerNorm remains trusted unless explicitly stated otherwise.
+- no generation changes for BERT/T5.
+- security follows Stage 5.2b caveats (fresh permutation per session, dense sandwich at Linear boundaries, pad at Linear boundaries only).
+- `security_profile` remains `proxy-evaluated, not formal`.
+- not a real TEE measurement.
+- not full BERT/T5 wrapper integration.
+
+### Per-architecture limitations
+
+- **decoder_only**:
+  - GPT-2 model-level integration is measured smoke, not a real TEE measurement.
+  - LayerNorm remains trusted.
+  - Default mode remains trusted; compatible_islands is gated behind a feature flag.
+- **encoder_only**:
+  - BERT is probe-level integration, not a full BERT wrapper.
+  - MLM head, pooler, and classifier are not modified.
+  - LayerNorm remains trusted.
+  - Default mode remains trusted; compatible_islands is gated behind a feature flag.
+- **encoder_decoder**:
+  - T5 / BART is probe-level integration, not a full wrapper.
+  - LM head and encoder-decoder generation are not modified.
+  - Cross-attention probe invariants (Stage 6.2) are not modified.
+  - Gated-GELU is not yet supported (Stage 5.2a only covers SiLU gated MLP island).
+  - Default mode remains trusted; compatible_islands is gated behind a feature flag.
 
 ## Trusted shortcuts still in place per architecture
 

@@ -866,15 +866,38 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             "security_profile": method.security_profile,
         }
         if method.name == "ours_compatible_nonlinear_islands":
-            # Stage 5.3a — the method is now partially wrapper-integrated at
-            # the GPT-2 single-block level (behind a feature flag). The
-            # full-model / BERT / T5 paths are still projected.
+            # Stage 5.3a / 5.3b / 5.3c — wrapper-integrated at the GPT-2
+            # single-block + GPT-2 model levels, and probe-level integrated
+            # for BERT and T5 (Stage 6.1 / 6.2 probe surface). All behind a
+            # ``nonlinear_mode`` feature flag whose default is ``"trusted"``.
+            #
+            # ``implemented`` stays False because BERT / T5 are probe-level
+            # only — there is no full BERT or T5 wrapper, no encoder-decoder
+            # generation, no LM head integration. ``full_runtime_integrated``
+            # is the dedicated flag for that. The headline
+            # ``wall_time_source`` remains the projected op-count value;
+            # measured smokes are surfaced via ``measured_integration_scope``.
             record["partial_implementation"] = True
+            record["measured_integration_scope"] = "cross_architecture_probe_level"
+            record["measured_wall_time_scope"] = "gpt2_model_level_smoke"
+            record["all_architecture_probe_level_implemented"] = True
+            record["full_runtime_integrated"] = False
+            # Stage 5.4 — adaptive-proxy attacker results are tracked in
+            # ``outputs/adaptive_island_attacks.{json,csv,md}``. ``security_profile``
+            # is intentionally left at "proxy-evaluated, not formal" so that
+            # downstream consumers do not interpret Stage 5.4 as formal
+            # security; the dedicated flag below makes the adaptive-proxy
+            # evaluation explicit without changing schema semantics.
+            record["security_profile_detail"] = (
+                "adaptive-proxy-evaluated, not formal"
+            )
+            record["adaptive_proxy_evaluated"] = True
+            record["adaptive_proxy_artifact"] = "outputs/adaptive_island_attacks.json"
             record["wrapper_integration_status"] = {
                 "gpt2_single_block": "implemented",
-                "gpt2_model_level": "not_yet",
-                "bert": "not_yet",
-                "t5": "not_yet",
+                "gpt2_model_level": "implemented",
+                "bert": "implemented_probe_level",
+                "t5": "implemented_probe_level",
             }
             record["preprocessing_breakdown"] = {
                 "base_weight_obfuscation_ops": pre.get(
@@ -1035,17 +1058,30 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
         "wrapper_integration_status": {
             "ours_compatible_nonlinear_islands": {
                 "gpt2_single_block": "implemented",
-                "gpt2_model_level": "not_yet",
-                "bert": "not_yet",
-                "t5": "not_yet",
+                "gpt2_model_level": "implemented",
+                "bert": "implemented_probe_level",
+                "t5": "implemented_probe_level",
+                "measured_integration_scope": "cross_architecture_probe_level",
+                "all_architecture_probe_level_implemented": True,
+                "full_runtime_integrated": False,
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"
                     " into the GPT-2 single-block wrapper behind a"
-                    " nonlinear_mode feature flag. Default mode remains"
-                    " 'trusted'; ours_compatible_nonlinear_islands is still"
-                    " marked partial_implementation=True because the GPT-2"
-                    " model-level wrapper, BERT, and T5 are not yet wired"
-                    " up. Full-model measured runtime is pending Stage 5.3b."
+                    " nonlinear_mode feature flag; Stage 5.3b propagates"
+                    " the same flag through the GPT-2 model-level wrapper"
+                    " (full forward + prefill / decode_step + greedy"
+                    " generation). Stage 5.3c extends the same flag to"
+                    " probe-level BERT (Stage 6.1) and T5 / BART (Stage 6.2)"
+                    " FFN island probes — encoder GELU / ReLU MLP islands"
+                    " and gated-SiLU MLP islands, with explicit unsupported"
+                    " status for gated-GELU which Stage 5.2a does not yet"
+                    " cover. Default mode remains 'trusted';"
+                    " ours_compatible_nonlinear_islands stays"
+                    " partial_implementation=True because BERT / T5 are"
+                    " probe-level integrations, not full wrappers"
+                    " (full_runtime_integrated=False). This is a measured"
+                    " GPT-2 model-level smoke plus BERT / T5 probe-level"
+                    " correctness, not a full cross-architecture measurement."
                 ),
             },
         },

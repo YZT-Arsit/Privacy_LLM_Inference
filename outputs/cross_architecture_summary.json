@@ -202,7 +202,7 @@
       }
     },
     "calibration": {
-      "gpu_flops_per_ms": 1386602.460089486,
+      "gpu_flops_per_ms": 2206034.4639592757,
       "calibrated_from": "plain_hf_gpu"
     },
     "methods": [
@@ -214,7 +214,7 @@
         "online_trusted_compute_ops": 0,
         "online_gpu_ops": 4434424,
         "preprocessing_trusted_ops": 0,
-        "measured_wall_time_ms": 3.1980500018107705,
+        "measured_wall_time_ms": 2.0101336005609483,
         "wall_time_source": "measured",
         "online_extra_matmul_count": 0,
         "uses_compatible_nonlinear_islands": false,
@@ -242,7 +242,7 @@
         "online_trusted_compute_ops": 1116310,
         "online_gpu_ops": 4429848,
         "preprocessing_trusted_ops": 403784,
-        "measured_wall_time_ms": 6.197958598204423,
+        "measured_wall_time_ms": 6.53880859608762,
         "wall_time_source": "measured",
         "online_extra_matmul_count": 0,
         "uses_compatible_nonlinear_islands": false,
@@ -321,6 +321,184 @@
           "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
           "This is not a real TEE measurement."
         ]
+      }
+    },
+    "wrapper_integration_status": {
+      "ours_compatible_nonlinear_islands": {
+        "gpt2_single_block": "implemented",
+        "gpt2_model_level": "implemented",
+        "bert": "implemented_probe_level",
+        "t5": "implemented_probe_level",
+        "measured_integration_scope": "cross_architecture_probe_level",
+        "all_architecture_probe_level_implemented": true,
+        "full_runtime_integrated": false,
+        "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag; Stage 5.3b propagates the same flag through the GPT-2 model-level wrapper (full forward + prefill / decode_step + greedy generation). Stage 5.3c extends the same flag to probe-level BERT (Stage 6.1) and T5 / BART (Stage 6.2) FFN island probes \u2014 encoder GELU / ReLU MLP islands and gated-SiLU MLP islands, with explicit unsupported status for gated-GELU which Stage 5.2a does not yet cover. Default mode remains 'trusted'; ours_compatible_nonlinear_islands stays partial_implementation=True because BERT / T5 are probe-level integrations, not full wrappers (full_runtime_integrated=False). This is a measured GPT-2 model-level smoke plus BERT / T5 probe-level correctness, not a full cross-architecture measurement."
+      }
+    },
+    "method_records_full": {
+      "plain_hf_gpu": {
+        "title": "Plain HuggingFace on GPU",
+        "summary": "Plaintext HF GPT-2 forward / greedy decode. No protection.",
+        "implemented": true,
+        "implementation_note": "Hand-written HF greedy loop over plain model().",
+        "citation_caveat": "No security; measured wall time is the GPU-only baseline.",
+        "online_boundary_calls": 0,
+        "online_trusted_compute_ops": 0,
+        "online_trusted_transfer_bytes": 0,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 0,
+        "preprocessing_transfer_bytes": 0,
+        "boundary_calls_formula": "0 (no boundary)",
+        "uses_compatible_nonlinear_islands": false,
+        "uses_dense_sandwich": false,
+        "uses_fresh_permutation": false,
+        "online_extra_matmul_count": 0,
+        "security_profile": "n/a",
+        "projected_wall_time_ms": 2.0101336005609483,
+        "measured_wall_time_ms": 2.0101336005609483,
+        "measured_wall_time_ms_median": 1.9722919969353825,
+        "measured_wall_time_ms_stdev": 0.11176367859623305,
+        "wall_time_source": "measured"
+      },
+      "tslp_trusted_nonlinear_baseline": {
+        "title": "TSLP-style trusted non-linear baseline",
+        "summary": "Linear / attention on GPU, every LayerNorm and GELU activation makes a TEE round-trip. Modeled after the trusted non-linear split common in shielded-inference literature.",
+        "implemented": false,
+        "implementation_note": "No real implementation in this repo. Wall time is projected from op counts using a documented cost model \u2014 not a measurement of any specific published system.",
+        "citation_caveat": "TSLP-style is used here as a generic non-linear-in-TEE baseline. It is not a faithful re-implementation of any single published system. Adjust the cost model constants in WorkloadProfileConfig before drawing system-level conclusions.",
+        "online_boundary_calls": 32,
+        "online_trusted_compute_ops": 1110230,
+        "online_trusted_transfer_bytes": 4427192,
+        "online_gpu_ops": 4429848,
+        "preprocessing_trusted_ops": 0,
+        "preprocessing_transfer_bytes": 0,
+        "boundary_calls_formula": "3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head)",
+        "uses_compatible_nonlinear_islands": false,
+        "uses_dense_sandwich": false,
+        "uses_fresh_permutation": false,
+        "online_extra_matmul_count": 0,
+        "security_profile": "n/a",
+        "projected_wall_time_ms": 31.45468127752346,
+        "measured_wall_time_ms": null,
+        "measured_wall_time_ms_median": null,
+        "measured_wall_time_ms_stdev": null,
+        "wall_time_source": "projected_from_op_counts"
+      },
+      "ours_current": {
+        "title": "This work \u2014 current Stage 4.9 implementation",
+        "summary": "Right-multiply mask + per-block Conv1D pad compensation, trusted LayerNorm / GELU shortcuts, diagonal vocab output mask on the LM head, internal ObfuscatedGPT2KVCache.",
+        "implemented": true,
+        "implementation_note": "Wall time is measured against the real ObfuscatedGPT2ModelWrapper generation path.",
+        "citation_caveat": "Trusted LayerNorm / GELU are engineering shortcuts; their TEE cost is included in proxies but their security model is unprotected non-linearity. See Stage 5.1 / 5.2 roadmap.",
+        "online_boundary_calls": 36,
+        "online_trusted_compute_ops": 1116310,
+        "online_trusted_transfer_bytes": 4428424,
+        "online_gpu_ops": 4429848,
+        "preprocessing_trusted_ops": 403784,
+        "preprocessing_transfer_bytes": 402440,
+        "boundary_calls_formula": "4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head)",
+        "uses_compatible_nonlinear_islands": false,
+        "uses_dense_sandwich": false,
+        "uses_fresh_permutation": false,
+        "online_extra_matmul_count": 0,
+        "security_profile": "n/a",
+        "projected_wall_time_ms": 31.613632497730666,
+        "measured_wall_time_ms": 6.53880859608762,
+        "measured_wall_time_ms_median": 6.581666995771229,
+        "measured_wall_time_ms_stdev": 0.19913736800735948,
+        "wall_time_source": "measured"
+      },
+      "ours_ideal_gpu_nonlinear": {
+        "title": "This work \u2014 ideal: LN / GELU on GPU in masked domain",
+        "summary": "Same wrapper but with LayerNorm and GELU executed inside the obfuscated GPU domain. The trusted side only crosses the boundary to prepare the masked input and to recover the LM head logits. Used as an upper bound, not a measured system.",
+        "implemented": false,
+        "implementation_note": "Hypothetical. Op counts come from the same model graph; LN / GELU FLOPs are reattributed from TEE to GPU. Wall time is projected, not measured.",
+        "citation_caveat": "Upper bound. Real obfuscated LN / GELU primitives are deferred to Stage 5.1 / 5.2 and may carry additional overhead this estimate does not capture.",
+        "online_boundary_calls": 4,
+        "online_trusted_compute_ops": 1105654,
+        "online_trusted_transfer_bytes": 4422792,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 403784,
+        "preprocessing_transfer_bytes": 402440,
+        "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
+        "uses_compatible_nonlinear_islands": false,
+        "uses_dense_sandwich": false,
+        "uses_fresh_permutation": false,
+        "online_extra_matmul_count": 0,
+        "security_profile": "n/a",
+        "projected_wall_time_ms": 31.208942253733834,
+        "measured_wall_time_ms": null,
+        "measured_wall_time_ms_median": null,
+        "measured_wall_time_ms_stdev": null,
+        "wall_time_source": "projected_from_op_counts"
+      },
+      "ours_compatible_nonlinear_islands": {
+        "title": "This work \u2014 projected: operator-compatible nonlinear islands",
+        "summary": "Modeled / projected method. RMSNorm core uses an orthogonal mask, LayerNorm core uses a mean-preserving orthogonal mask, GELU / ReLU / SiLU activations use permutation masks, and SwiGLU uses a paired permutation. Every mask transition is folded into adjacent Linear weights offline, so the masked forward executes with the same number of matmuls as the plaintext forward (Stage 5.2a verified ``online_extra_matmul_count = 0`` for every MLP island cell). Trusted shortcuts for LN and GELU are removed.",
+        "implemented": false,
+        "implementation_note": "Projected, not measured. Stage 5.2a verified the correctness probe (28 cells, all_allclose=True, max_online_extra_matmul=0). Stage 5.2b validated the security proxy (fresh permutation + dense sandwich + pad at Linear boundaries are required mitigations). Not yet integrated into the GPT-2 / BERT / T5 wrappers \u2014 Stage 5.3 is the integration step.",
+        "citation_caveat": "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands. The Stage 5.2b security proxy quantified per-strategy linkability and permutation recovery, but the result is a naive-observer upper bound, NOT a formal security proof and NOT a real TEE measurement.",
+        "online_boundary_calls": 16,
+        "online_trusted_compute_ops": 1105830,
+        "online_trusted_transfer_bytes": 4423496,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 403992,
+        "preprocessing_transfer_bytes": 402440,
+        "boundary_calls_formula": "L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model)",
+        "uses_compatible_nonlinear_islands": true,
+        "uses_dense_sandwich": true,
+        "uses_fresh_permutation": true,
+        "online_extra_matmul_count": 0,
+        "security_profile": "proxy-evaluated, not formal",
+        "partial_implementation": true,
+        "measured_integration_scope": "cross_architecture_probe_level",
+        "measured_wall_time_scope": "gpt2_model_level_smoke",
+        "all_architecture_probe_level_implemented": true,
+        "full_runtime_integrated": false,
+        "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+        "adaptive_proxy_evaluated": true,
+        "adaptive_proxy_artifact": "outputs/adaptive_island_attacks.json",
+        "wrapper_integration_status": {
+          "gpt2_single_block": "implemented",
+          "gpt2_model_level": "implemented",
+          "bert": "implemented_probe_level",
+          "t5": "implemented_probe_level"
+        },
+        "preprocessing_breakdown": {
+          "base_weight_obfuscation_ops": 403784,
+          "affine_folding_ops": 40,
+          "permutation_absorption_ops": 128,
+          "compatible_mask_generation_ops": 40
+        },
+        "projected_wall_time_ms": 31.273586963086224,
+        "measured_wall_time_ms": null,
+        "measured_wall_time_ms_median": null,
+        "measured_wall_time_ms_stdev": null,
+        "wall_time_source": "projected_from_op_counts"
+      },
+      "amulet_style_reference": {
+        "title": "Amulet-style reference (cost model)",
+        "summary": "Input masking + GPU obfuscated forward + output unmasking, modeled after the high-level pattern in Amulet-style systems. Reference only, not a re-implementation.",
+        "implemented": false,
+        "implementation_note": "No implementation in this repo. Cost-model reference under the assumption that the entire obfuscated forward runs as a single GPU pipeline between trusted input masking and trusted output unmasking.",
+        "citation_caveat": "Amulet-style here means the abstract pattern of input mask + GPU forward + output recovery. Real Amulet systems may include primitives and overheads not captured by this proxy. Use with explicit attribution to assumptions.",
+        "online_boundary_calls": 4,
+        "online_trusted_compute_ops": 1105654,
+        "online_trusted_transfer_bytes": 4422792,
+        "online_gpu_ops": 4434424,
+        "preprocessing_trusted_ops": 403784,
+        "preprocessing_transfer_bytes": 402440,
+        "boundary_calls_formula": "1 per forward (single fused GPU pipeline round trip)",
+        "uses_compatible_nonlinear_islands": false,
+        "uses_dense_sandwich": false,
+        "uses_fresh_permutation": false,
+        "online_extra_matmul_count": 0,
+        "security_profile": "n/a",
+        "projected_wall_time_ms": 31.208942253733834,
+        "measured_wall_time_ms": null,
+        "measured_wall_time_ms_median": null,
+        "measured_wall_time_ms_stdev": null,
+        "wall_time_source": "projected_from_op_counts"
       }
     }
   },
@@ -416,12 +594,79 @@
       ]
     }
   },
+  "compatible_island_integration_status": {
+    "status": "available",
+    "per_architecture": [
+      {
+        "architecture_type": "decoder_only",
+        "model_id": "sshleifer/tiny-gpt2",
+        "integration_level": "model_level",
+        "nonlinear_mode_available": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "use_pad_supported": true,
+        "online_extra_matmul_count": 0,
+        "security_proxy_status": "proxy-evaluated, not formal",
+        "limitations": [
+          "GPT-2 model-level integration is measured smoke, not a real TEE measurement.",
+          "LayerNorm remains trusted.",
+          "Default mode remains trusted; compatible_islands is gated behind a feature flag."
+        ]
+      },
+      {
+        "architecture_type": "encoder_only",
+        "model_id": "hf-internal-testing/tiny-bert",
+        "integration_level": "probe_level",
+        "nonlinear_mode_available": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "use_pad_supported": true,
+        "online_extra_matmul_count": 0,
+        "security_proxy_status": "proxy-evaluated, not formal",
+        "limitations": [
+          "BERT is probe-level integration, not a full BERT wrapper.",
+          "MLM head, pooler, and classifier are not modified.",
+          "LayerNorm remains trusted.",
+          "Default mode remains trusted; compatible_islands is gated behind a feature flag."
+        ]
+      },
+      {
+        "architecture_type": "encoder_decoder",
+        "model_id": "hf-internal-testing/tiny-random-t5",
+        "integration_level": "probe_level",
+        "nonlinear_mode_available": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "use_pad_supported": true,
+        "online_extra_matmul_count": 0,
+        "security_proxy_status": "proxy-evaluated, not formal",
+        "limitations": [
+          "T5 / BART is probe-level integration, not a full wrapper.",
+          "LM head and encoder-decoder generation are not modified.",
+          "Cross-attention probe invariants (Stage 6.2) are not modified.",
+          "Gated-GELU is not yet supported (Stage 5.2a only covers SiLU gated MLP island).",
+          "Default mode remains trusted; compatible_islands is gated behind a feature flag."
+        ]
+      }
+    ],
+    "measured_integration_scope": "cross_architecture_probe_level",
+    "full_runtime_integrated": false,
+    "all_architecture_probe_level_implemented": true,
+    "security_profile": "proxy-evaluated, not formal",
+    "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag; Stage 5.3b propagates the same flag through the GPT-2 model-level wrapper (full forward + prefill / decode_step + greedy generation). Stage 5.3c extends the same flag to probe-level BERT (Stage 6.1) and T5 / BART (Stage 6.2) FFN island probes \u2014 encoder GELU / ReLU MLP islands and gated-SiLU MLP islands, with explicit unsupported status for gated-GELU which Stage 5.2a does not yet cover. Default mode remains 'trusted'; ours_compatible_nonlinear_islands stays partial_implementation=True because BERT / T5 are probe-level integrations, not full wrappers (full_runtime_integrated=False). This is a measured GPT-2 model-level smoke plus BERT / T5 probe-level correctness, not a full cross-architecture measurement."
+  },
   "global_summary": {
     "num_architectures": 3,
     "num_aggregated": 3,
     "num_missing": 0,
     "all_architectures_allclose": true,
-    "compatible_island_projection_available": true
+    "compatible_island_projection_available": true,
+    "compatible_island_integration_status_available": true,
+    "compatible_island_full_runtime_integrated": false,
+    "compatible_island_all_architecture_probe_level_implemented": true
   },
   "stage_note": "Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encoder-only) and Stage 6.2 (encoder-decoder cross-attention) probe outputs plus the Stage 5.0.1 / 5.2c workload profile. It does not re-execute any probe."
 }
