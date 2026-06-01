@@ -1,0 +1,439 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "batch_size": 2,
+    "seq_len": 8,
+    "synthetic_hidden_size": 64,
+    "synthetic_intermediate_size": 128,
+    "synthetic_num_attention_heads": 4,
+    "synthetic_num_key_value_heads": 2,
+    "synthetic_head_dim": 16,
+    "synthetic_rope_base": 10000.0,
+    "use_pad_values": [
+      false,
+      true
+    ],
+    "mitigation_bundles": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "nonlinear_mode": "compatible_islands",
+    "seed": 2026,
+    "load": {
+      "model_id": null,
+      "attempt_real_model_load": false,
+      "allow_synthetic_fallback": true,
+      "device": "cpu",
+      "dtype": "float32",
+      "local_files_only": false
+    }
+  },
+  "model_loading": {
+    "load_status": "synthetic_only",
+    "resolved_model_id": null,
+    "model_family": null,
+    "model_class": null,
+    "load_error": "attempt_real_model_load=False (default); pytest runs the synthetic fallback to avoid network downloads.",
+    "fallback_used": true,
+    "candidates_tried": []
+  },
+  "source": "synthetic_fallback",
+  "block_spec": {
+    "model_family": "synthetic_modern_decoder",
+    "model_class": "SyntheticLlamaBlock",
+    "block_path": "synthetic.layers.0",
+    "block_index": 0,
+    "hidden_size": 64,
+    "intermediate_size": 128,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 16,
+    "norm_type": "rmsnorm",
+    "activation_type": "swiglu",
+    "position_encoding_type": "rotary",
+    "attention_variant": "gqa",
+    "q_proj_path": "synthetic.layers.0.self_attn.q_proj",
+    "k_proj_path": "synthetic.layers.0.self_attn.k_proj",
+    "v_proj_path": "synthetic.layers.0.self_attn.v_proj",
+    "o_proj_path": "synthetic.layers.0.self_attn.o_proj",
+    "gate_proj_path": "synthetic.layers.0.mlp.gate_proj",
+    "up_proj_path": "synthetic.layers.0.mlp.up_proj",
+    "down_proj_path": "synthetic.layers.0.mlp.down_proj",
+    "input_norm_path": "synthetic.layers.0.input_layernorm",
+    "post_attention_norm_path": "synthetic.layers.0.post_attention_layernorm",
+    "rope_base": 10000.0,
+    "rope_scaling_kind": null,
+    "notes": [
+      "synthetic fallback; no real model weights were loaded"
+    ]
+  },
+  "per_run": [
+    {
+      "mitigation_bundle": "fresh_perm_only",
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "block_index": 0,
+      "model_family": "synthetic_modern_decoder",
+      "source": "synthetic_fallback",
+      "valid_nonlinear_modes": [
+        "trusted",
+        "compatible_islands"
+      ],
+      "valid_mitigation_bundles": [
+        "fresh_perm_only",
+        "fresh_perm_plus_sandwich_plus_pad"
+      ],
+      "max_abs_error": 1.9073486328125e-06,
+      "relative_l2_error": 4.0554408542448073e-07,
+      "cosine_similarity": 0.9999998211860657,
+      "allclose": true,
+      "online_extra_matmul_count": 0,
+      "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+      "rope_attention_status": "rope_post_mask_only",
+      "gqa_status": "per_kv_head_mask_with_repeat_kv",
+      "swiglu_status": "compatible_island_paired_permutation",
+      "residual_alignment_status": "consistent_mask_space_across_branches",
+      "intermediate_metrics": {
+        "attn_branch": {
+          "max_abs_error": 8.344650268554688e-07,
+          "relative_l2_error": 5.289853106660303e-07,
+          "allclose": true
+        },
+        "h_mid": {
+          "max_abs_error": 1.1920928955078125e-06,
+          "relative_l2_error": 2.665565546067228e-07,
+          "allclose": true
+        },
+        "mlp_branch": {
+          "max_abs_error": 1.4007091522216797e-06,
+          "relative_l2_error": 8.190671110241965e-07,
+          "allclose": true
+        }
+      },
+      "mitigation_bundle_metadata": {
+        "mitigation_bundle": "fresh_perm_only",
+        "fresh_permutation_enabled": true,
+        "dense_sandwich_enabled": false,
+        "boundary_pad_required": false,
+        "boundary_pad_enabled": false,
+        "activation_pad_forbidden": true,
+        "pad_placement": "n/a",
+        "activation_input_form": "ZP",
+        "post_island_dense_mask": false,
+        "island_view_lifetime": "short_lived",
+        "default_on_candidate_under_stage_5_4": false,
+        "risk_level_from_stage_5_4": "medium",
+        "default_on_recommendation": "needs_more_evaluation",
+        "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+        "online_extra_matmul_count": 0,
+        "preprocessing_only_transformations": [
+          "permutation_absorbed_into_weights"
+        ]
+      },
+      "dense_sandwich_enabled": false,
+      "boundary_pad_enabled": false,
+      "boundary_pad_required": false,
+      "default_on_candidate_under_stage_5_4": false,
+      "fresh_permutation_enabled": true,
+      "activation_input_form": "ZP",
+      "handling_notes": [
+        "RoPE handled by masking AFTER RoPE; pre-RoPE dense-mask commutation is not assumed.",
+        "Residual paths align under the same orthogonal N_res mask on both branches.",
+        "At the SwiGLU boundary the residual N_res is removed (trusted-side; N_res is orthogonal so this is exact); the SwiGLU island then applies its own freshly-sampled N_in / P / N_out per the Stage 5.3e bundle."
+      ],
+      "caveats": [
+        "Block-level integration only; not a full model-level wrapper.",
+        "No generation / decode_step / KV cache runtime is implemented.",
+        "RoPE uses post-RoPE per-head masking; mask-before-RoPE commutation is not assumed.",
+        "This is not a real TEE measurement.",
+        "This is not formal security."
+      ]
+    },
+    {
+      "mitigation_bundle": "fresh_perm_only",
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "block_index": 0,
+      "model_family": "synthetic_modern_decoder",
+      "source": "synthetic_fallback",
+      "valid_nonlinear_modes": [
+        "trusted",
+        "compatible_islands"
+      ],
+      "valid_mitigation_bundles": [
+        "fresh_perm_only",
+        "fresh_perm_plus_sandwich_plus_pad"
+      ],
+      "max_abs_error": 2.1457672119140625e-06,
+      "relative_l2_error": 4.706186587100092e-07,
+      "cosine_similarity": 0.9999998211860657,
+      "allclose": true,
+      "online_extra_matmul_count": 0,
+      "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+      "rope_attention_status": "rope_post_mask_only",
+      "gqa_status": "per_kv_head_mask_with_repeat_kv",
+      "swiglu_status": "compatible_island_paired_permutation",
+      "residual_alignment_status": "consistent_mask_space_across_branches",
+      "intermediate_metrics": {
+        "attn_branch": {
+          "max_abs_error": 1.0728836059570312e-06,
+          "relative_l2_error": 5.296182621350454e-07,
+          "allclose": true
+        },
+        "h_mid": {
+          "max_abs_error": 1.0728836059570312e-06,
+          "relative_l2_error": 2.658671292010695e-07,
+          "allclose": true
+        },
+        "mlp_branch": {
+          "max_abs_error": 2.0265579223632812e-06,
+          "relative_l2_error": 1.0105050023412332e-06,
+          "allclose": true
+        }
+      },
+      "mitigation_bundle_metadata": {
+        "mitigation_bundle": "fresh_perm_only",
+        "fresh_permutation_enabled": true,
+        "dense_sandwich_enabled": false,
+        "boundary_pad_required": false,
+        "boundary_pad_enabled": true,
+        "activation_pad_forbidden": true,
+        "pad_placement": "linear_boundary_only",
+        "activation_input_form": "ZP",
+        "post_island_dense_mask": false,
+        "island_view_lifetime": "short_lived",
+        "default_on_candidate_under_stage_5_4": false,
+        "risk_level_from_stage_5_4": "medium",
+        "default_on_recommendation": "needs_more_evaluation",
+        "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+        "online_extra_matmul_count": 0,
+        "preprocessing_only_transformations": [
+          "permutation_absorbed_into_weights"
+        ]
+      },
+      "dense_sandwich_enabled": false,
+      "boundary_pad_enabled": true,
+      "boundary_pad_required": false,
+      "default_on_candidate_under_stage_5_4": false,
+      "fresh_permutation_enabled": true,
+      "activation_input_form": "ZP",
+      "handling_notes": [
+        "RoPE handled by masking AFTER RoPE; pre-RoPE dense-mask commutation is not assumed.",
+        "Residual paths align under the same orthogonal N_res mask on both branches.",
+        "At the SwiGLU boundary the residual N_res is removed (trusted-side; N_res is orthogonal so this is exact); the SwiGLU island then applies its own freshly-sampled N_in / P / N_out per the Stage 5.3e bundle."
+      ],
+      "caveats": [
+        "Block-level integration only; not a full model-level wrapper.",
+        "No generation / decode_step / KV cache runtime is implemented.",
+        "RoPE uses post-RoPE per-head masking; mask-before-RoPE commutation is not assumed.",
+        "This is not a real TEE measurement.",
+        "This is not formal security."
+      ]
+    },
+    {
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "block_index": 0,
+      "model_family": "synthetic_modern_decoder",
+      "source": "synthetic_fallback",
+      "valid_nonlinear_modes": [
+        "trusted",
+        "compatible_islands"
+      ],
+      "valid_mitigation_bundles": [
+        "fresh_perm_only",
+        "fresh_perm_plus_sandwich_plus_pad"
+      ],
+      "max_abs_error": 1.691281795501709e-06,
+      "relative_l2_error": 4.088778382538294e-07,
+      "cosine_similarity": 0.9999998211860657,
+      "allclose": true,
+      "online_extra_matmul_count": 0,
+      "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+      "rope_attention_status": "rope_post_mask_only",
+      "gqa_status": "per_kv_head_mask_with_repeat_kv",
+      "swiglu_status": "compatible_island_paired_permutation",
+      "residual_alignment_status": "consistent_mask_space_across_branches",
+      "intermediate_metrics": {
+        "attn_branch": {
+          "max_abs_error": 8.344650268554688e-07,
+          "relative_l2_error": 4.922177936350636e-07,
+          "allclose": true
+        },
+        "h_mid": {
+          "max_abs_error": 1.1920928955078125e-06,
+          "relative_l2_error": 2.6432971367285063e-07,
+          "allclose": true
+        },
+        "mlp_branch": {
+          "max_abs_error": 1.430511474609375e-06,
+          "relative_l2_error": 8.089036782621406e-07,
+          "allclose": true
+        }
+      },
+      "mitigation_bundle_metadata": {
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "fresh_permutation_enabled": true,
+        "dense_sandwich_enabled": true,
+        "boundary_pad_required": true,
+        "boundary_pad_enabled": false,
+        "activation_pad_forbidden": true,
+        "pad_placement": "n/a",
+        "activation_input_form": "ZP",
+        "post_island_dense_mask": true,
+        "island_view_lifetime": "short_lived",
+        "default_on_candidate_under_stage_5_4": false,
+        "risk_level_from_stage_5_4": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "security_profile_detail": "adaptive-proxy-mitigated, not formal",
+        "online_extra_matmul_count": 0,
+        "preprocessing_only_transformations": [
+          "dense_input_mask",
+          "permutation_absorbed_into_weights",
+          "dense_output_mask"
+        ]
+      },
+      "dense_sandwich_enabled": true,
+      "boundary_pad_enabled": false,
+      "boundary_pad_required": true,
+      "default_on_candidate_under_stage_5_4": false,
+      "fresh_permutation_enabled": true,
+      "activation_input_form": "ZP",
+      "handling_notes": [
+        "RoPE handled by masking AFTER RoPE; pre-RoPE dense-mask commutation is not assumed.",
+        "Residual paths align under the same orthogonal N_res mask on both branches.",
+        "At the SwiGLU boundary the residual N_res is removed (trusted-side; N_res is orthogonal so this is exact); the SwiGLU island then applies its own freshly-sampled N_in / P / N_out per the Stage 5.3e bundle."
+      ],
+      "caveats": [
+        "Block-level integration only; not a full model-level wrapper.",
+        "No generation / decode_step / KV cache runtime is implemented.",
+        "RoPE uses post-RoPE per-head masking; mask-before-RoPE commutation is not assumed.",
+        "This is not a real TEE measurement.",
+        "This is not formal security."
+      ]
+    },
+    {
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "block_index": 0,
+      "model_family": "synthetic_modern_decoder",
+      "source": "synthetic_fallback",
+      "valid_nonlinear_modes": [
+        "trusted",
+        "compatible_islands"
+      ],
+      "valid_mitigation_bundles": [
+        "fresh_perm_only",
+        "fresh_perm_plus_sandwich_plus_pad"
+      ],
+      "max_abs_error": 2.1457672119140625e-06,
+      "relative_l2_error": 4.95188203331054e-07,
+      "cosine_similarity": 0.9999999403953552,
+      "allclose": true,
+      "online_extra_matmul_count": 0,
+      "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+      "rope_attention_status": "rope_post_mask_only",
+      "gqa_status": "per_kv_head_mask_with_repeat_kv",
+      "swiglu_status": "compatible_island_paired_permutation",
+      "residual_alignment_status": "consistent_mask_space_across_branches",
+      "intermediate_metrics": {
+        "attn_branch": {
+          "max_abs_error": 6.556510925292969e-07,
+          "relative_l2_error": 4.979573304808582e-07,
+          "allclose": true
+        },
+        "h_mid": {
+          "max_abs_error": 1.1920928955078125e-06,
+          "relative_l2_error": 2.7272071179140767e-07,
+          "allclose": true
+        },
+        "mlp_branch": {
+          "max_abs_error": 1.8253922462463379e-06,
+          "relative_l2_error": 1.0535582077864092e-06,
+          "allclose": true
+        }
+      },
+      "mitigation_bundle_metadata": {
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "fresh_permutation_enabled": true,
+        "dense_sandwich_enabled": true,
+        "boundary_pad_required": true,
+        "boundary_pad_enabled": true,
+        "activation_pad_forbidden": true,
+        "pad_placement": "linear_boundary_only",
+        "activation_input_form": "ZP",
+        "post_island_dense_mask": true,
+        "island_view_lifetime": "short_lived",
+        "default_on_candidate_under_stage_5_4": true,
+        "risk_level_from_stage_5_4": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "security_profile_detail": "adaptive-proxy-mitigated, not formal",
+        "online_extra_matmul_count": 0,
+        "preprocessing_only_transformations": [
+          "dense_input_mask",
+          "permutation_absorbed_into_weights",
+          "dense_output_mask"
+        ]
+      },
+      "dense_sandwich_enabled": true,
+      "boundary_pad_enabled": true,
+      "boundary_pad_required": true,
+      "default_on_candidate_under_stage_5_4": true,
+      "fresh_permutation_enabled": true,
+      "activation_input_form": "ZP",
+      "handling_notes": [
+        "RoPE handled by masking AFTER RoPE; pre-RoPE dense-mask commutation is not assumed.",
+        "Residual paths align under the same orthogonal N_res mask on both branches.",
+        "At the SwiGLU boundary the residual N_res is removed (trusted-side; N_res is orthogonal so this is exact); the SwiGLU island then applies its own freshly-sampled N_in / P / N_out per the Stage 5.3e bundle."
+      ],
+      "caveats": [
+        "Block-level integration only; not a full model-level wrapper.",
+        "No generation / decode_step / KV cache runtime is implemented.",
+        "RoPE uses post-RoPE per-head masking; mask-before-RoPE commutation is not assumed.",
+        "This is not a real TEE measurement.",
+        "This is not formal security."
+      ]
+    }
+  ],
+  "summary": {
+    "source": "synthetic_fallback",
+    "model_family": "synthetic_modern_decoder",
+    "block_index": 0,
+    "hidden_size": 64,
+    "intermediate_size": 128,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 16,
+    "norm_type": "rmsnorm",
+    "activation_type": "swiglu",
+    "position_encoding_type": "rotary",
+    "attention_variant": "gqa",
+    "rope_base": 10000.0,
+    "nonlinear_mode_default": "trusted",
+    "default_mitigation_bundle": "fresh_perm_only",
+    "mitigation_bundles_evaluated": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "all_runs_allclose": true,
+    "online_extra_matmul_count": 0,
+    "implemented_block_level": true,
+    "full_runtime_integrated": false,
+    "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+    "rope_attention_status": "rope_post_mask_only",
+    "gqa_status": "per_kv_head_mask_with_repeat_kv",
+    "swiglu_status": "compatible_island_paired_permutation"
+  },
+  "caveats": [
+    "Block-level integration; not a full model-level wrapper.",
+    "No generation / decode_step / KV cache runtime is implemented.",
+    "RoPE is handled using post-RoPE per-head masking; mask-before-RoPE dense commutation is not assumed.",
+    "If synthetic fallback is used, results do NOT come from real Qwen / TinyLlama weights.",
+    "RMSNorm and residual alignment use orthogonal residual mask N_res so both branches stay in the same mask space; \u03b3 is folded into adjacent Linear weights.",
+    "Inherits Stage 5.4 mitigation requirements (fresh permutation + dense sandwich + boundary pad).",
+    "This is not a real TEE measurement.",
+    "This is not formal security."
+  ]
+}

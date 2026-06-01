@@ -54,9 +54,12 @@ def test_workload_measured_integration_scope_cross_architecture(
     m = profile_payload["methods"][METHOD_NAME]
     # Stage 5.3c value: "cross_architecture_probe_level".
     # Stage 6.4 value: "cross_architecture_plus_modern_decoder_probe_level".
+    # Stage 6.4b value: "cross_architecture_plus_modern_decoder_block_level".
     assert m["measured_integration_scope"] in (
         "cross_architecture_probe_level",
         "cross_architecture_plus_modern_decoder_probe_level",
+        "cross_architecture_plus_modern_decoder_block_level",
+        "cross_architecture_plus_modern_decoder_model_level",
     )
 
 
@@ -85,6 +88,8 @@ def test_workload_top_level_status_mirrors(profile_payload) -> None:
     assert top["measured_integration_scope"] in (
         "cross_architecture_probe_level",
         "cross_architecture_plus_modern_decoder_probe_level",
+        "cross_architecture_plus_modern_decoder_block_level",
+        "cross_architecture_plus_modern_decoder_model_level",
     )
     assert top["full_runtime_integrated"] is False
     assert top["all_architecture_probe_level_implemented"] is True
@@ -279,6 +284,8 @@ def test_script_markdown_contains_compatible_island_integration_status(
         for phrase in (
             "`measured_integration_scope = \"cross_architecture_probe_level\"`",
             "`measured_integration_scope = \"cross_architecture_plus_modern_decoder_probe_level\"`",
+            "`measured_integration_scope = \"cross_architecture_plus_modern_decoder_block_level\"`",
+            "`measured_integration_scope = \"cross_architecture_plus_modern_decoder_model_level\"`",
         )
     )
     assert "`full_runtime_integrated = False`" in md

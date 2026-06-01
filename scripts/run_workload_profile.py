@@ -354,6 +354,97 @@ def _build_markdown(profile: dict) -> str:
                         "- modern_decoder_probe: `implemented` (default"
                         " synthetic; HF model load is opt-in)."
                     )
+                elif qwen_status == "implemented_block_level":
+                    out.append(
+                        "- Qwen / TinyLlama / modern decoder-only is a"
+                        " block-level migration (Stage 6.4b): real HF"
+                        " model loading (best-effort) + per-block"
+                        " obfuscated forward over RMSNorm + RoPE attention"
+                        " + GQA/MQA + SwiGLU MLP, both mitigation bundles"
+                        " supported."
+                    )
+                    out.append(
+                        "- modern_decoder_probe: `implemented` (Stage 6.4"
+                        " tensor-level probes)."
+                    )
+                    out.append(
+                        "- modern_decoder_block_wrapper: `implemented`"
+                        " (Stage 6.4b block-level wrapper; synthetic"
+                        " fallback for pytest, real HF load opt-in)."
+                    )
+                elif qwen_status == "implemented":
+                    out.append(
+                        "- Qwen / TinyLlama / modern decoder-only is a"
+                        " model-level wrapper (Stage 6.4c): multi-block"
+                        " stacking + embedding lookup + final RMSNorm +"
+                        " optionally-masked LM head + KV-cache-aware"
+                        " prefill / decode_step + hand-written greedy"
+                        " generation over RMSNorm + RoPE attention +"
+                        " GQA/MQA + SwiGLU MLP, both mitigation bundles"
+                        " supported. This is not full BERT/T5 wrapper"
+                        " integration."
+                    )
+                    out.append(
+                        "- modern_decoder_probe: `implemented` (Stage 6.4"
+                        " tensor-level probes)."
+                    )
+                    out.append(
+                        "- modern_decoder_block_wrapper: `implemented`"
+                        " (Stage 6.4b block-level wrapper)."
+                    )
+                    out.append(
+                        "- modern_decoder_model_wrapper: `implemented`"
+                        " (Stage 6.4c model-level wrapper; synthetic"
+                        " fallback for pytest, real HF load opt-in)."
+                    )
+                    gen_status = wrapper_status.get(
+                        "modern_decoder_generation_status"
+                    )
+                    if gen_status:
+                        out.append(
+                            f"- modern_decoder_generation_status: `{gen_status}`"
+                            " (hand-written greedy loop compared against plain"
+                            " reference token-for-token)."
+                        )
+                    kv_status = wrapper_status.get(
+                        "modern_decoder_kv_cache_status"
+                    )
+                    if kv_status:
+                        out.append(
+                            f"- modern_decoder_kv_cache_status: `{kv_status}`"
+                            " (per-layer masked K_tilde / V_tilde with append"
+                            " invariant; per-kv-head N_K / N_V constant across"
+                            " one generation session)."
+                        )
+                if islands_record.get("real_activation_attacker_status") == "implemented":
+                    out.append("")
+                    out.append("### Stage 5.5 Real-Activation Adaptive Attacker")
+                    out.append("")
+                    out.append(
+                        "- `real_activation_attacker_status = "
+                        f"\"{islands_record['real_activation_attacker_status']}\"`."
+                    )
+                    out.append(
+                        "- `real_activation_attacker_scope = "
+                        f"\"{islands_record['real_activation_attacker_scope']}\"`"
+                        " (Stage 6.4b block-level activations)."
+                    )
+                    out.append(
+                        "- `real_activation_attacker_artifact = "
+                        f"\"{islands_record['real_activation_attacker_artifact']}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_real_activation = "
+                        f"\"{islands_record['security_profile_detail_with_real_activation']}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- This is NOT a real TEE measurement, NOT formal"
+                        " security, and NOT a black-box query attack."
+                        " `implemented` / `full_runtime_integrated` /"
+                        " `wall_time_source` are unchanged."
+                    )
                 if islands_record.get("mitigation_bundle_selectable"):
                     out.append("")
                     out.append("### Stage 5.3e Dense-Sandwich Mitigation Integration")

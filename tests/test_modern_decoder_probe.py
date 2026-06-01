@@ -204,18 +204,31 @@ def test_workload_profile_records_modern_decoder_integration() -> None:
     payload = json.loads(WORKLOAD_PROFILE_JSON.read_text(encoding="utf-8"))
     method = payload["methods"]["ours_compatible_nonlinear_islands"]
     status = method["wrapper_integration_status"]
-    assert status["qwen_or_modern_decoder"] == "implemented_probe_level"
-    assert status["modern_decoder_probe"] == "implemented"
-    assert (
-        method["measured_integration_scope"]
-        == "cross_architecture_plus_modern_decoder_probe_level"
+    # Stage 6.4 baseline: "implemented_probe_level".
+    # Stage 6.4b promotes this to "implemented_block_level".
+    # Stage 6.4c promotes it further to "implemented" (model-level).
+    assert status["qwen_or_modern_decoder"] in (
+        "implemented_probe_level",
+        "implemented_block_level",
+        "implemented",
     )
-    # implemented must still be False — probe-level only.
+    assert status["modern_decoder_probe"] == "implemented"
+    assert method["measured_integration_scope"] in (
+        "cross_architecture_plus_modern_decoder_probe_level",
+        "cross_architecture_plus_modern_decoder_block_level",
+        "cross_architecture_plus_modern_decoder_model_level",
+    )
+    # implemented must still be False — model-level smoke only, no real TEE
+    # wall-time, so partial_implementation remains True.
     assert method["implemented"] is False
     top = payload["wrapper_integration_status"][
         "ours_compatible_nonlinear_islands"
     ]
-    assert top["qwen_or_modern_decoder"] == "implemented_probe_level"
+    assert top["qwen_or_modern_decoder"] in (
+        "implemented_probe_level",
+        "implemented_block_level",
+        "implemented",
+    )
     assert top["modern_decoder_probe"] == "implemented"
 
 
@@ -223,8 +236,15 @@ def test_workload_markdown_mentions_modern_decoder() -> None:
     if not WORKLOAD_PROFILE_MD.exists():
         pytest.skip("outputs/workload_profile.md missing")
     md = WORKLOAD_PROFILE_MD.read_text(encoding="utf-8")
+    # Stage 6.4 markdown says "probe-level migration"; Stage 6.4b promotes
+    # the language to "block-level migration"; Stage 6.4c to "model-level
+    # wrapper". Accept any.
+    assert (
+        ("probe-level migration" in md)
+        or ("block-level migration" in md)
+        or ("model-level wrapper" in md)
+    )
     for phrase in (
-        "probe-level migration",
         "RMSNorm",
         "SwiGLU",
         "RoPE",
@@ -243,7 +263,9 @@ def test_cross_architecture_summary_records_modern_decoder_row() -> None:
     rows = {entry["architecture_type"]: entry for entry in integ["per_architecture"]}
     assert "modern_decoder_only" in rows
     mod = rows["modern_decoder_only"]
-    assert mod["integration_level"] == "probe_level"
+    # Stage 6.4 = probe_level; Stage 6.4b promotes to block_level;
+    # Stage 6.4c promotes to model_level.
+    assert mod["integration_level"] in ("probe_level", "block_level", "model_level")
     assert mod["nonlinear_mode_available"] == ["trusted", "compatible_islands"]
     assert mod["online_extra_matmul_count"] == 0
 

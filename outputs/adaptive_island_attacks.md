@@ -24,12 +24,12 @@ Adaptive-proxy adversary: observes the GPU-visible nonlinear-island tensor acros
 | strategy | relative_l2_error | cosine_similarity | mse |
 |---|---|---|---|
 | `fixed_permutation` | 0.0000 | 1.0000 | 2.5233e-12 |
-| `fresh_permutation_per_session` | 1.1323 | 0.0389 | 7.7707e+00 |
-| `permutation_pool` | 0.7478 | 0.6704 | 3.3797e+00 |
-| `dense_sandwich` | 1.1739 | -0.0729 | 8.5983e+00 |
-| `boundary_pad_only_boundary_view` | 1.1155 | 0.0341 | 7.6967e+00 |
-| `boundary_pad_only_activation_view` | 0.0000 | 1.0000 | 2.7741e-12 |
-| `fresh_perm_plus_sandwich_plus_pad` | 1.1528 | -0.0398 | 7.9496e+00 |
+| `fresh_permutation_per_session` | 1.1134 | 0.0899 | 7.5130e+00 |
+| `permutation_pool` | 0.7545 | 0.6624 | 3.4404e+00 |
+| `dense_sandwich` | 1.1550 | -0.0086 | 8.3240e+00 |
+| `boundary_pad_only_boundary_view` | 1.0959 | 0.0583 | 7.4294e+00 |
+| `boundary_pad_only_activation_view` | 0.0000 | 1.0000 | 2.7464e-12 |
+| `fresh_perm_plus_sandwich_plus_pad` | 1.1347 | -0.0148 | 7.7025e+00 |
 
 Weakest mitigation under linear inverter: `fixed_permutation`.
 
@@ -37,13 +37,13 @@ Weakest mitigation under linear inverter: `fixed_permutation`.
 
 | strategy | relative_l2_error | cosine_similarity | final_train_loss | mlp_improves_over_linear |
 |---|---|---|---|---|
-| `fixed_permutation` | 0.0979 | 0.9954 | 1.4192e-02 | False |
-| `fresh_permutation_per_session` | 1.1805 | 0.2513 | 1.4819e+00 | False |
-| `permutation_pool` | 0.6662 | 0.7600 | 7.2773e-01 | True |
-| `dense_sandwich` | 1.2296 | 0.1905 | 1.4307e+00 | False |
-| `boundary_pad_only_boundary_view` | 1.2052 | 0.1871 | 1.6052e+00 | False |
-| `boundary_pad_only_activation_view` | 0.1147 | 0.9937 | 1.5953e-02 | False |
-| `fresh_perm_plus_sandwich_plus_pad` | 1.2136 | 0.2009 | 1.5357e+00 | False |
+| `fixed_permutation` | 0.0963 | 0.9955 | 2.7274e-02 | False |
+| `fresh_permutation_per_session` | 1.1923 | 0.2383 | 1.4388e+00 | False |
+| `permutation_pool` | 0.6599 | 0.7669 | 7.8340e-01 | True |
+| `dense_sandwich` | 1.2396 | 0.1820 | 1.4791e+00 | False |
+| `boundary_pad_only_boundary_view` | 1.1809 | 0.2335 | 1.5188e+00 | False |
+| `boundary_pad_only_activation_view` | 0.1162 | 0.9934 | 1.7073e-02 | False |
+| `fresh_perm_plus_sandwich_plus_pad` | 1.2090 | 0.2008 | 1.5136e+00 | False |
 
 ## Adaptive Permutation Recovery
 
@@ -54,8 +54,8 @@ Weakest mitigation under linear inverter: `fixed_permutation`.
 | `fixed_permutation` | 0.1719 | 0.7031 | 3.66 |
 | `fresh_permutation_per_session` | 0.2656 | 0.7812 | 3.42 |
 | `permutation_pool` | 0.2188 | 0.6719 | 3.78 |
-| `dense_sandwich` | 0.0000 | 0.0625 | 31.17 |
-| `fresh_perm_plus_sandwich_plus_pad` | 0.0000 | 0.0312 | 31.39 |
+| `dense_sandwich` | 0.0000 | 0.0938 | 32.89 |
+| `fresh_perm_plus_sandwich_plus_pad` | 0.0156 | 0.0781 | 31.12 |
 
 ### Soft assignment (Sinkhorn-style log-domain normalisation)
 
@@ -64,8 +64,8 @@ Weakest mitigation under linear inverter: `fixed_permutation`.
 | `fixed_permutation` | 0.1562 | 0.6250 | 4.55 |
 | `fresh_permutation_per_session` | 0.2344 | 0.7188 | 3.36 |
 | `permutation_pool` | 0.1406 | 0.6719 | 4.31 |
-| `dense_sandwich` | 0.0000 | 0.0781 | 27.83 |
-| `fresh_perm_plus_sandwich_plus_pad` | 0.0312 | 0.0469 | 31.22 |
+| `dense_sandwich` | 0.0312 | 0.0938 | 32.48 |
+| `fresh_perm_plus_sandwich_plus_pad` | 0.0469 | 0.0938 | 28.95 |
 
 Random chance top1 = 0.0156 (1 / hidden_size).
 
@@ -73,13 +73,13 @@ Random chance top1 = 0.0156 (1 / hidden_size).
 
 | strategy | best_linear_rel_l2 | best_mlp_rel_l2 | best_perm_top1 | risk_level | default_on_recommendation |
 |---|---|---|---|---|---|
-| `fixed_permutation` | 0.0000 | 0.0979 | 0.1719 | high | `unsafe_default_on` |
-| `fresh_permutation_per_session` | 1.1323 | 1.1805 | 0.2656 | medium | `needs_more_evaluation` |
-| `permutation_pool` | 0.7478 | 0.6662 | 0.2188 | medium | `needs_more_evaluation` |
-| `dense_sandwich` | 1.1739 | 1.2296 | 0.0000 | low | `acceptable_with_mitigation` |
-| `boundary_pad_only_boundary_view` | 1.1155 | 1.2052 | n/a | low | `acceptable_with_mitigation` |
-| `boundary_pad_only_activation_view` | 0.0000 | 0.1147 | 0.1719 | high | `unsafe_default_on` |
-| `fresh_perm_plus_sandwich_plus_pad` | 1.1528 | 1.2136 | 0.0312 | low | `acceptable_with_mitigation` |
+| `fixed_permutation` | 0.0000 | 0.0963 | 0.1719 | high | `unsafe_default_on` |
+| `fresh_permutation_per_session` | 1.1134 | 1.1923 | 0.2656 | medium | `needs_more_evaluation` |
+| `permutation_pool` | 0.7545 | 0.6599 | 0.2188 | medium | `needs_more_evaluation` |
+| `dense_sandwich` | 1.1550 | 1.2396 | 0.0312 | low | `acceptable_with_mitigation` |
+| `boundary_pad_only_boundary_view` | 1.0959 | 1.1809 | n/a | low | `acceptable_with_mitigation` |
+| `boundary_pad_only_activation_view` | 0.0000 | 0.1162 | 0.1719 | high | `unsafe_default_on` |
+| `fresh_perm_plus_sandwich_plus_pad` | 1.1347 | 1.2090 | 0.0469 | low | `acceptable_with_mitigation` |
 
 Recommended default-on candidate: `fresh_permutation + dense_sandwich + pad at Linear boundaries`.
 
@@ -122,8 +122,8 @@ Safe-to-default-on only means "within the tested adaptive proxy attackers (ridge
 | `fixed_permutation` | 0.1719 | 0.1562 | -0.0156 |
 | `fresh_permutation_per_session` | 0.2656 | 0.2344 | -0.0312 |
 | `permutation_pool` | 0.2188 | 0.1406 | -0.0781 |
-| `dense_sandwich` | 0.0000 | 0.0000 | +0.0000 |
-| `fresh_perm_plus_sandwich_plus_pad` | 0.0000 | 0.0312 | +0.0312 |
+| `dense_sandwich` | 0.0000 | 0.0312 | +0.0312 |
+| `fresh_perm_plus_sandwich_plus_pad` | 0.0156 | 0.0469 | +0.0312 |
 
 Stage 5.4 reproduces Stage 5.2b's signature-matching proxy on the same data and compares it against the Sinkhorn-style soft-assignment adaptive attacker. Larger uplift means the adaptive attacker is strictly stronger on that strategy.
 

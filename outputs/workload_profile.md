@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `1.846e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `1.586e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 2.402 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 36.749 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 6.499 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 36.483 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 36.549 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 36.483 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 2.796 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 42.074 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 6.127 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 41.788 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 41.854 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 41.788 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -183,8 +183,18 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - Default mode remains `trusted`; compatible_islands must not be enabled by default.
 - GPT-2 model-level integration is available.
 - BERT/T5 are probe-level integrations, not full wrappers.
-- Qwen / TinyLlama / modern decoder-only is a probe-level migration (Stage 6.4): RMSNorm + SwiGLU + RoPE-post-mask + GQA/MQA tensor probes.
-- modern_decoder_probe: `implemented` (default synthetic; HF model load is opt-in).
+- Qwen / TinyLlama / modern decoder-only is a model-level wrapper (Stage 6.4c): multi-block stacking + embedding lookup + final RMSNorm + optionally-masked LM head + KV-cache-aware prefill / decode_step + hand-written greedy generation over RMSNorm + RoPE attention + GQA/MQA + SwiGLU MLP, both mitigation bundles supported. This is not full BERT/T5 wrapper integration.
+- modern_decoder_probe: `implemented` (Stage 6.4 tensor-level probes).
+- modern_decoder_block_wrapper: `implemented` (Stage 6.4b block-level wrapper).
+- modern_decoder_model_wrapper: `implemented` (Stage 6.4c model-level wrapper; synthetic fallback for pytest, real HF load opt-in).
+
+### Stage 5.5 Real-Activation Adaptive Attacker
+
+- `real_activation_attacker_status = "implemented"`.
+- `real_activation_attacker_scope = "modern_decoder_block_level"` (Stage 6.4b block-level activations).
+- `real_activation_attacker_artifact = "outputs/real_activation_attacks.json"`.
+- `security_profile_detail_with_real_activation = "real-activation-adaptive-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
+- This is NOT a real TEE measurement, NOT formal security, and NOT a black-box query attack. `implemented` / `full_runtime_integrated` / `wall_time_source` are unchanged.
 
 ### Stage 5.3e Dense-Sandwich Mitigation Integration
 
@@ -195,7 +205,7 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - `dense_sandwich_supported = True`, `boundary_pad_required = True`, `fresh_permutation_required = True`.
 - `compatible_islands` remains feature-flagged behind `nonlinear_mode`; default mode is still `"trusted"`.
 - security is `adaptive-proxy-mitigated, not formal` when the full bundle is enabled; this is not a real TEE measurement.
-- `measured_integration_scope = "cross_architecture_plus_modern_decoder_probe_level"`.
+- `measured_integration_scope = "cross_architecture_plus_modern_decoder_model_level"`.
 - `full_runtime_integrated = False`.
 - `all_architecture_probe_level_implemented = True`.
 - `security_profile` remains `proxy-evaluated, not formal`.

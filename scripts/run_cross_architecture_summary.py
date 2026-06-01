@@ -496,6 +496,120 @@ def _build_markdown(summary: dict) -> str:
             )
             out.append("")
 
+        # Stage 6.4b / 6.4c — Modern Decoder integration callout.
+        modern_row = integ.get("modern_decoder_row") or {}
+        if (
+            modern_row.get("modern_decoder_model_wrapper_status") == "implemented"
+        ):
+            out.append("## Modern Decoder Model-Level Integration (Stage 6.4c)")
+            out.append("")
+            out.append(
+                "Stage 6.4c stacks the Stage 6.4b block wrapper into a"
+                " multi-layer model-level obfuscated decoder with"
+                " embedding lookup, final RMSNorm, an optionally-masked"
+                " LM head, KV-cache-aware prefill / decode_step, and a"
+                " hand-written greedy generation loop. Real Qwen /"
+                " TinyLlama loading is opt-in; pytest stays synthetic."
+            )
+            out.append("")
+        elif modern_row.get("modern_decoder_block_wrapper_status") == "implemented":
+            out.append("## Modern Decoder Block-Level Integration (Stage 6.4b)")
+            out.append("")
+            out.append(
+                "Stage 6.4b lands a block-level obfuscated forward for"
+                " modern decoder-only architectures (LLaMA / TinyLlama /"
+                " Qwen / Qwen2). The wrapper loads a real HF model (best"
+                " effort; falls back to synthetic on failure or when"
+                " `attempt_real_model_load=False`), extracts one transformer"
+                " block, and verifies the recovered obfuscated output"
+                " matches the plain reference for both mitigation bundles"
+                " and both `use_pad` values."
+            )
+            out.append("")
+        if (
+            modern_row.get("modern_decoder_model_wrapper_status") == "implemented"
+            or modern_row.get("modern_decoder_block_wrapper_status") == "implemented"
+        ):
+            out.append("| field | value |")
+            out.append("|---|---|")
+            out.append(
+                f"| integration_level | {modern_row.get('integration_level')} |"
+            )
+            out.append(
+                f"| modern_decoder_block_wrapper_status |"
+                f" {modern_row.get('modern_decoder_block_wrapper_status')} |"
+            )
+            out.append(
+                "| norm_type / activation_type / position_encoding |"
+                f" {modern_row.get('norm_type')} /"
+                f" {modern_row.get('activation_type')} /"
+                f" {modern_row.get('position_encoding_type')} |"
+            )
+            out.append(
+                "| attention_variant |"
+                f" {modern_row.get('attention_variant')} |"
+            )
+            out.append(
+                "| online_extra_matmul_count |"
+                f" {modern_row.get('online_extra_matmul_count')} |"
+            )
+            out.append(
+                "| security_proxy_status |"
+                f" {modern_row.get('security_proxy_status')} |"
+            )
+            out.append(
+                "| block_level_correctness_artifact |"
+                f" `{modern_row.get('block_level_correctness_artifact')}` |"
+            )
+            if modern_row.get("modern_decoder_model_wrapper_status") == "implemented":
+                out.append(
+                    "| modern_decoder_model_wrapper_status |"
+                    f" {modern_row.get('modern_decoder_model_wrapper_status')} |"
+                )
+                out.append(
+                    "| modern_decoder_generation_status |"
+                    f" {modern_row.get('modern_decoder_generation_status')} |"
+                )
+                out.append(
+                    "| modern_decoder_kv_cache_status |"
+                    f" {modern_row.get('modern_decoder_kv_cache_status')} |"
+                )
+                out.append(
+                    "| model_level_correctness_artifact |"
+                    f" `{modern_row.get('model_level_correctness_artifact')}` |"
+                )
+            ra_status = modern_row.get("real_activation_attacker_status")
+            if ra_status and ra_status != "not_yet":
+                out.append(
+                    "| real_activation_attacker_status |"
+                    f" {ra_status} |"
+                )
+                out.append(
+                    "| real_activation_attacker_scope |"
+                    f" {modern_row.get('real_activation_attacker_scope')} |"
+                )
+                out.append(
+                    "| real_activation_attacker_artifact |"
+                    f" `{modern_row.get('real_activation_attacker_artifact')}` |"
+                )
+            out.append("")
+            out.append(
+                "- Default mode for the wider system remains `\"trusted\"`;"
+                " default mitigation bundle remains `\"fresh_perm_only\"`."
+            )
+            out.append(
+                "- This is block-level integration, not a full model-level"
+                " wrapper; `full_runtime_integrated` stays False."
+            )
+            out.append(
+                "- No generation / decode_step / KV cache runtime is"
+                " implemented at the wrapper level."
+            )
+            out.append(
+                "- Not a real TEE measurement; not formal security."
+            )
+            out.append("")
+
     # 7. Trusted shortcuts per architecture
     out.append("## Trusted shortcuts still in place per architecture")
     out.append("")

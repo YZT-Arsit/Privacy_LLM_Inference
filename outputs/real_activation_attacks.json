@@ -1,0 +1,1582 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "attempt_real_model_load": false,
+    "model_id": null,
+    "local_files_only": false,
+    "allow_synthetic_fallback": true,
+    "num_samples": 512,
+    "train_fraction": 0.7,
+    "attacker_steps": 200,
+    "attacker_lr": 0.01,
+    "mlp_hidden_size": 128,
+    "mlp_batch_size": 64,
+    "ridge_lambda": 0.001,
+    "soft_assignment_iters": 50,
+    "soft_assignment_temperature": 0.05,
+    "target_tensors": [
+      "boundary_input",
+      "q",
+      "k",
+      "v",
+      "gate",
+      "up",
+      "swiglu_intermediate",
+      "post_island",
+      "final"
+    ],
+    "mitigation_bundles": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "fixed_permutation_seed": 7777,
+    "batch_size": 2,
+    "seq_len": 8,
+    "synthetic_hidden_size": 64,
+    "synthetic_intermediate_size": 128,
+    "synthetic_num_attention_heads": 4,
+    "synthetic_num_key_value_heads": 2,
+    "synthetic_head_dim": 16,
+    "use_pad": true,
+    "nonlinear_mode": "compatible_islands",
+    "dtype": "float32",
+    "device": "cpu"
+  },
+  "model_loading": {
+    "load_status": "synthetic_only",
+    "resolved_model_id": null,
+    "model_family": null,
+    "model_class": null,
+    "load_error": "attempt_real_model_load=False (default); pytest runs the synthetic fallback to avoid network downloads.",
+    "fallback_used": true,
+    "candidates_tried": []
+  },
+  "source": "synthetic_block",
+  "block_spec": {
+    "model_family": "synthetic_modern_decoder",
+    "model_class": "SyntheticLlamaBlock",
+    "block_path": "synthetic.layers.0",
+    "block_index": 0,
+    "hidden_size": 64,
+    "intermediate_size": 128,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 16,
+    "norm_type": "rmsnorm",
+    "activation_type": "swiglu",
+    "position_encoding_type": "rotary",
+    "attention_variant": "gqa",
+    "q_proj_path": "synthetic.layers.0.self_attn.q_proj",
+    "k_proj_path": "synthetic.layers.0.self_attn.k_proj",
+    "v_proj_path": "synthetic.layers.0.self_attn.v_proj",
+    "o_proj_path": "synthetic.layers.0.self_attn.o_proj",
+    "gate_proj_path": "synthetic.layers.0.mlp.gate_proj",
+    "up_proj_path": "synthetic.layers.0.mlp.up_proj",
+    "down_proj_path": "synthetic.layers.0.mlp.down_proj",
+    "input_norm_path": "synthetic.layers.0.input_layernorm",
+    "post_attention_norm_path": "synthetic.layers.0.post_attention_layernorm",
+    "rope_base": 10000.0,
+    "rope_scaling_kind": null,
+    "notes": [
+      "synthetic fallback; no real model weights were loaded"
+    ]
+  },
+  "trace_summary": {
+    "fresh_perm_only": {
+      "boundary_input": {
+        "tensor_name": "boundary_input",
+        "num_samples": 512,
+        "feature_dim": 64,
+        "plain_shape": [
+          512,
+          64
+        ],
+        "visible_shape": [
+          512,
+          64
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.004002977628260851,
+          "std": 1.0031145811080933,
+          "abs_max": 4.229422092437744,
+          "abs_mean": 0.8013694882392883,
+          "fingerprint_sha256_prefix": "bbb17ad80b088897"
+        },
+        "visible_statistics": {
+          "mean": -0.00237836642190814,
+          "std": 1.003119707107544,
+          "abs_max": 4.348393440246582,
+          "abs_mean": 0.799331545829773,
+          "fingerprint_sha256_prefix": "70afc059f2f24047"
+        }
+      },
+      "q": {
+        "tensor_name": "q",
+        "num_samples": 512,
+        "feature_dim": 16,
+        "plain_shape": [
+          512,
+          16
+        ],
+        "visible_shape": [
+          512,
+          16
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.002333559561520815,
+          "std": 0.8092038035392761,
+          "abs_max": 3.208037853240967,
+          "abs_mean": 0.6456260681152344,
+          "fingerprint_sha256_prefix": "f38f2d986db81d5e"
+        },
+        "visible_statistics": {
+          "mean": 0.005346050951629877,
+          "std": 0.80918949842453,
+          "abs_max": 3.7012805938720703,
+          "abs_mean": 0.6449484825134277,
+          "fingerprint_sha256_prefix": "4073b5f98298e4b6"
+        }
+      },
+      "k": {
+        "tensor_name": "k",
+        "num_samples": 512,
+        "feature_dim": 16,
+        "plain_shape": [
+          512,
+          16
+        ],
+        "visible_shape": [
+          512,
+          16
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.007653881795704365,
+          "std": 0.7943694591522217,
+          "abs_max": 3.2586746215820312,
+          "abs_mean": 0.6344156861305237,
+          "fingerprint_sha256_prefix": "c20e6d0858986730"
+        },
+        "visible_statistics": {
+          "mean": -0.0014676416758447886,
+          "std": 0.7944049835205078,
+          "abs_max": 2.962498664855957,
+          "abs_mean": 0.6295484304428101,
+          "fingerprint_sha256_prefix": "c864f3f1ff229c96"
+        }
+      },
+      "v": {
+        "tensor_name": "v",
+        "num_samples": 512,
+        "feature_dim": 16,
+        "plain_shape": [
+          512,
+          16
+        ],
+        "visible_shape": [
+          512,
+          16
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.013441561721265316,
+          "std": 0.7911800742149353,
+          "abs_max": 3.510759115219116,
+          "abs_mean": 0.6305733919143677,
+          "fingerprint_sha256_prefix": "09833941910f8ace"
+        },
+        "visible_statistics": {
+          "mean": 0.007322898134589195,
+          "std": 0.7912604212760925,
+          "abs_max": 2.86659836769104,
+          "abs_mean": 0.6340558528900146,
+          "fingerprint_sha256_prefix": "91180103cba69c37"
+        }
+      },
+      "gate": {
+        "tensor_name": "gate",
+        "num_samples": 512,
+        "feature_dim": 128,
+        "plain_shape": [
+          512,
+          128
+        ],
+        "visible_shape": [
+          512,
+          128
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.0021192748099565506,
+          "std": 0.808388352394104,
+          "abs_max": 3.398766279220581,
+          "abs_mean": 0.6450773477554321,
+          "fingerprint_sha256_prefix": "44942f8809e8169b"
+        },
+        "visible_statistics": {
+          "mean": -0.0021192748099565506,
+          "std": 0.808388352394104,
+          "abs_max": 3.398766279220581,
+          "abs_mean": 0.6450773477554321,
+          "fingerprint_sha256_prefix": "3fc624b6212e67eb"
+        }
+      },
+      "up": {
+        "tensor_name": "up",
+        "num_samples": 512,
+        "feature_dim": 128,
+        "plain_shape": [
+          512,
+          128
+        ],
+        "visible_shape": [
+          512,
+          128
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.0010222477139905095,
+          "std": 0.8124133348464966,
+          "abs_max": 3.734541893005371,
+          "abs_mean": 0.6487208604812622,
+          "fingerprint_sha256_prefix": "874def66a32b17e6"
+        },
+        "visible_statistics": {
+          "mean": -0.001022248063236475,
+          "std": 0.8124133348464966,
+          "abs_max": 3.734541893005371,
+          "abs_mean": 0.648720920085907,
+          "fingerprint_sha256_prefix": "2c3be00e913c217b"
+        }
+      },
+      "swiglu_intermediate": {
+        "tensor_name": "swiglu_intermediate",
+        "num_samples": 512,
+        "feature_dim": 128,
+        "plain_shape": [
+          512,
+          128
+        ],
+        "visible_shape": [
+          512,
+          128
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.004384960979223251,
+          "std": 0.38172587752342224,
+          "abs_max": 6.168718338012695,
+          "abs_mean": 0.2097315937280655,
+          "fingerprint_sha256_prefix": "53beb8c89bc39806"
+        },
+        "visible_statistics": {
+          "mean": -0.004384959116578102,
+          "std": 0.38172587752342224,
+          "abs_max": 6.168715000152588,
+          "abs_mean": 0.2097315788269043,
+          "fingerprint_sha256_prefix": "ba86038bacbdf1f4"
+        }
+      },
+      "post_island": {
+        "tensor_name": "post_island",
+        "num_samples": 512,
+        "feature_dim": 64,
+        "plain_shape": [
+          512,
+          64
+        ],
+        "visible_shape": [
+          512,
+          64
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.003207777626812458,
+          "std": 0.42647919058799744,
+          "abs_max": 2.880502700805664,
+          "abs_mean": 0.33275106549263,
+          "fingerprint_sha256_prefix": "7000fcabc3dc7964"
+        },
+        "visible_statistics": {
+          "mean": 0.004315519705414772,
+          "std": 0.4264694154262543,
+          "abs_max": 1.9644697904586792,
+          "abs_mean": 0.3339799642562866,
+          "fingerprint_sha256_prefix": "8b08a84a9e0ca45f"
+        }
+      },
+      "final": {
+        "tensor_name": "final",
+        "num_samples": 512,
+        "feature_dim": 64,
+        "plain_shape": [
+          512,
+          64
+        ],
+        "visible_shape": [
+          512,
+          64
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.013337014243006706,
+          "std": 1.1642663478851318,
+          "abs_max": 4.666902542114258,
+          "abs_mean": 0.9291966557502747,
+          "fingerprint_sha256_prefix": "14e53427ad14606e"
+        },
+        "visible_statistics": {
+          "mean": -0.010735724121332169,
+          "std": 1.1642932891845703,
+          "abs_max": 5.113531112670898,
+          "abs_mean": 0.9248988628387451,
+          "fingerprint_sha256_prefix": "e7f3e07e707bcab8"
+        }
+      }
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "boundary_input": {
+        "tensor_name": "boundary_input",
+        "num_samples": 512,
+        "feature_dim": 64,
+        "plain_shape": [
+          512,
+          64
+        ],
+        "visible_shape": [
+          512,
+          64
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.004002977628260851,
+          "std": 1.0031145811080933,
+          "abs_max": 4.229422092437744,
+          "abs_mean": 0.8013694882392883,
+          "fingerprint_sha256_prefix": "bbb17ad80b088897"
+        },
+        "visible_statistics": {
+          "mean": -0.00237836642190814,
+          "std": 1.003119707107544,
+          "abs_max": 4.348393440246582,
+          "abs_mean": 0.799331545829773,
+          "fingerprint_sha256_prefix": "70afc059f2f24047"
+        }
+      },
+      "q": {
+        "tensor_name": "q",
+        "num_samples": 512,
+        "feature_dim": 16,
+        "plain_shape": [
+          512,
+          16
+        ],
+        "visible_shape": [
+          512,
+          16
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.002333559561520815,
+          "std": 0.8092038035392761,
+          "abs_max": 3.208037853240967,
+          "abs_mean": 0.6456260681152344,
+          "fingerprint_sha256_prefix": "f38f2d986db81d5e"
+        },
+        "visible_statistics": {
+          "mean": 0.005346050951629877,
+          "std": 0.80918949842453,
+          "abs_max": 3.7012805938720703,
+          "abs_mean": 0.6449484825134277,
+          "fingerprint_sha256_prefix": "4073b5f98298e4b6"
+        }
+      },
+      "k": {
+        "tensor_name": "k",
+        "num_samples": 512,
+        "feature_dim": 16,
+        "plain_shape": [
+          512,
+          16
+        ],
+        "visible_shape": [
+          512,
+          16
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.007653881795704365,
+          "std": 0.7943694591522217,
+          "abs_max": 3.2586746215820312,
+          "abs_mean": 0.6344156861305237,
+          "fingerprint_sha256_prefix": "c20e6d0858986730"
+        },
+        "visible_statistics": {
+          "mean": -0.0014676416758447886,
+          "std": 0.7944049835205078,
+          "abs_max": 2.962498664855957,
+          "abs_mean": 0.6295484304428101,
+          "fingerprint_sha256_prefix": "c864f3f1ff229c96"
+        }
+      },
+      "v": {
+        "tensor_name": "v",
+        "num_samples": 512,
+        "feature_dim": 16,
+        "plain_shape": [
+          512,
+          16
+        ],
+        "visible_shape": [
+          512,
+          16
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.013441561721265316,
+          "std": 0.7911800742149353,
+          "abs_max": 3.510759115219116,
+          "abs_mean": 0.6305733919143677,
+          "fingerprint_sha256_prefix": "09833941910f8ace"
+        },
+        "visible_statistics": {
+          "mean": 0.007322898134589195,
+          "std": 0.7912604212760925,
+          "abs_max": 2.86659836769104,
+          "abs_mean": 0.6340558528900146,
+          "fingerprint_sha256_prefix": "91180103cba69c37"
+        }
+      },
+      "gate": {
+        "tensor_name": "gate",
+        "num_samples": 512,
+        "feature_dim": 128,
+        "plain_shape": [
+          512,
+          128
+        ],
+        "visible_shape": [
+          512,
+          128
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.0021192748099565506,
+          "std": 0.808388352394104,
+          "abs_max": 3.398766279220581,
+          "abs_mean": 0.6450773477554321,
+          "fingerprint_sha256_prefix": "44942f8809e8169b"
+        },
+        "visible_statistics": {
+          "mean": -0.0021192748099565506,
+          "std": 0.808388352394104,
+          "abs_max": 3.398766279220581,
+          "abs_mean": 0.6450773477554321,
+          "fingerprint_sha256_prefix": "3fc624b6212e67eb"
+        }
+      },
+      "up": {
+        "tensor_name": "up",
+        "num_samples": 512,
+        "feature_dim": 128,
+        "plain_shape": [
+          512,
+          128
+        ],
+        "visible_shape": [
+          512,
+          128
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.0010222477139905095,
+          "std": 0.8124133348464966,
+          "abs_max": 3.734541893005371,
+          "abs_mean": 0.6487208604812622,
+          "fingerprint_sha256_prefix": "874def66a32b17e6"
+        },
+        "visible_statistics": {
+          "mean": -0.001022248063236475,
+          "std": 0.8124133348464966,
+          "abs_max": 3.734541893005371,
+          "abs_mean": 0.648720920085907,
+          "fingerprint_sha256_prefix": "2c3be00e913c217b"
+        }
+      },
+      "swiglu_intermediate": {
+        "tensor_name": "swiglu_intermediate",
+        "num_samples": 512,
+        "feature_dim": 128,
+        "plain_shape": [
+          512,
+          128
+        ],
+        "visible_shape": [
+          512,
+          128
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": -0.004384960979223251,
+          "std": 0.38172587752342224,
+          "abs_max": 6.168718338012695,
+          "abs_mean": 0.2097315937280655,
+          "fingerprint_sha256_prefix": "53beb8c89bc39806"
+        },
+        "visible_statistics": {
+          "mean": -0.004384959116578102,
+          "std": 0.38172587752342224,
+          "abs_max": 6.168715000152588,
+          "abs_mean": 0.2097315788269043,
+          "fingerprint_sha256_prefix": "ba86038bacbdf1f4"
+        }
+      },
+      "post_island": {
+        "tensor_name": "post_island",
+        "num_samples": 512,
+        "feature_dim": 64,
+        "plain_shape": [
+          512,
+          64
+        ],
+        "visible_shape": [
+          512,
+          64
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.003207777626812458,
+          "std": 0.42647919058799744,
+          "abs_max": 2.880502700805664,
+          "abs_mean": 0.33275106549263,
+          "fingerprint_sha256_prefix": "7000fcabc3dc7964"
+        },
+        "visible_statistics": {
+          "mean": 0.004315519705414772,
+          "std": 0.4264694154262543,
+          "abs_max": 1.9644697904586792,
+          "abs_mean": 0.3339799642562866,
+          "fingerprint_sha256_prefix": "8b08a84a9e0ca45f"
+        }
+      },
+      "final": {
+        "tensor_name": "final",
+        "num_samples": 512,
+        "feature_dim": 64,
+        "plain_shape": [
+          512,
+          64
+        ],
+        "visible_shape": [
+          512,
+          64
+        ],
+        "source": "synthetic_block",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "plain_statistics": {
+          "mean": 0.013337014243006706,
+          "std": 1.1642663478851318,
+          "abs_max": 4.666902542114258,
+          "abs_mean": 0.9291966557502747,
+          "fingerprint_sha256_prefix": "14e53427ad14606e"
+        },
+        "visible_statistics": {
+          "mean": -0.010735724121332169,
+          "std": 1.1642932891845703,
+          "abs_max": 5.113531112670898,
+          "abs_mean": 0.9248988628387451,
+          "fingerprint_sha256_prefix": "e7f3e07e707bcab8"
+        }
+      }
+    }
+  },
+  "target_tensor_results": {
+    "fresh_perm_only": {
+      "boundary_input": {
+        "tensor_name": "boundary_input",
+        "feature_dim": 64,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.2698277235031128,
+          "relative_l2_error": 1.119232416152954,
+          "cosine_similarity": 0.00862202513962984
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.256049245595932,
+          "first_train_loss": 1.0143685340881348,
+          "mse": 1.9688185453414917,
+          "relative_l2_error": 1.3936409950256348,
+          "cosine_similarity": 0.014616301283240318
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": 0.0009919794954399222,
+          "mean_pairwise_cosine_visible": -0.004196748265236002,
+          "mean_pairwise_l2_visible": 11.344542157443462,
+          "mean_linkability_rank": 277.171875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.27440857887268066
+      },
+      "q": {
+        "tensor_name": "q",
+        "feature_dim": 16,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.7048598527908325,
+          "relative_l2_error": 1.0456103086471558,
+          "cosine_similarity": 0.04567723721265793
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.3106842339038849,
+          "first_train_loss": 0.7028807401657104,
+          "mse": 0.9683505892753601,
+          "relative_l2_error": 1.2255604267120361,
+          "cosine_similarity": 0.033090051263570786
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": -0.0021049800746825347,
+          "mean_pairwise_cosine_visible": -0.015424790782193802,
+          "mean_pairwise_l2_visible": 4.5182326945272155,
+          "mean_linkability_rank": 229.03125
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.17995011806488037
+      },
+      "k": {
+        "tensor_name": "k",
+        "feature_dim": 16,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.6796026229858398,
+          "relative_l2_error": 1.0405572652816772,
+          "cosine_similarity": 0.020596133545041084
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.2747929096221924,
+          "first_train_loss": 0.702593982219696,
+          "mse": 0.9665317535400391,
+          "relative_l2_error": 1.2409279346466064,
+          "cosine_similarity": -0.0028362893499433994
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": 0.015332397853961142,
+          "mean_pairwise_cosine_visible": -0.010898055759352652,
+          "mean_pairwise_l2_visible": 4.404093312025908,
+          "mean_linkability_rank": 262.421875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.2003706693649292
+      },
+      "v": {
+        "tensor_name": "v",
+        "feature_dim": 16,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.7216082215309143,
+          "relative_l2_error": 1.058295488357544,
+          "cosine_similarity": -0.0523446723818779
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.29402339458465576,
+          "first_train_loss": 0.6652879118919373,
+          "mse": 1.048480749130249,
+          "relative_l2_error": 1.275664210319519,
+          "cosine_similarity": -0.028359971940517426
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": -0.010384912399020906,
+          "mean_pairwise_cosine_visible": 0.009977267377471087,
+          "mean_pairwise_l2_visible": 4.398570882777021,
+          "mean_linkability_rank": 282.6875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.2173687219619751
+      },
+      "gate": {
+        "tensor_name": "gate",
+        "feature_dim": 128,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.0586981773376465,
+          "relative_l2_error": 1.2743675708770752,
+          "cosine_similarity": 0.024414382874965668
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.05772886425256729,
+          "first_train_loss": 0.7086182832717896,
+          "mse": 1.371858835220337,
+          "relative_l2_error": 1.4506522417068481,
+          "cosine_similarity": 0.007193832192569971
+        },
+        "permutation_recovery": {
+          "feature_dim": 128,
+          "random_chance_top1": 0.0078125,
+          "signature_matching": {
+            "top1_recovery_rate": 0.0,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 63.609375,
+            "mean_signature_error": 0.028997789170335547
+          },
+          "soft_assignment": {
+            "top1_recovery_rate": 0.015625,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 61.4296875,
+            "iterations": 50,
+            "temperature": 0.05
+          },
+          "best_top1": 0.015625
+        },
+        "linkability": {
+          "visible_vs_plain_cosine": 0.006256313487832456,
+          "mean_pairwise_cosine_visible": 0.0005808790661280329,
+          "mean_pairwise_l2_visible": 12.929617995363035,
+          "mean_linkability_rank": 233.78125
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.17628467082977295
+      },
+      "up": {
+        "tensor_name": "up",
+        "feature_dim": 128,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.0889476537704468,
+          "relative_l2_error": 1.2794162034988403,
+          "cosine_similarity": 0.030927130952477455
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.053316280245780945,
+          "first_train_loss": 0.7049664855003357,
+          "mse": 1.378171682357788,
+          "relative_l2_error": 1.4393303394317627,
+          "cosine_similarity": 0.01674356311559677
+        },
+        "permutation_recovery": {
+          "feature_dim": 128,
+          "random_chance_top1": 0.0078125,
+          "signature_matching": {
+            "top1_recovery_rate": 0.0,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 62.5703125,
+            "mean_signature_error": 0.02821092854438043
+          },
+          "soft_assignment": {
+            "top1_recovery_rate": 0.015625,
+            "top5_recovery_rate": 0.0546875,
+            "mean_correct_rank": 62.9921875,
+            "iterations": 50,
+            "temperature": 0.05
+          },
+          "best_top1": 0.015625
+        },
+        "linkability": {
+          "visible_vs_plain_cosine": 0.0005445186690507607,
+          "mean_pairwise_cosine_visible": 0.0008223378820115962,
+          "mean_pairwise_l2_visible": 12.979752066845199,
+          "mean_linkability_rank": 234.234375
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.15991413593292236
+      },
+      "swiglu_intermediate": {
+        "tensor_name": "swiglu_intermediate",
+        "feature_dim": 128,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.25044485926628113,
+          "relative_l2_error": 1.266474723815918,
+          "cosine_similarity": 0.0129664596170187
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.03532100096344948,
+          "first_train_loss": 0.15203362703323364,
+          "mse": 0.3093445897102356,
+          "relative_l2_error": 1.4075435400009155,
+          "cosine_similarity": 0.024019885808229446
+        },
+        "permutation_recovery": {
+          "feature_dim": 128,
+          "random_chance_top1": 0.0078125,
+          "signature_matching": {
+            "top1_recovery_rate": 0.0078125,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 62.1484375,
+            "mean_signature_error": 0.043780517222314935
+          },
+          "soft_assignment": {
+            "top1_recovery_rate": 0.0234375,
+            "top5_recovery_rate": 0.046875,
+            "mean_correct_rank": 63.171875,
+            "iterations": 50,
+            "temperature": 0.05
+          },
+          "best_top1": 0.0234375
+        },
+        "linkability": {
+          "visible_vs_plain_cosine": 0.009651687545415451,
+          "mean_pairwise_cosine_visible": -0.0009271871435956383,
+          "mean_pairwise_l2_visible": 6.081942025493282,
+          "mean_linkability_rank": 218.578125
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.14106881618499756
+      },
+      "post_island": {
+        "tensor_name": "post_island",
+        "feature_dim": 64,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.24976685643196106,
+          "relative_l2_error": 1.1250391006469727,
+          "cosine_similarity": 0.0319971889257431
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.03241916373372078,
+          "first_train_loss": 0.19088777899742126,
+          "mse": 0.37300679087638855,
+          "relative_l2_error": 1.3748602867126465,
+          "cosine_similarity": 0.03173402324318886
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": -0.00045861641400873096,
+          "mean_pairwise_cosine_visible": 0.0020536357779990344,
+          "mean_pairwise_l2_visible": 4.788216886434814,
+          "mean_linkability_rank": 241.1875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.24982118606567383
+      },
+      "final": {
+        "tensor_name": "final",
+        "feature_dim": 64,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.7236090898513794,
+          "relative_l2_error": 1.1219615936279297,
+          "cosine_similarity": 0.0056223380379378796
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.3397347927093506,
+          "first_train_loss": 1.4155488014221191,
+          "mse": 2.729037284851074,
+          "relative_l2_error": 1.4117684364318848,
+          "cosine_similarity": 0.007864953950047493
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": 0.004183677642215295,
+          "mean_pairwise_cosine_visible": -0.0036634421378218284,
+          "mean_pairwise_l2_visible": 13.154947881025334,
+          "mean_linkability_rank": 270.265625
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.2898068428039551
+      }
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "boundary_input": {
+        "tensor_name": "boundary_input",
+        "feature_dim": 64,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.2698277235031128,
+          "relative_l2_error": 1.119232416152954,
+          "cosine_similarity": 0.00862202513962984
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.26485687494277954,
+          "first_train_loss": 1.063689112663269,
+          "mse": 2.0193216800689697,
+          "relative_l2_error": 1.4114022254943848,
+          "cosine_similarity": -0.002416744362562895
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": 0.0009919794954399222,
+          "mean_pairwise_cosine_visible": -0.004196748265236002,
+          "mean_pairwise_l2_visible": 11.344542157443462,
+          "mean_linkability_rank": 277.171875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.29216980934143066
+      },
+      "q": {
+        "tensor_name": "q",
+        "feature_dim": 16,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.7048598527908325,
+          "relative_l2_error": 1.0456103086471558,
+          "cosine_similarity": 0.04567723721265793
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.31177833676338196,
+          "first_train_loss": 0.6943635940551758,
+          "mse": 0.9966696500778198,
+          "relative_l2_error": 1.2433518171310425,
+          "cosine_similarity": 0.006818222813308239
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": -0.0021049800746825347,
+          "mean_pairwise_cosine_visible": -0.015424790782193802,
+          "mean_pairwise_l2_visible": 4.5182326945272155,
+          "mean_linkability_rank": 229.03125
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.19774150848388672
+      },
+      "k": {
+        "tensor_name": "k",
+        "feature_dim": 16,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.6796026229858398,
+          "relative_l2_error": 1.0405572652816772,
+          "cosine_similarity": 0.020596133545041084
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.27903589606285095,
+          "first_train_loss": 0.7011727690696716,
+          "mse": 0.9498398303985596,
+          "relative_l2_error": 1.2301658391952515,
+          "cosine_similarity": 0.023389238864183426
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": 0.015332397853961142,
+          "mean_pairwise_cosine_visible": -0.010898055759352652,
+          "mean_pairwise_l2_visible": 4.404093312025908,
+          "mean_linkability_rank": 262.421875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.18960857391357422
+      },
+      "v": {
+        "tensor_name": "v",
+        "feature_dim": 16,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.7216082215309143,
+          "relative_l2_error": 1.058295488357544,
+          "cosine_similarity": -0.0523446723818779
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.2662230134010315,
+          "first_train_loss": 0.6156607866287231,
+          "mse": 1.054429054260254,
+          "relative_l2_error": 1.2792775630950928,
+          "cosine_similarity": -0.03481975197792053
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": -0.010384912399020906,
+          "mean_pairwise_cosine_visible": 0.009977267377471087,
+          "mean_pairwise_l2_visible": 4.398570882777021,
+          "mean_linkability_rank": 282.6875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.22098207473754883
+      },
+      "gate": {
+        "tensor_name": "gate",
+        "feature_dim": 128,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.0586981773376465,
+          "relative_l2_error": 1.2743675708770752,
+          "cosine_similarity": 0.024414382874965668
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.061649858951568604,
+          "first_train_loss": 0.6864519119262695,
+          "mse": 1.3346261978149414,
+          "relative_l2_error": 1.4308310747146606,
+          "cosine_similarity": 0.024294737726449966
+        },
+        "permutation_recovery": {
+          "feature_dim": 128,
+          "random_chance_top1": 0.0078125,
+          "signature_matching": {
+            "top1_recovery_rate": 0.0,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 63.609375,
+            "mean_signature_error": 0.028997789170335547
+          },
+          "soft_assignment": {
+            "top1_recovery_rate": 0.015625,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 61.4296875,
+            "iterations": 50,
+            "temperature": 0.05
+          },
+          "best_top1": 0.015625
+        },
+        "linkability": {
+          "visible_vs_plain_cosine": 0.006256313487832456,
+          "mean_pairwise_cosine_visible": 0.0005808790661280329,
+          "mean_pairwise_l2_visible": 12.929617995363035,
+          "mean_linkability_rank": 233.78125
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.15646350383758545
+      },
+      "up": {
+        "tensor_name": "up",
+        "feature_dim": 128,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.0889476537704468,
+          "relative_l2_error": 1.2794162034988403,
+          "cosine_similarity": 0.030927130952477455
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.06114152818918228,
+          "first_train_loss": 0.7075138092041016,
+          "mse": 1.3377578258514404,
+          "relative_l2_error": 1.4180684089660645,
+          "cosine_similarity": 0.04333846643567085
+        },
+        "permutation_recovery": {
+          "feature_dim": 128,
+          "random_chance_top1": 0.0078125,
+          "signature_matching": {
+            "top1_recovery_rate": 0.0,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 62.5703125,
+            "mean_signature_error": 0.02821092854438043
+          },
+          "soft_assignment": {
+            "top1_recovery_rate": 0.015625,
+            "top5_recovery_rate": 0.0546875,
+            "mean_correct_rank": 62.9921875,
+            "iterations": 50,
+            "temperature": 0.05
+          },
+          "best_top1": 0.015625
+        },
+        "linkability": {
+          "visible_vs_plain_cosine": 0.0005445186690507607,
+          "mean_pairwise_cosine_visible": 0.0008223378820115962,
+          "mean_pairwise_l2_visible": 12.979752066845199,
+          "mean_linkability_rank": 234.234375
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.13865220546722412
+      },
+      "swiglu_intermediate": {
+        "tensor_name": "swiglu_intermediate",
+        "feature_dim": 128,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.25044485926628113,
+          "relative_l2_error": 1.266474723815918,
+          "cosine_similarity": 0.0129664596170187
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.0362936332821846,
+          "first_train_loss": 0.154667928814888,
+          "mse": 0.3149915933609009,
+          "relative_l2_error": 1.4203320741653442,
+          "cosine_similarity": 0.008870472200214863
+        },
+        "permutation_recovery": {
+          "feature_dim": 128,
+          "random_chance_top1": 0.0078125,
+          "signature_matching": {
+            "top1_recovery_rate": 0.0078125,
+            "top5_recovery_rate": 0.0390625,
+            "mean_correct_rank": 62.1484375,
+            "mean_signature_error": 0.043780517222314935
+          },
+          "soft_assignment": {
+            "top1_recovery_rate": 0.0234375,
+            "top5_recovery_rate": 0.046875,
+            "mean_correct_rank": 63.171875,
+            "iterations": 50,
+            "temperature": 0.05
+          },
+          "best_top1": 0.0234375
+        },
+        "linkability": {
+          "visible_vs_plain_cosine": 0.009651687545415451,
+          "mean_pairwise_cosine_visible": -0.0009271871435956383,
+          "mean_pairwise_l2_visible": 6.081942025493282,
+          "mean_linkability_rank": 218.578125
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.15385735034942627
+      },
+      "post_island": {
+        "tensor_name": "post_island",
+        "feature_dim": 64,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 0.24976685643196106,
+          "relative_l2_error": 1.1250391006469727,
+          "cosine_similarity": 0.0319971889257431
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.03388296812772751,
+          "first_train_loss": 0.2001943737268448,
+          "mse": 0.38199570775032043,
+          "relative_l2_error": 1.3913276195526123,
+          "cosine_similarity": 0.03322962671518326
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": -0.00045861641400873096,
+          "mean_pairwise_cosine_visible": 0.0020536357779990344,
+          "mean_pairwise_l2_visible": 4.788216886434814,
+          "mean_linkability_rank": 241.1875
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.26628851890563965
+      },
+      "final": {
+        "tensor_name": "final",
+        "feature_dim": 64,
+        "linear_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "ridge_lambda": 0.001,
+          "mse": 1.7236090898513794,
+          "relative_l2_error": 1.1219615936279297,
+          "cosine_similarity": 0.0056223380379378796
+        },
+        "mlp_inverter": {
+          "num_train_samples": 358,
+          "num_test_samples": 154,
+          "attacker_steps": 200,
+          "attacker_lr": 0.01,
+          "mlp_hidden_size": 128,
+          "final_train_loss": 0.34309834241867065,
+          "first_train_loss": 1.4167795181274414,
+          "mse": 2.645886182785034,
+          "relative_l2_error": 1.3900943994522095,
+          "cosine_similarity": 0.015532775782048702
+        },
+        "permutation_recovery": null,
+        "linkability": {
+          "visible_vs_plain_cosine": 0.004183677642215295,
+          "mean_pairwise_cosine_visible": -0.0036634421378218284,
+          "mean_pairwise_l2_visible": 13.154947881025334,
+          "mean_linkability_rank": 270.265625
+        },
+        "risk_level": "low",
+        "default_on_recommendation": "acceptable_with_mitigation",
+        "mlp_minus_linear_relative_l2_error": 0.2681328058242798
+      }
+    }
+  },
+  "bundle_comparison": [
+    {
+      "tensor_name": "boundary_input",
+      "feature_dim": 64,
+      "linear_rel_l2_fresh_only": 1.119232416152954,
+      "linear_rel_l2_full_bundle": 1.119232416152954,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.3936409950256348,
+      "mlp_rel_l2_full_bundle": 1.4114022254943848,
+      "mlp_rel_l2_delta": 0.01776123046875,
+      "linkability_cosine_fresh_only": 0.0009919794954399222,
+      "linkability_cosine_full_bundle": 0.0009919794954399222,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "tensor_name": "q",
+      "feature_dim": 16,
+      "linear_rel_l2_fresh_only": 1.0456103086471558,
+      "linear_rel_l2_full_bundle": 1.0456103086471558,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.2255604267120361,
+      "mlp_rel_l2_full_bundle": 1.2433518171310425,
+      "mlp_rel_l2_delta": 0.017791390419006348,
+      "linkability_cosine_fresh_only": -0.0021049800746825347,
+      "linkability_cosine_full_bundle": -0.0021049800746825347,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "tensor_name": "k",
+      "feature_dim": 16,
+      "linear_rel_l2_fresh_only": 1.0405572652816772,
+      "linear_rel_l2_full_bundle": 1.0405572652816772,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.2409279346466064,
+      "mlp_rel_l2_full_bundle": 1.2301658391952515,
+      "mlp_rel_l2_delta": -0.01076209545135498,
+      "linkability_cosine_fresh_only": 0.015332397853961142,
+      "linkability_cosine_full_bundle": 0.015332397853961142,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "tensor_name": "v",
+      "feature_dim": 16,
+      "linear_rel_l2_fresh_only": 1.058295488357544,
+      "linear_rel_l2_full_bundle": 1.058295488357544,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.275664210319519,
+      "mlp_rel_l2_full_bundle": 1.2792775630950928,
+      "mlp_rel_l2_delta": 0.0036133527755737305,
+      "linkability_cosine_fresh_only": -0.010384912399020906,
+      "linkability_cosine_full_bundle": -0.010384912399020906,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "tensor_name": "gate",
+      "feature_dim": 128,
+      "linear_rel_l2_fresh_only": 1.2743675708770752,
+      "linear_rel_l2_full_bundle": 1.2743675708770752,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.4506522417068481,
+      "mlp_rel_l2_full_bundle": 1.4308310747146606,
+      "mlp_rel_l2_delta": -0.0198211669921875,
+      "linkability_cosine_fresh_only": 0.006256313487832456,
+      "linkability_cosine_full_bundle": 0.006256313487832456,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.015625,
+      "permutation_top1_full_bundle": 0.015625,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.0078125
+    },
+    {
+      "tensor_name": "up",
+      "feature_dim": 128,
+      "linear_rel_l2_fresh_only": 1.2794162034988403,
+      "linear_rel_l2_full_bundle": 1.2794162034988403,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.4393303394317627,
+      "mlp_rel_l2_full_bundle": 1.4180684089660645,
+      "mlp_rel_l2_delta": -0.021261930465698242,
+      "linkability_cosine_fresh_only": 0.0005445186690507607,
+      "linkability_cosine_full_bundle": 0.0005445186690507607,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.015625,
+      "permutation_top1_full_bundle": 0.015625,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.0078125
+    },
+    {
+      "tensor_name": "swiglu_intermediate",
+      "feature_dim": 128,
+      "linear_rel_l2_fresh_only": 1.266474723815918,
+      "linear_rel_l2_full_bundle": 1.266474723815918,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.4075435400009155,
+      "mlp_rel_l2_full_bundle": 1.4203320741653442,
+      "mlp_rel_l2_delta": 0.012788534164428711,
+      "linkability_cosine_fresh_only": 0.009651687545415451,
+      "linkability_cosine_full_bundle": 0.009651687545415451,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.0234375,
+      "permutation_top1_full_bundle": 0.0234375,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.0078125
+    },
+    {
+      "tensor_name": "post_island",
+      "feature_dim": 64,
+      "linear_rel_l2_fresh_only": 1.1250391006469727,
+      "linear_rel_l2_full_bundle": 1.1250391006469727,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.3748602867126465,
+      "mlp_rel_l2_full_bundle": 1.3913276195526123,
+      "mlp_rel_l2_delta": 0.01646733283996582,
+      "linkability_cosine_fresh_only": -0.00045861641400873096,
+      "linkability_cosine_full_bundle": -0.00045861641400873096,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "tensor_name": "final",
+      "feature_dim": 64,
+      "linear_rel_l2_fresh_only": 1.1219615936279297,
+      "linear_rel_l2_full_bundle": 1.1219615936279297,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.4117684364318848,
+      "mlp_rel_l2_full_bundle": 1.3900943994522095,
+      "mlp_rel_l2_delta": -0.021674036979675293,
+      "linkability_cosine_fresh_only": 0.004183677642215295,
+      "linkability_cosine_full_bundle": 0.004183677642215295,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation_full_bundle": "acceptable_with_mitigation",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad both rely on the same per-call fresh N_in / perm / N_out sampling in run_swiglu_mlp_island; the two bundles therefore produce identical numerical traces under this wrapper. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    }
+  ],
+  "attacker_summary": {
+    "fresh_perm_only": {
+      "bundle": "fresh_perm_only",
+      "tensors_covered": [
+        "boundary_input",
+        "q",
+        "k",
+        "v",
+        "gate",
+        "up",
+        "swiglu_intermediate",
+        "post_island",
+        "final"
+      ],
+      "max_risk_level": "low",
+      "risk_counts": {
+        "low": 9,
+        "medium": 0,
+        "high": 0
+      },
+      "mean_linear_rel_l2": 1.1478838523228962,
+      "mean_mlp_rel_l2": 1.357772045665317,
+      "mean_linkability_cosine": 0.0026680073118003174
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "tensors_covered": [
+        "boundary_input",
+        "q",
+        "k",
+        "v",
+        "gate",
+        "up",
+        "swiglu_intermediate",
+        "post_island",
+        "final"
+      ],
+      "max_risk_level": "low",
+      "risk_counts": {
+        "low": 9,
+        "medium": 0,
+        "high": 0
+      },
+      "mean_linear_rel_l2": 1.1478838523228962,
+      "mean_mlp_rel_l2": 1.3572056690851848,
+      "mean_linkability_cosine": 0.0026680073118003174
+    }
+  },
+  "recommendation": {
+    "default_on_recommendation_full_bundle": "acceptable_with_mitigation_under_real_activation_proxy",
+    "default_on_recommendation_fresh_only": "acceptable_with_mitigation_under_real_activation_proxy",
+    "security_profile_detail_with_real_activation": "real-activation-adaptive-proxy-evaluated, not formal"
+  },
+  "limitations": [
+    "These are real-activation adaptive proxy attacks, not formal security proofs.",
+    "If synthetic fallback is used, results are not real Qwen/TinyLlama activation traces.",
+    "Random hidden-state block input is not the same as real token distribution unless tokenizer/embedding path is added.",
+    "No black-box query attack is implemented.",
+    "No side-channel attack is implemented.",
+    "No real TEE isolation is evaluated.",
+    "Dense sandwiching reduces tested recovery but does not imply semantic security.",
+    "This stage does not implement full model-level generation or KV cache runtime.",
+    "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4b wrapper; the two bundles produce numerically identical traces. fixed_permutation_debug is a debug baseline only \u2014 never recommended for deployment."
+  ]
+}

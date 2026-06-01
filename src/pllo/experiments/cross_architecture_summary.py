@@ -435,6 +435,7 @@ _ARCH_TO_INTEGRATION_KEYS: dict[str, tuple[str, ...]] = {
 _STATUS_TO_LEVEL: dict[str, str] = {
     "implemented": "model_level",
     "implemented_probe_level": "probe_level",
+    "implemented_block_level": "block_level",
     "not_yet": "not_yet",
     "missing": "not_yet",
 }
@@ -535,8 +536,22 @@ def _compatible_island_integration_status(
         effective_status.get("qwen_or_modern_decoder")
         or effective_status.get("modern_decoder_probe")
     )
+    modern_decoder_block_wrapper_status = effective_status.get(
+        "modern_decoder_block_wrapper"
+    )
+    modern_decoder_model_wrapper_status = effective_status.get(
+        "modern_decoder_model_wrapper"
+    )
     modern_decoder_row = None
     if modern_decoder_status:
+        is_model_level = (
+            str(modern_decoder_status) == "implemented"
+            or modern_decoder_model_wrapper_status == "implemented"
+        )
+        is_block_level = (
+            str(modern_decoder_status) == "implemented_block_level"
+            or modern_decoder_block_wrapper_status == "implemented"
+        )
         modern_decoder_row = {
             # Logical type stays ``decoder_only`` (per architecture taxonomy);
             # ``modern_decoder_only`` is a display label so the integration
@@ -562,13 +577,66 @@ def _compatible_island_integration_status(
             "modern_decoder_probe_status": str(
                 effective_status.get("modern_decoder_probe", "not_yet")
             ),
-            "limitations": [
-                "Probe-level migration only; not a full Qwen / TinyLlama wrapper.",
-                "RoPE is handled by masking after RoPE in the required probe.",
-                "GQA / MQA is tensor-level only, not full runtime KV cache.",
-                "Inherits Stage 5.4 mitigation requirements.",
-                "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
-            ],
+            "modern_decoder_block_wrapper_status": str(
+                modern_decoder_block_wrapper_status or "not_yet"
+            ),
+            "modern_decoder_model_wrapper_status": str(
+                modern_decoder_model_wrapper_status or "not_yet"
+            ),
+            "block_level_correctness_artifact": (
+                "outputs/modern_decoder_block_wrapper_smoke.json"
+                if is_block_level else None
+            ),
+            "model_level_correctness_artifact": (
+                "outputs/modern_decoder_model_wrapper_smoke.json"
+                if is_model_level else None
+            ),
+            "modern_decoder_generation_status": str(
+                effective_status.get("modern_decoder_generation_status")
+                or method.get("modern_decoder_generation_status")
+                or "not_yet"
+            ),
+            "modern_decoder_kv_cache_status": str(
+                effective_status.get("modern_decoder_kv_cache_status")
+                or method.get("modern_decoder_kv_cache_status")
+                or "not_yet"
+            ),
+            "real_activation_attacker_status": str(
+                effective_status.get("real_activation_attacker_status")
+                or method.get("real_activation_attacker_status")
+                or "not_yet"
+            ),
+            "real_activation_attacker_scope": str(
+                effective_status.get("real_activation_attacker_scope")
+                or method.get("real_activation_attacker_scope")
+                or "not_yet"
+            ),
+            "real_activation_attacker_artifact": (
+                effective_status.get("real_activation_attacker_artifact")
+                or method.get("real_activation_attacker_artifact")
+            ),
+            "limitations": (
+                [
+                    "Model-level wrapper smoke is allclose vs plain reference;"
+                    " real TEE wall-time is not measured.",
+                    "Greedy generation only; beam / top-k / top-p not implemented.",
+                    "Real Qwen / TinyLlama loading is opt-in; pytest stays synthetic.",
+                    "Inherits Stage 5.4 mitigation requirements.",
+                    "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
+                ] if is_model_level else [
+                    (
+                        "Block-level integration only; not a full Qwen / TinyLlama"
+                        " model-level wrapper."
+                        if is_block_level else
+                        "Probe-level migration only; not a full Qwen / TinyLlama wrapper."
+                    ),
+                    "No generation / decode_step / KV cache runtime is implemented.",
+                    "RoPE is handled by masking after RoPE.",
+                    "GQA / MQA is tensor-level only, not full runtime KV cache.",
+                    "Inherits Stage 5.4 mitigation requirements.",
+                    "Default mode remains trusted; compatible_islands is gated behind a feature flag.",
+                ]
+            ),
         }
         per_architecture.append(modern_decoder_row)
     # Stage 5.3e — surface the mitigation bundle support table.

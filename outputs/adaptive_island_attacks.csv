@@ -2,52 +2,52 @@ section,attack,strategy,metric,value,notes
 linear_inverter,linear,fixed_permutation,mse,2.5233300691984706e-12,"ridge least squares, V_test @ W vs X_test"
 linear_inverter,linear,fixed_permutation,relative_l2_error,6.590830139430182e-07,"ridge least squares, V_test @ W vs X_test"
 linear_inverter,linear,fixed_permutation,cosine_similarity,0.9999999403953552,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,fresh_permutation_per_session,mse,7.770668029785156,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,fresh_permutation_per_session,relative_l2_error,1.132310152053833,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,fresh_permutation_per_session,cosine_similarity,0.038903072476387024,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,permutation_pool,mse,3.3796820640563965,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,permutation_pool,relative_l2_error,0.7478251457214355,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,permutation_pool,cosine_similarity,0.6704162955284119,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,dense_sandwich,mse,8.598323822021484,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,dense_sandwich,relative_l2_error,1.173920750617981,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,dense_sandwich,cosine_similarity,-0.07287032157182693,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,boundary_pad_only_boundary_view,mse,7.696742534637451,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,boundary_pad_only_boundary_view,relative_l2_error,1.1154601573944092,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,boundary_pad_only_boundary_view,cosine_similarity,0.034118931740522385,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,boundary_pad_only_activation_view,mse,2.77413313674868e-12,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,boundary_pad_only_activation_view,relative_l2_error,6.811561661379528e-07,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,boundary_pad_only_activation_view,cosine_similarity,0.9999995231628418,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,fresh_perm_plus_sandwich_plus_pad,mse,7.949615478515625,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,fresh_perm_plus_sandwich_plus_pad,relative_l2_error,1.1527745723724365,"ridge least squares, V_test @ W vs X_test"
-linear_inverter,linear,fresh_perm_plus_sandwich_plus_pad,cosine_similarity,-0.03979523107409477,"ridge least squares, V_test @ W vs X_test"
-mlp_inverter,mlp,fixed_permutation,mse,0.05569305270910263,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fixed_permutation,relative_l2_error,0.09791599959135056,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fixed_permutation,cosine_similarity,0.9953840970993042,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fixed_permutation,final_train_loss,0.014192142523825169,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_permutation_per_session,mse,8.446553230285645,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_permutation_per_session,relative_l2_error,1.1805280447006226,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_permutation_per_session,cosine_similarity,0.2513342499732971,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_permutation_per_session,final_train_loss,1.481851577758789,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,permutation_pool,mse,2.6819908618927,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,permutation_pool,relative_l2_error,0.666178822517395,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,permutation_pool,cosine_similarity,0.759970486164093,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,permutation_pool,final_train_loss,0.7277286648750305,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,dense_sandwich,mse,9.433334350585938,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,dense_sandwich,relative_l2_error,1.229601502418518,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,dense_sandwich,cosine_similarity,0.19054098427295685,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,dense_sandwich,final_train_loss,1.4307218790054321,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_boundary_view,mse,8.985459327697754,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_boundary_view,relative_l2_error,1.2052322626113892,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_boundary_view,cosine_similarity,0.18709567189216614,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_boundary_view,final_train_loss,1.6052405834197998,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_activation_view,mse,0.07865217328071594,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_activation_view,relative_l2_error,0.11469340324401855,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_activation_view,cosine_similarity,0.9936826229095459,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,boundary_pad_only_activation_view,final_train_loss,0.015953071415424347,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,mse,8.810290336608887,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,relative_l2_error,1.2135746479034424,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,cosine_similarity,0.200922891497612,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
-mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,final_train_loss,1.5356531143188477,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+linear_inverter,linear,fresh_permutation_per_session,mse,7.512969017028809,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,fresh_permutation_per_session,relative_l2_error,1.1133767366409302,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,fresh_permutation_per_session,cosine_similarity,0.08986927568912506,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,permutation_pool,mse,3.440390110015869,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,permutation_pool,relative_l2_error,0.7545119524002075,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,permutation_pool,cosine_similarity,0.6623877286911011,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,dense_sandwich,mse,8.323959350585938,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,dense_sandwich,relative_l2_error,1.1550393104553223,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,dense_sandwich,cosine_similarity,-0.008566505275666714,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,boundary_pad_only_boundary_view,mse,7.429381370544434,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,boundary_pad_only_boundary_view,relative_l2_error,1.0959155559539795,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,boundary_pad_only_boundary_view,cosine_similarity,0.05832958221435547,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,boundary_pad_only_activation_view,mse,2.7463782116543545e-12,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,boundary_pad_only_activation_view,relative_l2_error,6.777401040380937e-07,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,boundary_pad_only_activation_view,cosine_similarity,0.999999463558197,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,fresh_perm_plus_sandwich_plus_pad,mse,7.7025041580200195,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,fresh_perm_plus_sandwich_plus_pad,relative_l2_error,1.1347168684005737,"ridge least squares, V_test @ W vs X_test"
+linear_inverter,linear,fresh_perm_plus_sandwich_plus_pad,cosine_similarity,-0.014808104373514652,"ridge least squares, V_test @ W vs X_test"
+mlp_inverter,mlp,fixed_permutation,mse,0.05383644998073578,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fixed_permutation,relative_l2_error,0.0962701141834259,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fixed_permutation,cosine_similarity,0.995510458946228,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fixed_permutation,final_train_loss,0.02727411687374115,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_permutation_per_session,mse,8.615460395812988,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_permutation_per_session,relative_l2_error,1.1922725439071655,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_permutation_per_session,cosine_similarity,0.23831336200237274,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_permutation_per_session,final_train_loss,1.438807725906372,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,permutation_pool,mse,2.631791830062866,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,permutation_pool,relative_l2_error,0.6599154472351074,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,permutation_pool,cosine_similarity,0.7668578624725342,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,permutation_pool,final_train_loss,0.7833966016769409,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,dense_sandwich,mse,9.58718204498291,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,dense_sandwich,relative_l2_error,1.239587426185608,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,dense_sandwich,cosine_similarity,0.18202772736549377,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,dense_sandwich,final_train_loss,1.47907292842865,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_boundary_view,mse,8.62619400024414,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_boundary_view,relative_l2_error,1.180891990661621,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_boundary_view,cosine_similarity,0.23347622156143188,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_boundary_view,final_train_loss,1.51878023147583,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_activation_view,mse,0.08078305423259735,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_activation_view,relative_l2_error,0.11623666435480118,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_activation_view,cosine_similarity,0.9933853149414062,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,boundary_pad_only_activation_view,final_train_loss,0.017072852700948715,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,mse,8.74454116821289,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,relative_l2_error,1.2090375423431396,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,cosine_similarity,0.20078474283218384,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
+mlp_inverter,mlp,fresh_perm_plus_sandwich_plus_pad,final_train_loss,1.5135691165924072,"Adam + ReLU two-layer MLP; steps=200, mlp_hidden=128"
 permutation_recovery,signature_matching,fixed_permutation,top1_recovery_rate,0.171875,Stage 5.2b naive nearest-neighbour proxy on adapted data
 permutation_recovery,signature_matching,fixed_permutation,top5_recovery_rate,0.703125,Stage 5.2b naive nearest-neighbour proxy on adapted data
 permutation_recovery,signature_matching,fixed_permutation,mean_correct_rank,3.65625,Stage 5.2b naive nearest-neighbour proxy on adapted data
@@ -58,11 +58,11 @@ permutation_recovery,signature_matching,permutation_pool,top1_recovery_rate,0.21
 permutation_recovery,signature_matching,permutation_pool,top5_recovery_rate,0.671875,Stage 5.2b naive nearest-neighbour proxy on adapted data
 permutation_recovery,signature_matching,permutation_pool,mean_correct_rank,3.78125,Stage 5.2b naive nearest-neighbour proxy on adapted data
 permutation_recovery,signature_matching,dense_sandwich,top1_recovery_rate,0.0,Stage 5.2b naive nearest-neighbour proxy on adapted data
-permutation_recovery,signature_matching,dense_sandwich,top5_recovery_rate,0.0625,Stage 5.2b naive nearest-neighbour proxy on adapted data
-permutation_recovery,signature_matching,dense_sandwich,mean_correct_rank,31.171875,Stage 5.2b naive nearest-neighbour proxy on adapted data
-permutation_recovery,signature_matching,fresh_perm_plus_sandwich_plus_pad,top1_recovery_rate,0.0,Stage 5.2b naive nearest-neighbour proxy on adapted data
-permutation_recovery,signature_matching,fresh_perm_plus_sandwich_plus_pad,top5_recovery_rate,0.03125,Stage 5.2b naive nearest-neighbour proxy on adapted data
-permutation_recovery,signature_matching,fresh_perm_plus_sandwich_plus_pad,mean_correct_rank,31.390625,Stage 5.2b naive nearest-neighbour proxy on adapted data
+permutation_recovery,signature_matching,dense_sandwich,top5_recovery_rate,0.09375,Stage 5.2b naive nearest-neighbour proxy on adapted data
+permutation_recovery,signature_matching,dense_sandwich,mean_correct_rank,32.890625,Stage 5.2b naive nearest-neighbour proxy on adapted data
+permutation_recovery,signature_matching,fresh_perm_plus_sandwich_plus_pad,top1_recovery_rate,0.015625,Stage 5.2b naive nearest-neighbour proxy on adapted data
+permutation_recovery,signature_matching,fresh_perm_plus_sandwich_plus_pad,top5_recovery_rate,0.078125,Stage 5.2b naive nearest-neighbour proxy on adapted data
+permutation_recovery,signature_matching,fresh_perm_plus_sandwich_plus_pad,mean_correct_rank,31.125,Stage 5.2b naive nearest-neighbour proxy on adapted data
 permutation_recovery,soft_assignment,fixed_permutation,top1_recovery_rate,0.15625,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
 permutation_recovery,soft_assignment,fixed_permutation,top5_recovery_rate,0.625,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
 permutation_recovery,soft_assignment,fixed_permutation,mean_correct_rank,4.546875,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
@@ -72,50 +72,50 @@ permutation_recovery,soft_assignment,fresh_permutation_per_session,mean_correct_
 permutation_recovery,soft_assignment,permutation_pool,top1_recovery_rate,0.140625,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
 permutation_recovery,soft_assignment,permutation_pool,top5_recovery_rate,0.671875,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
 permutation_recovery,soft_assignment,permutation_pool,mean_correct_rank,4.3125,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
-permutation_recovery,soft_assignment,dense_sandwich,top1_recovery_rate,0.0,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
-permutation_recovery,soft_assignment,dense_sandwich,top5_recovery_rate,0.078125,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
-permutation_recovery,soft_assignment,dense_sandwich,mean_correct_rank,27.828125,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
-permutation_recovery,soft_assignment,fresh_perm_plus_sandwich_plus_pad,top1_recovery_rate,0.03125,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
-permutation_recovery,soft_assignment,fresh_perm_plus_sandwich_plus_pad,top5_recovery_rate,0.046875,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
-permutation_recovery,soft_assignment,fresh_perm_plus_sandwich_plus_pad,mean_correct_rank,31.21875,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
+permutation_recovery,soft_assignment,dense_sandwich,top1_recovery_rate,0.03125,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
+permutation_recovery,soft_assignment,dense_sandwich,top5_recovery_rate,0.09375,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
+permutation_recovery,soft_assignment,dense_sandwich,mean_correct_rank,32.484375,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
+permutation_recovery,soft_assignment,fresh_perm_plus_sandwich_plus_pad,top1_recovery_rate,0.046875,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
+permutation_recovery,soft_assignment,fresh_perm_plus_sandwich_plus_pad,top5_recovery_rate,0.09375,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
+permutation_recovery,soft_assignment,fresh_perm_plus_sandwich_plus_pad,mean_correct_rank,28.953125,Sinkhorn-style log-domain row/col normalisation; iters=50 T=0.05
 mitigation_decision,decision,fixed_permutation,best_linear_relative_l2_error,6.590830139430182e-07,"risk_level=high, default_on_recommendation=unsafe_default_on"
 mitigation_decision,decision,fixed_permutation,best_linear_cosine_similarity,0.9999999403953552,"risk_level=high, default_on_recommendation=unsafe_default_on"
-mitigation_decision,decision,fixed_permutation,best_mlp_relative_l2_error,0.09791599959135056,"risk_level=high, default_on_recommendation=unsafe_default_on"
-mitigation_decision,decision,fixed_permutation,best_mlp_cosine_similarity,0.9953840970993042,"risk_level=high, default_on_recommendation=unsafe_default_on"
+mitigation_decision,decision,fixed_permutation,best_mlp_relative_l2_error,0.0962701141834259,"risk_level=high, default_on_recommendation=unsafe_default_on"
+mitigation_decision,decision,fixed_permutation,best_mlp_cosine_similarity,0.995510458946228,"risk_level=high, default_on_recommendation=unsafe_default_on"
 mitigation_decision,decision,fixed_permutation,best_permutation_recovery_top1,0.171875,"risk_level=high, default_on_recommendation=unsafe_default_on"
 mitigation_decision,decision,fixed_permutation,risk_level,high,unsafe_default_on
-mitigation_decision,decision,fresh_permutation_per_session,best_linear_relative_l2_error,1.132310152053833,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
-mitigation_decision,decision,fresh_permutation_per_session,best_linear_cosine_similarity,0.038903072476387024,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
-mitigation_decision,decision,fresh_permutation_per_session,best_mlp_relative_l2_error,1.1805280447006226,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
-mitigation_decision,decision,fresh_permutation_per_session,best_mlp_cosine_similarity,0.2513342499732971,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,fresh_permutation_per_session,best_linear_relative_l2_error,1.1133767366409302,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,fresh_permutation_per_session,best_linear_cosine_similarity,0.08986927568912506,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,fresh_permutation_per_session,best_mlp_relative_l2_error,1.1922725439071655,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,fresh_permutation_per_session,best_mlp_cosine_similarity,0.23831336200237274,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
 mitigation_decision,decision,fresh_permutation_per_session,best_permutation_recovery_top1,0.265625,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
 mitigation_decision,decision,fresh_permutation_per_session,risk_level,medium,needs_more_evaluation
-mitigation_decision,decision,permutation_pool,best_linear_relative_l2_error,0.7478251457214355,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
-mitigation_decision,decision,permutation_pool,best_linear_cosine_similarity,0.6704162955284119,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
-mitigation_decision,decision,permutation_pool,best_mlp_relative_l2_error,0.666178822517395,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
-mitigation_decision,decision,permutation_pool,best_mlp_cosine_similarity,0.759970486164093,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,permutation_pool,best_linear_relative_l2_error,0.7545119524002075,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,permutation_pool,best_linear_cosine_similarity,0.6623877286911011,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,permutation_pool,best_mlp_relative_l2_error,0.6599154472351074,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
+mitigation_decision,decision,permutation_pool,best_mlp_cosine_similarity,0.7668578624725342,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
 mitigation_decision,decision,permutation_pool,best_permutation_recovery_top1,0.21875,"risk_level=medium, default_on_recommendation=needs_more_evaluation"
 mitigation_decision,decision,permutation_pool,risk_level,medium,needs_more_evaluation
-mitigation_decision,decision,dense_sandwich,best_linear_relative_l2_error,1.173920750617981,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,dense_sandwich,best_linear_cosine_similarity,-0.07287032157182693,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,dense_sandwich,best_mlp_relative_l2_error,1.229601502418518,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,dense_sandwich,best_mlp_cosine_similarity,0.19054098427295685,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,dense_sandwich,best_permutation_recovery_top1,0.0,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,dense_sandwich,best_linear_relative_l2_error,1.1550393104553223,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,dense_sandwich,best_linear_cosine_similarity,-0.008566505275666714,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,dense_sandwich,best_mlp_relative_l2_error,1.239587426185608,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,dense_sandwich,best_mlp_cosine_similarity,0.18202772736549377,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,dense_sandwich,best_permutation_recovery_top1,0.03125,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
 mitigation_decision,decision,dense_sandwich,risk_level,low,acceptable_with_mitigation
-mitigation_decision,decision,boundary_pad_only_boundary_view,best_linear_relative_l2_error,1.1154601573944092,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,boundary_pad_only_boundary_view,best_linear_cosine_similarity,0.034118931740522385,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,boundary_pad_only_boundary_view,best_mlp_relative_l2_error,1.2052322626113892,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,boundary_pad_only_boundary_view,best_mlp_cosine_similarity,0.18709567189216614,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,boundary_pad_only_boundary_view,best_linear_relative_l2_error,1.0959155559539795,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,boundary_pad_only_boundary_view,best_linear_cosine_similarity,0.05832958221435547,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,boundary_pad_only_boundary_view,best_mlp_relative_l2_error,1.180891990661621,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,boundary_pad_only_boundary_view,best_mlp_cosine_similarity,0.23347622156143188,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
 mitigation_decision,decision,boundary_pad_only_boundary_view,risk_level,low,acceptable_with_mitigation
-mitigation_decision,decision,boundary_pad_only_activation_view,best_linear_relative_l2_error,6.811561661379528e-07,"risk_level=high, default_on_recommendation=unsafe_default_on"
-mitigation_decision,decision,boundary_pad_only_activation_view,best_linear_cosine_similarity,0.9999995231628418,"risk_level=high, default_on_recommendation=unsafe_default_on"
-mitigation_decision,decision,boundary_pad_only_activation_view,best_mlp_relative_l2_error,0.11469340324401855,"risk_level=high, default_on_recommendation=unsafe_default_on"
-mitigation_decision,decision,boundary_pad_only_activation_view,best_mlp_cosine_similarity,0.9936826229095459,"risk_level=high, default_on_recommendation=unsafe_default_on"
+mitigation_decision,decision,boundary_pad_only_activation_view,best_linear_relative_l2_error,6.777401040380937e-07,"risk_level=high, default_on_recommendation=unsafe_default_on"
+mitigation_decision,decision,boundary_pad_only_activation_view,best_linear_cosine_similarity,0.999999463558197,"risk_level=high, default_on_recommendation=unsafe_default_on"
+mitigation_decision,decision,boundary_pad_only_activation_view,best_mlp_relative_l2_error,0.11623666435480118,"risk_level=high, default_on_recommendation=unsafe_default_on"
+mitigation_decision,decision,boundary_pad_only_activation_view,best_mlp_cosine_similarity,0.9933853149414062,"risk_level=high, default_on_recommendation=unsafe_default_on"
 mitigation_decision,decision,boundary_pad_only_activation_view,best_permutation_recovery_top1,0.171875,"risk_level=high, default_on_recommendation=unsafe_default_on"
 mitigation_decision,decision,boundary_pad_only_activation_view,risk_level,high,unsafe_default_on
-mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_linear_relative_l2_error,1.1527745723724365,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_linear_cosine_similarity,-0.03979523107409477,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_mlp_relative_l2_error,1.2135746479034424,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_mlp_cosine_similarity,0.200922891497612,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
-mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_permutation_recovery_top1,0.03125,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_linear_relative_l2_error,1.1347168684005737,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_linear_cosine_similarity,-0.014808104373514652,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_mlp_relative_l2_error,1.2090375423431396,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_mlp_cosine_similarity,0.20078474283218384,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
+mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,best_permutation_recovery_top1,0.046875,"risk_level=low, default_on_recommendation=acceptable_with_mitigation"
 mitigation_decision,decision,fresh_perm_plus_sandwich_plus_pad,risk_level,low,acceptable_with_mitigation

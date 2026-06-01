@@ -1,0 +1,1192 @@
+{
+  "config": {
+    "model_id": null,
+    "attempt_real_model_load": false,
+    "allow_synthetic_fallback": true,
+    "local_files_only": false,
+    "nonlinear_mode": "compatible_islands",
+    "mitigation_bundle": "fresh_perm_only",
+    "use_pad": true,
+    "max_layers": 2,
+    "device": "cpu",
+    "dtype": "float32",
+    "seed": 2026,
+    "collect_traces": false,
+    "synthetic_vocab_size": 64,
+    "synthetic_hidden_size": 32,
+    "synthetic_intermediate_size": 64,
+    "synthetic_num_attention_heads": 4,
+    "synthetic_num_key_value_heads": 2,
+    "synthetic_head_dim": 8,
+    "batch_size": 1,
+    "prompt_length": 6,
+    "max_new_tokens": 3,
+    "mitigation_bundles": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "use_pad_values": [
+      false,
+      true
+    ]
+  },
+  "model_loading": {
+    "load_status": "synthetic_only",
+    "resolved_model_id": null,
+    "model_family": null,
+    "model_class": null,
+    "load_error": "attempt_real_model_load=False (default); pytest runs the synthetic fallback to avoid network downloads.",
+    "fallback_used": true,
+    "candidates_tried": []
+  },
+  "source": "synthetic_block",
+  "block_spec": {
+    "model_family": "synthetic_modern_decoder",
+    "model_class": "SyntheticLlamaModel",
+    "block_path": "synthetic.layers.0",
+    "block_index": 0,
+    "hidden_size": 32,
+    "intermediate_size": 64,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 8,
+    "norm_type": "rmsnorm",
+    "activation_type": "swiglu",
+    "position_encoding_type": "rotary",
+    "attention_variant": "gqa",
+    "q_proj_path": "synthetic.layers.0.self_attn.q_proj",
+    "k_proj_path": "synthetic.layers.0.self_attn.k_proj",
+    "v_proj_path": "synthetic.layers.0.self_attn.v_proj",
+    "o_proj_path": "synthetic.layers.0.self_attn.o_proj",
+    "gate_proj_path": "synthetic.layers.0.mlp.gate_proj",
+    "up_proj_path": "synthetic.layers.0.mlp.up_proj",
+    "down_proj_path": "synthetic.layers.0.mlp.down_proj",
+    "input_norm_path": "synthetic.layers.0.input_layernorm",
+    "post_attention_norm_path": "synthetic.layers.0.post_attention_layernorm",
+    "rope_base": 10000.0,
+    "rope_scaling_kind": null,
+    "notes": [
+      "synthetic fallback; no real model weights were loaded"
+    ]
+  },
+  "input_ids_shape": [
+    1,
+    6
+  ],
+  "per_run": [
+    {
+      "mitigation_bundle": "fresh_perm_only",
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "source": "synthetic_block",
+      "full_forward": {
+        "nonlinear_mode": "compatible_islands",
+        "valid_nonlinear_modes": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "mitigation_bundle": "fresh_perm_only",
+        "valid_mitigation_bundles": [
+          "fresh_perm_only",
+          "fresh_perm_plus_sandwich_plus_pad"
+        ],
+        "use_pad": false,
+        "num_layers": 2,
+        "vocab_size": 64,
+        "logits_metrics": {
+          "max_abs_error": 7.450580596923828e-07,
+          "relative_l2_error": 7.166920568124624e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "per_layer_reports": [
+          {
+            "layer_index": 0,
+            "allclose": true,
+            "max_abs_error": 5.662441253662109e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          },
+          {
+            "layer_index": 1,
+            "allclose": true,
+            "max_abs_error": 4.172325134277344e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          }
+        ],
+        "final_norm_status": "trusted_final_rmsnorm",
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "mitigation_bundle_metadata": {
+          "mitigation_bundle": "fresh_perm_only",
+          "fresh_permutation_enabled": true,
+          "dense_sandwich_enabled": false,
+          "boundary_pad_required": false,
+          "boundary_pad_enabled": false,
+          "activation_pad_forbidden": true,
+          "pad_placement": "n/a",
+          "activation_input_form": "ZP",
+          "post_island_dense_mask": false,
+          "island_view_lifetime": "short_lived",
+          "default_on_candidate_under_stage_5_4": false,
+          "risk_level_from_stage_5_4": "medium",
+          "default_on_recommendation": "needs_more_evaluation",
+          "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+          "online_extra_matmul_count": 0,
+          "preprocessing_only_transformations": [
+            "permutation_absorbed_into_weights"
+          ]
+        },
+        "dense_sandwich_enabled": false,
+        "boundary_pad_enabled": false,
+        "default_on_candidate_under_stage_5_4": false,
+        "caveats": [
+          "Model-level integration; not a real TEE deployment.",
+          "Real wall-time is not measured.",
+          "Default mode remains 'trusted'; compatible_islands is opt-in.",
+          "This is not formal security."
+        ]
+      },
+      "prefill": {
+        "stage": "prefill",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": false,
+        "prompt_length": 6,
+        "logits_metrics": {
+          "max_abs_error": 8.642673492431641e-07,
+          "relative_l2_error": 8.338607244695595e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 6,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "002bd5d96be06452",
+              "n_v_stack_fingerprint": "338ce3232953d3e8",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Prefill is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "decode_step": {
+        "stage": "decode_step",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": false,
+        "position": 6,
+        "new_seq_len": 1,
+        "logits_metrics": {
+          "max_abs_error": 5.066394805908203e-07,
+          "relative_l2_error": 8.047413189160579e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 7,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "002bd5d96be06452",
+              "n_v_stack_fingerprint": "338ce3232953d3e8",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "rope_position_increment": true,
+        "rope_position_used": 6,
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Decode is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "greedy_generate": {
+        "stage": "greedy_generate",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": false,
+        "max_new_tokens": 3,
+        "prompt_length": 6,
+        "token_match_rate": 1.0,
+        "sequence_exact_match": true,
+        "top1_match_rate": 1.0,
+        "per_step_logits_metrics": [
+          {
+            "max_abs_error": 6.556510925292969e-07,
+            "relative_l2_error": 9.988018518924946e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          },
+          {
+            "max_abs_error": 6.48200511932373e-07,
+            "relative_l2_error": 9.686301609690418e-07,
+            "cosine_similarity": 1.0000001192092896,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        ],
+        "prefill_logits_metrics": {
+          "max_abs_error": 7.450580596923828e-07,
+          "relative_l2_error": 7.244394737426774e-07,
+          "cosine_similarity": 0.9999997615814209,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Greedy only; beam / top-k / top-p not implemented.",
+          "Not a real TEE measurement.",
+          "Not formal security."
+        ]
+      }
+    },
+    {
+      "mitigation_bundle": "fresh_perm_only",
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "source": "synthetic_block",
+      "full_forward": {
+        "nonlinear_mode": "compatible_islands",
+        "valid_nonlinear_modes": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "mitigation_bundle": "fresh_perm_only",
+        "valid_mitigation_bundles": [
+          "fresh_perm_only",
+          "fresh_perm_plus_sandwich_plus_pad"
+        ],
+        "use_pad": true,
+        "num_layers": 2,
+        "vocab_size": 64,
+        "logits_metrics": {
+          "max_abs_error": 8.940696716308594e-07,
+          "relative_l2_error": 8.700820899321116e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "per_layer_reports": [
+          {
+            "layer_index": 0,
+            "allclose": true,
+            "max_abs_error": 5.662441253662109e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          },
+          {
+            "layer_index": 1,
+            "allclose": true,
+            "max_abs_error": 5.364418029785156e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          }
+        ],
+        "final_norm_status": "trusted_final_rmsnorm",
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "mitigation_bundle_metadata": {
+          "mitigation_bundle": "fresh_perm_only",
+          "fresh_permutation_enabled": true,
+          "dense_sandwich_enabled": false,
+          "boundary_pad_required": false,
+          "boundary_pad_enabled": true,
+          "activation_pad_forbidden": true,
+          "pad_placement": "linear_boundary_only",
+          "activation_input_form": "ZP",
+          "post_island_dense_mask": false,
+          "island_view_lifetime": "short_lived",
+          "default_on_candidate_under_stage_5_4": false,
+          "risk_level_from_stage_5_4": "medium",
+          "default_on_recommendation": "needs_more_evaluation",
+          "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+          "online_extra_matmul_count": 0,
+          "preprocessing_only_transformations": [
+            "permutation_absorbed_into_weights"
+          ]
+        },
+        "dense_sandwich_enabled": false,
+        "boundary_pad_enabled": true,
+        "default_on_candidate_under_stage_5_4": false,
+        "caveats": [
+          "Model-level integration; not a real TEE deployment.",
+          "Real wall-time is not measured.",
+          "Default mode remains 'trusted'; compatible_islands is opt-in.",
+          "This is not formal security."
+        ]
+      },
+      "prefill": {
+        "stage": "prefill",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "prompt_length": 6,
+        "logits_metrics": {
+          "max_abs_error": 8.642673492431641e-07,
+          "relative_l2_error": 9.88177248473221e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 6,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "1f973c104694c9c8",
+              "n_v_stack_fingerprint": "e3a31bd2c8182de9",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Prefill is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "decode_step": {
+        "stage": "decode_step",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "position": 6,
+        "new_seq_len": 1,
+        "logits_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "relative_l2_error": 8.335875349985145e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 7,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "1f973c104694c9c8",
+              "n_v_stack_fingerprint": "e3a31bd2c8182de9",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "rope_position_increment": true,
+        "rope_position_used": 6,
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Decode is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "greedy_generate": {
+        "stage": "greedy_generate",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_only",
+        "use_pad": true,
+        "max_new_tokens": 3,
+        "prompt_length": 6,
+        "token_match_rate": 1.0,
+        "sequence_exact_match": true,
+        "top1_match_rate": 1.0,
+        "per_step_logits_metrics": [
+          {
+            "max_abs_error": 4.76837158203125e-07,
+            "relative_l2_error": 6.955827416277316e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          },
+          {
+            "max_abs_error": 1.0225921869277954e-06,
+            "relative_l2_error": 1.2345191180429538e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        ],
+        "prefill_logits_metrics": {
+          "max_abs_error": 6.854534149169922e-07,
+          "relative_l2_error": 8.121261885207787e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Greedy only; beam / top-k / top-p not implemented.",
+          "Not a real TEE measurement.",
+          "Not formal security."
+        ]
+      }
+    },
+    {
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "use_pad": false,
+      "nonlinear_mode": "compatible_islands",
+      "source": "synthetic_block",
+      "full_forward": {
+        "nonlinear_mode": "compatible_islands",
+        "valid_nonlinear_modes": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "valid_mitigation_bundles": [
+          "fresh_perm_only",
+          "fresh_perm_plus_sandwich_plus_pad"
+        ],
+        "use_pad": false,
+        "num_layers": 2,
+        "vocab_size": 64,
+        "logits_metrics": {
+          "max_abs_error": 7.450580596923828e-07,
+          "relative_l2_error": 7.166920568124624e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "per_layer_reports": [
+          {
+            "layer_index": 0,
+            "allclose": true,
+            "max_abs_error": 5.662441253662109e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          },
+          {
+            "layer_index": 1,
+            "allclose": true,
+            "max_abs_error": 4.172325134277344e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          }
+        ],
+        "final_norm_status": "trusted_final_rmsnorm",
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "mitigation_bundle_metadata": {
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "fresh_permutation_enabled": true,
+          "dense_sandwich_enabled": true,
+          "boundary_pad_required": true,
+          "boundary_pad_enabled": false,
+          "activation_pad_forbidden": true,
+          "pad_placement": "n/a",
+          "activation_input_form": "ZP",
+          "post_island_dense_mask": true,
+          "island_view_lifetime": "short_lived",
+          "default_on_candidate_under_stage_5_4": false,
+          "risk_level_from_stage_5_4": "low",
+          "default_on_recommendation": "acceptable_with_mitigation",
+          "security_profile_detail": "adaptive-proxy-mitigated, not formal",
+          "online_extra_matmul_count": 0,
+          "preprocessing_only_transformations": [
+            "dense_input_mask",
+            "permutation_absorbed_into_weights",
+            "dense_output_mask"
+          ]
+        },
+        "dense_sandwich_enabled": true,
+        "boundary_pad_enabled": false,
+        "default_on_candidate_under_stage_5_4": false,
+        "caveats": [
+          "Model-level integration; not a real TEE deployment.",
+          "Real wall-time is not measured.",
+          "Default mode remains 'trusted'; compatible_islands is opt-in.",
+          "This is not formal security."
+        ]
+      },
+      "prefill": {
+        "stage": "prefill",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": false,
+        "prompt_length": 6,
+        "logits_metrics": {
+          "max_abs_error": 8.642673492431641e-07,
+          "relative_l2_error": 8.338607244695595e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 6,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "002bd5d96be06452",
+              "n_v_stack_fingerprint": "338ce3232953d3e8",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Prefill is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "decode_step": {
+        "stage": "decode_step",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": false,
+        "position": 6,
+        "new_seq_len": 1,
+        "logits_metrics": {
+          "max_abs_error": 5.066394805908203e-07,
+          "relative_l2_error": 8.047413189160579e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 7,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "002bd5d96be06452",
+              "n_v_stack_fingerprint": "338ce3232953d3e8",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "rope_position_increment": true,
+        "rope_position_used": 6,
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Decode is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "greedy_generate": {
+        "stage": "greedy_generate",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": false,
+        "max_new_tokens": 3,
+        "prompt_length": 6,
+        "token_match_rate": 1.0,
+        "sequence_exact_match": true,
+        "top1_match_rate": 1.0,
+        "per_step_logits_metrics": [
+          {
+            "max_abs_error": 6.556510925292969e-07,
+            "relative_l2_error": 9.988018518924946e-07,
+            "cosine_similarity": 1.0,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          },
+          {
+            "max_abs_error": 6.48200511932373e-07,
+            "relative_l2_error": 9.686301609690418e-07,
+            "cosine_similarity": 1.0000001192092896,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        ],
+        "prefill_logits_metrics": {
+          "max_abs_error": 7.450580596923828e-07,
+          "relative_l2_error": 7.244394737426774e-07,
+          "cosine_similarity": 0.9999997615814209,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Greedy only; beam / top-k / top-p not implemented.",
+          "Not a real TEE measurement.",
+          "Not formal security."
+        ]
+      }
+    },
+    {
+      "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "use_pad": true,
+      "nonlinear_mode": "compatible_islands",
+      "source": "synthetic_block",
+      "full_forward": {
+        "nonlinear_mode": "compatible_islands",
+        "valid_nonlinear_modes": [
+          "trusted",
+          "compatible_islands"
+        ],
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "valid_mitigation_bundles": [
+          "fresh_perm_only",
+          "fresh_perm_plus_sandwich_plus_pad"
+        ],
+        "use_pad": true,
+        "num_layers": 2,
+        "vocab_size": 64,
+        "logits_metrics": {
+          "max_abs_error": 8.940696716308594e-07,
+          "relative_l2_error": 8.700820899321116e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "per_layer_reports": [
+          {
+            "layer_index": 0,
+            "allclose": true,
+            "max_abs_error": 5.662441253662109e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          },
+          {
+            "layer_index": 1,
+            "allclose": true,
+            "max_abs_error": 5.364418029785156e-07,
+            "rmsnorm_status": "orthogonal_island_with_gamma_folded_into_qkv",
+            "rope_attention_status": "rope_post_mask_only",
+            "swiglu_status": "compatible_island_paired_permutation"
+          }
+        ],
+        "final_norm_status": "trusted_final_rmsnorm",
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "mitigation_bundle_metadata": {
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "fresh_permutation_enabled": true,
+          "dense_sandwich_enabled": true,
+          "boundary_pad_required": true,
+          "boundary_pad_enabled": true,
+          "activation_pad_forbidden": true,
+          "pad_placement": "linear_boundary_only",
+          "activation_input_form": "ZP",
+          "post_island_dense_mask": true,
+          "island_view_lifetime": "short_lived",
+          "default_on_candidate_under_stage_5_4": true,
+          "risk_level_from_stage_5_4": "low",
+          "default_on_recommendation": "acceptable_with_mitigation",
+          "security_profile_detail": "adaptive-proxy-mitigated, not formal",
+          "online_extra_matmul_count": 0,
+          "preprocessing_only_transformations": [
+            "dense_input_mask",
+            "permutation_absorbed_into_weights",
+            "dense_output_mask"
+          ]
+        },
+        "dense_sandwich_enabled": true,
+        "boundary_pad_enabled": true,
+        "default_on_candidate_under_stage_5_4": true,
+        "caveats": [
+          "Model-level integration; not a real TEE deployment.",
+          "Real wall-time is not measured.",
+          "Default mode remains 'trusted'; compatible_islands is opt-in.",
+          "This is not formal security."
+        ]
+      },
+      "prefill": {
+        "stage": "prefill",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "prompt_length": 6,
+        "logits_metrics": {
+          "max_abs_error": 8.642673492431641e-07,
+          "relative_l2_error": 9.88177248473221e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 6,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 6,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                6,
+                8
+              ],
+              "n_k_stack_fingerprint": "1f973c104694c9c8",
+              "n_v_stack_fingerprint": "e3a31bd2c8182de9",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Prefill is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "decode_step": {
+        "stage": "decode_step",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "position": 6,
+        "new_seq_len": 1,
+        "logits_metrics": {
+          "max_abs_error": 5.960464477539062e-07,
+          "relative_l2_error": 8.335875349985145e-07,
+          "cosine_similarity": 1.0,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "cache_summary": {
+          "cache_type": "autoregressive_kv_cache",
+          "attention_variant": "gqa",
+          "batch_size": 1,
+          "total_seq_len": 7,
+          "num_layers": 2,
+          "layers": [
+            {
+              "layer_index": 0,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "779492e75e4a95ad",
+              "n_v_stack_fingerprint": "7511686c2ec0decd",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            },
+            {
+              "layer_index": 1,
+              "seq_len": 7,
+              "num_kv_heads": 2,
+              "head_dim": 8,
+              "key_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "value_tilde_shape": [
+                1,
+                2,
+                7,
+                8
+              ],
+              "n_k_stack_fingerprint": "1f973c104694c9c8",
+              "n_v_stack_fingerprint": "e3a31bd2c8182de9",
+              "cache_status": "filled_after_prefill",
+              "debug_plain_present": false
+            }
+          ]
+        },
+        "lm_head_status": "single_dense_mask_pair_with_vocab_mask",
+        "rope_position_increment": true,
+        "rope_position_used": 6,
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Decode is recoverable to plain; no real TEE isolation.",
+          "Not formal security."
+        ]
+      },
+      "greedy_generate": {
+        "stage": "greedy_generate",
+        "nonlinear_mode": "compatible_islands",
+        "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+        "use_pad": true,
+        "max_new_tokens": 3,
+        "prompt_length": 6,
+        "token_match_rate": 1.0,
+        "sequence_exact_match": true,
+        "top1_match_rate": 1.0,
+        "per_step_logits_metrics": [
+          {
+            "max_abs_error": 4.76837158203125e-07,
+            "relative_l2_error": 6.955827416277316e-07,
+            "cosine_similarity": 0.9999998807907104,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          },
+          {
+            "max_abs_error": 1.0225921869277954e-06,
+            "relative_l2_error": 1.2345191180429538e-06,
+            "cosine_similarity": 1.0,
+            "allclose": true,
+            "top1_match_rate": 1.0
+          }
+        ],
+        "prefill_logits_metrics": {
+          "max_abs_error": 6.854534149169922e-07,
+          "relative_l2_error": 8.121261885207787e-07,
+          "cosine_similarity": 0.9999998807907104,
+          "allclose": true,
+          "top1_match_rate": 1.0
+        },
+        "online_extra_matmul_count": 0,
+        "caveats": [
+          "Greedy only; beam / top-k / top-p not implemented.",
+          "Not a real TEE measurement.",
+          "Not formal security."
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "source": "synthetic_block",
+    "model_family": "synthetic_modern_decoder",
+    "num_layers_used": 2,
+    "hidden_size": 32,
+    "intermediate_size": 64,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 8,
+    "attention_variant": "gqa",
+    "vocab_size": 64,
+    "nonlinear_mode": "compatible_islands",
+    "mitigation_bundles_evaluated": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "use_pad_values": [
+      false,
+      true
+    ],
+    "max_new_tokens": 3,
+    "all_full_forward_allclose": true,
+    "all_prefill_allclose": true,
+    "all_decode_top1_match": true,
+    "all_generation_exact_match": true,
+    "online_extra_matmul_count": 0,
+    "implemented_model_level": true,
+    "full_runtime_integrated": false,
+    "modern_decoder_generation_status": "greedy_generation_implemented",
+    "modern_decoder_kv_cache_status": "implemented"
+  },
+  "caveats": [
+    "Model-level wrapper smoke; not a real TEE deployment.",
+    "Real wall-time is not measured.",
+    "Only greedy generation is implemented.",
+    "Beam search / top-k / top-p are not implemented.",
+    "RoPE scaling variants are not fully implemented unless explicitly supported.",
+    "Qwen / TinyLlama real loading is opt-in; pytest stays synthetic.",
+    "No LoRA training path is implemented.",
+    "Security remains proxy-evaluated, not formal.",
+    "Inter-layer hidden states are recovered to plain space between blocks; the attacker view is still constrained by Stage 6.4b's intra-block masks and the LM-head dense / vocab masks."
+  ]
+}

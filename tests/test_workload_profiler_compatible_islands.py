@@ -130,6 +130,8 @@ def test_profile_method_records_wrapper_integration_status(profile_payload) -> N
     assert m.get("measured_integration_scope") in (
         "cross_architecture_probe_level",
         "cross_architecture_plus_modern_decoder_probe_level",
+        "cross_architecture_plus_modern_decoder_block_level",
+        "cross_architecture_plus_modern_decoder_model_level",
     )
     assert m.get("all_architecture_probe_level_implemented") is True
     assert m.get("full_runtime_integrated") is False
@@ -216,11 +218,13 @@ def test_workload_profile_markdown_contains_required_phrases() -> None:
         "security_profile` remains `proxy-evaluated, not formal`",
     ):
         assert phrase in md, f"missing phrase: {phrase!r}"
-    # measured_integration_scope must be present in one of two valid forms.
+    # measured_integration_scope must be present in one of the valid forms.
     assert any(
         phrase in md
         for phrase in (
             "measured_integration_scope = \"cross_architecture_probe_level\"",
             "measured_integration_scope = \"cross_architecture_plus_modern_decoder_probe_level\"",
+            "measured_integration_scope = \"cross_architecture_plus_modern_decoder_block_level\"",
+            "measured_integration_scope = \"cross_architecture_plus_modern_decoder_model_level\"",
         )
     )

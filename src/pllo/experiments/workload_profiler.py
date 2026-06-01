@@ -879,7 +879,7 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             # measured smokes are surfaced via ``measured_integration_scope``.
             record["partial_implementation"] = True
             record["measured_integration_scope"] = (
-                "cross_architecture_plus_modern_decoder_probe_level"
+                "cross_architecture_plus_modern_decoder_model_level"
             )
             record["measured_wall_time_scope"] = "gpt2_model_level_smoke"
             record["all_architecture_probe_level_implemented"] = True
@@ -895,6 +895,24 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             )
             record["adaptive_proxy_evaluated"] = True
             record["adaptive_proxy_artifact"] = "outputs/adaptive_island_attacks.json"
+            # Stage 5.5 — real-activation adaptive proxy attacker. Same
+            # attacker family as Stage 5.4 (ridge linear, small MLP,
+            # signature / Sinkhorn permutation recovery, linkability) but
+            # the (plain, visible) pairs now come from the Stage 6.4b
+            # modern decoder block wrapper rather than synthetic channel
+            # signatures. ``security_profile`` remains
+            # ``"proxy-evaluated, not formal"``; the new label below is
+            # additive metadata only.
+            record["real_activation_attacker_status"] = "implemented"
+            record["real_activation_attacker_scope"] = (
+                "modern_decoder_block_level"
+            )
+            record["real_activation_attacker_artifact"] = (
+                "outputs/real_activation_attacks.json"
+            )
+            record["security_profile_detail_with_real_activation"] = (
+                "real-activation-adaptive-proxy-evaluated, not formal"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -915,13 +933,27 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "gpt2_model_level": "implemented",
                 "bert": "implemented_probe_level",
                 "t5": "implemented_probe_level",
-                # Stage 6.4 — modern decoder-only (Qwen / TinyLlama / LLaMA).
-                # Probe-level migration only: RMSNorm + SwiGLU + RoPE-post-mask
-                # + GQA/MQA tensor probes, default synthetic. Full Qwen
-                # wrapper is Stage 6.4b.
-                "qwen_or_modern_decoder": "implemented_probe_level",
+                # Stage 6.4 / 6.4b / 6.4c — modern decoder-only (Qwen /
+                # TinyLlama / LLaMA). Stage 6.4 landed the tensor-level
+                # probes; Stage 6.4b added the block-level wrapper;
+                # Stage 6.4c stacks blocks into a full model wrapper with
+                # embedding lookup, final RMSNorm, optionally-masked LM
+                # head, KV-cache-aware prefill / decode_step, and a
+                # hand-written greedy generation loop that matches a
+                # plain reference token-for-token. ``full_runtime_integrated``
+                # stays False because real TEE wall-time is still unmeasured.
+                "qwen_or_modern_decoder": "implemented",
                 "modern_decoder_probe": "implemented",
+                "modern_decoder_block_wrapper": "implemented",
+                "modern_decoder_model_wrapper": "implemented",
             }
+            record["modern_decoder_generation_status"] = (
+                "greedy_generation_implemented"
+            )
+            record["modern_decoder_kv_cache_status"] = "implemented"
+            record["modern_decoder_model_smoke_artifact"] = (
+                "outputs/modern_decoder_model_wrapper_smoke.json"
+            )
             record["preprocessing_breakdown"] = {
                 "base_weight_obfuscation_ops": pre.get(
                     "trusted_ops", 0
@@ -1084,10 +1116,19 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "gpt2_model_level": "implemented",
                 "bert": "implemented_probe_level",
                 "t5": "implemented_probe_level",
-                "qwen_or_modern_decoder": "implemented_probe_level",
+                "qwen_or_modern_decoder": "implemented",
                 "modern_decoder_probe": "implemented",
+                "modern_decoder_block_wrapper": "implemented",
+                "modern_decoder_model_wrapper": "implemented",
+                "modern_decoder_generation_status": (
+                    "greedy_generation_implemented"
+                ),
+                "modern_decoder_kv_cache_status": "implemented",
+                "modern_decoder_model_smoke_artifact": (
+                    "outputs/modern_decoder_model_wrapper_smoke.json"
+                ),
                 "measured_integration_scope": (
-                    "cross_architecture_plus_modern_decoder_probe_level"
+                    "cross_architecture_plus_modern_decoder_model_level"
                 ),
                 "all_architecture_probe_level_implemented": True,
                 "full_runtime_integrated": False,
@@ -1100,6 +1141,16 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                     "acceptable_with_mitigation_under_adaptive_proxy"
                 ),
                 "dense_sandwich_supported": True,
+                "real_activation_attacker_status": "implemented",
+                "real_activation_attacker_scope": (
+                    "modern_decoder_block_level"
+                ),
+                "real_activation_attacker_artifact": (
+                    "outputs/real_activation_attacks.json"
+                ),
+                "security_profile_detail_with_real_activation": (
+                    "real-activation-adaptive-proxy-evaluated, not formal"
+                ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"
                     " into the GPT-2 single-block wrapper behind a"
@@ -1114,14 +1165,21 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                     " cover. Stage 6.4 adds a probe-level migration for"
                     " modern decoder-only models (Qwen / TinyLlama / LLaMA"
                     " — RMSNorm + SwiGLU + RoPE-post-mask + GQA/MQA"
-                    " tensor-level probes, default synthetic). Default mode"
+                    " tensor-level probes, default synthetic). Stage 6.4b"
+                    " extends that to a block-level wrapper that loads a"
+                    " real HF LLaMA-style model (or synthetic fallback),"
+                    " extracts one transformer block and verifies the"
+                    " obfuscated block output recovers to the plain"
+                    " reference for both mitigation bundles and both"
+                    " use_pad values. Default mode"
                     " remains 'trusted'; ours_compatible_nonlinear_islands"
                     " stays partial_implementation=True because BERT / T5 /"
-                    " modern-decoder are probe-level integrations, not full"
-                    " wrappers (full_runtime_integrated=False). This is a"
-                    " measured GPT-2 model-level smoke plus BERT / T5 /"
-                    " modern-decoder probe-level correctness, not a full"
-                    " cross-architecture measurement."
+                    " modern-decoder are block-/probe-level integrations,"
+                    " not full wrappers (full_runtime_integrated=False)."
+                    " This is a measured GPT-2 model-level smoke plus"
+                    " BERT / T5 probe-level correctness plus modern-decoder"
+                    " block-level correctness, not a full cross-architecture"
+                    " measurement."
                 ),
             },
         },

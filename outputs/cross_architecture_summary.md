@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.402e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.796e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.499e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.127e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -76,9 +76,9 @@ Stage 5.3c — per-architecture status of the operator-compatible nonlinear-isla
 | decoder_only | sshleifer/tiny-gpt2 | model_level | trusted/compatible_islands | True | 0 | proxy-evaluated, not formal |
 | encoder_only | hf-internal-testing/tiny-bert | probe_level | trusted/compatible_islands | True | 0 | proxy-evaluated, not formal |
 | encoder_decoder | hf-internal-testing/tiny-random-t5 | probe_level | trusted/compatible_islands | True | 0 | proxy-evaluated, not formal |
-| modern_decoder_only | qwen_like / llama_like / synthetic_modern_decoder | probe_level | trusted/compatible_islands | True | 0 | adaptive-proxy-evaluated, not formal |
+| modern_decoder_only | qwen_like / llama_like / synthetic_modern_decoder | model_level | trusted/compatible_islands | True | 0 | adaptive-proxy-evaluated, not formal |
 
-- `measured_integration_scope = "cross_architecture_plus_modern_decoder_probe_level"`.
+- `measured_integration_scope = "cross_architecture_plus_modern_decoder_model_level"`.
 - `full_runtime_integrated = False`.
 - `all_architecture_probe_level_implemented = True`.
 - GPT-2 model-level integration is available.
@@ -109,9 +109,9 @@ Stage 5.3c — per-architecture status of the operator-compatible nonlinear-isla
   - Gated-GELU is not yet supported (Stage 5.2a only covers SiLU gated MLP island).
   - Default mode remains trusted; compatible_islands is gated behind a feature flag.
 - **modern_decoder_only**:
-  - Probe-level migration only; not a full Qwen / TinyLlama wrapper.
-  - RoPE is handled by masking after RoPE in the required probe.
-  - GQA / MQA is tensor-level only, not full runtime KV cache.
+  - Model-level wrapper smoke is allclose vs plain reference; real TEE wall-time is not measured.
+  - Greedy generation only; beam / top-k / top-p not implemented.
+  - Real Qwen / TinyLlama loading is opt-in; pytest stays synthetic.
   - Inherits Stage 5.4 mitigation requirements.
   - Default mode remains trusted; compatible_islands is gated behind a feature flag.
 
@@ -124,10 +124,36 @@ Stage 5.3e — per-architecture support for the two mitigation bundles. `default
 | decoder_only | model_level | supported | supported | True | True | 0 | fresh_perm_plus_sandwich_plus_pad | proxy-evaluated, not formal |
 | encoder_only | probe_level | supported | supported | True | True | 0 | fresh_perm_plus_sandwich_plus_pad | proxy-evaluated, not formal |
 | encoder_decoder | probe_level | supported | supported | True | True | 0 | fresh_perm_plus_sandwich_plus_pad | proxy-evaluated, not formal |
-| modern_decoder_only | probe_level | supported | supported | True | True | 0 | fresh_perm_plus_sandwich_plus_pad | adaptive-proxy-evaluated, not formal |
+| modern_decoder_only | model_level | supported | supported | True | True | 0 | fresh_perm_plus_sandwich_plus_pad | adaptive-proxy-evaluated, not formal |
 
 - Bundle support is probe-level / wrapper-level: enabling the full bundle does NOT change the wrapper's default `nonlinear_mode` and does NOT promote `ours_compatible_nonlinear_islands.implemented` to `True`.
 - security is `adaptive-proxy-mitigated, not formal` when the full bundle is enabled; this is not a real TEE measurement.
+
+## Modern Decoder Model-Level Integration (Stage 6.4c)
+
+Stage 6.4c stacks the Stage 6.4b block wrapper into a multi-layer model-level obfuscated decoder with embedding lookup, final RMSNorm, an optionally-masked LM head, KV-cache-aware prefill / decode_step, and a hand-written greedy generation loop. Real Qwen / TinyLlama loading is opt-in; pytest stays synthetic.
+
+| field | value |
+|---|---|
+| integration_level | model_level |
+| modern_decoder_block_wrapper_status | implemented |
+| norm_type / activation_type / position_encoding | rmsnorm / swiglu / rotary |
+| attention_variant | mha/gqa/mqa |
+| online_extra_matmul_count | 0 |
+| security_proxy_status | adaptive-proxy-evaluated, not formal |
+| block_level_correctness_artifact | `outputs/modern_decoder_block_wrapper_smoke.json` |
+| modern_decoder_model_wrapper_status | implemented |
+| modern_decoder_generation_status | greedy_generation_implemented |
+| modern_decoder_kv_cache_status | implemented |
+| model_level_correctness_artifact | `outputs/modern_decoder_model_wrapper_smoke.json` |
+| real_activation_attacker_status | implemented |
+| real_activation_attacker_scope | modern_decoder_block_level |
+| real_activation_attacker_artifact | `outputs/real_activation_attacks.json` |
+
+- Default mode for the wider system remains `"trusted"`; default mitigation bundle remains `"fresh_perm_only"`.
+- This is block-level integration, not a full model-level wrapper; `full_runtime_integrated` stays False.
+- No generation / decode_step / KV cache runtime is implemented at the wrapper level.
+- Not a real TEE measurement; not formal security.
 
 ## Trusted shortcuts still in place per architecture
 
