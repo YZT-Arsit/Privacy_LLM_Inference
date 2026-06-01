@@ -51,6 +51,16 @@ def parse_args() -> argparse.Namespace:
         default="plain_boundary",
     )
     p.add_argument(
+        "--constant-time-decode-mode",
+        choices=("off", "proxy_equalized"),
+        default="off",
+        help=(
+            "Stage 5.6 extension. proxy_equalized pads simulated per-step"
+            " latency to a per-method upper bound; PROXY ONLY — does not"
+            " sleep or change real wall-time."
+        ),
+    )
+    p.add_argument(
         "--mitigation-bundle",
         choices=list(VALID_MITIGATION_BUNDLES),
         default="fresh_perm_plus_sandwich_plus_pad",
@@ -163,6 +173,33 @@ def _csv_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         "value": ib["masked_boundary_experimental_status"], "notes": "",
     })
 
+    ibc = report.get("inter_block_closure_summary") or {}
+    if ibc:
+        for k in (
+            "status", "masked_boundary_experimental_status",
+        ):
+            rows.append({
+                "section": "inter_block_closure", "attack": "summary",
+                "scope": "model_level", "metric": k, "value": ibc.get(k),
+                "notes": "",
+            })
+        for tensor_key in ("boundary_input", "final"):
+            for phase, suffix in (("before", "_before"), ("after", "_after")):
+                d = ibc.get(tensor_key + suffix) or {}
+                for k, v in d.items():
+                    rows.append({
+                        "section": "inter_block_closure",
+                        "attack": f"{tensor_key}_{phase}",
+                        "scope": "prefill", "metric": k, "value": v,
+                        "notes": "",
+                    })
+    ct = report.get("constant_time_decode_summary") or {}
+    if ct:
+        for k, v in ct.items():
+            rows.append({
+                "section": "constant_time_decode", "attack": "summary",
+                "scope": "decode_step", "metric": k, "value": v, "notes": "",
+            })
     for k, v in report["overall_risk_summary"].items():
         rows.append({
             "section": "overall_risk_summary", "attack": "summary",
@@ -376,6 +413,75 @@ def _format_markdown(report: dict[str, Any]) -> str:
     )
     lines.append("")
 
+    # Stage 5.6 extension — inter-block closure and constant-time summaries.
+    ibc = report.get("inter_block_closure_summary") or {}
+    if ibc:
+        lines.append("## Inter-Block Masking Mode\n")
+        lines.append(
+            "| field | value |\n|---|---|"
+        )
+        lines.append(
+            f"| status | {ibc.get('status')} |"
+        )
+        lines.append(
+            "| masked_boundary_experimental_status |"
+            f" {ibc.get('masked_boundary_experimental_status')} |"
+        )
+        lines.append("")
+        lines.append("### Plain Boundary vs Masked Boundary Experimental\n")
+        lines.append(
+            "| tensor | mode | risk | inter_block_plain | linear_rel_l2 | linkability_cosine |"
+        )
+        lines.append("|---|---|---|---|---|---|")
+        for tensor_key, label in (
+            ("boundary_input", "boundary_input"),
+            ("final", "final"),
+        ):
+            before = ibc.get(f"{tensor_key}_before") or {}
+            after = ibc.get(f"{tensor_key}_after") or {}
+            if before.get("present"):
+                lines.append(
+                    f"| {label} | plain_boundary | {before['risk_level']}"
+                    f" | {before['inter_block_plain']}"
+                    f" | {_fmt(before['linear_rel_l2'], 4)}"
+                    f" | {_fmt(before['linkability_cosine'], 4)} |"
+                )
+            if after.get("present"):
+                lines.append(
+                    f"| {label} | masked_boundary_experimental | {after['risk_level']}"
+                    f" | {after['inter_block_plain']}"
+                    f" | {_fmt(after['linear_rel_l2'], 4)}"
+                    f" | {_fmt(after['linkability_cosine'], 4)} |"
+                )
+        lines.append("")
+        lines.append("### Boundary Input / Final Risk Before and After\n")
+        lines.append(
+            f"_Note_: {ibc.get('note', '')}"
+        )
+        lines.append("")
+    ct = report.get("constant_time_decode_summary") or {}
+    if ct:
+        lines.append("## Constant-Time Decode Proxy\n")
+        lines.append("| field | value |\n|---|---|")
+        for k in (
+            "mode", "decode_step_accuracy_before", "decode_step_accuracy_after",
+            "correlation_latency_step_before", "correlation_latency_step_after",
+            "risk_level_before", "risk_level_after", "overhead_ms_estimate",
+        ):
+            lines.append(f"| {k} | {_fmt(ct.get(k), 4)} |")
+        lines.append("")
+        lines.append("### Decode-Step Timing Leakage Before and After\n")
+        lines.append(
+            f"_Limitation_: {ct.get('limitation', '')}"
+        )
+        lines.append("")
+        lines.append("### Overhead Proxy\n")
+        lines.append(
+            f"Mean per-step latency padding ≈ {_fmt(ct.get('overhead_ms_estimate', 0.0), 3)}"
+            f" ms (simulated). PROXY only — does not change real wall-time."
+        )
+        lines.append("")
+
     lines.append("## Comparison with Stage 5.4 / 5.5 / 5.5b\n")
     lines.append(cmp["summary"])
     lines.append("")
@@ -502,6 +608,7 @@ def main() -> None:
         local_files_only=bool(args.local_files_only),
         max_layers=args.max_layers,
         inter_block_mask_mode=args.inter_block_mask_mode,
+        constant_time_decode_mode=args.constant_time_decode_mode,
         mitigation_bundle=args.mitigation_bundle,
         use_pad=bool(args.use_pad),
         attacker_trials=args.attacker_trials,

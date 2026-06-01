@@ -446,6 +446,47 @@ def _build_markdown(profile: dict) -> str:
                         " `wall_time_source` are unchanged."
                     )
                 if islands_record.get(
+                    "extended_proxy_status",
+                ) == "implemented":
+                    out.append("")
+                    out.append(
+                        "### Stage 5.6 Extension — Inter-Block Masked Boundary + Constant-Time Decode Proxy"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `inter_block_mask_mode_supported = "
+                        f"{islands_record.get('inter_block_mask_mode_supported')}`,"
+                        " `masked_boundary_experimental_status = "
+                        f"\"{islands_record.get('masked_boundary_experimental_status')}\"`,"
+                        " `constant_time_decode_proxy_status = "
+                        f"\"{islands_record.get('constant_time_decode_proxy_status')}\"`."
+                    )
+                    out.append(
+                        "- `extended_proxy_status = "
+                        f"\"{islands_record.get('extended_proxy_status')}\"`,"
+                        " `extended_proxy_artifact = "
+                        f"\"{islands_record.get('extended_proxy_artifact')}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_extended_proxy = "
+                        f"\"{islands_record.get('security_profile_detail_with_extended_proxy')}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Defaults unchanged: `inter_block_mask_mode =\""
+                        f"{islands_record.get('default_inter_block_mask_mode')}\"`,"
+                        " `constant_time_decode_mode =\""
+                        f"{islands_record.get('default_constant_time_decode_mode')}\"`."
+                        " Both experimental modes are opt-in (`--inter-block-mask-mode"
+                        " masked_boundary_experimental --constant-time-decode-mode"
+                        " proxy_equalized`). Constant-time decode is a PROXY"
+                        " (no sleep, no real wall-time change); inter-block"
+                        " masked boundary keeps the residual flow in an"
+                        " orthogonal n_inter mask space across all layers"
+                        " until the LM head absorbs n_inter."
+                    )
+                if islands_record.get(
                     "stronger_attackers_status",
                 ) == "implemented":
                     out.append("")

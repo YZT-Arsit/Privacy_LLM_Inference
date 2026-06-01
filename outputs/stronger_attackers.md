@@ -71,11 +71,11 @@ Simulated latency = Stage 5.2c per-forward op-counts plugged into the Stage 5.2c
 |---|---|
 | current_plain_boundary_detected | True |
 | affected_tensors | boundary_input, final |
-| accounting_risk_level | high |
+| accounting_risk_level | medium |
 | single_transition_probe_status | single_transition_probe_passed |
-| masked_boundary_experimental_status | default_plain_boundary_kept |
+| masked_boundary_experimental_status | implemented_in_stage_5_6_extension |
 | masked_boundary_experimental_default | off |
-| overall_inter_block_risk_level | high |
+| overall_inter_block_risk_level | medium |
 
 ## Single-Transition Masking Probe
 
@@ -92,6 +92,47 @@ Math-only verification that an orthogonal inter-block mask `N_inter` is absorbed
 | residual_recovery_allclose | True |
 
 _Note_: Single-transition probe: orthogonal N_inter applied to one block boundary; rmsnorm_core is invariant under N_inter and the folded Q-projection (w_q_tilde = N_inter^T @ (γ ⊙ w_q)) reproduces the plain Q exactly. The attacker view of the inter-block residual is x_tilde = x @ N_inter (orthogonal, information-theoretically equivalent under random-N_inter sampling but with the same caveats as Stage 6.4b).
+
+## Inter-Block Masking Mode
+
+| field | value |
+|---|---|
+| status | implemented |
+| masked_boundary_experimental_status | implemented |
+
+### Plain Boundary vs Masked Boundary Experimental
+
+| tensor | mode | risk | inter_block_plain | linear_rel_l2 | linkability_cosine |
+|---|---|---|---|---|---|
+| boundary_input | plain_boundary | high | True | 0.0313 | 1.0000 |
+| boundary_input | masked_boundary_experimental | low | False | 1.9040 | -0.0145 |
+| final | plain_boundary | high | True | 0.0132 | 1.0000 |
+| final | masked_boundary_experimental | low | False | 1.6114 | 0.0200 |
+
+### Boundary Input / Final Risk Before and After
+
+_Note_: Head-to-head: plain_boundary keeps boundary_input / final as inter_block_plain_recovered (structural high). Stage 5.6 extension's masked_boundary_experimental mode rotates the inter-block residual with a fresh orthogonal N_inter so those tensors join the masked tensor set and the attacker's linear / MLP / linkability proxies fail.
+
+## Constant-Time Decode Proxy
+
+| field | value |
+|---|---|
+| mode | proxy_equalized |
+| decode_step_accuracy_before | 0.7487 |
+| decode_step_accuracy_after | 0.2539 |
+| correlation_latency_step_before | 0.7899 |
+| correlation_latency_step_after | -0.0003 |
+| risk_level_before | high |
+| risk_level_after | low |
+| overhead_ms_estimate | 7.3667 |
+
+### Decode-Step Timing Leakage Before and After
+
+_Limitation_: proxy only — no real sleep, no real wall-time. The equalisation upper bound is the maximum simulated latency across (prompt_length × decode_step) bins per method; a real deployment would calibrate this from a production timing budget.
+
+### Overhead Proxy
+
+Mean per-step latency padding ≈ 7.367 ms (simulated). PROXY only — does not change real wall-time.
 
 ## Comparison with Stage 5.4 / 5.5 / 5.5b
 
@@ -113,7 +154,7 @@ Stage 5.4 — synthetic adaptive proxy. Stage 5.5 — real-activation (random hi
 | envelope_timing_risk_level | low |
 | structural_leakage_risk_level | high |
 | structural_timing_risk_level | high |
-| structural_inter_block_risk_level | high |
+| structural_inter_block_risk_level | medium |
 | overall_risk_level | high |
 
 > **Envelope-integrity risk** is what the mitigation envelope is responsible for: can mode / bundle / use_pad be distinguished from outputs or timing? If `low`, the envelope holds under black-box + timing proxy attacks.
@@ -123,11 +164,18 @@ Stage 5.4 — synthetic adaptive proxy. Stage 5.5 — real-activation (random hi
 ## Recommendation
 
 - `security_profile_detail_with_stronger_attackers = "adaptive-blackbox-and-timing-proxy-evaluated, not formal"`
+- `security_profile_detail_with_extended_proxy = "inter-block-and-constant-time-proxy-evaluated, not formal"`
+- `extended_proxy_eligibility = "yes"`
+- `overall_recommendation = "acceptable_with_mitigation_under_extended_proxy"`
 - `promotion_eligibility_note = "yes — envelope-integrity risk is `low` (modes / bundles are statistically indistinguishable from API output AND from timing). Eligible to label `adaptive-blackbox-and-timing-proxy-evaluated, not formal`. Structural leakage (decode step, prompt length, inter-block plain boundary) is reported separately and is acknowledged as a known limitation of the current model wrapper, not a failure of the mitigation envelope."`
-- `inter_block_residual_masking_recommendation = "Single-transition probe verified the orthogonal inter-block mask path is numerically correct. Full model-level masked_boundary_experimental mode is `not_implemented_in_stage_5_6` — deferred to Stage 5.6 extension or Stage 7.0."`
+- `inter_block_residual_masking_recommendation = "Stage 5.6 extension wires masked_boundary_experimental into the model-wrapper prefill / decode_step / greedy generation path. Default remains plain_boundary; the experimental mode is opt-in via inter_block_mask_mode='masked_boundary_experimental'."`
+- `constant_time_decode_recommendation = "constant_time_decode_mode='proxy_equalized' equalises per-step simulated latency to a per-method upper bound; PROXY ONLY (no sleep, no real wall-time change). Decode-step timing leakage is reduced under this proxy."`
+- `inter_block_mask_mode_used = "masked_boundary_experimental"`
+- `constant_time_decode_mode_used = "proxy_equalized"`
 - `default_mode_unchanged = "plain_boundary"`
 - `default_mitigation_bundle_unchanged = "fresh_perm_only"`
 - `default_nonlinear_mode_unchanged = "trusted"`
+- `default_constant_time_decode_mode_unchanged = "off"`
 
 **Promotion eligibility:** yes — envelope-integrity risk is `low` (modes / bundles are statistically indistinguishable from API output AND from timing). Eligible to label `adaptive-blackbox-and-timing-proxy-evaluated, not formal`. Structural leakage (decode step, prompt length, inter-block plain boundary) is reported separately and is acknowledged as a known limitation of the current model wrapper, not a failure of the mitigation envelope.
 

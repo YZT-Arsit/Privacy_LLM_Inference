@@ -139,6 +139,12 @@ class ModernDecoderKVCache:
     total_seq_len: int
     cache_type: str = "autoregressive_kv_cache"
     attention_variant: str = "unknown"   # mha / gqa / mqa
+    # Stage 5.6 extension — Inter-block residual mask reused across decode
+    # steps within one generation session. ``None`` when running in the
+    # default plain_boundary mode. Never published to JSON / Markdown.
+    inter_block_mask: torch.Tensor | None = None
+    inter_block_mask_inv: torch.Tensor | None = None
+    inter_block_mask_mode: str = "plain_boundary"
 
     def append_layer(
         self,
@@ -169,6 +175,12 @@ class ModernDecoderKVCache:
             "total_seq_len": int(self.total_seq_len),
             "num_layers": int(len(self.layers)),
             "layers": [l.summary_dict() for l in self.layers],
+            "inter_block_mask_mode": str(self.inter_block_mask_mode),
+            "inter_block_mask_present": self.inter_block_mask is not None,
+            "inter_block_mask_fingerprint": (
+                _fingerprint(self.inter_block_mask)
+                if self.inter_block_mask is not None else None
+            ),
         }
 
 

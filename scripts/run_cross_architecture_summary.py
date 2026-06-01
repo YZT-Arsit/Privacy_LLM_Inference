@@ -618,6 +618,35 @@ def _build_markdown(summary: dict) -> str:
                         "| security_profile_detail_with_real_token_activation |"
                         f" {detail} |"
                     )
+            ext_status = modern_row.get("extended_proxy_status")
+            if ext_status and ext_status != "not_yet":
+                out.append(
+                    f"| extended_proxy_status | {ext_status} |"
+                )
+                out.append(
+                    "| extended_proxy_artifact |"
+                    f" `{modern_row.get('extended_proxy_artifact')}` |"
+                )
+                out.append(
+                    "| inter_block_mask_mode_supported |"
+                    f" {modern_row.get('inter_block_mask_mode_supported')} |"
+                )
+                out.append(
+                    "| masked_boundary_experimental_status |"
+                    f" {modern_row.get('masked_boundary_experimental_status')} |"
+                )
+                out.append(
+                    "| constant_time_decode_proxy_status |"
+                    f" {modern_row.get('constant_time_decode_proxy_status')} |"
+                )
+                ext_detail = modern_row.get(
+                    "security_profile_detail_with_extended_proxy"
+                )
+                if ext_detail:
+                    out.append(
+                        "| security_profile_detail_with_extended_proxy |"
+                        f" {ext_detail} |"
+                    )
             sa_status = modern_row.get("stronger_attackers_status")
             if sa_status and sa_status != "not_yet":
                 out.append(
@@ -672,6 +701,30 @@ def _build_markdown(summary: dict) -> str:
                     " — this is a structural model-wrapper limitation, not a"
                     " Stage 5.5b attacker finding. Not formal security; not a"
                     " real TEE measurement."
+                )
+                out.append("")
+            if ext_status and ext_status != "not_yet":
+                out.append(
+                    "### Stage 5.6 Extension — Inter-Block Masked Boundary + Constant-Time Decode Proxy"
+                )
+                out.append("")
+                out.append(
+                    "Stage 5.6 extension wires `masked_boundary_experimental`"
+                    " through ObfuscatedModernDecoderModelWrapper so the"
+                    " inter-block residual stays in a fresh orthogonal"
+                    " `n_inter` mask space across all layers; the LM head"
+                    " absorbs `n_inter` and `boundary_input` / `final` join"
+                    " the masked tensor set. A `constant_time_decode_mode ="
+                    " \"proxy_equalized\"` lever in the timing proxy"
+                    " equalises per-step simulated latency to a per-method"
+                    " upper bound (PROXY only — no sleep, no real wall-time"
+                    " change). Defaults stay `plain_boundary` and `off`."
+                    " Both opt-in via CLI flags. Promotion eligibility:"
+                    " `security_profile_detail_with_extended_proxy ="
+                    " \"inter-block-and-constant-time-proxy-evaluated, not"
+                    " formal\"` when both modes are on and the envelope"
+                    " stays low-risk. Not formal security; not a real TEE"
+                    " measurement."
                 )
                 out.append("")
             if sa_status and sa_status != "not_yet":

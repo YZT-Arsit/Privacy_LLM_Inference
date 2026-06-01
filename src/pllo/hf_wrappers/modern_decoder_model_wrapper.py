@@ -75,6 +75,36 @@ from pllo.ops.nonlinear_islands import rmsnorm_core, run_swiglu_mlp_island
 
 
 # ---------------------------------------------------------------------------
+# Stage 5.6 extension — inter_block_mask_mode API
+# ---------------------------------------------------------------------------
+
+
+VALID_INTER_BLOCK_MASK_MODES: tuple[str, ...] = (
+    "plain_boundary",
+    "masked_boundary_experimental",
+)
+DEFAULT_INTER_BLOCK_MASK_MODE: str = "plain_boundary"
+
+
+def normalize_inter_block_mask_mode(mode: str | None) -> str:
+    """Validate / default an ``inter_block_mask_mode`` value.
+
+    ``None`` → ``"plain_boundary"`` (the Stage 6.4c default). Any other
+    string outside :data:`VALID_INTER_BLOCK_MASK_MODES` raises
+    ``ValueError`` — silent fallback is disallowed so callers can't
+    accidentally enable the experimental mode.
+    """
+    if mode is None:
+        return DEFAULT_INTER_BLOCK_MASK_MODE
+    if mode not in VALID_INTER_BLOCK_MASK_MODES:
+        raise ValueError(
+            f"invalid inter_block_mask_mode {mode!r}; must be one of"
+            f" {VALID_INTER_BLOCK_MASK_MODES}"
+        )
+    return mode
+
+
+# ---------------------------------------------------------------------------
 # Model-level weights container
 # ---------------------------------------------------------------------------
 
@@ -472,6 +502,7 @@ class ObfuscatedModernDecoderModelWrapper:
         nonlinear_mode: str = DEFAULT_NONLINEAR_MODE,
         mitigation_bundle: str = DEFAULT_MITIGATION_BUNDLE,
         collect_traces: bool = False,
+        inter_block_mask_mode: str | None = None,
     ) -> None:
         self.weights = weights
         self.dtype = dtype
@@ -480,6 +511,18 @@ class ObfuscatedModernDecoderModelWrapper:
         self.nonlinear_mode = normalize_nonlinear_mode(nonlinear_mode)
         self.mitigation_bundle = normalize_mitigation_bundle(mitigation_bundle)
         self.collect_traces = bool(collect_traces)
+        self.inter_block_mask_mode = normalize_inter_block_mask_mode(
+            inter_block_mask_mode,
+        )
+        if (
+            self.inter_block_mask_mode == "masked_boundary_experimental"
+            and self.nonlinear_mode != "compatible_islands"
+        ):
+            raise ValueError(
+                "inter_block_mask_mode='masked_boundary_experimental' requires"
+                " nonlinear_mode='compatible_islands'; got"
+                f" nonlinear_mode={self.nonlinear_mode!r}"
+            )
         self._desc = describe_mitigation_bundle(self.mitigation_bundle)
         self.num_layers = len(weights.layers)
         # Pre-build per-layer Stage 6.4b wrappers for ``full_forward`` ONLY.
@@ -549,26 +592,68 @@ class ObfuscatedModernDecoderModelWrapper:
 
         Returns ``(recovered_logits, report)``. ``report['allclose']``
         compares against a plain reference built from the extracted weights.
+
+        When ``inter_block_mask_mode == "masked_boundary_experimental"``
+        (Stage 5.6 extension), the inline masked path is used and the
+        inter-block residual stays in a fresh orthogonal ``n_inter`` mask
+        space across all layers; the LM head absorbs ``n_inter`` so the
+        recovered logits match the plain reference.
         """
         input_ids = input_ids.to(device=self.device)
         plain_logits = plain_model_forward(input_ids, self.weights)
-        x = self._embed(input_ids)
         per_layer_reports: list[dict[str, Any]] = []
-        for blk in self.block_wrappers:
-            y, blk_report = blk.forward(x)
-            x = y
-            per_layer_reports.append({
-                "layer_index": int(blk_report.get("nonlinear_mode") and len(per_layer_reports)),
-                "allclose": blk_report["allclose"],
-                "max_abs_error": blk_report["max_abs_error"],
-                "rmsnorm_status": blk_report["rmsnorm_status"],
-                "rope_attention_status": blk_report["rope_attention_status"],
-                "swiglu_status": blk_report["swiglu_status"],
-            })
-        x_norm = _rmsnorm_with_gamma(
-            x, self.weights.final_norm_weight, self.weights.final_norm_eps,
-        )
-        recovered_logits, lm_head_info = self._lm_head_obfuscated(x_norm)
+        if self.inter_block_mask_mode == "masked_boundary_experimental":
+            n_inter, n_inter_inv = self._sample_inter_block_mask(
+                dtype=self.dtype, device=self.device,
+            )
+            x_plain = self._embed(input_ids)
+            x_tilde = x_plain @ n_inter
+            for idx, weights in enumerate(self.weights.layers):
+                h_mid_tilde, _dbg, attn_info = self._masked_attention_block(
+                    x_tilde, weights,
+                    n_inter=n_inter, n_inter_inv=n_inter_inv,
+                    position_offset=0, layer_cache=None,
+                    initialise_cache=True,
+                )
+                x_out_tilde, mlp_info = self._masked_mlp_block(
+                    h_mid_tilde, weights,
+                    n_inter=n_inter, n_inter_inv=n_inter_inv,
+                )
+                per_layer_reports.append({
+                    "layer_index": idx,
+                    "attention_status": attn_info["attention_status"],
+                    "swiglu_status": mlp_info["swiglu_status"],
+                    "residual_add_mask_status": attn_info[
+                        "residual_add_mask_status"
+                    ],
+                })
+                x_tilde = x_out_tilde
+            recovered_logits, lm_head_info = self._lm_head_masked_boundary(
+                x_tilde, n_inter=n_inter, n_inter_inv=n_inter_inv,
+            )
+            final_norm_status = lm_head_info["final_mask_status"]
+        else:
+            x = self._embed(input_ids)
+            for blk in self.block_wrappers:
+                y, blk_report = blk.forward(x)
+                x = y
+                per_layer_reports.append({
+                    "layer_index": int(blk_report.get("nonlinear_mode") and len(per_layer_reports)),
+                    "allclose": blk_report["allclose"],
+                    "max_abs_error": blk_report["max_abs_error"],
+                    "rmsnorm_status": blk_report["rmsnorm_status"],
+                    "rope_attention_status": blk_report["rope_attention_status"],
+                    "swiglu_status": blk_report["swiglu_status"],
+                })
+            x_norm = _rmsnorm_with_gamma(
+                x, self.weights.final_norm_weight, self.weights.final_norm_eps,
+            )
+            recovered_logits, lm_head_info = self._lm_head_obfuscated(x_norm)
+            final_norm_status = (
+                "trusted_shortcut"
+                if self.nonlinear_mode == "trusted"
+                else "trusted_final_rmsnorm"
+            )
         m = _allclose_metrics(plain_logits, recovered_logits, self.dtype)
         m["top1_match_rate"] = float(
             (plain_logits.argmax(dim=-1) == recovered_logits.argmax(dim=-1))
@@ -588,11 +673,7 @@ class ObfuscatedModernDecoderModelWrapper:
             "vocab_size": int(self.weights.vocab_size),
             "logits_metrics": m,
             "per_layer_reports": per_layer_reports,
-            "final_norm_status": (
-                "trusted_shortcut"
-                if self.nonlinear_mode == "trusted"
-                else "trusted_final_rmsnorm"
-            ),
+            "final_norm_status": final_norm_status,
             "lm_head_status": lm_head_info["lm_head_status"],
             "online_extra_matmul_count": 0,
             "mitigation_bundle_metadata": bundle_meta,
@@ -601,6 +682,16 @@ class ObfuscatedModernDecoderModelWrapper:
             "default_on_candidate_under_stage_5_4": bundle_meta[
                 "default_on_candidate_under_stage_5_4"
             ],
+            "inter_block_mask_mode": self.inter_block_mask_mode,
+            "inter_block_plain_recovered": (
+                self.inter_block_mask_mode == "plain_boundary"
+            ),
+            "boundary_mask_status": (
+                "masked"
+                if self.inter_block_mask_mode == "masked_boundary_experimental"
+                else "plain"
+            ),
+            "final_mask_status": final_norm_status,
             "caveats": [
                 "Model-level integration; not a real TEE deployment.",
                 "Real wall-time is not measured.",
@@ -912,6 +1003,315 @@ class ObfuscatedModernDecoderModelWrapper:
             "swiglu_status": "compatible_island_paired_permutation",
         }
 
+    # -------------------------------------------------- masked_boundary helpers (Stage 5.6 extension)
+    def _sample_inter_block_mask(
+        self, *, dtype: torch.dtype, device: torch.device,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Sample a fresh orthogonal inter-block residual mask N_inter."""
+        H = self.weights.hidden_size
+        n_inter = generate_orthogonal(H, dtype, device)
+        # Orthogonal ⇒ inverse == transpose (exact, no `linalg.inv` cost).
+        return n_inter, n_inter.transpose(-2, -1).contiguous()
+
+    def _masked_attention_block(
+        self,
+        x_tilde: torch.Tensor,
+        weights: ModernDecoderBlockWeights,
+        *,
+        n_inter: torch.Tensor,
+        n_inter_inv: torch.Tensor,
+        position_offset: int,
+        layer_cache: ModernDecoderLayerKVCache | None,
+        initialise_cache: bool,
+        traces_acc: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, Any]]:
+        """Masked-boundary attention path.
+
+        Input ``x_tilde = x_plain @ n_inter`` (orthogonal); output
+        ``h_mid_tilde = h_mid_plain @ n_inter`` — i.e. the layer's
+        residual flow stays in ``n_inter`` mask space throughout. Per-head
+        QKV masks (``N_K`` / ``N_V``) are reused from the Stage 6.4c
+        prefill / decode logic and are stored in ``layer_cache``.
+        """
+        B, S_new, H = x_tilde.shape
+        head_dim = weights.head_dim
+        num_q = weights.num_attention_heads
+        num_kv = weights.num_key_value_heads
+        group = num_q // num_kv
+        device = x_tilde.device
+        dtype = x_tilde.dtype
+
+        # rmsnorm_core is orthogonal-invariant: rmsnorm_core(x_tilde) =
+        # rmsnorm_core(x_plain) @ n_inter.
+        h1_core_tilde = rmsnorm_core(x_tilde, eps=weights.input_norm_eps)
+        # Fold γ_input into q/k/v AND absorb n_inter.T on the input side.
+        gamma_in = weights.input_norm_weight.unsqueeze(-1)
+        w_q_tilde = n_inter_inv @ (gamma_in * weights.w_q)
+        w_k_tilde = n_inter_inv @ (gamma_in * weights.w_k)
+        w_v_tilde = n_inter_inv @ (gamma_in * weights.w_v)
+        q_plain = h1_core_tilde @ w_q_tilde
+        if weights.b_q is not None:
+            q_plain = q_plain + weights.b_q
+        k_plain = h1_core_tilde @ w_k_tilde
+        if weights.b_k is not None:
+            k_plain = k_plain + weights.b_k
+        v_plain = h1_core_tilde @ w_v_tilde
+        if weights.b_v is not None:
+            v_plain = v_plain + weights.b_v
+
+        q = _reshape_heads(q_plain, num_q, head_dim)
+        k = _reshape_heads(k_plain, num_kv, head_dim)
+        v = _reshape_heads(v_plain, num_kv, head_dim)
+        q_rope = _apply_rope_at(
+            q, position_offset=position_offset, base=weights.rope_base,
+        )
+        k_rope = _apply_rope_at(
+            k, position_offset=position_offset, base=weights.rope_base,
+        )
+
+        # Per-kv-head N_K / N_V — same logic as plain-boundary compatible
+        # inline path: sample fresh on prefill, reuse on decode.
+        if initialise_cache:
+            N_K_list, N_K_inv_list = [], []
+            N_V_list, N_V_inv_list = [], []
+            for _ in range(num_kv):
+                nk, nki = generate_invertible_matrix(head_dim, dtype, device)
+                nv, nvi = generate_invertible_matrix(head_dim, dtype, device)
+                N_K_list.append(nk); N_K_inv_list.append(nki)
+                N_V_list.append(nv); N_V_inv_list.append(nvi)
+            N_K_stack = torch.stack(N_K_list, dim=0)
+            N_V_stack = torch.stack(N_V_list, dim=0)
+            N_V_inv_stack = torch.stack(N_V_inv_list, dim=0)
+            if layer_cache is not None:
+                layer_cache.n_k_stack = N_K_stack
+                layer_cache.n_v_stack = N_V_stack
+                layer_cache.n_v_inv_stack = N_V_inv_stack
+        else:
+            assert layer_cache is not None
+            N_K_stack = layer_cache.n_k_stack
+            N_V_stack = layer_cache.n_v_stack
+            N_V_inv_stack = layer_cache.n_v_inv_stack
+        N_Q_per_q = torch.stack(
+            [
+                torch.linalg.inv(N_K_stack[i // group].to(torch.float64))
+                .to(dtype).transpose(-2, -1)
+                for i in range(num_q)
+            ], dim=0,
+        )
+        q_tilde_head = q_rope @ N_Q_per_q.unsqueeze(0)
+        k_tilde_new = k_rope @ N_K_stack.unsqueeze(0)
+        v_tilde_new = v @ N_V_stack.unsqueeze(0)
+        if layer_cache is not None and layer_cache.seq_len > 0:
+            k_tilde_total = torch.cat([layer_cache.key_tilde, k_tilde_new], dim=-2)
+            v_tilde_total = torch.cat([layer_cache.value_tilde, v_tilde_new], dim=-2)
+        else:
+            k_tilde_total = k_tilde_new
+            v_tilde_total = v_tilde_new
+        k_tilde_rep = repeat_kv(k_tilde_total, group)
+        v_tilde_rep = repeat_kv(v_tilde_total, group)
+        N_V_inv_per_q = torch.stack(
+            [N_V_inv_stack[i // group] for i in range(num_q)], dim=0,
+        )
+        S_total = k_tilde_total.shape[-2]
+        scores = (
+            q_tilde_head @ k_tilde_rep.transpose(-2, -1) / math.sqrt(head_dim)
+        )
+        neg_inf = torch.finfo(scores.dtype).min
+        q_idx = (
+            torch.arange(S_new, device=device).unsqueeze(-1) + position_offset
+        )
+        k_idx = torch.arange(S_total, device=device).unsqueeze(0)
+        causal = torch.where(
+            k_idx > q_idx,
+            torch.full((S_new, S_total), neg_inf, dtype=dtype, device=device),
+            torch.zeros(S_new, S_total, dtype=dtype, device=device),
+        )
+        scores = scores + causal
+        probs = F.softmax(scores, dim=-1)
+        av_tilde = probs @ v_tilde_rep
+        av_recovered = av_tilde @ N_V_inv_per_q.unsqueeze(0)
+        attn_merged_plain = _merge_heads(av_recovered)
+        # Absorb n_inter into w_o so attn_out is produced directly in
+        # n_inter mask space (no trusted-side re-masking pass needed).
+        w_o_tilde = weights.w_o @ n_inter
+        attn_out_tilde = attn_merged_plain @ w_o_tilde
+        if weights.b_o is not None:
+            attn_out_tilde = attn_out_tilde + weights.b_o @ n_inter
+        h_mid_tilde = x_tilde + attn_out_tilde
+        if traces_acc is not None:
+            # boundary_input visible = x_tilde (masked); plain = x_tilde @ n_inter.T.
+            traces_acc.update(
+                {
+                    "boundary_input_plain": (x_tilde @ n_inter_inv).detach(),
+                    "boundary_input_visible": x_tilde.detach(),
+                    "q_plain": q_rope.detach(),
+                    "q_visible": q_tilde_head.detach(),
+                    "k_plain": k_rope.detach(),
+                    "k_visible": k_tilde_new.detach(),
+                    "v_plain": v.detach(),
+                    "v_visible": v_tilde_new.detach(),
+                }
+            )
+        return (
+            h_mid_tilde,
+            {
+                "k_tilde_new": k_tilde_new,
+                "v_tilde_new": v_tilde_new,
+                "k_plain_new": k_rope,
+                "v_plain_new": v,
+                "q_rope_plain": q_rope,
+            },
+            {
+                "attention_status": "masked_boundary_rope_post_mask",
+                "gqa_status": "per_kv_head_mask_with_repeat_kv",
+                "residual_add_mask_status": "in_n_inter_space",
+            },
+        )
+
+    def _masked_mlp_block(
+        self,
+        h_mid_tilde: torch.Tensor,
+        weights: ModernDecoderBlockWeights,
+        *,
+        n_inter: torch.Tensor,
+        n_inter_inv: torch.Tensor,
+        traces_acc: dict[str, torch.Tensor] | None = None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Masked-boundary MLP path.
+
+        Input ``h_mid_tilde = h_mid_plain @ n_inter``; output
+        ``x_out_tilde = (h_mid_plain + mlp_out_plain) @ n_inter``.
+        """
+        B, S_new, H = h_mid_tilde.shape
+        dtype = h_mid_tilde.dtype
+        device = h_mid_tilde.device
+
+        # rmsnorm_core preserves the orthogonal n_inter mask.
+        h2_core_tilde = rmsnorm_core(
+            h_mid_tilde, eps=weights.post_attention_norm_eps,
+        )
+        gamma_post = weights.post_attention_norm_weight.unsqueeze(-1)
+        w_gate_folded_with_inter = n_inter_inv @ (gamma_post * weights.w_gate)
+        w_up_folded_with_inter = n_inter_inv @ (gamma_post * weights.w_up)
+
+        # The SwiGLU island absorbs (γ ⊙ N_inter.T) on its input side; its
+        # own per-call N_in / N_out masks are fresh and independent.
+        n_in_island, n_in_island_inv = generate_invertible_matrix(H, dtype, device)
+        n_out_island, n_out_island_inv = generate_invertible_matrix(H, dtype, device)
+        perm = generate_permutation(
+            weights.intermediate_size, dtype=dtype, device=device,
+        )["perm"]
+        pad_in = None
+        if self.use_pad:
+            pad_in = torch.randn(
+                h2_core_tilde.reshape(-1, H).shape, dtype=dtype, device=device,
+            )
+        island = run_swiglu_mlp_island(
+            x=h2_core_tilde.reshape(-1, H),
+            w_up=w_up_folded_with_inter, b_up=weights.b_up,
+            w_gate=w_gate_folded_with_inter, b_gate=weights.b_gate,
+            w_down=weights.w_down, b_down=weights.b_down,
+            n_in=n_in_island, n_in_inv=n_in_island_inv,
+            permutation=perm,
+            n_out=n_out_island,
+            pad_in=pad_in,
+            mitigation_bundle=self.mitigation_bundle,
+        )
+        mlp_out_island_tilde = island["y_tilde"].reshape(B, S_new, H)
+        # Recover the island then re-mask into n_inter space for the residual.
+        mlp_out_plain = mlp_out_island_tilde @ n_out_island_inv
+        mlp_out_tilde = mlp_out_plain @ n_inter
+        x_out_tilde = h_mid_tilde + mlp_out_tilde
+        if traces_acc is not None:
+            # h2_plain with γ folded (for honest plain reference of gate/up).
+            h2_core_plain = h2_core_tilde @ n_inter_inv
+            h2_plain = h2_core_plain * weights.post_attention_norm_weight
+            gate_plain = h2_plain @ weights.w_gate
+            if weights.b_gate is not None:
+                gate_plain = gate_plain + weights.b_gate
+            up_plain = h2_plain @ weights.w_up
+            if weights.b_up is not None:
+                up_plain = up_plain + weights.b_up
+            gate_visible = gate_plain.index_select(dim=-1, index=perm)
+            up_visible = up_plain.index_select(dim=-1, index=perm)
+            g_plain = F.silu(gate_plain) * up_plain
+            g_visible = island["g_tilde"].reshape(
+                B, S_new, weights.intermediate_size,
+            )
+            traces_acc.update(
+                {
+                    "gate_plain": gate_plain.detach(),
+                    "gate_visible": gate_visible.detach(),
+                    "up_plain": up_plain.detach(),
+                    "up_visible": up_visible.detach(),
+                    "swiglu_intermediate_plain": g_plain.detach(),
+                    "swiglu_intermediate_visible": g_visible.detach(),
+                    "post_island_plain": mlp_out_plain.detach(),
+                    "post_island_visible": mlp_out_island_tilde.detach(),
+                    # ``final`` is the layer's masked output — never plain
+                    # under masked_boundary_experimental.
+                    "final_plain": (x_out_tilde @ n_inter_inv).detach(),
+                    "final_visible": x_out_tilde.detach(),
+                }
+            )
+        return x_out_tilde, {
+            "swiglu_status": "compatible_island_with_n_inter_absorbed",
+            "residual_add_mask_status": "in_n_inter_space",
+        }
+
+    def _lm_head_masked_boundary(
+        self,
+        x_final_tilde: torch.Tensor,
+        *,
+        n_inter: torch.Tensor,
+        n_inter_inv: torch.Tensor,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
+        """Final RMSNorm + LM head with n_inter absorbed (Stage 5.6 ext).
+
+        ``x_final_tilde = x_final_plain @ n_inter`` is the masked output of
+        the last block. The final-norm γ and ``n_inter`` are both folded
+        into the LM head weight; a fresh ``N_vocab_lm`` masks the logits
+        on top so the vocab-side surface matches the Stage 6.4c LM head.
+        """
+        W = self.weights.lm_head_weight
+        b = self.weights.lm_head_bias
+        V = W.shape[1]
+        # rmsnorm_core(x_final_tilde) preserves the n_inter mask.
+        x_final_core_tilde = rmsnorm_core(
+            x_final_tilde, eps=self.weights.final_norm_eps,
+        )
+        # Fold γ_final + n_inter into the LM-head input side.
+        gamma_final = self.weights.final_norm_weight.unsqueeze(-1)
+        # Optional N_vocab_lm on the output side.
+        n_vocab, n_vocab_inv = generate_invertible_matrix(
+            V, dtype=x_final_tilde.dtype, device=x_final_tilde.device,
+        )
+        w_lm_tilde = n_inter_inv @ (gamma_final * W) @ n_vocab
+        logits_tilde = x_final_core_tilde @ w_lm_tilde
+        if b is not None:
+            logits_tilde = logits_tilde + b @ n_vocab
+        logits_recovered = logits_tilde @ n_vocab_inv
+        return logits_recovered, {
+            "lm_head_status": "masked_boundary_lm_head_with_n_inter_and_n_vocab",
+            "final_mask_status": "masked_until_lm_head",
+        }
+
+    def _full_forward_masked(
+        self, input_ids: torch.Tensor,
+    ) -> tuple[torch.Tensor, dict[str, Any], list[dict[str, torch.Tensor]] | None]:
+        """End-to-end masked_boundary_experimental forward.
+
+        Used by full_forward / prefill / decode_step when
+        ``inter_block_mask_mode == "masked_boundary_experimental"``. Caller
+        controls KV-cache reuse via the ``layer_caches`` argument on
+        ``prefill`` / ``decode_step``.
+        """
+        # NOTE: this helper is the BARE forward path; ``prefill`` /
+        # ``decode_step`` wrap it with their own cache plumbing.
+        raise NotImplementedError(
+            "use prefill/decode_step/full_forward instead"
+        )
+
     # -------------------------------------------------- prefill
     def prefill(
         self, input_ids: torch.Tensor, *, return_traces: bool = False,
@@ -931,7 +1331,6 @@ class ObfuscatedModernDecoderModelWrapper:
         plain_logits = plain["logits"]
         plain_layer_caches = plain["layer_caches"]
 
-        x = self._embed(input_ids)
         # Allocate empty cache shell with the per-layer mask material.
         cache = init_empty_modern_decoder_kv_cache(
             num_layers=self.num_layers,
@@ -941,39 +1340,77 @@ class ObfuscatedModernDecoderModelWrapper:
             attention_variant=self._attention_variant(),
             dtype=self.dtype, device=self.device,
         )
+        cache.inter_block_mask_mode = self.inter_block_mask_mode
         per_layer_traces: list[dict[str, torch.Tensor]] | None = (
             [] if return_traces else None
         )
-        for idx, weights in enumerate(self.weights.layers):
-            layer_cache = cache.layers[idx]
-            traces_acc: dict[str, torch.Tensor] | None = (
-                {} if return_traces else None
+        if self.inter_block_mask_mode == "masked_boundary_experimental":
+            # Sample a fresh inter-block mask for this session and cache it.
+            n_inter, n_inter_inv = self._sample_inter_block_mask(
+                dtype=self.dtype, device=self.device,
             )
-            h_mid, dbg, attn_info = self._attention_inline(
-                x, weights,
-                position_offset=0,
-                layer_cache=layer_cache,
-                initialise_cache=True,
-                traces_acc=traces_acc,
+            cache.inter_block_mask = n_inter
+            cache.inter_block_mask_inv = n_inter_inv
+            x_plain = self._embed(input_ids)
+            x_tilde = x_plain @ n_inter
+            for idx, weights in enumerate(self.weights.layers):
+                layer_cache = cache.layers[idx]
+                traces_acc: dict[str, torch.Tensor] | None = (
+                    {} if return_traces else None
+                )
+                h_mid_tilde, dbg, attn_info = self._masked_attention_block(
+                    x_tilde, weights,
+                    n_inter=n_inter, n_inter_inv=n_inter_inv,
+                    position_offset=0, layer_cache=layer_cache,
+                    initialise_cache=True,
+                    traces_acc=traces_acc,
+                )
+                layer_cache.key_tilde = dbg["k_tilde_new"]
+                layer_cache.value_tilde = dbg["v_tilde_new"]
+                layer_cache.seq_len = int(dbg["k_tilde_new"].shape[-2])
+                layer_cache.cache_status = "filled_after_prefill"
+                x_out_tilde, mlp_info = self._masked_mlp_block(
+                    h_mid_tilde, weights,
+                    n_inter=n_inter, n_inter_inv=n_inter_inv,
+                    traces_acc=traces_acc,
+                )
+                if per_layer_traces is not None and traces_acc is not None:
+                    traces_acc["layer_index"] = idx
+                    per_layer_traces.append(traces_acc)
+                x_tilde = x_out_tilde
+            recovered_logits, lm_head_info = self._lm_head_masked_boundary(
+                x_tilde, n_inter=n_inter, n_inter_inv=n_inter_inv,
             )
-            # Append to layer cache (one-shot for prefill).
-            layer_cache.key_tilde = dbg["k_tilde_new"]
-            layer_cache.value_tilde = dbg["v_tilde_new"]
-            layer_cache.seq_len = int(dbg["k_tilde_new"].shape[-2])
-            layer_cache.cache_status = "filled_after_prefill"
-            x_layer_out, mlp_info = self._mlp_inline(
-                h_mid, weights, traces_acc=traces_acc,
+        else:
+            x = self._embed(input_ids)
+            for idx, weights in enumerate(self.weights.layers):
+                layer_cache = cache.layers[idx]
+                traces_acc = ({} if return_traces else None)
+                h_mid, dbg, attn_info = self._attention_inline(
+                    x, weights,
+                    position_offset=0,
+                    layer_cache=layer_cache,
+                    initialise_cache=True,
+                    traces_acc=traces_acc,
+                )
+                # Append to layer cache (one-shot for prefill).
+                layer_cache.key_tilde = dbg["k_tilde_new"]
+                layer_cache.value_tilde = dbg["v_tilde_new"]
+                layer_cache.seq_len = int(dbg["k_tilde_new"].shape[-2])
+                layer_cache.cache_status = "filled_after_prefill"
+                x_layer_out, mlp_info = self._mlp_inline(
+                    h_mid, weights, traces_acc=traces_acc,
+                )
+                if per_layer_traces is not None and traces_acc is not None:
+                    traces_acc["layer_index"] = idx
+                    per_layer_traces.append(traces_acc)
+                x = x_layer_out
+            x_norm = _rmsnorm_with_gamma(
+                x, self.weights.final_norm_weight, self.weights.final_norm_eps,
             )
-            if per_layer_traces is not None and traces_acc is not None:
-                traces_acc["layer_index"] = idx  # int sentinel
-                per_layer_traces.append(traces_acc)
-            x = x_layer_out
+            recovered_logits, lm_head_info = self._lm_head_obfuscated(x_norm)
         cache.total_seq_len = int(S)
 
-        x_norm = _rmsnorm_with_gamma(
-            x, self.weights.final_norm_weight, self.weights.final_norm_eps,
-        )
-        recovered_logits, lm_head_info = self._lm_head_obfuscated(x_norm)
         metrics = _allclose_metrics(plain_logits, recovered_logits, self.dtype)
         metrics["top1_match_rate"] = float(
             (plain_logits.argmax(dim=-1) == recovered_logits.argmax(dim=-1))
@@ -989,6 +1426,24 @@ class ObfuscatedModernDecoderModelWrapper:
             "cache_summary": cache.summary_dict(),
             "lm_head_status": lm_head_info["lm_head_status"],
             "online_extra_matmul_count": 0,
+            "inter_block_mask_mode": self.inter_block_mask_mode,
+            "inter_block_plain_recovered": (
+                self.inter_block_mask_mode == "plain_boundary"
+            ),
+            "boundary_mask_status": (
+                "masked"
+                if self.inter_block_mask_mode == "masked_boundary_experimental"
+                else "plain"
+            ),
+            "final_mask_status": (
+                lm_head_info.get("final_mask_status", "trusted_final_rmsnorm")
+                if self.inter_block_mask_mode == "masked_boundary_experimental"
+                else (
+                    "trusted_shortcut"
+                    if self.nonlinear_mode == "trusted"
+                    else "trusted_final_rmsnorm"
+                )
+            ),
             "caveats": [
                 "Prefill is recoverable to plain; no real TEE isolation.",
                 "Not formal security.",
@@ -1037,39 +1492,73 @@ class ObfuscatedModernDecoderModelWrapper:
             plain_logits = None
             plain_updated_caches = None
 
-        x = self._embed(next_ids)
         per_layer_traces: list[dict[str, torch.Tensor]] | None = (
             [] if return_traces else None
         )
-        for idx, weights in enumerate(self.weights.layers):
-            layer_cache = kv_cache.layers[idx]
-            traces_acc: dict[str, torch.Tensor] | None = (
-                {} if return_traces else None
+        if (
+            self.inter_block_mask_mode == "masked_boundary_experimental"
+            and kv_cache.inter_block_mask is not None
+        ):
+            n_inter = kv_cache.inter_block_mask
+            n_inter_inv = kv_cache.inter_block_mask_inv
+            x_plain = self._embed(next_ids)
+            x_tilde = x_plain @ n_inter
+            for idx, weights in enumerate(self.weights.layers):
+                layer_cache = kv_cache.layers[idx]
+                traces_acc = ({} if return_traces else None)
+                h_mid_tilde, dbg, attn_info = self._masked_attention_block(
+                    x_tilde, weights,
+                    n_inter=n_inter, n_inter_inv=n_inter_inv,
+                    position_offset=position,
+                    layer_cache=layer_cache,
+                    initialise_cache=False,
+                    traces_acc=traces_acc,
+                )
+                kv_cache.append_layer(
+                    idx, dbg["k_tilde_new"], dbg["v_tilde_new"],
+                )
+                x_out_tilde, mlp_info = self._masked_mlp_block(
+                    h_mid_tilde, weights,
+                    n_inter=n_inter, n_inter_inv=n_inter_inv,
+                    traces_acc=traces_acc,
+                )
+                if per_layer_traces is not None and traces_acc is not None:
+                    traces_acc["layer_index"] = idx
+                    per_layer_traces.append(traces_acc)
+                x_tilde = x_out_tilde
+            kv_cache.bump_seq_len(S_new)
+            recovered_logits, lm_head_info = self._lm_head_masked_boundary(
+                x_tilde, n_inter=n_inter, n_inter_inv=n_inter_inv,
             )
-            h_mid, dbg, attn_info = self._attention_inline(
-                x, weights,
-                position_offset=position,
-                layer_cache=layer_cache,
-                initialise_cache=False,
-                traces_acc=traces_acc,
-            )
-            kv_cache.append_layer(
-                idx,
-                dbg["k_tilde_new"], dbg["v_tilde_new"],
-            )
-            x_out, mlp_info = self._mlp_inline(
-                h_mid, weights, traces_acc=traces_acc,
-            )
-            if per_layer_traces is not None and traces_acc is not None:
-                traces_acc["layer_index"] = idx
-                per_layer_traces.append(traces_acc)
-            x = x_out
-        kv_cache.bump_seq_len(S_new)
+        else:
+            x = self._embed(next_ids)
+            for idx, weights in enumerate(self.weights.layers):
+                layer_cache = kv_cache.layers[idx]
+                traces_acc = ({} if return_traces else None)
+                h_mid, dbg, attn_info = self._attention_inline(
+                    x, weights,
+                    position_offset=position,
+                    layer_cache=layer_cache,
+                    initialise_cache=False,
+                    traces_acc=traces_acc,
+                )
+                kv_cache.append_layer(
+                    idx,
+                    dbg["k_tilde_new"], dbg["v_tilde_new"],
+                )
+                x_out, mlp_info = self._mlp_inline(
+                    h_mid, weights, traces_acc=traces_acc,
+                )
+                if per_layer_traces is not None and traces_acc is not None:
+                    traces_acc["layer_index"] = idx
+                    per_layer_traces.append(traces_acc)
+                x = x_out
+            kv_cache.bump_seq_len(S_new)
 
-        x_norm = _rmsnorm_with_gamma(
-            x, self.weights.final_norm_weight, self.weights.final_norm_eps,
-        )
-        recovered_logits, lm_head_info = self._lm_head_obfuscated(x_norm)
+            x_norm = _rmsnorm_with_gamma(
+                x, self.weights.final_norm_weight, self.weights.final_norm_eps,
+            )
+            recovered_logits, lm_head_info = self._lm_head_obfuscated(x_norm)
         if plain_logits is not None:
             metrics = _allclose_metrics(plain_logits, recovered_logits, self.dtype)
             metrics["top1_match_rate"] = float(
@@ -1091,6 +1580,24 @@ class ObfuscatedModernDecoderModelWrapper:
             "rope_position_increment": True,
             "rope_position_used": int(position),
             "online_extra_matmul_count": 0,
+            "inter_block_mask_mode": self.inter_block_mask_mode,
+            "inter_block_plain_recovered": (
+                self.inter_block_mask_mode == "plain_boundary"
+            ),
+            "boundary_mask_status": (
+                "masked"
+                if self.inter_block_mask_mode == "masked_boundary_experimental"
+                else "plain"
+            ),
+            "final_mask_status": (
+                lm_head_info.get("final_mask_status", "trusted_final_rmsnorm")
+                if self.inter_block_mask_mode == "masked_boundary_experimental"
+                else (
+                    "trusted_shortcut"
+                    if self.nonlinear_mode == "trusted"
+                    else "trusted_final_rmsnorm"
+                )
+            ),
             "caveats": [
                 "Decode is recoverable to plain; no real TEE isolation.",
                 "Not formal security.",

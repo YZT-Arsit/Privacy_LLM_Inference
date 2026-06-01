@@ -58,14 +58,16 @@ def test_masked_boundary_experimental_default_off(report) -> None:
     assert report["masked_boundary_experimental_default"] == "off"
 
 
-def test_masked_boundary_experimental_explicit_request_is_not_implemented() -> None:
-    """When the user explicitly requests masked_boundary_experimental, the
-    probe must return ``not_implemented_in_stage_5_6`` rather than silently
-    passing."""
+def test_masked_boundary_experimental_explicit_request_is_implemented() -> None:
+    """Stage 5.6 extension wires masked_boundary_experimental into the
+    model-wrapper level; the probe surfaces that via
+    ``implemented_in_stage_5_6_extension``."""
     r = run_inter_block_masking_probe(
         _cfg(inter_block_mask_mode="masked_boundary_experimental")
     )
-    assert r["masked_boundary_experimental_status"] == "not_implemented_in_stage_5_6"
+    assert r["masked_boundary_experimental_status"] == (
+        "implemented_in_stage_5_6_extension"
+    )
 
 
 def test_no_secret_mask_in_output(report) -> None:

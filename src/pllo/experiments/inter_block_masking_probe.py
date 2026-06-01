@@ -269,20 +269,19 @@ def _model_level_experimental_status(
     if config.inter_block_mask_mode == "masked_boundary_experimental":
         return {
             "requested_mode": "masked_boundary_experimental",
-            "status": "not_implemented_in_stage_5_6",
+            # Stage 5.6 extension implements the full model-wrapper-level
+            # masked_boundary_experimental path (full_forward / prefill /
+            # decode_step / greedy_generate); the probe surfaces that via
+            # this status. The single-transition probe below is now a
+            # supporting math reference, not the only available evidence.
+            "status": "implemented_in_stage_5_6_extension",
             "reason": (
-                "Stage 5.6 ships the single-transition probe (math + a"
-                " synthetic numerical check). A full model-level masked"
-                " inter-block residual path needs the ObfuscatedModernDecoderModelWrapper's"
-                " attention path to ALSO consume x_tilde directly (i.e."
-                " input mask absorbed by the q/k/v fold AND by the residual"
-                " add) instead of recovering h_mid to plain between blocks."
-                " That change is non-trivial because the residual add must"
-                " stay invariant under the SAME N_inter and the LM head"
-                " must absorb the final N_inter — it is deferred so Stage"
-                " 5.6's correctness path is unchanged."
+                "Stage 5.6 extension wires masked_boundary_experimental"
+                " through ObfuscatedModernDecoderModelWrapper. Inter-block"
+                " residual stays in a fresh orthogonal n_inter mask space"
+                " across all layers; the LM head absorbs n_inter so the"
+                " recovered logits match the plain reference."
             ),
-            "deferred_to": "stage_5_6_extension_or_stage_7_0",
             "default_mode_unchanged": "plain_boundary",
         }
     if config.attempt_model_level_experimental:

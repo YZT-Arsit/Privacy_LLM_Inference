@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `1.512e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `1.789e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 2.932 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 43.914 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 6.143 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 43.622 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 43.688 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 43.622 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 2.478 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 37.785 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 6.350 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 37.516 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 37.581 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 37.516 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -196,11 +196,18 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - `security_profile_detail_with_real_activation = "real-activation-adaptive-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
 - This is NOT a real TEE measurement, NOT formal security, and NOT a black-box query attack. `implemented` / `full_runtime_integrated` / `wall_time_source` are unchanged.
 
+### Stage 5.6 Extension — Inter-Block Masked Boundary + Constant-Time Decode Proxy
+
+- `inter_block_mask_mode_supported = True`, `masked_boundary_experimental_status = "implemented"`, `constant_time_decode_proxy_status = "implemented"`.
+- `extended_proxy_status = "implemented"`, `extended_proxy_artifact = "outputs/stronger_attackers.json"`.
+- `security_profile_detail_with_extended_proxy = "inter-block-and-constant-time-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
+- Defaults unchanged: `inter_block_mask_mode ="plain_boundary"`, `constant_time_decode_mode ="off"`. Both experimental modes are opt-in (`--inter-block-mask-mode masked_boundary_experimental --constant-time-decode-mode proxy_equalized`). Constant-time decode is a PROXY (no sleep, no real wall-time change); inter-block masked boundary keeps the residual flow in an orthogonal n_inter mask space across all layers until the LM head absorbs n_inter.
+
 ### Stage 5.6 Stronger Attackers
 
 - `stronger_attackers_status = "implemented"`.
 - `stronger_attackers_artifact = "outputs/stronger_attackers.json"`.
-- `blackbox_proxy_status = "implemented"`, `timing_sidechannel_proxy_status = "implemented"`, `inter_block_masking_gap_status = "identified"`, `inter_block_masking_experimental_status = "not_implemented_in_stage_5_6"`.
+- `blackbox_proxy_status = "implemented"`, `timing_sidechannel_proxy_status = "implemented"`, `inter_block_masking_gap_status = "identified"`, `inter_block_masking_experimental_status = "implemented_in_stage_5_6_extension"`.
 - `security_profile_detail_with_stronger_attackers = "adaptive-blackbox-and-timing-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
 - Black-box attacker sees only generated tokens + logits summaries; timing proxy is a model-based latency simulator, NOT a real TEE measurement; inter-block residual masking is `identified` but the model-wrapper `masked_boundary_experimental` mode is `not_implemented_in_stage_5_6` (deferred to Stage 5.6 extension or Stage 7.0). `implemented` / `full_runtime_integrated` / `wall_time_source` are unchanged.
 

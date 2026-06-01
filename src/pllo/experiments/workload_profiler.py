@@ -939,12 +939,30 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["blackbox_proxy_status"] = "implemented"
             record["timing_sidechannel_proxy_status"] = "implemented"
             record["inter_block_masking_gap_status"] = "identified"
-            record["inter_block_masking_experimental_status"] = (
-                "not_implemented_in_stage_5_6"
-            )
             record["security_profile_detail_with_stronger_attackers"] = (
                 "adaptive-blackbox-and-timing-proxy-evaluated, not formal"
             )
+            # Stage 5.6 extension — masked_boundary_experimental + constant-time
+            # decode proxy. Default state of both features is OFF; the extra
+            # fields below record the *support* surface, not the runtime state.
+            record["inter_block_mask_mode_supported"] = True
+            record["masked_boundary_experimental_status"] = "implemented"
+            # Backwards-compat alias used by Stage 5.6 cross-arch summary;
+            # under Stage 5.6 extension this is "implemented" at the
+            # model-wrapper level (was "not_implemented_in_stage_5_6").
+            record["inter_block_masking_experimental_status"] = (
+                "implemented_in_stage_5_6_extension"
+            )
+            record["constant_time_decode_proxy_status"] = "implemented"
+            record["extended_proxy_status"] = "implemented"
+            record["extended_proxy_artifact"] = (
+                "outputs/stronger_attackers.json"
+            )
+            record["security_profile_detail_with_extended_proxy"] = (
+                "inter-block-and-constant-time-proxy-evaluated, not formal"
+            )
+            record["default_inter_block_mask_mode"] = "plain_boundary"
+            record["default_constant_time_decode_mode"] = "off"
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1200,12 +1218,24 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "blackbox_proxy_status": "implemented",
                 "timing_sidechannel_proxy_status": "implemented",
                 "inter_block_masking_gap_status": "identified",
-                "inter_block_masking_experimental_status": (
-                    "not_implemented_in_stage_5_6"
-                ),
                 "security_profile_detail_with_stronger_attackers": (
                     "adaptive-blackbox-and-timing-proxy-evaluated, not formal"
                 ),
+                "inter_block_mask_mode_supported": True,
+                "masked_boundary_experimental_status": "implemented",
+                "inter_block_masking_experimental_status": (
+                    "implemented_in_stage_5_6_extension"
+                ),
+                "constant_time_decode_proxy_status": "implemented",
+                "extended_proxy_status": "implemented",
+                "extended_proxy_artifact": (
+                    "outputs/stronger_attackers.json"
+                ),
+                "security_profile_detail_with_extended_proxy": (
+                    "inter-block-and-constant-time-proxy-evaluated, not formal"
+                ),
+                "default_inter_block_mask_mode": "plain_boundary",
+                "default_constant_time_decode_mode": "off",
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"
                     " into the GPT-2 single-block wrapper behind a"

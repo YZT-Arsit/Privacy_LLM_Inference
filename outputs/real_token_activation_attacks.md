@@ -50,29 +50,29 @@ Stage 5.5b re-runs the Stage 5.5 adaptive proxy attackers (ridge linear inverter
 
 | tensor_name | feature_dim | num_samples | plain abs_max | visible abs_max | plain_fingerprint | visible_fingerprint |
 |---|---|---|---|---|---|---|
-| boundary_input | 32 | 128 | 1.419 | 1.419 | 893826cad49bdc2a | 893826cad49bdc2a |
-| q | 8 | 512 | 1.976 | 2.330 | 6a065677ff90d796 | 032ee0919d048952 |
-| k | 8 | 256 | 1.974 | 1.937 | 027951f59ab101bc | 21c352b7f80ce921 |
-| v | 8 | 256 | 2.088 | 2.091 | b8cc690205f7b798 | ff8dfe85c4c0cc3b |
-| gate | 64 | 128 | 2.175 | 2.175 | c6f68599b79e005d | 2e0ded24dce3004d |
-| up | 64 | 128 | 2.129 | 2.129 | 88a11f2163b3ab22 | 9b6c516565e79b0d |
-| swiglu_intermediate | 64 | 128 | 2.065 | 2.065 | dd58c036535f73c7 | c7d0d0e8f4e5b470 |
-| post_island | 32 | 128 | 0.833 | 0.805 | cf1822f7c60a3ea5 | 5b693f20a4e70a68 |
-| final | 32 | 128 | 1.625 | 1.625 | 26e22bb664636878 | 26e22bb664636878 |
+| boundary_input | 32 | 128 | 1.419 | 0.946 | 6875e19e32afa32c | 09f624fedc2ebd9e |
+| q | 8 | 512 | 1.976 | 2.052 | 3b44fe0b5e1d4a9e | 0cf0c990c23ae3f0 |
+| k | 8 | 256 | 1.974 | 1.602 | 33a9e5220726f324 | 3413cd1aa17c80b2 |
+| v | 8 | 256 | 2.088 | 2.215 | a203d3b7c3318016 | be99f8e732961fa7 |
+| gate | 64 | 128 | 2.175 | 2.175 | 464b84e1115fc172 | 7810286294a77bf3 |
+| up | 64 | 128 | 2.129 | 2.129 | 27fbf88ca8e9b42d | 04fa045ae0acd3c2 |
+| swiglu_intermediate | 64 | 128 | 2.065 | 2.065 | 918fc6c793567345 | a40a8e797ef476e6 |
+| post_island | 32 | 128 | 0.833 | 0.848 | 9a85d85d6483e3ca | 09f08d81672de48a |
+| final | 32 | 128 | 1.625 | 1.458 | c71ef525c9b0d2f0 | a3c3eede4cc9f35f |
 
 ## Target Tensor Inventory (Decode)
 
 | tensor_name | feature_dim | num_samples | plain abs_max | visible abs_max |
 |---|---|---|---|---|
-| boundary_input | 32 | 32 | 0.632 | 0.632 |
-| q | 8 | 128 | 1.847 | 1.836 |
-| k | 8 | 64 | 1.507 | 1.580 |
-| v | 8 | 64 | 1.893 | 1.749 |
+| boundary_input | 32 | 32 | 0.632 | 0.726 |
+| q | 8 | 128 | 1.847 | 1.918 |
+| k | 8 | 64 | 1.507 | 2.058 |
+| v | 8 | 64 | 1.893 | 2.115 |
 | gate | 64 | 32 | 2.160 | 2.160 |
 | up | 64 | 32 | 1.730 | 1.730 |
 | swiglu_intermediate | 64 | 32 | 1.442 | 1.442 |
 | post_island | 32 | 32 | 0.415 | 0.553 |
-| final | 32 | 32 | 1.235 | 1.235 |
+| final | 32 | 32 | 1.235 | 0.881 |
 
 ## Prefill Real-Token Activation Attacks
 
@@ -86,83 +86,83 @@ Per-tensor attacker results on the single-token decode_step activations under th
 
 | scope | tensor_name | bundle | relative_l2_error | mse | cosine_similarity |
 |---|---|---|---|---|---|
-| prefill | boundary_input | fresh_perm_only | 0.0029 | 0.0000 | 1.0000 |
-| prefill | q | fresh_perm_only | 1.0294 | 0.3195 | 0.0156 |
-| prefill | k | fresh_perm_only | 1.0301 | 0.2729 | 0.0431 |
-| prefill | v | fresh_perm_only | 1.0658 | 0.3578 | -0.0130 |
-| prefill | gate | fresh_perm_only | 2.0847 | 1.3771 | 0.1046 |
-| prefill | up | fresh_perm_only | 2.1867 | 1.6280 | 0.0071 |
-| prefill | swiglu_intermediate | fresh_perm_only | 2.1561 | 0.1305 | -0.0005 |
-| prefill | post_island | fresh_perm_only | 1.3642 | 0.0367 | 0.0881 |
-| prefill | final | fresh_perm_only | 0.0011 | 0.0000 | 1.0000 |
-| decode | boundary_input | fresh_perm_only | 0.5584 | 0.0067 | 0.8296 |
-| decode | q | fresh_perm_only | 1.0679 | 0.3351 | 0.0310 |
-| decode | k | fresh_perm_only | 1.0173 | 0.3060 | 0.2306 |
-| decode | v | fresh_perm_only | 1.2403 | 0.4185 | 0.0617 |
-| decode | gate | fresh_perm_only | 1.2521 | 0.4709 | -0.0545 |
-| decode | up | fresh_perm_only | 1.2006 | 0.4951 | 0.0876 |
-| decode | swiglu_intermediate | fresh_perm_only | 1.2758 | 0.0456 | 0.0245 |
-| decode | post_island | fresh_perm_only | 1.8923 | 0.0638 | 0.0671 |
-| decode | final | fresh_perm_only | 0.3834 | 0.0098 | 0.9236 |
-| prefill | boundary_input | fresh_perm_plus_sandwich_plus_pad | 0.0029 | 0.0000 | 1.0000 |
-| prefill | q | fresh_perm_plus_sandwich_plus_pad | 1.0294 | 0.3195 | 0.0156 |
-| prefill | k | fresh_perm_plus_sandwich_plus_pad | 1.0301 | 0.2729 | 0.0431 |
-| prefill | v | fresh_perm_plus_sandwich_plus_pad | 1.0658 | 0.3578 | -0.0130 |
-| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 2.0847 | 1.3771 | 0.1046 |
-| prefill | up | fresh_perm_plus_sandwich_plus_pad | 2.1867 | 1.6280 | 0.0071 |
-| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 2.1561 | 0.1305 | -0.0005 |
-| prefill | post_island | fresh_perm_plus_sandwich_plus_pad | 1.3642 | 0.0367 | 0.0881 |
-| prefill | final | fresh_perm_plus_sandwich_plus_pad | 0.0011 | 0.0000 | 1.0000 |
-| decode | boundary_input | fresh_perm_plus_sandwich_plus_pad | 0.5584 | 0.0067 | 0.8296 |
-| decode | q | fresh_perm_plus_sandwich_plus_pad | 1.0679 | 0.3351 | 0.0310 |
-| decode | k | fresh_perm_plus_sandwich_plus_pad | 1.0173 | 0.3060 | 0.2306 |
-| decode | v | fresh_perm_plus_sandwich_plus_pad | 1.2403 | 0.4185 | 0.0617 |
-| decode | gate | fresh_perm_plus_sandwich_plus_pad | 1.2521 | 0.4709 | -0.0545 |
-| decode | up | fresh_perm_plus_sandwich_plus_pad | 1.2006 | 0.4951 | 0.0876 |
-| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 1.2758 | 0.0456 | 0.0245 |
-| decode | post_island | fresh_perm_plus_sandwich_plus_pad | 1.8923 | 0.0638 | 0.0671 |
-| decode | final | fresh_perm_plus_sandwich_plus_pad | 0.3834 | 0.0098 | 0.9236 |
+| prefill | boundary_input | fresh_perm_only | 1.8045 | 0.1507 | -0.1596 |
+| prefill | q | fresh_perm_only | 1.0398 | 0.3260 | 0.0133 |
+| prefill | k | fresh_perm_only | 1.0254 | 0.2704 | 0.1061 |
+| prefill | v | fresh_perm_only | 1.0659 | 0.3579 | 0.0278 |
+| prefill | gate | fresh_perm_only | 2.0754 | 1.3649 | -0.0121 |
+| prefill | up | fresh_perm_only | 1.8763 | 1.1986 | 0.1253 |
+| prefill | swiglu_intermediate | fresh_perm_only | 2.1048 | 0.1244 | -0.0527 |
+| prefill | post_island | fresh_perm_only | 1.4238 | 0.0400 | 0.0045 |
+| prefill | final | fresh_perm_only | 1.6229 | 0.2789 | -0.0438 |
+| decode | boundary_input | fresh_perm_only | 1.4481 | 0.0450 | 0.1184 |
+| decode | q | fresh_perm_only | 1.0826 | 0.3443 | 0.0388 |
+| decode | k | fresh_perm_only | 1.1091 | 0.3638 | 0.1619 |
+| decode | v | fresh_perm_only | 1.2424 | 0.4199 | -0.0689 |
+| decode | gate | fresh_perm_only | 1.0980 | 0.3622 | 0.2281 |
+| decode | up | fresh_perm_only | 1.1337 | 0.4415 | 0.0657 |
+| decode | swiglu_intermediate | fresh_perm_only | 1.3047 | 0.0476 | -0.0733 |
+| decode | post_island | fresh_perm_only | 1.7099 | 0.0521 | -0.0619 |
+| decode | final | fresh_perm_only | 1.3586 | 0.1226 | 0.1856 |
+| prefill | boundary_input | fresh_perm_plus_sandwich_plus_pad | 1.8045 | 0.1507 | -0.1596 |
+| prefill | q | fresh_perm_plus_sandwich_plus_pad | 1.0398 | 0.3260 | 0.0133 |
+| prefill | k | fresh_perm_plus_sandwich_plus_pad | 1.0254 | 0.2704 | 0.1061 |
+| prefill | v | fresh_perm_plus_sandwich_plus_pad | 1.0659 | 0.3579 | 0.0278 |
+| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 2.0754 | 1.3649 | -0.0121 |
+| prefill | up | fresh_perm_plus_sandwich_plus_pad | 1.8763 | 1.1986 | 0.1253 |
+| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 2.1048 | 0.1244 | -0.0527 |
+| prefill | post_island | fresh_perm_plus_sandwich_plus_pad | 1.4238 | 0.0400 | 0.0045 |
+| prefill | final | fresh_perm_plus_sandwich_plus_pad | 1.6229 | 0.2789 | -0.0438 |
+| decode | boundary_input | fresh_perm_plus_sandwich_plus_pad | 1.4481 | 0.0450 | 0.1184 |
+| decode | q | fresh_perm_plus_sandwich_plus_pad | 1.0826 | 0.3443 | 0.0388 |
+| decode | k | fresh_perm_plus_sandwich_plus_pad | 1.1091 | 0.3638 | 0.1619 |
+| decode | v | fresh_perm_plus_sandwich_plus_pad | 1.2424 | 0.4199 | -0.0689 |
+| decode | gate | fresh_perm_plus_sandwich_plus_pad | 1.0980 | 0.3622 | 0.2281 |
+| decode | up | fresh_perm_plus_sandwich_plus_pad | 1.1337 | 0.4415 | 0.0657 |
+| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 1.3047 | 0.0476 | -0.0733 |
+| decode | post_island | fresh_perm_plus_sandwich_plus_pad | 1.7099 | 0.0521 | -0.0619 |
+| decode | final | fresh_perm_plus_sandwich_plus_pad | 1.3586 | 0.1226 | 0.1856 |
 
 ## Small MLP Inverter Results
 
 | scope | tensor_name | bundle | relative_l2_error | mse | cosine_similarity | final_train_loss |
 |---|---|---|---|---|---|---|
-| prefill | boundary_input | fresh_perm_only | 0.3974 | 0.0073 | 0.9188 | 0.0000 |
-| prefill | q | fresh_perm_only | 1.1775 | 0.4180 | -0.0406 | 0.2075 |
-| prefill | k | fresh_perm_only | 1.1760 | 0.3557 | 0.1653 | 0.0874 |
-| prefill | v | fresh_perm_only | 1.2929 | 0.5265 | 0.0290 | 0.0829 |
-| prefill | gate | fresh_perm_only | 1.1806 | 0.4417 | 0.1630 | 0.0004 |
-| prefill | up | fresh_perm_only | 1.0767 | 0.3947 | 0.2437 | 0.0005 |
-| prefill | swiglu_intermediate | fresh_perm_only | 1.2404 | 0.0432 | 0.0527 | 0.0000 |
-| prefill | post_island | fresh_perm_only | 1.2181 | 0.0292 | 0.1351 | 0.0001 |
-| prefill | final | fresh_perm_only | 0.3831 | 0.0155 | 0.9262 | 0.0001 |
-| decode | boundary_input | fresh_perm_only | 0.7167 | 0.0110 | 0.6978 | 0.0000 |
-| decode | q | fresh_perm_only | 1.3709 | 0.5522 | -0.0245 | 0.0163 |
-| decode | k | fresh_perm_only | 1.2049 | 0.4293 | 0.3248 | 0.0009 |
-| decode | v | fresh_perm_only | 1.3630 | 0.5054 | 0.1281 | 0.0004 |
-| decode | gate | fresh_perm_only | 1.1481 | 0.3960 | 0.1439 | 0.0013 |
-| decode | up | fresh_perm_only | 1.1353 | 0.4427 | 0.1195 | 0.0005 |
-| decode | swiglu_intermediate | fresh_perm_only | 1.1818 | 0.0391 | 0.0705 | 0.0000 |
-| decode | post_island | fresh_perm_only | 1.2078 | 0.0260 | 0.0651 | 0.0000 |
-| decode | final | fresh_perm_only | 0.7314 | 0.0355 | 0.7153 | 0.0000 |
-| prefill | boundary_input | fresh_perm_plus_sandwich_plus_pad | 0.4123 | 0.0079 | 0.9142 | 0.0000 |
-| prefill | q | fresh_perm_plus_sandwich_plus_pad | 1.1852 | 0.4235 | -0.0259 | 0.1728 |
-| prefill | k | fresh_perm_plus_sandwich_plus_pad | 1.1810 | 0.3587 | 0.1505 | 0.1012 |
-| prefill | v | fresh_perm_plus_sandwich_plus_pad | 1.2969 | 0.5298 | -0.0418 | 0.0888 |
-| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 1.1266 | 0.4022 | 0.2145 | 0.0004 |
-| prefill | up | fresh_perm_plus_sandwich_plus_pad | 1.1616 | 0.4594 | 0.1120 | 0.0006 |
-| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 1.3250 | 0.0493 | 0.0066 | 0.0000 |
-| prefill | post_island | fresh_perm_plus_sandwich_plus_pad | 1.2440 | 0.0305 | 0.1022 | 0.0001 |
-| prefill | final | fresh_perm_plus_sandwich_plus_pad | 0.4148 | 0.0182 | 0.9118 | 0.0001 |
-| decode | boundary_input | fresh_perm_plus_sandwich_plus_pad | 0.7113 | 0.0109 | 0.7045 | 0.0000 |
-| decode | q | fresh_perm_plus_sandwich_plus_pad | 1.4096 | 0.5838 | -0.0573 | 0.0127 |
-| decode | k | fresh_perm_plus_sandwich_plus_pad | 1.2105 | 0.4333 | 0.3022 | 0.0008 |
-| decode | v | fresh_perm_plus_sandwich_plus_pad | 1.3983 | 0.5319 | 0.1064 | 0.0005 |
-| decode | gate | fresh_perm_plus_sandwich_plus_pad | 1.1977 | 0.4309 | 0.1157 | 0.0010 |
-| decode | up | fresh_perm_plus_sandwich_plus_pad | 1.1410 | 0.4472 | 0.1813 | 0.0007 |
-| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 1.2146 | 0.0413 | 0.0595 | 0.0000 |
-| decode | post_island | fresh_perm_plus_sandwich_plus_pad | 1.2191 | 0.0265 | -0.0091 | 0.0000 |
-| decode | final | fresh_perm_plus_sandwich_plus_pad | 0.7103 | 0.0335 | 0.7321 | 0.0000 |
+| prefill | boundary_input | fresh_perm_only | 1.2973 | 0.0779 | 0.0508 | 0.0005 |
+| prefill | q | fresh_perm_only | 1.1405 | 0.3921 | 0.0105 | 0.1642 |
+| prefill | k | fresh_perm_only | 1.1966 | 0.3682 | 0.0912 | 0.0910 |
+| prefill | v | fresh_perm_only | 1.1586 | 0.4228 | 0.1814 | 0.0859 |
+| prefill | gate | fresh_perm_only | 1.2089 | 0.4631 | 0.0834 | 0.0005 |
+| prefill | up | fresh_perm_only | 1.1536 | 0.4531 | 0.1578 | 0.0005 |
+| prefill | swiglu_intermediate | fresh_perm_only | 1.2262 | 0.0422 | 0.0359 | 0.0000 |
+| prefill | post_island | fresh_perm_only | 1.2090 | 0.0288 | 0.1118 | 0.0001 |
+| prefill | final | fresh_perm_only | 1.3377 | 0.1895 | 0.0471 | 0.0003 |
+| decode | boundary_input | fresh_perm_only | 1.1784 | 0.0298 | 0.2261 | 0.0000 |
+| decode | q | fresh_perm_only | 1.5024 | 0.6632 | -0.0316 | 0.0116 |
+| decode | k | fresh_perm_only | 1.2939 | 0.4951 | 0.1542 | 0.0005 |
+| decode | v | fresh_perm_only | 1.4185 | 0.5474 | 0.0084 | 0.0016 |
+| decode | gate | fresh_perm_only | 1.1501 | 0.3974 | 0.1760 | 0.0011 |
+| decode | up | fresh_perm_only | 1.0842 | 0.4038 | 0.1967 | 0.0011 |
+| decode | swiglu_intermediate | fresh_perm_only | 1.2120 | 0.0411 | -0.0683 | 0.0003 |
+| decode | post_island | fresh_perm_only | 1.1830 | 0.0249 | 0.0535 | 0.0000 |
+| decode | final | fresh_perm_only | 1.1820 | 0.0928 | 0.2860 | 0.0000 |
+| prefill | boundary_input | fresh_perm_plus_sandwich_plus_pad | 1.3466 | 0.0839 | -0.0205 | 0.0004 |
+| prefill | q | fresh_perm_plus_sandwich_plus_pad | 1.2084 | 0.4402 | -0.0267 | 0.1685 |
+| prefill | k | fresh_perm_plus_sandwich_plus_pad | 1.2182 | 0.3817 | 0.0746 | 0.0953 |
+| prefill | v | fresh_perm_plus_sandwich_plus_pad | 1.1597 | 0.4236 | 0.2001 | 0.0839 |
+| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 1.2720 | 0.5127 | 0.0293 | 0.0004 |
+| prefill | up | fresh_perm_plus_sandwich_plus_pad | 1.1540 | 0.4535 | 0.1438 | 0.0005 |
+| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 1.2693 | 0.0452 | 0.0092 | 0.0000 |
+| prefill | post_island | fresh_perm_plus_sandwich_plus_pad | 1.2781 | 0.0322 | 0.0856 | 0.0001 |
+| prefill | final | fresh_perm_plus_sandwich_plus_pad | 1.3592 | 0.1956 | 0.0166 | 0.0003 |
+| decode | boundary_input | fresh_perm_plus_sandwich_plus_pad | 1.1018 | 0.0261 | 0.2620 | 0.0000 |
+| decode | q | fresh_perm_plus_sandwich_plus_pad | 1.4268 | 0.5981 | 0.0342 | 0.0140 |
+| decode | k | fresh_perm_plus_sandwich_plus_pad | 1.2879 | 0.4905 | 0.1625 | 0.0005 |
+| decode | v | fresh_perm_plus_sandwich_plus_pad | 1.3523 | 0.4975 | 0.0408 | 0.0012 |
+| decode | gate | fresh_perm_plus_sandwich_plus_pad | 1.1350 | 0.3870 | 0.1599 | 0.0007 |
+| decode | up | fresh_perm_plus_sandwich_plus_pad | 1.1000 | 0.4156 | 0.1656 | 0.0002 |
+| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 1.2401 | 0.0430 | -0.0932 | 0.0001 |
+| decode | post_island | fresh_perm_plus_sandwich_plus_pad | 1.1791 | 0.0248 | 0.0332 | 0.0000 |
+| decode | final | fresh_perm_plus_sandwich_plus_pad | 1.1050 | 0.0811 | 0.3045 | 0.0000 |
 
 ## Permutation Recovery Results
 
@@ -170,59 +170,59 @@ Only the SwiGLU island tensors (gate / up / swiglu_intermediate) expose a column
 
 | scope | tensor_name | bundle | random_chance | signature_top1 | soft_top1 | best_top1 |
 |---|---|---|---|---|---|---|
-| prefill | gate | fresh_perm_only | 0.0156 | 0.0156 | 0.0000 | 0.0156 |
-| prefill | up | fresh_perm_only | 0.0156 | 0.0312 | 0.0156 | 0.0312 |
-| prefill | swiglu_intermediate | fresh_perm_only | 0.0156 | 0.0156 | 0.0000 | 0.0156 |
-| decode | gate | fresh_perm_only | 0.0156 | 0.0312 | 0.0156 | 0.0312 |
-| decode | up | fresh_perm_only | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
-| decode | swiglu_intermediate | fresh_perm_only | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
-| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0000 | 0.0156 |
-| prefill | up | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0312 | 0.0156 | 0.0312 |
-| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0000 | 0.0156 |
-| decode | gate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0312 | 0.0156 | 0.0312 |
-| decode | up | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
-| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
+| prefill | gate | fresh_perm_only | 0.0156 | 0.0156 | 0.0312 | 0.0312 |
+| prefill | up | fresh_perm_only | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
+| prefill | swiglu_intermediate | fresh_perm_only | 0.0156 | 0.0312 | 0.0156 | 0.0312 |
+| decode | gate | fresh_perm_only | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
+| decode | up | fresh_perm_only | 0.0156 | 0.0312 | 0.0000 | 0.0312 |
+| decode | swiglu_intermediate | fresh_perm_only | 0.0156 | 0.0469 | 0.0312 | 0.0469 |
+| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0312 | 0.0312 |
+| prefill | up | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
+| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0312 | 0.0156 | 0.0312 |
+| decode | gate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0156 | 0.0156 | 0.0156 |
+| decode | up | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0312 | 0.0000 | 0.0312 |
+| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0469 | 0.0312 | 0.0469 |
 
 ## Linkability Results
 
 | scope | tensor_name | bundle | visible_vs_plain_cosine | mean_pairwise_cosine_visible | mean_linkability_rank |
 |---|---|---|---|---|---|
-| prefill | boundary_input | fresh_perm_only | 1.0000 | 0.0432 | 0.3438 |
-| prefill | q | fresh_perm_only | 0.0315 | 0.0118 | 310.7188 |
-| prefill | k | fresh_perm_only | -0.0127 | 0.0066 | 153.3750 |
-| prefill | v | fresh_perm_only | 0.0469 | 0.0194 | 132.6875 |
-| prefill | gate | fresh_perm_only | 0.0201 | 0.0297 | 60.1719 |
-| prefill | up | fresh_perm_only | 0.0118 | 0.0313 | 56.7188 |
-| prefill | swiglu_intermediate | fresh_perm_only | 0.0139 | 0.0340 | 56.6562 |
-| prefill | post_island | fresh_perm_only | 0.0156 | 0.0319 | 61.0000 |
-| prefill | final | fresh_perm_only | 1.0000 | 0.1267 | 0.0000 |
-| decode | boundary_input | fresh_perm_only | 1.0000 | 0.1203 | 0.2500 |
-| decode | q | fresh_perm_only | 0.0641 | 0.0044 | 58.5156 |
-| decode | k | fresh_perm_only | 0.0290 | 0.0262 | 29.5000 |
-| decode | v | fresh_perm_only | 0.0502 | -0.0007 | 29.3906 |
-| decode | gate | fresh_perm_only | 0.0327 | 0.0023 | 13.7188 |
-| decode | up | fresh_perm_only | 0.0191 | 0.0018 | 15.5000 |
-| decode | swiglu_intermediate | fresh_perm_only | 0.0301 | -0.0105 | 14.6875 |
-| decode | post_island | fresh_perm_only | 0.0366 | 0.0165 | 13.4688 |
-| decode | final | fresh_perm_only | 1.0000 | 0.1954 | 0.0000 |
-| prefill | boundary_input | fresh_perm_plus_sandwich_plus_pad | 1.0000 | 0.0432 | 0.3438 |
-| prefill | q | fresh_perm_plus_sandwich_plus_pad | 0.0315 | 0.0118 | 310.7188 |
-| prefill | k | fresh_perm_plus_sandwich_plus_pad | -0.0127 | 0.0066 | 153.3750 |
-| prefill | v | fresh_perm_plus_sandwich_plus_pad | 0.0469 | 0.0194 | 132.6875 |
-| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 0.0201 | 0.0297 | 60.1719 |
-| prefill | up | fresh_perm_plus_sandwich_plus_pad | 0.0118 | 0.0313 | 56.7188 |
-| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0139 | 0.0340 | 56.6562 |
-| prefill | post_island | fresh_perm_plus_sandwich_plus_pad | 0.0156 | 0.0319 | 61.0000 |
-| prefill | final | fresh_perm_plus_sandwich_plus_pad | 1.0000 | 0.1267 | 0.0000 |
-| decode | boundary_input | fresh_perm_plus_sandwich_plus_pad | 1.0000 | 0.1203 | 0.2500 |
-| decode | q | fresh_perm_plus_sandwich_plus_pad | 0.0641 | 0.0044 | 58.5156 |
-| decode | k | fresh_perm_plus_sandwich_plus_pad | 0.0290 | 0.0262 | 29.5000 |
-| decode | v | fresh_perm_plus_sandwich_plus_pad | 0.0502 | -0.0007 | 29.3906 |
-| decode | gate | fresh_perm_plus_sandwich_plus_pad | 0.0327 | 0.0023 | 13.7188 |
-| decode | up | fresh_perm_plus_sandwich_plus_pad | 0.0191 | 0.0018 | 15.5000 |
-| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0301 | -0.0105 | 14.6875 |
-| decode | post_island | fresh_perm_plus_sandwich_plus_pad | 0.0366 | 0.0165 | 13.4688 |
-| decode | final | fresh_perm_plus_sandwich_plus_pad | 1.0000 | 0.1954 | 0.0000 |
+| prefill | boundary_input | fresh_perm_only | -0.0319 | 0.0263 | 64.3438 |
+| prefill | q | fresh_perm_only | 0.0111 | 0.0135 | 229.0000 |
+| prefill | k | fresh_perm_only | -0.0379 | 0.0082 | 141.0625 |
+| prefill | v | fresh_perm_only | 0.0009 | 0.0127 | 123.0625 |
+| prefill | gate | fresh_perm_only | 0.0408 | 0.0335 | 45.9062 |
+| prefill | up | fresh_perm_only | 0.0312 | 0.0471 | 62.1406 |
+| prefill | swiglu_intermediate | fresh_perm_only | 0.0333 | 0.0300 | 45.6406 |
+| prefill | post_island | fresh_perm_only | -0.0384 | 0.0205 | 66.0781 |
+| prefill | final | fresh_perm_only | -0.0357 | 0.1002 | 56.8281 |
+| decode | boundary_input | fresh_perm_only | -0.0873 | 0.0106 | 19.4062 |
+| decode | q | fresh_perm_only | -0.0363 | 0.0179 | 68.0156 |
+| decode | k | fresh_perm_only | -0.0493 | 0.0626 | 33.5625 |
+| decode | v | fresh_perm_only | 0.0099 | 0.0218 | 30.5469 |
+| decode | gate | fresh_perm_only | 0.0518 | 0.0055 | 12.5000 |
+| decode | up | fresh_perm_only | 0.0089 | -0.0030 | 15.6562 |
+| decode | swiglu_intermediate | fresh_perm_only | 0.0595 | -0.0066 | 12.1562 |
+| decode | post_island | fresh_perm_only | -0.0037 | -0.0026 | 15.4062 |
+| decode | final | fresh_perm_only | -0.0874 | 0.0714 | 18.9062 |
+| prefill | boundary_input | fresh_perm_plus_sandwich_plus_pad | -0.0319 | 0.0263 | 64.3438 |
+| prefill | q | fresh_perm_plus_sandwich_plus_pad | 0.0111 | 0.0135 | 229.0000 |
+| prefill | k | fresh_perm_plus_sandwich_plus_pad | -0.0379 | 0.0082 | 141.0625 |
+| prefill | v | fresh_perm_plus_sandwich_plus_pad | 0.0009 | 0.0127 | 123.0625 |
+| prefill | gate | fresh_perm_plus_sandwich_plus_pad | 0.0408 | 0.0335 | 45.9062 |
+| prefill | up | fresh_perm_plus_sandwich_plus_pad | 0.0312 | 0.0471 | 62.1406 |
+| prefill | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0333 | 0.0300 | 45.6406 |
+| prefill | post_island | fresh_perm_plus_sandwich_plus_pad | -0.0384 | 0.0205 | 66.0781 |
+| prefill | final | fresh_perm_plus_sandwich_plus_pad | -0.0357 | 0.1002 | 56.8281 |
+| decode | boundary_input | fresh_perm_plus_sandwich_plus_pad | -0.0873 | 0.0106 | 19.4062 |
+| decode | q | fresh_perm_plus_sandwich_plus_pad | -0.0363 | 0.0179 | 68.0156 |
+| decode | k | fresh_perm_plus_sandwich_plus_pad | -0.0493 | 0.0626 | 33.5625 |
+| decode | v | fresh_perm_plus_sandwich_plus_pad | 0.0099 | 0.0218 | 30.5469 |
+| decode | gate | fresh_perm_plus_sandwich_plus_pad | 0.0518 | 0.0055 | 12.5000 |
+| decode | up | fresh_perm_plus_sandwich_plus_pad | 0.0089 | -0.0030 | 15.6562 |
+| decode | swiglu_intermediate | fresh_perm_plus_sandwich_plus_pad | 0.0595 | -0.0066 | 12.1562 |
+| decode | post_island | fresh_perm_plus_sandwich_plus_pad | -0.0037 | -0.0026 | 15.4062 |
+| decode | final | fresh_perm_plus_sandwich_plus_pad | -0.0874 | 0.0714 | 18.9062 |
 
 ## Bundle Comparison
 
@@ -230,24 +230,24 @@ Deltas are `full_bundle − fresh_only`: positive linear / MLP rel_l2 delta mean
 
 | scope | tensor_name | inter_block_plain | linear_delta | mlp_delta | linkability_delta | perm_top1_delta | risk_fresh_only | risk_full_bundle |
 |---|---|---|---|---|---|---|---|---|
-| prefill | boundary_input | True | 0.0000 | 0.0150 | 0.0000 | n/a | high | high |
-| prefill | q | False | 0.0000 | 0.0078 | 0.0000 | n/a | low | low |
-| prefill | k | False | 0.0000 | 0.0050 | 0.0000 | n/a | low | low |
-| prefill | v | False | 0.0000 | 0.0040 | 0.0000 | n/a | low | low |
-| prefill | gate | False | 0.0000 | -0.0540 | 0.0000 | 0.0000 | low | low |
-| prefill | up | False | 0.0000 | 0.0849 | 0.0000 | 0.0000 | low | low |
-| prefill | swiglu_intermediate | False | 0.0000 | 0.0846 | 0.0000 | 0.0000 | low | low |
-| prefill | post_island | False | 0.0000 | 0.0259 | 0.0000 | n/a | low | low |
-| prefill | final | True | 0.0000 | 0.0317 | 0.0000 | n/a | high | high |
-| decode | boundary_input | True | 0.0000 | -0.0055 | 0.0000 | n/a | high | high |
-| decode | q | False | 0.0000 | 0.0388 | 0.0000 | n/a | low | low |
-| decode | k | False | 0.0000 | 0.0056 | 0.0000 | n/a | low | low |
-| decode | v | False | 0.0000 | 0.0352 | 0.0000 | n/a | low | low |
-| decode | gate | False | 0.0000 | 0.0496 | 0.0000 | 0.0000 | low | low |
-| decode | up | False | 0.0000 | 0.0057 | 0.0000 | 0.0000 | low | low |
-| decode | swiglu_intermediate | False | 0.0000 | 0.0328 | 0.0000 | 0.0000 | low | low |
-| decode | post_island | False | 0.0000 | 0.0113 | 0.0000 | n/a | low | low |
-| decode | final | True | 0.0000 | -0.0211 | 0.0000 | n/a | high | high |
+| prefill | boundary_input | False | 0.0000 | 0.0494 | 0.0000 | n/a | low | low |
+| prefill | q | False | 0.0000 | 0.0679 | 0.0000 | n/a | low | low |
+| prefill | k | False | 0.0000 | 0.0217 | 0.0000 | n/a | low | low |
+| prefill | v | False | 0.0000 | 0.0011 | 0.0000 | n/a | low | low |
+| prefill | gate | False | 0.0000 | 0.0631 | 0.0000 | 0.0000 | low | low |
+| prefill | up | False | 0.0000 | 0.0005 | 0.0000 | 0.0000 | low | low |
+| prefill | swiglu_intermediate | False | 0.0000 | 0.0430 | 0.0000 | 0.0000 | low | low |
+| prefill | post_island | False | 0.0000 | 0.0691 | 0.0000 | n/a | low | low |
+| prefill | final | False | 0.0000 | 0.0215 | 0.0000 | n/a | low | low |
+| decode | boundary_input | False | 0.0000 | -0.0766 | 0.0000 | n/a | low | low |
+| decode | q | False | 0.0000 | -0.0756 | 0.0000 | n/a | low | low |
+| decode | k | False | 0.0000 | -0.0060 | 0.0000 | n/a | low | low |
+| decode | v | False | 0.0000 | -0.0662 | 0.0000 | n/a | low | low |
+| decode | gate | False | 0.0000 | -0.0151 | 0.0000 | 0.0000 | low | low |
+| decode | up | False | 0.0000 | 0.0158 | 0.0000 | 0.0000 | low | low |
+| decode | swiglu_intermediate | False | 0.0000 | 0.0282 | 0.0000 | 0.0000 | low | low |
+| decode | post_island | False | 0.0000 | -0.0039 | 0.0000 | n/a | low | low |
+| decode | final | False | 0.0000 | -0.0770 | 0.0000 | n/a | low | low |
 
 ## Per-Bundle Headline
 
@@ -255,8 +255,8 @@ Headline grades are reported twice: `masked_only` excludes the structurally-plai
 
 | bundle | tensors | max_risk (masked_only) | max_risk (overall) | mean_lin_rel_l2 (masked) | mean_mlp_rel_l2 (masked) | mean_linkability_cos (masked) |
 |---|---|---|---|---|---|---|
-| fresh_perm_only | 18 | low | high | 1.419 | 1.212 | 0.028 |
-| fresh_perm_plus_sandwich_plus_pad | 18 | low | high | 1.419 | 1.237 | 0.028 |
+| fresh_perm_only | 18 | low | low | 1.418 | 1.230 | -0.009 |
+| fresh_perm_plus_sandwich_plus_pad | 18 | low | low | 1.418 | 1.233 | -0.009 |
 
 ## Generation Token Match
 
@@ -278,11 +278,11 @@ Headline grades are reported twice: `masked_only` excludes the structurally-plai
 ## Recommendation
 
 - `default_on_recommendation_full_bundle_masked_only = "acceptable_with_mitigation_under_real_token_proxy"`
-- `default_on_recommendation_full_bundle_overall = "unsafe_default_on_under_real_token_proxy"`
+- `default_on_recommendation_full_bundle_overall = "acceptable_with_mitigation_under_real_token_proxy"`
 - `default_on_recommendation_fresh_only_masked_only = "acceptable_with_mitigation_under_real_token_proxy"`
-- `default_on_recommendation_fresh_only_overall = "unsafe_default_on_under_real_token_proxy"`
+- `default_on_recommendation_fresh_only_overall = "acceptable_with_mitigation_under_real_token_proxy"`
 - `security_profile_detail_with_real_token_activation = "real-token-real-activation-adaptive-proxy-evaluated, not formal"`
-- _Note_: Inter-block tensors (boundary_input, final) are plain at the model-wrapper boundary by construction; their high risk is STRUCTURAL, not a finding against the mitigation bundle. The masked-only recommendation grades the masked tensors only.
+- _Note_: Inter-block tensors (boundary_input, final) are plain at the model-wrapper boundary by construction under plain_boundary mode; their high risk is STRUCTURAL, not a finding against the mitigation bundle. Under masked_boundary_experimental (Stage 5.6 extension) the inter-block residual is masked by a fresh orthogonal N_inter so boundary_input / final join the masked tensor set and the overall recommendation is bounded by the masked-only grade.
 
 ## Limitations
 

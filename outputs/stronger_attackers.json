@@ -14,7 +14,8 @@
     "nonlinear_mode": "compatible_islands",
     "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
     "use_pad": true,
-    "inter_block_mask_mode": "plain_boundary",
+    "inter_block_mask_mode": "masked_boundary_experimental",
+    "constant_time_decode_mode": "proxy_equalized",
     "attacker_trials": 32,
     "timing_noise_std": 0.05,
     "dtype": "float32",
@@ -196,6 +197,7 @@
       ],
       "samples_per_bin": 16,
       "timing_noise_std": 0.05,
+      "constant_time_decode_mode": "proxy_equalized",
       "gpu_flops_per_ms": 1000000.0,
       "tee_to_gpu_flops_ratio": 0.05,
       "tee_call_overhead_ms": 0.5,
@@ -241,6 +243,17 @@
         "boundary_call_formula": "L=2 formula: 3L + 2 = 8"
       }
     ],
+    "constant_time_decode": {
+      "mode": "proxy_equalized",
+      "decode_step_accuracy_before": 0.7486979166666666,
+      "decode_step_accuracy_after": 0.25390625,
+      "correlation_latency_step_before": 0.7899371356774512,
+      "correlation_latency_step_after": -0.0002569897926834935,
+      "risk_level_before": "high",
+      "risk_level_after": "low",
+      "overhead_ms_estimate": 7.366718776457353,
+      "limitation": "proxy only \u2014 no real sleep, no real wall-time. The equalisation upper bound is the maximum simulated latency across (prompt_length \u00d7 decode_step) bins per method; a real deployment would calibrate this from a production timing budget."
+    },
     "overall_max_risk_level": "high",
     "limitations": [
       "Timing results are model-based proxies, not real TEE wall-time measurements.",
@@ -254,7 +267,7 @@
     "config": {
       "seed": 2026,
       "stage_5_5b_artifact": "outputs/real_token_activation_attacks.json",
-      "inter_block_mask_mode": "plain_boundary",
+      "inter_block_mask_mode": "masked_boundary_experimental",
       "hidden_size": 32,
       "intermediate_size": 64,
       "num_attention_heads": 4,
@@ -271,7 +284,7 @@
       "boundary_input",
       "final"
     ],
-    "accounting_risk_level": "high",
+    "accounting_risk_level": "medium",
     "accounting_baseline": {
       "status": "ok",
       "current_plain_boundary_detected": true,
@@ -279,24 +292,24 @@
         "boundary_input",
         "final"
       ],
-      "accounting_risk_level": "high",
+      "accounting_risk_level": "medium",
       "per_tensor_evidence": [
         {
           "tensor_name": "boundary_input",
-          "inter_block_plain": true,
-          "linear_inverter_rel_l2_error": 0.0029059455264359713,
-          "linkability_visible_vs_plain_cosine": 1.0,
-          "risk_level": "high",
-          "default_on_recommendation": "inter_block_plain_recovered",
+          "inter_block_plain": false,
+          "linear_inverter_rel_l2_error": 1.8044949769973755,
+          "linkability_visible_vs_plain_cosine": -0.03189217649166203,
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
           "evidence_source": "stage_5_5b_artifact"
         },
         {
           "tensor_name": "final",
-          "inter_block_plain": true,
-          "linear_inverter_rel_l2_error": 0.0010932376608252525,
-          "linkability_visible_vs_plain_cosine": 1.0,
-          "risk_level": "high",
-          "default_on_recommendation": "inter_block_plain_recovered",
+          "inter_block_plain": false,
+          "linear_inverter_rel_l2_error": 1.622894287109375,
+          "linkability_visible_vs_plain_cosine": -0.03569189125621877,
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
           "evidence_source": "stage_5_5b_artifact"
         }
       ],
@@ -314,14 +327,15 @@
       "note": "Single-transition probe: orthogonal N_inter applied to one block boundary; rmsnorm_core is invariant under N_inter and the folded Q-projection (w_q_tilde = N_inter^T @ (\u03b3 \u2299 w_q)) reproduces the plain Q exactly. The attacker view of the inter-block residual is x_tilde = x @ N_inter (orthogonal, information-theoretically equivalent under random-N_inter sampling but with the same caveats as Stage 6.4b)."
     },
     "single_transition_probe_status": "single_transition_probe_passed",
-    "masked_boundary_experimental_status": "default_plain_boundary_kept",
+    "masked_boundary_experimental_status": "implemented_in_stage_5_6_extension",
     "masked_boundary_experimental_default": "off",
     "experimental_detail": {
-      "requested_mode": "plain_boundary",
-      "status": "default_plain_boundary_kept",
+      "requested_mode": "masked_boundary_experimental",
+      "status": "implemented_in_stage_5_6_extension",
+      "reason": "Stage 5.6 extension wires masked_boundary_experimental through ObfuscatedModernDecoderModelWrapper. Inter-block residual stays in a fresh orthogonal n_inter mask space across all layers; the LM head absorbs n_inter so the recovered logits match the plain reference.",
       "default_mode_unchanged": "plain_boundary"
     },
-    "overall_inter_block_risk_level": "high",
+    "overall_inter_block_risk_level": "medium",
     "recommendation": "Stage 5.5b structural gap is acknowledged; the single-transition math probe shows the masked inter-block path is correct under an orthogonal N_inter. A full model-level masked boundary requires Stage 5.6 extension or Stage 7.0 (LoRA training path) before the default mode can change.",
     "limitations": [
       "Inter-block masking is experimental unless explicitly marked implemented.",
@@ -331,23 +345,95 @@
       "Dense sandwiching and fresh permutation reduce tested recovery but do not imply semantic security."
     ]
   },
+  "inter_block_closure_summary": {
+    "status": "implemented",
+    "masked_boundary_experimental_status": "implemented",
+    "plain_boundary_artifact": "outputs/real_token_activation_attacks.json",
+    "plain_boundary_summary": {
+      "default_on_recommendation_full_bundle_masked_only": "acceptable_with_mitigation_under_real_token_proxy",
+      "default_on_recommendation_full_bundle_overall": "unsafe_default_on_under_real_token_proxy",
+      "default_on_recommendation_fresh_only_masked_only": "acceptable_with_mitigation_under_real_token_proxy",
+      "default_on_recommendation_fresh_only_overall": "unsafe_default_on_under_real_token_proxy",
+      "security_profile_detail_with_real_token_activation": "real-token-real-activation-adaptive-proxy-evaluated, not formal",
+      "inter_block_mask_mode": "plain_boundary",
+      "inter_block_plain_recovered": true,
+      "note": "Inter-block tensors (boundary_input, final) are plain at the model-wrapper boundary by construction under plain_boundary mode; their high risk is STRUCTURAL, not a finding against the mitigation bundle. Under masked_boundary_experimental (Stage 5.6 extension) the inter-block residual is masked by a fresh orthogonal N_inter so boundary_input / final join the masked tensor set and the overall recommendation is bounded by the masked-only grade."
+    },
+    "masked_boundary_summary": {
+      "default_on_recommendation_full_bundle_masked_only": "acceptable_with_mitigation_under_real_token_proxy",
+      "default_on_recommendation_full_bundle_overall": "acceptable_with_mitigation_under_real_token_proxy",
+      "default_on_recommendation_fresh_only_masked_only": "acceptable_with_mitigation_under_real_token_proxy",
+      "default_on_recommendation_fresh_only_overall": "acceptable_with_mitigation_under_real_token_proxy",
+      "security_profile_detail_with_real_token_activation": "real-token-real-activation-adaptive-proxy-evaluated, not formal",
+      "inter_block_mask_mode": "masked_boundary_experimental",
+      "inter_block_plain_recovered": false,
+      "note": "Inter-block tensors (boundary_input, final) are plain at the model-wrapper boundary by construction under plain_boundary mode; their high risk is STRUCTURAL, not a finding against the mitigation bundle. Under masked_boundary_experimental (Stage 5.6 extension) the inter-block residual is masked by a fresh orthogonal N_inter so boundary_input / final join the masked tensor set and the overall recommendation is bounded by the masked-only grade."
+    },
+    "boundary_input_before": {
+      "present": true,
+      "risk_level": "high",
+      "inter_block_plain": true,
+      "linear_rel_l2": 0.031278569251298904,
+      "linkability_cosine": 1.0
+    },
+    "boundary_input_after": {
+      "present": true,
+      "risk_level": "low",
+      "inter_block_plain": false,
+      "linear_rel_l2": 1.903993010520935,
+      "linkability_cosine": -0.014479949893547374
+    },
+    "final_before": {
+      "present": true,
+      "risk_level": "high",
+      "inter_block_plain": true,
+      "linear_rel_l2": 0.013238905929028988,
+      "linkability_cosine": 1.0
+    },
+    "final_after": {
+      "present": true,
+      "risk_level": "low",
+      "inter_block_plain": false,
+      "linear_rel_l2": 1.6114264726638794,
+      "linkability_cosine": 0.01996654555400234
+    },
+    "note": "Head-to-head: plain_boundary keeps boundary_input / final as inter_block_plain_recovered (structural high). Stage 5.6 extension's masked_boundary_experimental mode rotates the inter-block residual with a fresh orthogonal N_inter so those tensors join the masked tensor set and the attacker's linear / MLP / linkability proxies fail."
+  },
+  "constant_time_decode_summary": {
+    "mode": "proxy_equalized",
+    "decode_step_accuracy_before": 0.7486979166666666,
+    "decode_step_accuracy_after": 0.25390625,
+    "correlation_latency_step_before": 0.7899371356774512,
+    "correlation_latency_step_after": -0.0002569897926834935,
+    "risk_level_before": "high",
+    "risk_level_after": "low",
+    "overhead_ms_estimate": 7.366718776457353,
+    "limitation": "proxy only \u2014 no real sleep, no real wall-time. The equalisation upper bound is the maximum simulated latency across (prompt_length \u00d7 decode_step) bins per method; a real deployment would calibrate this from a production timing budget."
+  },
   "overall_risk_summary": {
     "envelope_integrity_risk_level": "low",
     "envelope_blackbox_risk_level": "low",
     "envelope_timing_risk_level": "low",
     "structural_leakage_risk_level": "high",
     "structural_timing_risk_level": "high",
-    "structural_inter_block_risk_level": "high",
+    "structural_inter_block_risk_level": "medium",
     "overall_risk_level": "high",
     "security_profile_detail_with_stronger_attackers_eligibility": "yes \u2014 envelope-integrity risk is `low` (modes / bundles are statistically indistinguishable from API output AND from timing). Eligible to label `adaptive-blackbox-and-timing-proxy-evaluated, not formal`. Structural leakage (decode step, prompt length, inter-block plain boundary) is reported separately and is acknowledged as a known limitation of the current model wrapper, not a failure of the mitigation envelope."
   },
   "recommendation": {
     "security_profile_detail_with_stronger_attackers": "adaptive-blackbox-and-timing-proxy-evaluated, not formal",
+    "security_profile_detail_with_extended_proxy": "inter-block-and-constant-time-proxy-evaluated, not formal",
+    "extended_proxy_eligibility": "yes",
+    "overall_recommendation": "acceptable_with_mitigation_under_extended_proxy",
     "promotion_eligibility_note": "yes \u2014 envelope-integrity risk is `low` (modes / bundles are statistically indistinguishable from API output AND from timing). Eligible to label `adaptive-blackbox-and-timing-proxy-evaluated, not formal`. Structural leakage (decode step, prompt length, inter-block plain boundary) is reported separately and is acknowledged as a known limitation of the current model wrapper, not a failure of the mitigation envelope.",
-    "inter_block_residual_masking_recommendation": "Single-transition probe verified the orthogonal inter-block mask path is numerically correct. Full model-level masked_boundary_experimental mode is `not_implemented_in_stage_5_6` \u2014 deferred to Stage 5.6 extension or Stage 7.0.",
+    "inter_block_residual_masking_recommendation": "Stage 5.6 extension wires masked_boundary_experimental into the model-wrapper prefill / decode_step / greedy generation path. Default remains plain_boundary; the experimental mode is opt-in via inter_block_mask_mode='masked_boundary_experimental'.",
+    "constant_time_decode_recommendation": "constant_time_decode_mode='proxy_equalized' equalises per-step simulated latency to a per-method upper bound; PROXY ONLY (no sleep, no real wall-time change). Decode-step timing leakage is reduced under this proxy.",
+    "inter_block_mask_mode_used": "masked_boundary_experimental",
+    "constant_time_decode_mode_used": "proxy_equalized",
     "default_mode_unchanged": "plain_boundary",
     "default_mitigation_bundle_unchanged": "fresh_perm_only",
-    "default_nonlinear_mode_unchanged": "trusted"
+    "default_nonlinear_mode_unchanged": "trusted",
+    "default_constant_time_decode_mode_unchanged": "off"
   },
   "comparison_with_prior_stages": {
     "stage_5_4_artifact": "outputs/adaptive_island_attacks.json",

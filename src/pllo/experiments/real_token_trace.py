@@ -92,6 +92,7 @@ class RealTokenTraceConfig:
     use_pad: bool = True
     nonlinear_mode: str = "compatible_islands"
     mitigation_bundle: str = "fresh_perm_plus_sandwich_plus_pad"
+    inter_block_mask_mode: str = "plain_boundary"
     collect_prefill_traces: bool = True
     collect_decode_traces: bool = True
     collect_generation_traces: bool = True
@@ -393,6 +394,7 @@ def collect_real_token_traces(
         nonlinear_mode=config.nonlinear_mode,
         mitigation_bundle=bundle,
         collect_traces=True,
+        inter_block_mask_mode=config.inter_block_mask_mode,
     )
 
     prefill_accum: dict[str, dict[str, list[torch.Tensor]]] = {
@@ -520,6 +522,15 @@ def collect_real_token_traces(
         ),
         "use_pad": bool(config.use_pad),
         "nonlinear_mode": config.nonlinear_mode,
+        "inter_block_mask_mode": str(config.inter_block_mask_mode),
+        "inter_block_plain_recovered": (
+            config.inter_block_mask_mode == "plain_boundary"
+        ),
+        "boundary_mask_status": (
+            "masked"
+            if config.inter_block_mask_mode == "masked_boundary_experimental"
+            else "plain"
+        ),
         "num_prompts": int(N),
         "max_new_tokens": int(config.max_new_tokens),
         "prompt_max_length": int(config.prompt_max_length),

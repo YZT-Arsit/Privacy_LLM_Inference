@@ -66,6 +66,16 @@ def parse_args() -> argparse.Namespace:
         default="compatible_islands",
     )
     p.add_argument(
+        "--inter-block-mask-mode",
+        choices=("plain_boundary", "masked_boundary_experimental"),
+        default="plain_boundary",
+        help=(
+            "Stage 5.6 extension. Default plain_boundary preserves Stage"
+            " 6.4c behaviour; masked_boundary_experimental routes through"
+            " the masked-residual model-wrapper path."
+        ),
+    )
+    p.add_argument(
         "--bundle", action="append",
         choices=list(VALID_MITIGATION_BUNDLES),
         help="Restrict bundle list. Defaults to both Stage 5.3e bundles.",
@@ -564,6 +574,7 @@ def main() -> None:
         mitigation_bundles=bundles,
         use_pad=bool(args.use_pad),
         nonlinear_mode=args.nonlinear_mode,
+        inter_block_mask_mode=args.inter_block_mask_mode,
         synthetic_vocab_size=args.synthetic_vocab_size,
         synthetic_hidden_size=args.synthetic_hidden_size,
         synthetic_intermediate_size=args.synthetic_intermediate_size,

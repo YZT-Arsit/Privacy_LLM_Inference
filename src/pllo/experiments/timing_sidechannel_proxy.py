@@ -87,11 +87,30 @@ class TimingSidechannelConfig:
     )
     samples_per_bin: int = 16
     timing_noise_std: float = 0.05   # fractional noise (gaussian, σ = std × mean)
+    # Stage 5.6 extension — constant-time decode proxy. ``proxy_equalized``
+    # pads each per-step simulated latency up to a fixed upper bound so
+    # decode-step leakage can be evaluated under a latency-equalising
+    # mitigation. NEVER calls sleep; NEVER changes real wall-time.
+    constant_time_decode_mode: str = "off"
     # Cost model — mirror Stage 5.2c defaults.
     gpu_flops_per_ms: float = 1.0e6
     tee_to_gpu_flops_ratio: float = 0.05
     tee_call_overhead_ms: float = 0.5
     tee_bytes_per_ms: float = 1.0e6
+
+
+VALID_CONSTANT_TIME_DECODE_MODES: tuple[str, ...] = ("off", "proxy_equalized")
+
+
+def normalize_constant_time_decode_mode(mode: str | None) -> str:
+    if mode is None:
+        return "off"
+    if mode not in VALID_CONSTANT_TIME_DECODE_MODES:
+        raise ValueError(
+            f"invalid constant_time_decode_mode {mode!r}; must be one of"
+            f" {VALID_CONSTANT_TIME_DECODE_MODES}"
+        )
+    return mode
 
 
 def _cost_model_from_config(c: TimingSidechannelConfig) -> CostModel:
@@ -229,10 +248,13 @@ def run_timing_sidechannel_proxy(
     torch.manual_seed(config.seed)
     consts = _consts(config)
     cost = _cost_model_from_config(config)
+    constant_time_mode = normalize_constant_time_decode_mode(
+        config.constant_time_decode_mode,
+    )
     gen = torch.Generator(device="cpu").manual_seed(config.seed + 1)
 
-    # ----- 1. Build the dataset -----
-    rows: list[dict[str, Any]] = []
+    # ----- 1a. Build the raw dataset (latency without constant-time padding) -----
+    raw_rows: list[dict[str, Any]] = []
     for method in config.methods:
         for L in config.prompt_lengths:
             for step in config.decode_steps:
@@ -248,13 +270,14 @@ def run_timing_sidechannel_proxy(
                         torch.randn(1, generator=gen).item()
                         * (config.timing_noise_std * abs(mean))
                     )
-                    rows.append({
+                    raw_rows.append({
                         **base,
                         "method": method,
                         "prompt_length": int(L),
                         "decode_step": int(step),
                         "latency_ms": float(mean + noise),
                     })
+    rows = raw_rows
 
     # ----- 2. Sub-attacks -----
     latency_t = torch.tensor([r["latency_ms"] for r in rows], dtype=torch.float64)
@@ -334,6 +357,72 @@ def run_timing_sidechannel_proxy(
 
     overall_max_risk = _max_risk([risk_len, risk_step, risk_method, risk_mit])
 
+    # ----- Stage 5.6 extension: constant-time decode proxy -----
+    # Equalises per-step latency up to a fixed upper bound. PROXY only;
+    # no sleep, no real wall-time change.
+    if constant_time_mode == "proxy_equalized":
+        max_latency_by_method: dict[str, float] = {}
+        for r in raw_rows:
+            mkey = r["method"]
+            max_latency_by_method[mkey] = max(
+                max_latency_by_method.get(mkey, 0.0), r["latency_ms"],
+            )
+        eq_rows: list[dict[str, Any]] = []
+        for r in raw_rows:
+            ub = max_latency_by_method.get(r["method"], r["latency_ms"])
+            noise = (
+                torch.randn(1, generator=gen).item()
+                * (config.timing_noise_std * abs(ub) * 0.25)
+            )
+            eq_rows.append({
+                **r,
+                "latency_ms_raw": r["latency_ms"],
+                "latency_ms": float(ub + noise),
+            })
+        eq_latency_t = torch.tensor(
+            [r["latency_ms"] for r in eq_rows], dtype=torch.float64,
+        )
+        eq_step_t = torch.tensor(
+            [r["decode_step"] for r in eq_rows], dtype=torch.float64,
+        )
+        acc_step_eq, rc_step_eq = _knn_accuracy(
+            eq_latency_t.unsqueeze(-1).to(torch.float32),
+            [r["decode_step"] for r in eq_rows],
+        )
+        corr_step_eq = _pearson(eq_latency_t, eq_step_t)
+        risk_step_eq = _risk(acc_step_eq, rc_step_eq, corr_step_eq)
+        deltas = [r["latency_ms"] - r["latency_ms_raw"] for r in eq_rows]
+        overhead_ms_estimate = float(sum(deltas) / max(1, len(deltas)))
+        constant_time_summary = {
+            "mode": "proxy_equalized",
+            "decode_step_accuracy_before": acc_step,
+            "decode_step_accuracy_after": acc_step_eq,
+            "correlation_latency_step_before": corr_step,
+            "correlation_latency_step_after": corr_step_eq,
+            "risk_level_before": risk_step,
+            "risk_level_after": risk_step_eq,
+            "overhead_ms_estimate": overhead_ms_estimate,
+            "limitation": (
+                "proxy only — no real sleep, no real wall-time. The"
+                " equalisation upper bound is the maximum simulated"
+                " latency across (prompt_length × decode_step) bins per"
+                " method; a real deployment would calibrate this from a"
+                " production timing budget."
+            ),
+        }
+    else:
+        constant_time_summary = {
+            "mode": "off",
+            "decode_step_accuracy_before": acc_step,
+            "decode_step_accuracy_after": acc_step,
+            "correlation_latency_step_before": corr_step,
+            "correlation_latency_step_after": corr_step,
+            "risk_level_before": risk_step,
+            "risk_level_after": risk_step,
+            "overhead_ms_estimate": 0.0,
+            "limitation": "off — no constant-time padding applied.",
+        }
+
     return {
         "config": asdict(config),
         "cost_model_note": (
@@ -364,6 +453,7 @@ def run_timing_sidechannel_proxy(
             "risk_level": risk_mit,
         },
         "boundary_call_pattern": boundary_pattern,
+        "constant_time_decode": constant_time_summary,
         "overall_max_risk_level": overall_max_risk,
         "limitations": list(_LIMITATIONS),
     }

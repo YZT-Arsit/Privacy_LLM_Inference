@@ -670,6 +670,36 @@ def _compatible_island_integration_status(
                 )
                 or method.get("security_profile_detail_with_stronger_attackers")
             ),
+            "inter_block_mask_mode_supported": bool(
+                effective_status.get("inter_block_mask_mode_supported")
+                or method.get("inter_block_mask_mode_supported")
+                or False
+            ),
+            "masked_boundary_experimental_status": str(
+                effective_status.get("masked_boundary_experimental_status")
+                or method.get("masked_boundary_experimental_status")
+                or "not_yet"
+            ),
+            "constant_time_decode_proxy_status": str(
+                effective_status.get("constant_time_decode_proxy_status")
+                or method.get("constant_time_decode_proxy_status")
+                or "not_yet"
+            ),
+            "extended_proxy_status": str(
+                effective_status.get("extended_proxy_status")
+                or method.get("extended_proxy_status")
+                or "not_yet"
+            ),
+            "extended_proxy_artifact": (
+                effective_status.get("extended_proxy_artifact")
+                or method.get("extended_proxy_artifact")
+            ),
+            "security_profile_detail_with_extended_proxy": (
+                effective_status.get(
+                    "security_profile_detail_with_extended_proxy"
+                )
+                or method.get("security_profile_detail_with_extended_proxy")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

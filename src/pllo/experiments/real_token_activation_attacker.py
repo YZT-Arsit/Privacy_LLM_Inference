@@ -94,6 +94,7 @@ class RealTokenActivationAttackConfig:
     mitigation_bundles: tuple[str, ...] = VALID_MITIGATION_BUNDLES
     use_pad: bool = True
     nonlinear_mode: str = "compatible_islands"
+    inter_block_mask_mode: str = "plain_boundary"
     dtype: str = "float32"
     device: str = "cpu"
     # Synthetic-fallback shape (matches Stage 6.4c model probe defaults).
@@ -309,7 +310,14 @@ def _per_tensor_run(
     seed_offset: int,
 ) -> dict[str, Any]:
     feature_dim = int(plain.shape[-1])
-    is_inter_block_plain = tensor_name in INTER_BLOCK_PLAIN_TENSORS
+    # Stage 5.6 extension: under masked_boundary_experimental the
+    # inter-block residual is masked, so boundary_input / final are NOT
+    # plain at the attacker boundary. Skip the structural "inter_block_plain"
+    # tag and let the standard masked-tensor grading govern instead.
+    is_inter_block_plain = (
+        tensor_name in INTER_BLOCK_PLAIN_TENSORS
+        and config.inter_block_mask_mode == "plain_boundary"
+    )
     linear_metrics = _run_linear(plain, visible, config)
     mlp_metrics = _run_mlp(plain, visible, config, seed=config.seed + seed_offset)
     if tensor_name in PERMUTATION_TARGET_TENSORS:
@@ -561,6 +569,7 @@ def run_real_token_activation_attacks(
                 use_pad=config.use_pad,
                 nonlinear_mode=config.nonlinear_mode,
                 mitigation_bundle=bundle,
+                inter_block_mask_mode=config.inter_block_mask_mode,
                 target_tensors=config.target_tensors,
                 dtype=config.dtype,
                 device=config.device,
@@ -625,11 +634,19 @@ def run_real_token_activation_attacks(
         "security_profile_detail_with_real_token_activation": (
             "real-token-real-activation-adaptive-proxy-evaluated, not formal"
         ),
+        "inter_block_mask_mode": str(config.inter_block_mask_mode),
+        "inter_block_plain_recovered": (
+            config.inter_block_mask_mode == "plain_boundary"
+        ),
         "note": (
             "Inter-block tensors (boundary_input, final) are plain at the"
-            " model-wrapper boundary by construction; their high risk is"
-            " STRUCTURAL, not a finding against the mitigation bundle. The"
-            " masked-only recommendation grades the masked tensors only."
+            " model-wrapper boundary by construction under plain_boundary"
+            " mode; their high risk is STRUCTURAL, not a finding against"
+            " the mitigation bundle. Under masked_boundary_experimental"
+            " (Stage 5.6 extension) the inter-block residual is masked by"
+            " a fresh orthogonal N_inter so boundary_input / final join"
+            " the masked tensor set and the overall recommendation is"
+            " bounded by the masked-only grade."
         ),
     }
 
