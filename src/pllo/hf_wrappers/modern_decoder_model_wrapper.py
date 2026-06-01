@@ -619,6 +619,7 @@ class ObfuscatedModernDecoderModelWrapper:
         position_offset: int,
         layer_cache: ModernDecoderLayerKVCache | None,
         initialise_cache: bool,
+        traces_acc: dict[str, torch.Tensor] | None = None,
     ) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, Any]]:
         """Inline obfuscated attention with optional KV-cache reuse / init.
 
@@ -723,6 +724,19 @@ class ObfuscatedModernDecoderModelWrapper:
             if weights.b_o is not None:
                 attn_out_plain = attn_out_plain + weights.b_o
             h_mid = x_layer + attn_out_plain
+            if traces_acc is not None:
+                traces_acc.update(
+                    {
+                        "boundary_input_plain": x_layer.detach(),
+                        "boundary_input_visible": x_layer.detach(),
+                        "q_plain": q_rope.detach(),
+                        "q_visible": q_tilde.detach(),
+                        "k_plain": k_rope.detach(),
+                        "k_visible": k_tilde_new.detach(),
+                        "v_plain": v.detach(),
+                        "v_visible": v_tilde_new.detach(),
+                    }
+                )
             return (
                 h_mid,
                 {
@@ -768,6 +782,19 @@ class ObfuscatedModernDecoderModelWrapper:
         if weights.b_o is not None:
             attn_out = attn_out + weights.b_o
         h_mid = x_layer + attn_out
+        if traces_acc is not None:
+            traces_acc.update(
+                {
+                    "boundary_input_plain": x_layer.detach(),
+                    "boundary_input_visible": x_layer.detach(),
+                    "q_plain": q_rope.detach(),
+                    "q_visible": q_rope.detach(),
+                    "k_plain": k_rope.detach(),
+                    "k_visible": k_rope.detach(),
+                    "v_plain": v.detach(),
+                    "v_visible": v.detach(),
+                }
+            )
         return (
             h_mid,
             {
@@ -787,6 +814,8 @@ class ObfuscatedModernDecoderModelWrapper:
         self,
         h_mid: torch.Tensor,
         weights: ModernDecoderBlockWeights,
+        *,
+        traces_acc: dict[str, torch.Tensor] | None = None,
     ) -> tuple[torch.Tensor, dict[str, Any]]:
         """Inline MLP path — compatible mode uses Stage 6.4b SwiGLU island."""
         B, S_new, H = h_mid.shape
@@ -806,6 +835,21 @@ class ObfuscatedModernDecoderModelWrapper:
             mlp_out = mlp_hidden @ weights.w_down
             if weights.b_down is not None:
                 mlp_out = mlp_out + weights.b_down
+            if traces_acc is not None:
+                traces_acc.update(
+                    {
+                        "gate_plain": gate.detach(),
+                        "gate_visible": gate.detach(),
+                        "up_plain": up.detach(),
+                        "up_visible": up.detach(),
+                        "swiglu_intermediate_plain": mlp_hidden.detach(),
+                        "swiglu_intermediate_visible": mlp_hidden.detach(),
+                        "post_island_plain": mlp_out.detach(),
+                        "post_island_visible": mlp_out.detach(),
+                        "final_plain": (h_mid + mlp_out).detach(),
+                        "final_visible": (h_mid + mlp_out).detach(),
+                    }
+                )
             return h_mid + mlp_out, {"swiglu_status": "trusted_shortcut"}
         # Compatible: route through Stage 6.4b SwiGLU island.
         w_gate_folded = weights.post_attention_norm_weight.unsqueeze(-1) * weights.w_gate
@@ -835,16 +879,51 @@ class ObfuscatedModernDecoderModelWrapper:
             pad_in=pad_in,
             mitigation_bundle=self.mitigation_bundle,
         )
-        mlp_out_plain = island["y_tilde"].reshape(B, S_new, H) @ n_out_island_inv
+        mlp_out_island_tilde = island["y_tilde"].reshape(B, S_new, H)
+        mlp_out_plain = mlp_out_island_tilde @ n_out_island_inv
+        if traces_acc is not None:
+            gate_plain = h2_plain @ weights.w_gate
+            if weights.b_gate is not None:
+                gate_plain = gate_plain + weights.b_gate
+            up_plain = h2_plain @ weights.w_up
+            if weights.b_up is not None:
+                up_plain = up_plain + weights.b_up
+            gate_visible = gate_plain.index_select(dim=-1, index=perm)
+            up_visible = up_plain.index_select(dim=-1, index=perm)
+            g_plain = F.silu(gate_plain) * up_plain
+            g_visible = island["g_tilde"].reshape(
+                B, S_new, weights.intermediate_size,
+            )
+            traces_acc.update(
+                {
+                    "gate_plain": gate_plain.detach(),
+                    "gate_visible": gate_visible.detach(),
+                    "up_plain": up_plain.detach(),
+                    "up_visible": up_visible.detach(),
+                    "swiglu_intermediate_plain": g_plain.detach(),
+                    "swiglu_intermediate_visible": g_visible.detach(),
+                    "post_island_plain": mlp_out_plain.detach(),
+                    "post_island_visible": mlp_out_island_tilde.detach(),
+                    "final_plain": (h_mid + mlp_out_plain).detach(),
+                    "final_visible": (h_mid + mlp_out_plain).detach(),
+                }
+            )
         return h_mid + mlp_out_plain, {
             "swiglu_status": "compatible_island_paired_permutation",
         }
 
     # -------------------------------------------------- prefill
     def prefill(
-        self, input_ids: torch.Tensor,
+        self, input_ids: torch.Tensor, *, return_traces: bool = False,
     ) -> dict[str, Any]:
-        """Run prefill and return logits + initialised KV cache."""
+        """Run prefill and return logits + initialised KV cache.
+
+        When ``return_traces=True`` the returned dict also carries
+        ``per_layer_traces`` — a list of per-layer ``{name: tensor}`` dicts
+        covering the Stage 5.5 attacker-visible inventory (boundary_input,
+        q, k, v, gate, up, swiglu_intermediate, post_island, final). The
+        trace tensors are detached. Correctness math is unchanged.
+        """
         input_ids = input_ids.to(device=self.device)
         B, S = input_ids.shape
         # Plain reference for correctness checking.
@@ -862,21 +941,32 @@ class ObfuscatedModernDecoderModelWrapper:
             attention_variant=self._attention_variant(),
             dtype=self.dtype, device=self.device,
         )
-        traces: dict[str, Any] = {} if self.collect_traces else {}
+        per_layer_traces: list[dict[str, torch.Tensor]] | None = (
+            [] if return_traces else None
+        )
         for idx, weights in enumerate(self.weights.layers):
             layer_cache = cache.layers[idx]
+            traces_acc: dict[str, torch.Tensor] | None = (
+                {} if return_traces else None
+            )
             h_mid, dbg, attn_info = self._attention_inline(
                 x, weights,
                 position_offset=0,
                 layer_cache=layer_cache,
                 initialise_cache=True,
+                traces_acc=traces_acc,
             )
             # Append to layer cache (one-shot for prefill).
             layer_cache.key_tilde = dbg["k_tilde_new"]
             layer_cache.value_tilde = dbg["v_tilde_new"]
             layer_cache.seq_len = int(dbg["k_tilde_new"].shape[-2])
             layer_cache.cache_status = "filled_after_prefill"
-            x_layer_out, mlp_info = self._mlp_inline(h_mid, weights)
+            x_layer_out, mlp_info = self._mlp_inline(
+                h_mid, weights, traces_acc=traces_acc,
+            )
+            if per_layer_traces is not None and traces_acc is not None:
+                traces_acc["layer_index"] = idx  # int sentinel
+                per_layer_traces.append(traces_acc)
             x = x_layer_out
         cache.total_seq_len = int(S)
 
@@ -904,7 +994,7 @@ class ObfuscatedModernDecoderModelWrapper:
                 "Not formal security.",
             ],
         }
-        return {
+        result = {
             "logits_tilde": recovered_logits,    # already recovered; kept name for spec parity
             "logits_recovered": recovered_logits,
             "logits_plain": plain_logits,
@@ -912,6 +1002,9 @@ class ObfuscatedModernDecoderModelWrapper:
             "plain_layer_caches": plain_layer_caches,
             "report": report,
         }
+        if per_layer_traces is not None:
+            result["per_layer_traces"] = per_layer_traces
+        return result
 
     # -------------------------------------------------- decode_step
     def decode_step(
@@ -921,8 +1014,14 @@ class ObfuscatedModernDecoderModelWrapper:
         position: int,
         *,
         plain_layer_caches: list[dict[str, torch.Tensor]] | None = None,
+        return_traces: bool = False,
     ) -> dict[str, Any]:
-        """Process one new token using the cached masked K/V."""
+        """Process one new token using the cached masked K/V.
+
+        When ``return_traces=True`` the returned dict also carries
+        ``per_layer_traces`` — same inventory as :meth:`prefill`. Correctness
+        math is unchanged.
+        """
         next_ids = next_ids.to(device=self.device)
         if next_ids.dim() == 1:
             next_ids = next_ids.unsqueeze(-1)   # [B] → [B, 1]
@@ -939,19 +1038,31 @@ class ObfuscatedModernDecoderModelWrapper:
             plain_updated_caches = None
 
         x = self._embed(next_ids)
+        per_layer_traces: list[dict[str, torch.Tensor]] | None = (
+            [] if return_traces else None
+        )
         for idx, weights in enumerate(self.weights.layers):
             layer_cache = kv_cache.layers[idx]
+            traces_acc: dict[str, torch.Tensor] | None = (
+                {} if return_traces else None
+            )
             h_mid, dbg, attn_info = self._attention_inline(
                 x, weights,
                 position_offset=position,
                 layer_cache=layer_cache,
                 initialise_cache=False,
+                traces_acc=traces_acc,
             )
             kv_cache.append_layer(
                 idx,
                 dbg["k_tilde_new"], dbg["v_tilde_new"],
             )
-            x_out, mlp_info = self._mlp_inline(h_mid, weights)
+            x_out, mlp_info = self._mlp_inline(
+                h_mid, weights, traces_acc=traces_acc,
+            )
+            if per_layer_traces is not None and traces_acc is not None:
+                traces_acc["layer_index"] = idx
+                per_layer_traces.append(traces_acc)
             x = x_out
         kv_cache.bump_seq_len(S_new)
 
@@ -985,7 +1096,7 @@ class ObfuscatedModernDecoderModelWrapper:
                 "Not formal security.",
             ],
         }
-        return {
+        result = {
             "next_logits_tilde": recovered_logits,    # already recovered
             "next_logits_recovered": recovered_logits,
             "next_logits_plain": plain_logits,
@@ -993,6 +1104,9 @@ class ObfuscatedModernDecoderModelWrapper:
             "plain_layer_caches": plain_updated_caches,
             "report": report,
         }
+        if per_layer_traces is not None:
+            result["per_layer_traces"] = per_layer_traces
+        return result
 
     # -------------------------------------------------- greedy generate
     def greedy_generate(

@@ -1,0 +1,3819 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "model_id": null,
+    "attempt_real_model_load": false,
+    "attempt_tokenizer_load": false,
+    "local_files_only": false,
+    "allow_synthetic_fallback": true,
+    "num_prompts": 8,
+    "prompt_max_length": 8,
+    "max_layers": 2,
+    "max_new_tokens": 3,
+    "attacker_steps": 200,
+    "attacker_lr": 0.01,
+    "mlp_hidden_size": 128,
+    "mlp_batch_size": 64,
+    "ridge_lambda": 0.001,
+    "soft_assignment_iters": 50,
+    "soft_assignment_temperature": 0.05,
+    "train_fraction": 0.7,
+    "target_tensors": [
+      "boundary_input",
+      "q",
+      "k",
+      "v",
+      "gate",
+      "up",
+      "swiglu_intermediate",
+      "post_island",
+      "final"
+    ],
+    "mitigation_bundles": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "use_pad": true,
+    "nonlinear_mode": "compatible_islands",
+    "dtype": "float32",
+    "device": "cpu",
+    "synthetic_vocab_size": 64,
+    "synthetic_hidden_size": 32,
+    "synthetic_intermediate_size": 64,
+    "synthetic_num_attention_heads": 4,
+    "synthetic_num_key_value_heads": 2,
+    "synthetic_head_dim": 8
+  },
+  "model_loading": {
+    "load_status": "synthetic_only",
+    "resolved_model_id": null,
+    "model_family": null,
+    "model_class": null,
+    "load_error": "attempt_real_model_load=False (default); pytest runs the synthetic fallback to avoid network downloads.",
+    "fallback_used": true,
+    "candidates_tried": []
+  },
+  "tokenizer_loading": {
+    "tokenizer_status": "not_requested",
+    "tokenizer_id": null,
+    "tokenizer_error": null
+  },
+  "source": "synthetic_block",
+  "prompt_summary": {
+    "token_source": "synthetic_token_ids",
+    "tokenizer_status": "not_requested",
+    "num_prompts": 8,
+    "prompt_max_length": 8,
+    "prompts_used": [
+      "The capital of France is",
+      "In a secure system, the user",
+      "Machine learning models can",
+      "Privacy preserving inference requires",
+      "The next token should be",
+      "A simple example of encryption is",
+      "The transformer architecture uses",
+      "Large language models generate"
+    ],
+    "encoded_lengths": [
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8
+    ],
+    "vocab_size_used": 64
+  },
+  "block_spec_summary": {
+    "model_family": "synthetic_modern_decoder",
+    "hidden_size": 32,
+    "intermediate_size": 64,
+    "num_attention_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 8,
+    "attention_variant": "gqa",
+    "rope_base": 10000.0
+  },
+  "metadata": {
+    "mitigation_bundle": "fresh_perm_only",
+    "mitigation_bundle_metadata": {
+      "mitigation_bundle": "fresh_perm_only",
+      "fresh_permutation_enabled": true,
+      "dense_sandwich_enabled": false,
+      "boundary_pad_required": false,
+      "boundary_pad_enabled": true,
+      "activation_pad_forbidden": true,
+      "pad_placement": "linear_boundary_only",
+      "activation_input_form": "ZP",
+      "post_island_dense_mask": false,
+      "island_view_lifetime": "short_lived",
+      "default_on_candidate_under_stage_5_4": false,
+      "risk_level_from_stage_5_4": "medium",
+      "default_on_recommendation": "needs_more_evaluation",
+      "security_profile_detail": "adaptive-proxy-evaluated, not formal",
+      "online_extra_matmul_count": 0,
+      "preprocessing_only_transformations": [
+        "permutation_absorbed_into_weights"
+      ]
+    },
+    "use_pad": true,
+    "nonlinear_mode": "compatible_islands",
+    "num_prompts": 8,
+    "max_new_tokens": 3,
+    "prompt_max_length": 8,
+    "num_layers_used": 2,
+    "all_prefill_allclose": true,
+    "all_decode_allclose": true,
+    "rope_positions_seen_min": 8,
+    "rope_positions_seen_max": 9,
+    "rope_position_increment": true
+  },
+  "decode_step_log": [
+    {
+      "prompt_index": 0,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 1,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 2,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 3,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 4,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 5,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 6,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    },
+    {
+      "prompt_index": 7,
+      "steps": [
+        {
+          "decode_step_index": 0,
+          "position": 8,
+          "cache_seq_len_before": 8,
+          "cache_seq_len_after": 9,
+          "top1_match_rate": 1.0
+        },
+        {
+          "decode_step_index": 1,
+          "position": 9,
+          "cache_seq_len_before": 9,
+          "cache_seq_len_after": 10,
+          "top1_match_rate": 1.0
+        }
+      ]
+    }
+  ],
+  "generation_summary": {
+    "fresh_perm_only": {
+      "max_new_tokens": 3,
+      "num_prompts": 8,
+      "mean_token_match_rate": 1.0,
+      "all_sequences_exact_match": true,
+      "per_prompt": [
+        {
+          "prompt_index": 0,
+          "obf_tokens": [
+            24,
+            0,
+            51
+          ],
+          "plain_tokens": [
+            24,
+            0,
+            51
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 1,
+          "obf_tokens": [
+            57,
+            27,
+            57
+          ],
+          "plain_tokens": [
+            57,
+            27,
+            57
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 2,
+          "obf_tokens": [
+            57,
+            57,
+            57
+          ],
+          "plain_tokens": [
+            57,
+            57,
+            57
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 3,
+          "obf_tokens": [
+            0,
+            0,
+            24
+          ],
+          "plain_tokens": [
+            0,
+            0,
+            24
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 4,
+          "obf_tokens": [
+            37,
+            37,
+            37
+          ],
+          "plain_tokens": [
+            37,
+            37,
+            37
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 5,
+          "obf_tokens": [
+            26,
+            26,
+            59
+          ],
+          "plain_tokens": [
+            26,
+            26,
+            59
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 6,
+          "obf_tokens": [
+            59,
+            6,
+            17
+          ],
+          "plain_tokens": [
+            59,
+            6,
+            17
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 7,
+          "obf_tokens": [
+            9,
+            43,
+            9
+          ],
+          "plain_tokens": [
+            9,
+            43,
+            9
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        }
+      ]
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "max_new_tokens": 3,
+      "num_prompts": 8,
+      "mean_token_match_rate": 1.0,
+      "all_sequences_exact_match": true,
+      "per_prompt": [
+        {
+          "prompt_index": 0,
+          "obf_tokens": [
+            24,
+            0,
+            51
+          ],
+          "plain_tokens": [
+            24,
+            0,
+            51
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 1,
+          "obf_tokens": [
+            57,
+            27,
+            57
+          ],
+          "plain_tokens": [
+            57,
+            27,
+            57
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 2,
+          "obf_tokens": [
+            57,
+            57,
+            57
+          ],
+          "plain_tokens": [
+            57,
+            57,
+            57
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 3,
+          "obf_tokens": [
+            0,
+            0,
+            24
+          ],
+          "plain_tokens": [
+            0,
+            0,
+            24
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 4,
+          "obf_tokens": [
+            37,
+            37,
+            37
+          ],
+          "plain_tokens": [
+            37,
+            37,
+            37
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 5,
+          "obf_tokens": [
+            26,
+            26,
+            59
+          ],
+          "plain_tokens": [
+            26,
+            26,
+            59
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 6,
+          "obf_tokens": [
+            59,
+            6,
+            17
+          ],
+          "plain_tokens": [
+            59,
+            6,
+            17
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        },
+        {
+          "prompt_index": 7,
+          "obf_tokens": [
+            9,
+            43,
+            9
+          ],
+          "plain_tokens": [
+            9,
+            43,
+            9
+          ],
+          "token_match_rate": 1.0,
+          "sequence_exact_match": true
+        }
+      ]
+    }
+  },
+  "trace_summary": {
+    "fresh_perm_only": {
+      "prefill": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 32,
+          "plain_shape": [
+            128,
+            32
+          ],
+          "visible_shape": [
+            128,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.0029821915086358786,
+            "std": 0.19273096323013306,
+            "abs_max": 1.4192768335342407,
+            "abs_mean": 0.12346358597278595,
+            "fingerprint_sha256_prefix": "893826cad49bdc2a"
+          },
+          "visible_statistics": {
+            "mean": -0.0029821915086358786,
+            "std": 0.19273096323013306,
+            "abs_max": 1.4192768335342407,
+            "abs_mean": 0.12346358597278595,
+            "fingerprint_sha256_prefix": "893826cad49bdc2a"
+          }
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "prefill",
+          "num_samples": 512,
+          "feature_dim": 8,
+          "plain_shape": [
+            512,
+            8
+          ],
+          "visible_shape": [
+            512,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.003154735779389739,
+            "std": 0.5552132725715637,
+            "abs_max": 1.975521206855774,
+            "abs_mean": 0.44581323862075806,
+            "fingerprint_sha256_prefix": "6a065677ff90d796"
+          },
+          "visible_statistics": {
+            "mean": 0.011653834022581577,
+            "std": 0.5550999045372009,
+            "abs_max": 2.32960844039917,
+            "abs_mean": 0.44268280267715454,
+            "fingerprint_sha256_prefix": "032ee0919d048952"
+          }
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "prefill",
+          "num_samples": 256,
+          "feature_dim": 8,
+          "plain_shape": [
+            256,
+            8
+          ],
+          "visible_shape": [
+            256,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.002713785506784916,
+            "std": 0.5357954502105713,
+            "abs_max": 1.973586082458496,
+            "abs_mean": 0.428897887468338,
+            "fingerprint_sha256_prefix": "027951f59ab101bc"
+          },
+          "visible_statistics": {
+            "mean": 0.022366542369127274,
+            "std": 0.5353352427482605,
+            "abs_max": 1.9373700618743896,
+            "abs_mean": 0.43143439292907715,
+            "fingerprint_sha256_prefix": "21c352b7f80ce921"
+          }
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "prefill",
+          "num_samples": 256,
+          "feature_dim": 8,
+          "plain_shape": [
+            256,
+            8
+          ],
+          "visible_shape": [
+            256,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.025688545778393745,
+            "std": 0.5792977213859558,
+            "abs_max": 2.0884571075439453,
+            "abs_mean": 0.46714794635772705,
+            "fingerprint_sha256_prefix": "b8cc690205f7b798"
+          },
+          "visible_statistics": {
+            "mean": 0.002609759569168091,
+            "std": 0.5798611044883728,
+            "abs_max": 2.0906951427459717,
+            "abs_mean": 0.46234071254730225,
+            "fingerprint_sha256_prefix": "ff8dfe85c4c0cc3b"
+          }
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 64,
+          "plain_shape": [
+            128,
+            64
+          ],
+          "visible_shape": [
+            128,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.0037960726767778397,
+            "std": 0.5781826972961426,
+            "abs_max": 2.174858331680298,
+            "abs_mean": 0.4591645300388336,
+            "fingerprint_sha256_prefix": "c6f68599b79e005d"
+          },
+          "visible_statistics": {
+            "mean": -0.0037960736081004143,
+            "std": 0.5781826972961426,
+            "abs_max": 2.174858331680298,
+            "abs_mean": 0.4591645300388336,
+            "fingerprint_sha256_prefix": "2e0ded24dce3004d"
+          }
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 64,
+          "plain_shape": [
+            128,
+            64
+          ],
+          "visible_shape": [
+            128,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.012624263763427734,
+            "std": 0.5760438442230225,
+            "abs_max": 2.1291701793670654,
+            "abs_mean": 0.4597790241241455,
+            "fingerprint_sha256_prefix": "88a11f2163b3ab22"
+          },
+          "visible_statistics": {
+            "mean": 0.012624263763427734,
+            "std": 0.5760438442230225,
+            "abs_max": 2.1291701793670654,
+            "abs_mean": 0.4597790241241455,
+            "fingerprint_sha256_prefix": "9b6c516565e79b0d"
+          }
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 64,
+          "plain_shape": [
+            128,
+            64
+          ],
+          "visible_shape": [
+            128,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.010661044158041477,
+            "std": 0.18365588784217834,
+            "abs_max": 2.064802646636963,
+            "abs_mean": 0.10527223348617554,
+            "fingerprint_sha256_prefix": "dd58c036535f73c7"
+          },
+          "visible_statistics": {
+            "mean": 0.010661046020686626,
+            "std": 0.18365590274333954,
+            "abs_max": 2.0648038387298584,
+            "abs_mean": 0.10527224838733673,
+            "fingerprint_sha256_prefix": "c7d0d0e8f4e5b470"
+          }
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 32,
+          "plain_shape": [
+            128,
+            32
+          ],
+          "visible_shape": [
+            128,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.0013904452789574862,
+            "std": 0.1516118347644806,
+            "abs_max": 0.833096981048584,
+            "abs_mean": 0.11558404564857483,
+            "fingerprint_sha256_prefix": "cf1822f7c60a3ea5"
+          },
+          "visible_statistics": {
+            "mean": 0.0014754198491573334,
+            "std": 0.15161103010177612,
+            "abs_max": 0.8047344088554382,
+            "abs_mean": 0.11681239306926727,
+            "fingerprint_sha256_prefix": "5b693f20a4e70a68"
+          }
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 32,
+          "plain_shape": [
+            128,
+            32
+          ],
+          "visible_shape": [
+            128,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.007525884546339512,
+            "std": 0.3266235888004303,
+            "abs_max": 1.6254663467407227,
+            "abs_mean": 0.2517990469932556,
+            "fingerprint_sha256_prefix": "26e22bb664636878"
+          },
+          "visible_statistics": {
+            "mean": -0.007525884546339512,
+            "std": 0.3266235888004303,
+            "abs_max": 1.6254663467407227,
+            "abs_mean": 0.2517990469932556,
+            "fingerprint_sha256_prefix": "26e22bb664636878"
+          }
+        }
+      },
+      "decode": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 32,
+          "plain_shape": [
+            32,
+            32
+          ],
+          "visible_shape": [
+            32,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.007739719934761524,
+            "std": 0.1415422111749649,
+            "abs_max": 0.6316208243370056,
+            "abs_mean": 0.09620895981788635,
+            "fingerprint_sha256_prefix": "8cef79bc1c866b86"
+          },
+          "visible_statistics": {
+            "mean": -0.007739719934761524,
+            "std": 0.1415422111749649,
+            "abs_max": 0.6316208243370056,
+            "abs_mean": 0.09620895981788635,
+            "fingerprint_sha256_prefix": "8cef79bc1c866b86"
+          }
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "decode",
+          "num_samples": 128,
+          "feature_dim": 8,
+          "plain_shape": [
+            128,
+            8
+          ],
+          "visible_shape": [
+            128,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.005003053229302168,
+            "std": 0.5537946820259094,
+            "abs_max": 1.8472905158996582,
+            "abs_mean": 0.44395846128463745,
+            "fingerprint_sha256_prefix": "450b7cbbd0a61b69"
+          },
+          "visible_statistics": {
+            "mean": -0.0032453015446662903,
+            "std": 0.55380779504776,
+            "abs_max": 1.8363176584243774,
+            "abs_mean": 0.4466472268104553,
+            "fingerprint_sha256_prefix": "530e8a0a34e5aeac"
+          }
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "decode",
+          "num_samples": 64,
+          "feature_dim": 8,
+          "plain_shape": [
+            64,
+            8
+          ],
+          "visible_shape": [
+            64,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.03283476084470749,
+            "std": 0.5044575333595276,
+            "abs_max": 1.5068169832229614,
+            "abs_mean": 0.4006893038749695,
+            "fingerprint_sha256_prefix": "600bc9fd49c0b687"
+          },
+          "visible_statistics": {
+            "mean": 0.034071918576955795,
+            "std": 0.5043754577636719,
+            "abs_max": 1.5797874927520752,
+            "abs_mean": 0.3946727216243744,
+            "fingerprint_sha256_prefix": "df33d772b29995e1"
+          }
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "decode",
+          "num_samples": 64,
+          "feature_dim": 8,
+          "plain_shape": [
+            64,
+            8
+          ],
+          "visible_shape": [
+            64,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.021152149885892868,
+            "std": 0.5663319826126099,
+            "abs_max": 1.8929539918899536,
+            "abs_mean": 0.4482923746109009,
+            "fingerprint_sha256_prefix": "84874dec498a02cf"
+          },
+          "visible_statistics": {
+            "mean": 0.016556575894355774,
+            "std": 0.5664849877357483,
+            "abs_max": 1.748795986175537,
+            "abs_mean": 0.4594652056694031,
+            "fingerprint_sha256_prefix": "a267e7ea94cfef82"
+          }
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 64,
+          "plain_shape": [
+            32,
+            64
+          ],
+          "visible_shape": [
+            32,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.006065810099244118,
+            "std": 0.5675711631774902,
+            "abs_max": 2.1600680351257324,
+            "abs_mean": 0.4575498402118683,
+            "fingerprint_sha256_prefix": "14ea0e80e65a72b7"
+          },
+          "visible_statistics": {
+            "mean": -0.006065808702260256,
+            "std": 0.5675711631774902,
+            "abs_max": 2.1600680351257324,
+            "abs_mean": 0.4575498402118683,
+            "fingerprint_sha256_prefix": "4ee4aa6d47e75387"
+          }
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 64,
+          "plain_shape": [
+            32,
+            64
+          ],
+          "visible_shape": [
+            32,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.020362287759780884,
+            "std": 0.566789448261261,
+            "abs_max": 1.7296065092086792,
+            "abs_mean": 0.45747971534729004,
+            "fingerprint_sha256_prefix": "bbecab6409999d4f"
+          },
+          "visible_statistics": {
+            "mean": 0.020362287759780884,
+            "std": 0.566789448261261,
+            "abs_max": 1.7296065092086792,
+            "abs_mean": 0.45747965574264526,
+            "fingerprint_sha256_prefix": "afb531e825c5d687"
+          }
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 64,
+          "plain_shape": [
+            32,
+            64
+          ],
+          "visible_shape": [
+            32,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.008187923580408096,
+            "std": 0.16944652795791626,
+            "abs_max": 1.4418814182281494,
+            "abs_mean": 0.10434652864933014,
+            "fingerprint_sha256_prefix": "17c4dd9da9fbf4d9"
+          },
+          "visible_statistics": {
+            "mean": 0.008187927305698395,
+            "std": 0.16944654285907745,
+            "abs_max": 1.4418820142745972,
+            "abs_mean": 0.10434652864933014,
+            "fingerprint_sha256_prefix": "9b36b8861d5fa4bc"
+          }
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 32,
+          "plain_shape": [
+            32,
+            32
+          ],
+          "visible_shape": [
+            32,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.00310778571292758,
+            "std": 0.12996527552604675,
+            "abs_max": 0.41469013690948486,
+            "abs_mean": 0.1033019870519638,
+            "fingerprint_sha256_prefix": "60783ff24bf86349"
+          },
+          "visible_statistics": {
+            "mean": -0.004864555783569813,
+            "std": 0.1299113780260086,
+            "abs_max": 0.553236186504364,
+            "abs_mean": 0.10125911235809326,
+            "fingerprint_sha256_prefix": "bc4319cf0e12431c"
+          }
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 32,
+          "plain_shape": [
+            32,
+            32
+          ],
+          "visible_shape": [
+            32,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_only",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.013296650722622871,
+            "std": 0.26627445220947266,
+            "abs_max": 1.2345103025436401,
+            "abs_mean": 0.2027110755443573,
+            "fingerprint_sha256_prefix": "1348e27016797298"
+          },
+          "visible_statistics": {
+            "mean": -0.013296650722622871,
+            "std": 0.26627445220947266,
+            "abs_max": 1.2345103025436401,
+            "abs_mean": 0.2027110755443573,
+            "fingerprint_sha256_prefix": "1348e27016797298"
+          }
+        }
+      }
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "prefill": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 32,
+          "plain_shape": [
+            128,
+            32
+          ],
+          "visible_shape": [
+            128,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.0029821915086358786,
+            "std": 0.19273096323013306,
+            "abs_max": 1.4192768335342407,
+            "abs_mean": 0.12346358597278595,
+            "fingerprint_sha256_prefix": "893826cad49bdc2a"
+          },
+          "visible_statistics": {
+            "mean": -0.0029821915086358786,
+            "std": 0.19273096323013306,
+            "abs_max": 1.4192768335342407,
+            "abs_mean": 0.12346358597278595,
+            "fingerprint_sha256_prefix": "893826cad49bdc2a"
+          }
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "prefill",
+          "num_samples": 512,
+          "feature_dim": 8,
+          "plain_shape": [
+            512,
+            8
+          ],
+          "visible_shape": [
+            512,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.003154735779389739,
+            "std": 0.5552132725715637,
+            "abs_max": 1.975521206855774,
+            "abs_mean": 0.44581323862075806,
+            "fingerprint_sha256_prefix": "6a065677ff90d796"
+          },
+          "visible_statistics": {
+            "mean": 0.011653834022581577,
+            "std": 0.5550999045372009,
+            "abs_max": 2.32960844039917,
+            "abs_mean": 0.44268280267715454,
+            "fingerprint_sha256_prefix": "032ee0919d048952"
+          }
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "prefill",
+          "num_samples": 256,
+          "feature_dim": 8,
+          "plain_shape": [
+            256,
+            8
+          ],
+          "visible_shape": [
+            256,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.002713785506784916,
+            "std": 0.5357954502105713,
+            "abs_max": 1.973586082458496,
+            "abs_mean": 0.428897887468338,
+            "fingerprint_sha256_prefix": "027951f59ab101bc"
+          },
+          "visible_statistics": {
+            "mean": 0.022366542369127274,
+            "std": 0.5353352427482605,
+            "abs_max": 1.9373700618743896,
+            "abs_mean": 0.43143439292907715,
+            "fingerprint_sha256_prefix": "21c352b7f80ce921"
+          }
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "prefill",
+          "num_samples": 256,
+          "feature_dim": 8,
+          "plain_shape": [
+            256,
+            8
+          ],
+          "visible_shape": [
+            256,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.025688545778393745,
+            "std": 0.5792977213859558,
+            "abs_max": 2.0884571075439453,
+            "abs_mean": 0.46714794635772705,
+            "fingerprint_sha256_prefix": "b8cc690205f7b798"
+          },
+          "visible_statistics": {
+            "mean": 0.002609759569168091,
+            "std": 0.5798611044883728,
+            "abs_max": 2.0906951427459717,
+            "abs_mean": 0.46234071254730225,
+            "fingerprint_sha256_prefix": "ff8dfe85c4c0cc3b"
+          }
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 64,
+          "plain_shape": [
+            128,
+            64
+          ],
+          "visible_shape": [
+            128,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.0037960726767778397,
+            "std": 0.5781826972961426,
+            "abs_max": 2.174858331680298,
+            "abs_mean": 0.4591645300388336,
+            "fingerprint_sha256_prefix": "c6f68599b79e005d"
+          },
+          "visible_statistics": {
+            "mean": -0.0037960736081004143,
+            "std": 0.5781826972961426,
+            "abs_max": 2.174858331680298,
+            "abs_mean": 0.4591645300388336,
+            "fingerprint_sha256_prefix": "2e0ded24dce3004d"
+          }
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 64,
+          "plain_shape": [
+            128,
+            64
+          ],
+          "visible_shape": [
+            128,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.012624263763427734,
+            "std": 0.5760438442230225,
+            "abs_max": 2.1291701793670654,
+            "abs_mean": 0.4597790241241455,
+            "fingerprint_sha256_prefix": "88a11f2163b3ab22"
+          },
+          "visible_statistics": {
+            "mean": 0.012624263763427734,
+            "std": 0.5760438442230225,
+            "abs_max": 2.1291701793670654,
+            "abs_mean": 0.4597790241241455,
+            "fingerprint_sha256_prefix": "9b6c516565e79b0d"
+          }
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 64,
+          "plain_shape": [
+            128,
+            64
+          ],
+          "visible_shape": [
+            128,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.010661044158041477,
+            "std": 0.18365588784217834,
+            "abs_max": 2.064802646636963,
+            "abs_mean": 0.10527223348617554,
+            "fingerprint_sha256_prefix": "dd58c036535f73c7"
+          },
+          "visible_statistics": {
+            "mean": 0.010661046020686626,
+            "std": 0.18365590274333954,
+            "abs_max": 2.0648038387298584,
+            "abs_mean": 0.10527224838733673,
+            "fingerprint_sha256_prefix": "c7d0d0e8f4e5b470"
+          }
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 32,
+          "plain_shape": [
+            128,
+            32
+          ],
+          "visible_shape": [
+            128,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.0013904452789574862,
+            "std": 0.1516118347644806,
+            "abs_max": 0.833096981048584,
+            "abs_mean": 0.11558404564857483,
+            "fingerprint_sha256_prefix": "cf1822f7c60a3ea5"
+          },
+          "visible_statistics": {
+            "mean": 0.0014754198491573334,
+            "std": 0.15161103010177612,
+            "abs_max": 0.8047344088554382,
+            "abs_mean": 0.11681239306926727,
+            "fingerprint_sha256_prefix": "5b693f20a4e70a68"
+          }
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "prefill",
+          "num_samples": 128,
+          "feature_dim": 32,
+          "plain_shape": [
+            128,
+            32
+          ],
+          "visible_shape": [
+            128,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.007525884546339512,
+            "std": 0.3266235888004303,
+            "abs_max": 1.6254663467407227,
+            "abs_mean": 0.2517990469932556,
+            "fingerprint_sha256_prefix": "26e22bb664636878"
+          },
+          "visible_statistics": {
+            "mean": -0.007525884546339512,
+            "std": 0.3266235888004303,
+            "abs_max": 1.6254663467407227,
+            "abs_mean": 0.2517990469932556,
+            "fingerprint_sha256_prefix": "26e22bb664636878"
+          }
+        }
+      },
+      "decode": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 32,
+          "plain_shape": [
+            32,
+            32
+          ],
+          "visible_shape": [
+            32,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.007739719934761524,
+            "std": 0.1415422111749649,
+            "abs_max": 0.6316208243370056,
+            "abs_mean": 0.09620895981788635,
+            "fingerprint_sha256_prefix": "8cef79bc1c866b86"
+          },
+          "visible_statistics": {
+            "mean": -0.007739719934761524,
+            "std": 0.1415422111749649,
+            "abs_max": 0.6316208243370056,
+            "abs_mean": 0.09620895981788635,
+            "fingerprint_sha256_prefix": "8cef79bc1c866b86"
+          }
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "decode",
+          "num_samples": 128,
+          "feature_dim": 8,
+          "plain_shape": [
+            128,
+            8
+          ],
+          "visible_shape": [
+            128,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.005003053229302168,
+            "std": 0.5537946820259094,
+            "abs_max": 1.8472905158996582,
+            "abs_mean": 0.44395846128463745,
+            "fingerprint_sha256_prefix": "450b7cbbd0a61b69"
+          },
+          "visible_statistics": {
+            "mean": -0.0032453015446662903,
+            "std": 0.55380779504776,
+            "abs_max": 1.8363176584243774,
+            "abs_mean": 0.4466472268104553,
+            "fingerprint_sha256_prefix": "530e8a0a34e5aeac"
+          }
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "decode",
+          "num_samples": 64,
+          "feature_dim": 8,
+          "plain_shape": [
+            64,
+            8
+          ],
+          "visible_shape": [
+            64,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.03283476084470749,
+            "std": 0.5044575333595276,
+            "abs_max": 1.5068169832229614,
+            "abs_mean": 0.4006893038749695,
+            "fingerprint_sha256_prefix": "600bc9fd49c0b687"
+          },
+          "visible_statistics": {
+            "mean": 0.034071918576955795,
+            "std": 0.5043754577636719,
+            "abs_max": 1.5797874927520752,
+            "abs_mean": 0.3946727216243744,
+            "fingerprint_sha256_prefix": "df33d772b29995e1"
+          }
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "decode",
+          "num_samples": 64,
+          "feature_dim": 8,
+          "plain_shape": [
+            64,
+            8
+          ],
+          "visible_shape": [
+            64,
+            8
+          ],
+          "flattened_feature_dim": 8,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.021152149885892868,
+            "std": 0.5663319826126099,
+            "abs_max": 1.8929539918899536,
+            "abs_mean": 0.4482923746109009,
+            "fingerprint_sha256_prefix": "84874dec498a02cf"
+          },
+          "visible_statistics": {
+            "mean": 0.016556575894355774,
+            "std": 0.5664849877357483,
+            "abs_max": 1.748795986175537,
+            "abs_mean": 0.4594652056694031,
+            "fingerprint_sha256_prefix": "a267e7ea94cfef82"
+          }
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 64,
+          "plain_shape": [
+            32,
+            64
+          ],
+          "visible_shape": [
+            32,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.006065810099244118,
+            "std": 0.5675711631774902,
+            "abs_max": 2.1600680351257324,
+            "abs_mean": 0.4575498402118683,
+            "fingerprint_sha256_prefix": "14ea0e80e65a72b7"
+          },
+          "visible_statistics": {
+            "mean": -0.006065808702260256,
+            "std": 0.5675711631774902,
+            "abs_max": 2.1600680351257324,
+            "abs_mean": 0.4575498402118683,
+            "fingerprint_sha256_prefix": "4ee4aa6d47e75387"
+          }
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 64,
+          "plain_shape": [
+            32,
+            64
+          ],
+          "visible_shape": [
+            32,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.020362287759780884,
+            "std": 0.566789448261261,
+            "abs_max": 1.7296065092086792,
+            "abs_mean": 0.45747971534729004,
+            "fingerprint_sha256_prefix": "bbecab6409999d4f"
+          },
+          "visible_statistics": {
+            "mean": 0.020362287759780884,
+            "std": 0.566789448261261,
+            "abs_max": 1.7296065092086792,
+            "abs_mean": 0.45747965574264526,
+            "fingerprint_sha256_prefix": "afb531e825c5d687"
+          }
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 64,
+          "plain_shape": [
+            32,
+            64
+          ],
+          "visible_shape": [
+            32,
+            64
+          ],
+          "flattened_feature_dim": 64,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.008187923580408096,
+            "std": 0.16944652795791626,
+            "abs_max": 1.4418814182281494,
+            "abs_mean": 0.10434652864933014,
+            "fingerprint_sha256_prefix": "17c4dd9da9fbf4d9"
+          },
+          "visible_statistics": {
+            "mean": 0.008187927305698395,
+            "std": 0.16944654285907745,
+            "abs_max": 1.4418820142745972,
+            "abs_mean": 0.10434652864933014,
+            "fingerprint_sha256_prefix": "9b36b8861d5fa4bc"
+          }
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 32,
+          "plain_shape": [
+            32,
+            32
+          ],
+          "visible_shape": [
+            32,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": 0.00310778571292758,
+            "std": 0.12996527552604675,
+            "abs_max": 0.41469013690948486,
+            "abs_mean": 0.1033019870519638,
+            "fingerprint_sha256_prefix": "60783ff24bf86349"
+          },
+          "visible_statistics": {
+            "mean": -0.004864555783569813,
+            "std": 0.1299113780260086,
+            "abs_max": 0.553236186504364,
+            "abs_mean": 0.10125911235809326,
+            "fingerprint_sha256_prefix": "bc4319cf0e12431c"
+          }
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "decode",
+          "num_samples": 32,
+          "feature_dim": 32,
+          "plain_shape": [
+            32,
+            32
+          ],
+          "visible_shape": [
+            32,
+            32
+          ],
+          "flattened_feature_dim": 32,
+          "source": "synthetic_block",
+          "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+          "use_pad": true,
+          "plain_statistics": {
+            "mean": -0.013296650722622871,
+            "std": 0.26627445220947266,
+            "abs_max": 1.2345103025436401,
+            "abs_mean": 0.2027110755443573,
+            "fingerprint_sha256_prefix": "1348e27016797298"
+          },
+          "visible_statistics": {
+            "mean": -0.013296650722622871,
+            "std": 0.26627445220947266,
+            "abs_max": 1.2345103025436401,
+            "abs_mean": 0.2027110755443573,
+            "fingerprint_sha256_prefix": "1348e27016797298"
+          }
+        }
+      }
+    }
+  },
+  "target_tensor_results": {
+    "fresh_perm_only": {
+      "prefill": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "prefill",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 3.907435370820167e-07,
+            "relative_l2_error": 0.0029059455264359713,
+            "cosine_similarity": 0.9999966025352478
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 3.664669202407822e-05,
+            "first_train_loss": 0.03601310774683952,
+            "mse": 0.007306157145649195,
+            "relative_l2_error": 0.397361695766449,
+            "cosine_similarity": 0.9187716245651245
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.04315808550024039,
+            "mean_pairwise_l2_visible": 1.3741681664743763,
+            "mean_linkability_rank": 0.34375
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.394455750240013
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "prefill",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 358,
+            "num_test_samples": 154,
+            "ridge_lambda": 0.001,
+            "mse": 0.3194679915904999,
+            "relative_l2_error": 1.029401421546936,
+            "cosine_similarity": 0.015639571473002434
+          },
+          "mlp_inverter": {
+            "num_train_samples": 358,
+            "num_test_samples": 154,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.20749777555465698,
+            "first_train_loss": 0.34545227885246277,
+            "mse": 0.41796839237213135,
+            "relative_l2_error": 1.1774511337280273,
+            "cosine_similarity": -0.04057461768388748
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.0315410118236762,
+            "mean_pairwise_cosine_visible": 0.011811740216245693,
+            "mean_pairwise_l2_visible": 2.1462037701482943,
+            "mean_linkability_rank": 310.71875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.1480497121810913
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "prefill",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "ridge_lambda": 0.001,
+            "mse": 0.2728661000728607,
+            "relative_l2_error": 1.030074954032898,
+            "cosine_similarity": 0.04314081370830536
+          },
+          "mlp_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.08735501766204834,
+            "first_train_loss": 0.35631635785102844,
+            "mse": 0.3556596636772156,
+            "relative_l2_error": 1.1760107278823853,
+            "cosine_similarity": 0.16528567671775818
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": -0.012691991749303286,
+            "mean_pairwise_cosine_visible": 0.006565946896399075,
+            "mean_pairwise_l2_visible": 2.072033967315581,
+            "mean_linkability_rank": 153.375
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.1459357738494873
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "prefill",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "ridge_lambda": 0.001,
+            "mse": 0.3578251600265503,
+            "relative_l2_error": 1.0658354759216309,
+            "cosine_similarity": -0.013045607134699821
+          },
+          "mlp_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.08290591090917587,
+            "first_train_loss": 0.3744891285896301,
+            "mse": 0.5265317559242249,
+            "relative_l2_error": 1.292906403541565,
+            "cosine_similarity": 0.029003441333770752
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.046902905130230266,
+            "mean_pairwise_cosine_visible": 0.019406318664383068,
+            "mean_pairwise_l2_visible": 2.2202168492452423,
+            "mean_linkability_rank": 132.6875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.22707092761993408
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "prefill",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 1.377113699913025,
+            "relative_l2_error": 2.0846760272979736,
+            "cosine_similarity": 0.10457880795001984
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0004449971893336624,
+            "first_train_loss": 0.3847578763961792,
+            "mse": 0.4416583180427551,
+            "relative_l2_error": 1.1805840730667114,
+            "cosine_similarity": 0.16303864121437073
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.09375,
+              "mean_correct_rank": 31.28125,
+              "mean_signature_error": 0.13103443632438688
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.0,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 32.109375,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.020105008068434866,
+            "mean_pairwise_cosine_visible": 0.029730302349686998,
+            "mean_pairwise_l2_visible": 6.376706721227492,
+            "mean_linkability_rank": 60.171875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.9040919542312622
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "prefill",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 1.6280146837234497,
+            "relative_l2_error": 2.1866955757141113,
+            "cosine_similarity": 0.0071490611881017685
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.000472472223918885,
+            "first_train_loss": 0.352313756942749,
+            "mse": 0.3946917653083801,
+            "relative_l2_error": 1.0766838788986206,
+            "cosine_similarity": 0.2436675876379013
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.03125,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 34.234375,
+              "mean_signature_error": 0.132533894085204
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 35.484375,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.03125
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.011783502675693242,
+            "mean_pairwise_cosine_visible": 0.031282349874238016,
+            "mean_pairwise_l2_visible": 6.344108660541881,
+            "mean_linkability_rank": 56.71875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -1.1100116968154907
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "prefill",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 0.13053984940052032,
+            "relative_l2_error": 2.1561477184295654,
+            "cosine_similarity": -0.0004569919838104397
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 3.288576772320084e-05,
+            "first_train_loss": 0.04416654258966446,
+            "mse": 0.04320142790675163,
+            "relative_l2_error": 1.2403836250305176,
+            "cosine_similarity": 0.05265037342905998
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.140625,
+              "mean_correct_rank": 32.734375,
+              "mean_signature_error": 0.11305340662601994
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.0,
+              "top5_recovery_rate": 0.078125,
+              "mean_correct_rank": 34.421875,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.01388518443992265,
+            "mean_pairwise_cosine_visible": 0.03401910618143209,
+            "mean_pairwise_l2_visible": 2.000603905030975,
+            "mean_linkability_rank": 56.65625
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.9157640933990479
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "prefill",
+          "feature_dim": 32,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 0.036683835089206696,
+            "relative_l2_error": 1.3642452955245972,
+            "cosine_similarity": 0.0881236270070076
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 8.941942360252142e-05,
+            "first_train_loss": 0.033420074731111526,
+            "mse": 0.02924538217484951,
+            "relative_l2_error": 1.218102216720581,
+            "cosine_similarity": 0.1351233273744583
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.015601849014782378,
+            "mean_pairwise_cosine_visible": 0.03187552584985446,
+            "mean_pairwise_l2_visible": 1.1574816721651664,
+            "mean_linkability_rank": 61.0
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.1461430788040161
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "prefill",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 1.2655102921144135e-07,
+            "relative_l2_error": 0.0010932376608252525,
+            "cosine_similarity": 0.9999995231628418
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.00011479138629510999,
+            "first_train_loss": 0.12347498536109924,
+            "mse": 0.015543369576334953,
+            "relative_l2_error": 0.3831371068954468,
+            "cosine_similarity": 0.9261788725852966
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.12665597467037065,
+            "mean_pairwise_l2_visible": 2.415873150019519,
+            "mean_linkability_rank": 0.0
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.3820438692346215
+        }
+      },
+      "decode": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "decode",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.006695364601910114,
+            "relative_l2_error": 0.5584495067596436,
+            "cosine_similarity": 0.8295740485191345
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 5.588087503838324e-08,
+            "first_train_loss": 0.017471881583333015,
+            "mse": 0.011028463020920753,
+            "relative_l2_error": 0.7167278528213501,
+            "cosine_similarity": 0.6977829933166504
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.12029001455822806,
+            "mean_pairwise_l2_visible": 0.9661250743546701,
+            "mean_linkability_rank": 0.25
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.15827834606170654
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "decode",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 0.33507028222084045,
+            "relative_l2_error": 1.0678887367248535,
+            "cosine_similarity": 0.030964627861976624
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.016252832487225533,
+            "first_train_loss": 0.3673192262649536,
+            "mse": 0.5521655678749084,
+            "relative_l2_error": 1.3708586692810059,
+            "cosine_similarity": -0.024503082036972046
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.06411809997930927,
+            "mean_pairwise_cosine_visible": 0.004377509188190401,
+            "mean_pairwise_l2_visible": 2.1305596171751398,
+            "mean_linkability_rank": 58.515625
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.30296993255615234
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "decode",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "ridge_lambda": 0.001,
+            "mse": 0.3060070872306824,
+            "relative_l2_error": 1.0172638893127441,
+            "cosine_similarity": 0.23061855137348175
+          },
+          "mlp_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0009184814989566803,
+            "first_train_loss": 0.292524516582489,
+            "mse": 0.42930683493614197,
+            "relative_l2_error": 1.2049020528793335,
+            "cosine_similarity": 0.32476523518562317
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.028972019740901606,
+            "mean_pairwise_cosine_visible": 0.02617788631141701,
+            "mean_pairwise_l2_visible": 1.8995410158776993,
+            "mean_linkability_rank": 29.5
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.18763816356658936
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "decode",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "ridge_lambda": 0.001,
+            "mse": 0.41848260164260864,
+            "relative_l2_error": 1.2402689456939697,
+            "cosine_similarity": 0.06166008114814758
+          },
+          "mlp_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0004127779684495181,
+            "first_train_loss": 0.43082714080810547,
+            "mse": 0.5054214596748352,
+            "relative_l2_error": 1.363025426864624,
+            "cosine_similarity": 0.12805867195129395
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.05016319360800217,
+            "mean_pairwise_cosine_visible": -0.0006575284198331107,
+            "mean_pairwise_l2_visible": 2.1971767719791533,
+            "mean_linkability_rank": 29.390625
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.1227564811706543
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "decode",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.4709439277648926,
+            "relative_l2_error": 1.2520787715911865,
+            "cosine_similarity": -0.054455433040857315
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0013172124745324254,
+            "first_train_loss": 0.3881775140762329,
+            "mse": 0.3959963321685791,
+            "relative_l2_error": 1.1481339931488037,
+            "cosine_similarity": 0.14393159747123718
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.03125,
+              "top5_recovery_rate": 0.078125,
+              "mean_correct_rank": 31.3125,
+              "mean_signature_error": 0.16960980243502088
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.09375,
+              "mean_correct_rank": 30.71875,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.03125
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.032669124262561494,
+            "mean_pairwise_cosine_visible": 0.002278707153757674,
+            "mean_pairwise_l2_visible": 6.399954498552793,
+            "mean_linkability_rank": 13.71875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.10394477844238281
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "decode",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.4951401650905609,
+            "relative_l2_error": 1.2005707025527954,
+            "cosine_similarity": 0.08759458363056183
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0005493497010320425,
+            "first_train_loss": 0.34987133741378784,
+            "mse": 0.44274893403053284,
+            "relative_l2_error": 1.135278344154358,
+            "cosine_similarity": 0.11945553869009018
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.125,
+              "mean_correct_rank": 30.96875,
+              "mean_signature_error": 0.1473198864842393
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 32.078125,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.019097959180604973,
+            "mean_pairwise_cosine_visible": 0.00179718642868095,
+            "mean_pairwise_l2_visible": 6.398366803613587,
+            "mean_linkability_rank": 15.5
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.0652923583984375
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "decode",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.04555628448724747,
+            "relative_l2_error": 1.2758349180221558,
+            "cosine_similarity": 0.0245465449988842
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 2.523721195757389e-05,
+            "first_train_loss": 0.038248512893915176,
+            "mse": 0.03908616304397583,
+            "relative_l2_error": 1.1817666292190552,
+            "cosine_similarity": 0.07048817723989487
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.046875,
+              "mean_correct_rank": 31.90625,
+              "mean_signature_error": 0.12755626993506844
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.078125,
+              "mean_correct_rank": 31.765625,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.03010569374703493,
+            "mean_pairwise_cosine_visible": -0.01054010166111817,
+            "mean_pairwise_l2_visible": 1.9093518107207637,
+            "mean_linkability_rank": 14.6875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.09406828880310059
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "decode",
+          "feature_dim": 32,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.0638083666563034,
+            "relative_l2_error": 1.8922549486160278,
+            "cosine_similarity": 0.06705142557621002
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 2.257319096088395e-07,
+            "first_train_loss": 0.024103380739688873,
+            "mse": 0.025995370000600815,
+            "relative_l2_error": 1.2077829837799072,
+            "cosine_similarity": 0.0651354268193245
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.03662406751270213,
+            "mean_pairwise_cosine_visible": 0.016540305367773043,
+            "mean_pairwise_l2_visible": 1.0169612396722871,
+            "mean_linkability_rank": 13.46875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.6844719648361206
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "decode",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.009758321568369865,
+            "relative_l2_error": 0.3833603858947754,
+            "cosine_similarity": 0.9236222505569458
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 5.542126473301323e-06,
+            "first_train_loss": 0.06995002180337906,
+            "mse": 0.0355207584798336,
+            "relative_l2_error": 0.7314098477363586,
+            "cosine_similarity": 0.7152981758117676
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.19542715314382633,
+            "mean_pairwise_l2_visible": 1.8442311294163283,
+            "mean_linkability_rank": 0.0
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.34804946184158325
+        }
+      }
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "prefill": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "prefill",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 3.907435370820167e-07,
+            "relative_l2_error": 0.0029059455264359713,
+            "cosine_similarity": 0.9999966025352478
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 2.5645003915997222e-05,
+            "first_train_loss": 0.03706090524792671,
+            "mse": 0.007866746746003628,
+            "relative_l2_error": 0.4123244285583496,
+            "cosine_similarity": 0.9141548275947571
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.04315808550024039,
+            "mean_pairwise_l2_visible": 1.3741681664743763,
+            "mean_linkability_rank": 0.34375
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.40941848303191364
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "prefill",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 358,
+            "num_test_samples": 154,
+            "ridge_lambda": 0.001,
+            "mse": 0.3194679915904999,
+            "relative_l2_error": 1.029401421546936,
+            "cosine_similarity": 0.015639571473002434
+          },
+          "mlp_inverter": {
+            "num_train_samples": 358,
+            "num_test_samples": 154,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.1728050857782364,
+            "first_train_loss": 0.3589865565299988,
+            "mse": 0.4235161542892456,
+            "relative_l2_error": 1.1852394342422485,
+            "cosine_similarity": -0.025868792086839676
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.0315410118236762,
+            "mean_pairwise_cosine_visible": 0.011811740216245693,
+            "mean_pairwise_l2_visible": 2.1462037701482943,
+            "mean_linkability_rank": 310.71875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.1558380126953125
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "prefill",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "ridge_lambda": 0.001,
+            "mse": 0.2728661000728607,
+            "relative_l2_error": 1.030074954032898,
+            "cosine_similarity": 0.04314081370830536
+          },
+          "mlp_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.10120542347431183,
+            "first_train_loss": 0.3365361988544464,
+            "mse": 0.3586961627006531,
+            "relative_l2_error": 1.1810202598571777,
+            "cosine_similarity": 0.1505316197872162
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": -0.012691991749303286,
+            "mean_pairwise_cosine_visible": 0.006565946896399075,
+            "mean_pairwise_l2_visible": 2.072033967315581,
+            "mean_linkability_rank": 153.375
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.15094530582427979
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "prefill",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "ridge_lambda": 0.001,
+            "mse": 0.3578251600265503,
+            "relative_l2_error": 1.0658354759216309,
+            "cosine_similarity": -0.013045607134699821
+          },
+          "mlp_inverter": {
+            "num_train_samples": 179,
+            "num_test_samples": 77,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.08881363272666931,
+            "first_train_loss": 0.4152999222278595,
+            "mse": 0.5298181772232056,
+            "relative_l2_error": 1.2969348430633545,
+            "cosine_similarity": -0.04175413027405739
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.046902905130230266,
+            "mean_pairwise_cosine_visible": 0.019406318664383068,
+            "mean_pairwise_l2_visible": 2.2202168492452423,
+            "mean_linkability_rank": 132.6875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.23109936714172363
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "prefill",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 1.377113699913025,
+            "relative_l2_error": 2.0846760272979736,
+            "cosine_similarity": 0.10457880795001984
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.00043840138823725283,
+            "first_train_loss": 0.38621217012405396,
+            "mse": 0.40220001339912415,
+            "relative_l2_error": 1.1266131401062012,
+            "cosine_similarity": 0.2144821584224701
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.09375,
+              "mean_correct_rank": 31.28125,
+              "mean_signature_error": 0.13103443632438688
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.0,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 32.109375,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.020105008068434866,
+            "mean_pairwise_cosine_visible": 0.029730302349686998,
+            "mean_pairwise_l2_visible": 6.376706721227492,
+            "mean_linkability_rank": 60.171875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.9580628871917725
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "prefill",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 1.6280146837234497,
+            "relative_l2_error": 2.1866955757141113,
+            "cosine_similarity": 0.0071490611881017685
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0005552187794819474,
+            "first_train_loss": 0.33900386095046997,
+            "mse": 0.45937851071357727,
+            "relative_l2_error": 1.1615676879882812,
+            "cosine_similarity": 0.11201131343841553
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.03125,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 34.234375,
+              "mean_signature_error": 0.132533894085204
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 35.484375,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.03125
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.011783502675693242,
+            "mean_pairwise_cosine_visible": 0.031282349874238016,
+            "mean_pairwise_l2_visible": 6.344108660541881,
+            "mean_linkability_rank": 56.71875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -1.02512788772583
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "prefill",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 0.13053984940052032,
+            "relative_l2_error": 2.1561477184295654,
+            "cosine_similarity": -0.0004569919838104397
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 3.2702733733458444e-05,
+            "first_train_loss": 0.037142299115657806,
+            "mse": 0.049296729266643524,
+            "relative_l2_error": 1.325000286102295,
+            "cosine_similarity": 0.0065912422724068165
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.140625,
+              "mean_correct_rank": 32.734375,
+              "mean_signature_error": 0.11305340662601994
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.0,
+              "top5_recovery_rate": 0.078125,
+              "mean_correct_rank": 34.421875,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.01388518443992265,
+            "mean_pairwise_cosine_visible": 0.03401910618143209,
+            "mean_pairwise_l2_visible": 2.000603905030975,
+            "mean_linkability_rank": 56.65625
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.8311474323272705
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "prefill",
+          "feature_dim": 32,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 0.036683835089206696,
+            "relative_l2_error": 1.3642452955245972,
+            "cosine_similarity": 0.0881236270070076
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 7.191963231889531e-05,
+            "first_train_loss": 0.027177371084690094,
+            "mse": 0.030500365421175957,
+            "relative_l2_error": 1.243963360786438,
+            "cosine_similarity": 0.10223904252052307
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.015601849014782378,
+            "mean_pairwise_cosine_visible": 0.03187552584985446,
+            "mean_pairwise_l2_visible": 1.1574816721651664,
+            "mean_linkability_rank": 61.0
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.12028193473815918
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "prefill",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 1.2655102921144135e-07,
+            "relative_l2_error": 0.0010932376608252525,
+            "cosine_similarity": 0.9999995231628418
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.00012784665159415454,
+            "first_train_loss": 0.10846195369958878,
+            "mse": 0.018222585320472717,
+            "relative_l2_error": 0.4148457944393158,
+            "cosine_similarity": 0.9117968678474426
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.12665597467037065,
+            "mean_pairwise_l2_visible": 2.415873150019519,
+            "mean_linkability_rank": 0.0
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.41375255677849054
+        }
+      },
+      "decode": {
+        "boundary_input": {
+          "tensor_name": "boundary_input",
+          "scope": "decode",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.006695364601910114,
+            "relative_l2_error": 0.5584495067596436,
+            "cosine_similarity": 0.8295740485191345
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 4.348248694441281e-08,
+            "first_train_loss": 0.013860256411135197,
+            "mse": 0.010860750451683998,
+            "relative_l2_error": 0.7112571597099304,
+            "cosine_similarity": 0.7045227289199829
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.12029001455822806,
+            "mean_pairwise_l2_visible": 0.9661250743546701,
+            "mean_linkability_rank": 0.25
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.15280765295028687
+        },
+        "q": {
+          "tensor_name": "q",
+          "scope": "decode",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "ridge_lambda": 0.001,
+            "mse": 0.33507028222084045,
+            "relative_l2_error": 1.0678887367248535,
+            "cosine_similarity": 0.030964627861976624
+          },
+          "mlp_inverter": {
+            "num_train_samples": 89,
+            "num_test_samples": 39,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.012686076574027538,
+            "first_train_loss": 0.34686827659606934,
+            "mse": 0.5838490724563599,
+            "relative_l2_error": 1.4096403121948242,
+            "cosine_similarity": -0.057344820350408554
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.06411809997930927,
+            "mean_pairwise_cosine_visible": 0.004377509188190401,
+            "mean_pairwise_l2_visible": 2.1305596171751398,
+            "mean_linkability_rank": 58.515625
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.3417515754699707
+        },
+        "k": {
+          "tensor_name": "k",
+          "scope": "decode",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "ridge_lambda": 0.001,
+            "mse": 0.3060070872306824,
+            "relative_l2_error": 1.0172638893127441,
+            "cosine_similarity": 0.23061855137348175
+          },
+          "mlp_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.00077950389822945,
+            "first_train_loss": 0.35315006971359253,
+            "mse": 0.4333213269710541,
+            "relative_l2_error": 1.2105227708816528,
+            "cosine_similarity": 0.3022085726261139
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.028972019740901606,
+            "mean_pairwise_cosine_visible": 0.02617788631141701,
+            "mean_pairwise_l2_visible": 1.8995410158776993,
+            "mean_linkability_rank": 29.5
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.1932588815689087
+        },
+        "v": {
+          "tensor_name": "v",
+          "scope": "decode",
+          "feature_dim": 8,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "ridge_lambda": 0.001,
+            "mse": 0.41848260164260864,
+            "relative_l2_error": 1.2402689456939697,
+            "cosine_similarity": 0.06166008114814758
+          },
+          "mlp_inverter": {
+            "num_train_samples": 44,
+            "num_test_samples": 20,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0005462616099976003,
+            "first_train_loss": 0.39228373765945435,
+            "mse": 0.5318940877914429,
+            "relative_l2_error": 1.3982658386230469,
+            "cosine_similarity": 0.10636220872402191
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.05016319360800217,
+            "mean_pairwise_cosine_visible": -0.0006575284198331107,
+            "mean_pairwise_l2_visible": 2.1971767719791533,
+            "mean_linkability_rank": 29.390625
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": 0.15799689292907715
+        },
+        "gate": {
+          "tensor_name": "gate",
+          "scope": "decode",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.4709439277648926,
+            "relative_l2_error": 1.2520787715911865,
+            "cosine_similarity": -0.054455433040857315
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0010285242460668087,
+            "first_train_loss": 0.3417234420776367,
+            "mse": 0.4309495985507965,
+            "relative_l2_error": 1.1977336406707764,
+            "cosine_similarity": 0.11573491245508194
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.03125,
+              "top5_recovery_rate": 0.078125,
+              "mean_correct_rank": 31.3125,
+              "mean_signature_error": 0.16960980243502088
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.09375,
+              "mean_correct_rank": 30.71875,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.03125
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.032669124262561494,
+            "mean_pairwise_cosine_visible": 0.002278707153757674,
+            "mean_pairwise_l2_visible": 6.399954498552793,
+            "mean_linkability_rank": 13.71875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.054345130920410156
+        },
+        "up": {
+          "tensor_name": "up",
+          "scope": "decode",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.4951401650905609,
+            "relative_l2_error": 1.2005707025527954,
+            "cosine_similarity": 0.08759458363056183
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 0.0007074259337969124,
+            "first_train_loss": 0.3070632815361023,
+            "mse": 0.4471871256828308,
+            "relative_l2_error": 1.1409543752670288,
+            "cosine_similarity": 0.18129238486289978
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.125,
+              "mean_correct_rank": 30.96875,
+              "mean_signature_error": 0.1473198864842393
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.0625,
+              "mean_correct_rank": 32.078125,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.019097959180604973,
+            "mean_pairwise_cosine_visible": 0.00179718642868095,
+            "mean_pairwise_l2_visible": 6.398366803613587,
+            "mean_linkability_rank": 15.5
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.0596163272857666
+        },
+        "swiglu_intermediate": {
+          "tensor_name": "swiglu_intermediate",
+          "scope": "decode",
+          "feature_dim": 64,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.04555628448724747,
+            "relative_l2_error": 1.2758349180221558,
+            "cosine_similarity": 0.0245465449988842
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 4.566496136249043e-05,
+            "first_train_loss": 0.03214922919869423,
+            "mse": 0.04128925874829292,
+            "relative_l2_error": 1.2146155834197998,
+            "cosine_similarity": 0.05954064801335335
+          },
+          "permutation_recovery": {
+            "feature_dim": 64,
+            "random_chance_top1": 0.015625,
+            "signature_matching": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.046875,
+              "mean_correct_rank": 31.90625,
+              "mean_signature_error": 0.12755626993506844
+            },
+            "soft_assignment": {
+              "top1_recovery_rate": 0.015625,
+              "top5_recovery_rate": 0.078125,
+              "mean_correct_rank": 31.765625,
+              "iterations": 50,
+              "temperature": 0.05
+            },
+            "best_top1": 0.015625
+          },
+          "linkability": {
+            "visible_vs_plain_cosine": 0.03010569374703493,
+            "mean_pairwise_cosine_visible": -0.01054010166111817,
+            "mean_pairwise_l2_visible": 1.9093518107207637,
+            "mean_linkability_rank": 14.6875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.06121933460235596
+        },
+        "post_island": {
+          "tensor_name": "post_island",
+          "scope": "decode",
+          "feature_dim": 32,
+          "inter_block_plain": false,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.0638083666563034,
+            "relative_l2_error": 1.8922549486160278,
+            "cosine_similarity": 0.06705142557621002
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 2.1904486402490875e-06,
+            "first_train_loss": 0.017270414158701897,
+            "mse": 0.02648565173149109,
+            "relative_l2_error": 1.2191193103790283,
+            "cosine_similarity": -0.00907063577324152
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 0.03662406751270213,
+            "mean_pairwise_cosine_visible": 0.016540305367773043,
+            "mean_pairwise_l2_visible": 1.0169612396722871,
+            "mean_linkability_rank": 13.46875
+          },
+          "risk_level": "low",
+          "default_on_recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+          "mlp_minus_linear_relative_l2_error": -0.6731356382369995
+        },
+        "final": {
+          "tensor_name": "final",
+          "scope": "decode",
+          "feature_dim": 32,
+          "inter_block_plain": true,
+          "linear_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "ridge_lambda": 0.001,
+            "mse": 0.009758321568369865,
+            "relative_l2_error": 0.3833603858947754,
+            "cosine_similarity": 0.9236222505569458
+          },
+          "mlp_inverter": {
+            "num_train_samples": 22,
+            "num_test_samples": 10,
+            "attacker_steps": 200,
+            "attacker_lr": 0.01,
+            "mlp_hidden_size": 128,
+            "final_train_loss": 1.0597072105156258e-05,
+            "first_train_loss": 0.061522625386714935,
+            "mse": 0.03350277990102768,
+            "relative_l2_error": 0.7103300094604492,
+            "cosine_similarity": 0.7320868968963623
+          },
+          "permutation_recovery": null,
+          "linkability": {
+            "visible_vs_plain_cosine": 1.0,
+            "mean_pairwise_cosine_visible": 0.19542715314382633,
+            "mean_pairwise_l2_visible": 1.8442311294163283,
+            "mean_linkability_rank": 0.0
+          },
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "mlp_minus_linear_relative_l2_error": 0.32696962356567383
+        }
+      }
+    }
+  },
+  "bundle_comparison": [
+    {
+      "scope": "prefill",
+      "tensor_name": "boundary_input",
+      "feature_dim": 32,
+      "inter_block_plain": true,
+      "linear_rel_l2_fresh_only": 0.0029059455264359713,
+      "linear_rel_l2_full_bundle": 0.0029059455264359713,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 0.397361695766449,
+      "mlp_rel_l2_full_bundle": 0.4123244285583496,
+      "mlp_rel_l2_delta": 0.014962732791900635,
+      "linkability_cosine_fresh_only": 1.0,
+      "linkability_cosine_full_bundle": 1.0,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "high",
+      "risk_level_full_bundle": "high",
+      "recommendation": "inter_block_plain_recovered",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "q",
+      "feature_dim": 8,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.029401421546936,
+      "linear_rel_l2_full_bundle": 1.029401421546936,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.1774511337280273,
+      "mlp_rel_l2_full_bundle": 1.1852394342422485,
+      "mlp_rel_l2_delta": 0.007788300514221191,
+      "linkability_cosine_fresh_only": 0.0315410118236762,
+      "linkability_cosine_full_bundle": 0.0315410118236762,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "k",
+      "feature_dim": 8,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.030074954032898,
+      "linear_rel_l2_full_bundle": 1.030074954032898,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.1760107278823853,
+      "mlp_rel_l2_full_bundle": 1.1810202598571777,
+      "mlp_rel_l2_delta": 0.0050095319747924805,
+      "linkability_cosine_fresh_only": -0.012691991749303286,
+      "linkability_cosine_full_bundle": -0.012691991749303286,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "v",
+      "feature_dim": 8,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.0658354759216309,
+      "linear_rel_l2_full_bundle": 1.0658354759216309,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.292906403541565,
+      "mlp_rel_l2_full_bundle": 1.2969348430633545,
+      "mlp_rel_l2_delta": 0.004028439521789551,
+      "linkability_cosine_fresh_only": 0.046902905130230266,
+      "linkability_cosine_full_bundle": 0.046902905130230266,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "gate",
+      "feature_dim": 64,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 2.0846760272979736,
+      "linear_rel_l2_full_bundle": 2.0846760272979736,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.1805840730667114,
+      "mlp_rel_l2_full_bundle": 1.1266131401062012,
+      "mlp_rel_l2_delta": -0.053970932960510254,
+      "linkability_cosine_fresh_only": 0.020105008068434866,
+      "linkability_cosine_full_bundle": 0.020105008068434866,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.015625,
+      "permutation_top1_full_bundle": 0.015625,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.015625
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "up",
+      "feature_dim": 64,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 2.1866955757141113,
+      "linear_rel_l2_full_bundle": 2.1866955757141113,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.0766838788986206,
+      "mlp_rel_l2_full_bundle": 1.1615676879882812,
+      "mlp_rel_l2_delta": 0.08488380908966064,
+      "linkability_cosine_fresh_only": 0.011783502675693242,
+      "linkability_cosine_full_bundle": 0.011783502675693242,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.03125,
+      "permutation_top1_full_bundle": 0.03125,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.015625
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "swiglu_intermediate",
+      "feature_dim": 64,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 2.1561477184295654,
+      "linear_rel_l2_full_bundle": 2.1561477184295654,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.2403836250305176,
+      "mlp_rel_l2_full_bundle": 1.325000286102295,
+      "mlp_rel_l2_delta": 0.08461666107177734,
+      "linkability_cosine_fresh_only": 0.01388518443992265,
+      "linkability_cosine_full_bundle": 0.01388518443992265,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.015625,
+      "permutation_top1_full_bundle": 0.015625,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.015625
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "post_island",
+      "feature_dim": 32,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.3642452955245972,
+      "linear_rel_l2_full_bundle": 1.3642452955245972,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.218102216720581,
+      "mlp_rel_l2_full_bundle": 1.243963360786438,
+      "mlp_rel_l2_delta": 0.025861144065856934,
+      "linkability_cosine_fresh_only": 0.015601849014782378,
+      "linkability_cosine_full_bundle": 0.015601849014782378,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "prefill",
+      "tensor_name": "final",
+      "feature_dim": 32,
+      "inter_block_plain": true,
+      "linear_rel_l2_fresh_only": 0.0010932376608252525,
+      "linear_rel_l2_full_bundle": 0.0010932376608252525,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 0.3831371068954468,
+      "mlp_rel_l2_full_bundle": 0.4148457944393158,
+      "mlp_rel_l2_delta": 0.03170868754386902,
+      "linkability_cosine_fresh_only": 1.0,
+      "linkability_cosine_full_bundle": 1.0,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "high",
+      "risk_level_full_bundle": "high",
+      "recommendation": "inter_block_plain_recovered",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "boundary_input",
+      "feature_dim": 32,
+      "inter_block_plain": true,
+      "linear_rel_l2_fresh_only": 0.5584495067596436,
+      "linear_rel_l2_full_bundle": 0.5584495067596436,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 0.7167278528213501,
+      "mlp_rel_l2_full_bundle": 0.7112571597099304,
+      "mlp_rel_l2_delta": -0.005470693111419678,
+      "linkability_cosine_fresh_only": 1.0,
+      "linkability_cosine_full_bundle": 1.0,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "high",
+      "risk_level_full_bundle": "high",
+      "recommendation": "inter_block_plain_recovered",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "q",
+      "feature_dim": 8,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.0678887367248535,
+      "linear_rel_l2_full_bundle": 1.0678887367248535,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.3708586692810059,
+      "mlp_rel_l2_full_bundle": 1.4096403121948242,
+      "mlp_rel_l2_delta": 0.03878164291381836,
+      "linkability_cosine_fresh_only": 0.06411809997930927,
+      "linkability_cosine_full_bundle": 0.06411809997930927,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "k",
+      "feature_dim": 8,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.0172638893127441,
+      "linear_rel_l2_full_bundle": 1.0172638893127441,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.2049020528793335,
+      "mlp_rel_l2_full_bundle": 1.2105227708816528,
+      "mlp_rel_l2_delta": 0.005620718002319336,
+      "linkability_cosine_fresh_only": 0.028972019740901606,
+      "linkability_cosine_full_bundle": 0.028972019740901606,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "v",
+      "feature_dim": 8,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.2402689456939697,
+      "linear_rel_l2_full_bundle": 1.2402689456939697,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.363025426864624,
+      "mlp_rel_l2_full_bundle": 1.3982658386230469,
+      "mlp_rel_l2_delta": 0.03524041175842285,
+      "linkability_cosine_fresh_only": 0.05016319360800217,
+      "linkability_cosine_full_bundle": 0.05016319360800217,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "gate",
+      "feature_dim": 64,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.2520787715911865,
+      "linear_rel_l2_full_bundle": 1.2520787715911865,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.1481339931488037,
+      "mlp_rel_l2_full_bundle": 1.1977336406707764,
+      "mlp_rel_l2_delta": 0.049599647521972656,
+      "linkability_cosine_fresh_only": 0.032669124262561494,
+      "linkability_cosine_full_bundle": 0.032669124262561494,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.03125,
+      "permutation_top1_full_bundle": 0.03125,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.015625
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "up",
+      "feature_dim": 64,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.2005707025527954,
+      "linear_rel_l2_full_bundle": 1.2005707025527954,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.135278344154358,
+      "mlp_rel_l2_full_bundle": 1.1409543752670288,
+      "mlp_rel_l2_delta": 0.0056760311126708984,
+      "linkability_cosine_fresh_only": 0.019097959180604973,
+      "linkability_cosine_full_bundle": 0.019097959180604973,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.015625,
+      "permutation_top1_full_bundle": 0.015625,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.015625
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "swiglu_intermediate",
+      "feature_dim": 64,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.2758349180221558,
+      "linear_rel_l2_full_bundle": 1.2758349180221558,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.1817666292190552,
+      "mlp_rel_l2_full_bundle": 1.2146155834197998,
+      "mlp_rel_l2_delta": 0.03284895420074463,
+      "linkability_cosine_fresh_only": 0.03010569374703493,
+      "linkability_cosine_full_bundle": 0.03010569374703493,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface.",
+      "permutation_top1_fresh_only": 0.015625,
+      "permutation_top1_full_bundle": 0.015625,
+      "permutation_top1_delta": 0.0,
+      "random_chance_top1": 0.015625
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "post_island",
+      "feature_dim": 32,
+      "inter_block_plain": false,
+      "linear_rel_l2_fresh_only": 1.8922549486160278,
+      "linear_rel_l2_full_bundle": 1.8922549486160278,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 1.2077829837799072,
+      "mlp_rel_l2_full_bundle": 1.2191193103790283,
+      "mlp_rel_l2_delta": 0.011336326599121094,
+      "linkability_cosine_fresh_only": 0.03662406751270213,
+      "linkability_cosine_full_bundle": 0.03662406751270213,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "low",
+      "risk_level_full_bundle": "low",
+      "recommendation": "acceptable_with_mitigation_under_real_token_proxy",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    },
+    {
+      "scope": "decode",
+      "tensor_name": "final",
+      "feature_dim": 32,
+      "inter_block_plain": true,
+      "linear_rel_l2_fresh_only": 0.3833603858947754,
+      "linear_rel_l2_full_bundle": 0.3833603858947754,
+      "linear_rel_l2_delta": 0.0,
+      "mlp_rel_l2_fresh_only": 0.7314098477363586,
+      "mlp_rel_l2_full_bundle": 0.7103300094604492,
+      "mlp_rel_l2_delta": -0.021079838275909424,
+      "linkability_cosine_fresh_only": 1.0,
+      "linkability_cosine_full_bundle": 1.0,
+      "linkability_cosine_delta": 0.0,
+      "risk_level_fresh_only": "high",
+      "risk_level_full_bundle": "high",
+      "recommendation": "inter_block_plain_recovered",
+      "math_equivalence_note": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c model-level wrapper; the two bundles produce identical numerical traces for masked tensors. The bundle label distinguishes the security posture (default-on candidate vs. not), not the numerical visibility surface."
+    }
+  ],
+  "attacker_summary": {
+    "fresh_perm_only": {
+      "bundle": "fresh_perm_only",
+      "tensors_covered": [
+        [
+          "prefill",
+          "boundary_input"
+        ],
+        [
+          "prefill",
+          "q"
+        ],
+        [
+          "prefill",
+          "k"
+        ],
+        [
+          "prefill",
+          "v"
+        ],
+        [
+          "prefill",
+          "gate"
+        ],
+        [
+          "prefill",
+          "up"
+        ],
+        [
+          "prefill",
+          "swiglu_intermediate"
+        ],
+        [
+          "prefill",
+          "post_island"
+        ],
+        [
+          "prefill",
+          "final"
+        ],
+        [
+          "decode",
+          "boundary_input"
+        ],
+        [
+          "decode",
+          "q"
+        ],
+        [
+          "decode",
+          "k"
+        ],
+        [
+          "decode",
+          "v"
+        ],
+        [
+          "decode",
+          "gate"
+        ],
+        [
+          "decode",
+          "up"
+        ],
+        [
+          "decode",
+          "swiglu_intermediate"
+        ],
+        [
+          "decode",
+          "post_island"
+        ],
+        [
+          "decode",
+          "final"
+        ]
+      ],
+      "max_risk_level_overall": "high",
+      "max_risk_level_masked_only": "low",
+      "inter_block_plain_tensors": [
+        "boundary_input",
+        "final"
+      ],
+      "mean_linear_rel_l2_masked_only": 1.4188026700701033,
+      "mean_mlp_rel_l2_masked_only": 1.212419297013964,
+      "mean_linkability_cosine_masked_only": 0.02777697338818235,
+      "risk_counts_masked_only": {
+        "low": 14,
+        "medium": 0,
+        "high": 0
+      },
+      "risk_counts_all": {
+        "low": 14,
+        "medium": 0,
+        "high": 4
+      }
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "tensors_covered": [
+        [
+          "prefill",
+          "boundary_input"
+        ],
+        [
+          "prefill",
+          "q"
+        ],
+        [
+          "prefill",
+          "k"
+        ],
+        [
+          "prefill",
+          "v"
+        ],
+        [
+          "prefill",
+          "gate"
+        ],
+        [
+          "prefill",
+          "up"
+        ],
+        [
+          "prefill",
+          "swiglu_intermediate"
+        ],
+        [
+          "prefill",
+          "post_island"
+        ],
+        [
+          "prefill",
+          "final"
+        ],
+        [
+          "decode",
+          "boundary_input"
+        ],
+        [
+          "decode",
+          "q"
+        ],
+        [
+          "decode",
+          "k"
+        ],
+        [
+          "decode",
+          "v"
+        ],
+        [
+          "decode",
+          "gate"
+        ],
+        [
+          "decode",
+          "up"
+        ],
+        [
+          "decode",
+          "swiglu_intermediate"
+        ],
+        [
+          "decode",
+          "post_island"
+        ],
+        [
+          "decode",
+          "final"
+        ]
+      ],
+      "max_risk_level_overall": "high",
+      "max_risk_level_masked_only": "low",
+      "inter_block_plain_tensors": [
+        "boundary_input",
+        "final"
+      ],
+      "mean_linear_rel_l2_masked_only": 1.4188026700701033,
+      "mean_mlp_rel_l2_masked_only": 1.2365136316844396,
+      "mean_linkability_cosine_masked_only": 0.02777697338818235,
+      "risk_counts_masked_only": {
+        "low": 14,
+        "medium": 0,
+        "high": 0
+      },
+      "risk_counts_all": {
+        "low": 14,
+        "medium": 0,
+        "high": 4
+      }
+    }
+  },
+  "recommendation": {
+    "default_on_recommendation_full_bundle_masked_only": "acceptable_with_mitigation_under_real_token_proxy",
+    "default_on_recommendation_full_bundle_overall": "unsafe_default_on_under_real_token_proxy",
+    "default_on_recommendation_fresh_only_masked_only": "acceptable_with_mitigation_under_real_token_proxy",
+    "default_on_recommendation_fresh_only_overall": "unsafe_default_on_under_real_token_proxy",
+    "security_profile_detail_with_real_token_activation": "real-token-real-activation-adaptive-proxy-evaluated, not formal",
+    "note": "Inter-block tensors (boundary_input, final) are plain at the model-wrapper boundary by construction; their high risk is STRUCTURAL, not a finding against the mitigation bundle. The masked-only recommendation grades the masked tensors only."
+  },
+  "comparison_with_stage_5_5": {
+    "stage_5_5_random_hidden_artifact": "outputs/real_activation_attacks.json",
+    "stage_5_5b_real_token_artifact": "outputs/real_token_activation_attacks.json",
+    "key_differences": [
+      "Stage 5.5 feeds random hidden states directly to the Stage 6.4b block wrapper; Stage 5.5b feeds real (or deterministic synthetic) token IDs through the Stage 6.4c model wrapper (embedding + N blocks + final RMSNorm + LM head).",
+      "Stage 5.5b therefore covers the prefill AND decode_step paths, including the masked KV-cache append surface, whereas Stage 5.5 covered only one block's prefill-style forward.",
+      "Stage 5.5 traces use the Stage 6.4b N_res orthogonal residual mask around the block boundary; the Stage 6.4c model wrapper recovers between blocks, so boundary_input / final are PLAIN under Stage 5.5b. This is documented as a structural model-wrapper limitation, not a Stage 5.5b attacker finding.",
+      "Masked-tensor recommendations (Q/K/V/gate/up/swiglu_intermediate/post_island) carry over: rel_l2 stays high, linkability stays low, permutation top1 stays near random chance for the SwiGLU island tensors."
+    ]
+  },
+  "limitations": [
+    "These are real-token-prompted adaptive proxy attacks, not formal security proofs.",
+    "If synthetic token fallback is used, results are not real tokenizer-driven traces.",
+    "If synthetic model fallback is used, results are not real Qwen/TinyLlama traces.",
+    "Prompt set is small and not representative of all user data.",
+    "No black-box query attack is implemented.",
+    "No side-channel attack is implemented.",
+    "No real TEE isolation is evaluated.",
+    "Dense sandwiching reduces tested recovery but does not imply semantic security.",
+    "This stage only evaluates greedy generation traces, not sampling / beam search / top-k / top-p.",
+    "Inter-block hidden states (boundary_input, final) are recovered to plain space between layers under the Stage 6.4c model-level wrapper; an attacker observing those boundaries sees plaintext. This is a known model-wrapper limitation, not a Stage 5.5b attacker finding.",
+    "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c wrapper; the two bundles produce numerically identical traces for masked tensors."
+  ]
+}

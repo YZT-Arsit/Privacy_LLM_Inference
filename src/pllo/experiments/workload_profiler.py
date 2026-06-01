@@ -913,6 +913,38 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["security_profile_detail_with_real_activation"] = (
                 "real-activation-adaptive-proxy-evaluated, not formal"
             )
+            # Stage 5.5b — real-token-prompted real-activation attacker. Drives
+            # the Stage 6.4c model-level wrapper (embedding + prefill +
+            # decode_step + greedy generation) on real (or deterministic
+            # synthetic) input_ids and replays the Stage 5.5 attacker family
+            # against the resulting (plain, visible) trace pairs. Default mode
+            # stays 'trusted'; defaults are otherwise unchanged.
+            record["real_token_activation_attacker_status"] = "implemented"
+            record["real_token_activation_attacker_scope"] = (
+                "modern_decoder_model_level_prefill_decode"
+            )
+            record["real_token_activation_attacker_artifact"] = (
+                "outputs/real_token_activation_attacks.json"
+            )
+            record["security_profile_detail_with_real_token_activation"] = (
+                "real-token-real-activation-adaptive-proxy-evaluated, not formal"
+            )
+            # Stage 5.6 — stronger attackers (black-box query + timing /
+            # boundary-call side-channel proxy + inter-block residual
+            # masking gap analysis with a single-transition math probe).
+            record["stronger_attackers_status"] = "implemented"
+            record["stronger_attackers_artifact"] = (
+                "outputs/stronger_attackers.json"
+            )
+            record["blackbox_proxy_status"] = "implemented"
+            record["timing_sidechannel_proxy_status"] = "implemented"
+            record["inter_block_masking_gap_status"] = "identified"
+            record["inter_block_masking_experimental_status"] = (
+                "not_implemented_in_stage_5_6"
+            )
+            record["security_profile_detail_with_stronger_attackers"] = (
+                "adaptive-blackbox-and-timing-proxy-evaluated, not formal"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1150,6 +1182,29 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 ),
                 "security_profile_detail_with_real_activation": (
                     "real-activation-adaptive-proxy-evaluated, not formal"
+                ),
+                "real_token_activation_attacker_status": "implemented",
+                "real_token_activation_attacker_scope": (
+                    "modern_decoder_model_level_prefill_decode"
+                ),
+                "real_token_activation_attacker_artifact": (
+                    "outputs/real_token_activation_attacks.json"
+                ),
+                "security_profile_detail_with_real_token_activation": (
+                    "real-token-real-activation-adaptive-proxy-evaluated, not formal"
+                ),
+                "stronger_attackers_status": "implemented",
+                "stronger_attackers_artifact": (
+                    "outputs/stronger_attackers.json"
+                ),
+                "blackbox_proxy_status": "implemented",
+                "timing_sidechannel_proxy_status": "implemented",
+                "inter_block_masking_gap_status": "identified",
+                "inter_block_masking_experimental_status": (
+                    "not_implemented_in_stage_5_6"
+                ),
+                "security_profile_detail_with_stronger_attackers": (
+                    "adaptive-blackbox-and-timing-proxy-evaluated, not formal"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

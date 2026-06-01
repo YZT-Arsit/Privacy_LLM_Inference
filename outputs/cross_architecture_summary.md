@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.796e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.932e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.127e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.143e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -149,6 +149,25 @@ Stage 6.4c stacks the Stage 6.4b block wrapper into a multi-layer model-level ob
 | real_activation_attacker_status | implemented |
 | real_activation_attacker_scope | modern_decoder_block_level |
 | real_activation_attacker_artifact | `outputs/real_activation_attacks.json` |
+| real_token_activation_attacker_status | implemented |
+| real_token_activation_attacker_scope | modern_decoder_model_level_prefill_decode |
+| real_token_activation_attacker_artifact | `outputs/real_token_activation_attacks.json` |
+| security_profile_detail_with_real_token_activation | real-token-real-activation-adaptive-proxy-evaluated, not formal |
+| stronger_attackers_status | implemented |
+| stronger_attackers_artifact | `outputs/stronger_attackers.json` |
+| blackbox_proxy_status | implemented |
+| timing_sidechannel_proxy_status | implemented |
+| inter_block_masking_gap_status | identified |
+| inter_block_masking_experimental_status | not_implemented_in_stage_5_6 |
+| security_profile_detail_with_stronger_attackers | adaptive-blackbox-and-timing-proxy-evaluated, not formal |
+
+### Stage 5.5b Real-Token-Prompted Real-Activation Attacker
+
+Stage 5.5b drives the Stage 6.4c model-level wrapper (embedding + prefill + decode_step + greedy generation) with real (or deterministic synthetic) input_ids and replays the Stage 5.5 adaptive attacker family (linear / MLP / Sinkhorn permutation / linkability) against the resulting (plain, visible) trace pairs across PREFILL and DECODE_STEP. Real tokenizer / real model loading is opt-in; pytest stays synthetic. The masked-tensor risk classification stays `low`; the inter-block hidden states (`boundary_input` / `final`) are plain at the model-wrapper boundary by construction — this is a structural model-wrapper limitation, not a Stage 5.5b attacker finding. Not formal security; not a real TEE measurement.
+
+### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)
+
+Stage 5.6 ships three proxy attackers that do NOT require paired plaintext/visible internal supervision. (1) Black-box query attacker uses only generated tokens + per-step logits summaries; mode / bundle / use_pad distinguishability sits at random chance under Stage 6.4c's exact-token-match guarantee. (2) Timing side-channel proxy uses the Stage 5.2c op-count cost model + Gaussian noise; decode_step and prompt-length latency leakage is `high` (structural — any latency observer can count decode steps), mitigation-bundle distinguishability is `low`. (3) Inter-block residual masking gap analysis confirms the Stage 5.5b finding that `boundary_input` / `final` are plain at the model-wrapper boundary; a single-transition math probe verifies the orthogonal-mask fix is numerically correct, but the full `masked_boundary_experimental` mode is `not_implemented_in_stage_5_6` (deferred to Stage 5.6 extension / Stage 7.0). Envelope-integrity risk: `low`. Structural-leakage risk: `high`. Not formal security; not a real TEE measurement.
 
 - Default mode for the wider system remains `"trusted"`; default mitigation bundle remains `"fresh_perm_only"`.
 - This is block-level integration, not a full model-level wrapper; `full_runtime_integrated` stays False.

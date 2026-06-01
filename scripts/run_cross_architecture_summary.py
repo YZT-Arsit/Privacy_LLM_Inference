@@ -592,7 +592,116 @@ def _build_markdown(summary: dict) -> str:
                     "| real_activation_attacker_artifact |"
                     f" `{modern_row.get('real_activation_attacker_artifact')}` |"
                 )
+            rt_status = modern_row.get(
+                "real_token_activation_attacker_status"
+            )
+            if rt_status and rt_status != "not_yet":
+                out.append(
+                    "| real_token_activation_attacker_status |"
+                    f" {rt_status} |"
+                )
+                out.append(
+                    "| real_token_activation_attacker_scope |"
+                    f" {modern_row.get('real_token_activation_attacker_scope')} |"
+                )
+                out.append(
+                    "| real_token_activation_attacker_artifact |"
+                    " `"
+                    f"{modern_row.get('real_token_activation_attacker_artifact')}"
+                    "` |"
+                )
+                detail = modern_row.get(
+                    "security_profile_detail_with_real_token_activation"
+                )
+                if detail:
+                    out.append(
+                        "| security_profile_detail_with_real_token_activation |"
+                        f" {detail} |"
+                    )
+            sa_status = modern_row.get("stronger_attackers_status")
+            if sa_status and sa_status != "not_yet":
+                out.append(
+                    f"| stronger_attackers_status | {sa_status} |"
+                )
+                out.append(
+                    "| stronger_attackers_artifact |"
+                    f" `{modern_row.get('stronger_attackers_artifact')}` |"
+                )
+                out.append(
+                    "| blackbox_proxy_status |"
+                    f" {modern_row.get('blackbox_proxy_status')} |"
+                )
+                out.append(
+                    "| timing_sidechannel_proxy_status |"
+                    f" {modern_row.get('timing_sidechannel_proxy_status')} |"
+                )
+                out.append(
+                    "| inter_block_masking_gap_status |"
+                    f" {modern_row.get('inter_block_masking_gap_status')} |"
+                )
+                out.append(
+                    "| inter_block_masking_experimental_status |"
+                    f" {modern_row.get('inter_block_masking_experimental_status')} |"
+                )
+                sa_detail = modern_row.get(
+                    "security_profile_detail_with_stronger_attackers"
+                )
+                if sa_detail:
+                    out.append(
+                        "| security_profile_detail_with_stronger_attackers |"
+                        f" {sa_detail} |"
+                    )
             out.append("")
+            if rt_status and rt_status != "not_yet":
+                out.append(
+                    "### Stage 5.5b Real-Token-Prompted Real-Activation Attacker"
+                )
+                out.append("")
+                out.append(
+                    "Stage 5.5b drives the Stage 6.4c model-level wrapper"
+                    " (embedding + prefill + decode_step + greedy generation)"
+                    " with real (or deterministic synthetic) input_ids and"
+                    " replays the Stage 5.5 adaptive attacker family"
+                    " (linear / MLP / Sinkhorn permutation / linkability)"
+                    " against the resulting (plain, visible) trace pairs"
+                    " across PREFILL and DECODE_STEP. Real tokenizer / real"
+                    " model loading is opt-in; pytest stays synthetic. The"
+                    " masked-tensor risk classification stays `low`; the"
+                    " inter-block hidden states (`boundary_input` / `final`)"
+                    " are plain at the model-wrapper boundary by construction"
+                    " — this is a structural model-wrapper limitation, not a"
+                    " Stage 5.5b attacker finding. Not formal security; not a"
+                    " real TEE measurement."
+                )
+                out.append("")
+            if sa_status and sa_status != "not_yet":
+                out.append(
+                    "### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)"
+                )
+                out.append("")
+                out.append(
+                    "Stage 5.6 ships three proxy attackers that do NOT"
+                    " require paired plaintext/visible internal supervision."
+                    " (1) Black-box query attacker uses only generated"
+                    " tokens + per-step logits summaries; mode / bundle /"
+                    " use_pad distinguishability sits at random chance under"
+                    " Stage 6.4c's exact-token-match guarantee. (2) Timing"
+                    " side-channel proxy uses the Stage 5.2c op-count cost"
+                    " model + Gaussian noise; decode_step and prompt-length"
+                    " latency leakage is `high` (structural — any latency"
+                    " observer can count decode steps), mitigation-bundle"
+                    " distinguishability is `low`. (3) Inter-block residual"
+                    " masking gap analysis confirms the Stage 5.5b finding"
+                    " that `boundary_input` / `final` are plain at the"
+                    " model-wrapper boundary; a single-transition math probe"
+                    " verifies the orthogonal-mask fix is numerically correct,"
+                    " but the full `masked_boundary_experimental` mode is"
+                    " `not_implemented_in_stage_5_6` (deferred to Stage 5.6"
+                    " extension / Stage 7.0). Envelope-integrity risk:"
+                    " `low`. Structural-leakage risk: `high`. Not formal"
+                    " security; not a real TEE measurement."
+                )
+                out.append("")
             out.append(
                 "- Default mode for the wider system remains `\"trusted\"`;"
                 " default mitigation bundle remains `\"fresh_perm_only\"`."

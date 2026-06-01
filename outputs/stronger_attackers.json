@@ -1,0 +1,369 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "num_prompts": 8,
+    "prompt_max_length": 8,
+    "max_new_tokens": 3,
+    "batch_size": 1,
+    "model_id": null,
+    "attempt_real_model_load": false,
+    "attempt_tokenizer_load": false,
+    "local_files_only": false,
+    "allow_synthetic_fallback": true,
+    "nonlinear_mode": "compatible_islands",
+    "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+    "use_pad": true,
+    "inter_block_mask_mode": "plain_boundary",
+    "attacker_trials": 32,
+    "timing_noise_std": 0.05,
+    "dtype": "float32",
+    "device": "cpu",
+    "synthetic_vocab_size": 64,
+    "synthetic_hidden_size": 32,
+    "synthetic_intermediate_size": 64,
+    "synthetic_num_attention_heads": 4,
+    "synthetic_num_key_value_heads": 2,
+    "synthetic_head_dim": 8,
+    "max_layers": 2,
+    "stage_5_5b_artifact": "outputs/real_token_activation_attacks.json"
+  },
+  "model_loading": {
+    "load_status": "synthetic_only",
+    "resolved_model_id": null,
+    "model_family": null,
+    "model_class": null,
+    "load_error": "attempt_real_model_load=False (default); pytest runs the synthetic fallback to avoid network downloads.",
+    "fallback_used": true,
+    "candidates_tried": []
+  },
+  "tokenizer_loading": {
+    "tokenizer_status": "not_requested",
+    "tokenizer_id": null,
+    "tokenizer_error": null
+  },
+  "source": "synthetic_block",
+  "blackbox_attacker": {
+    "config": {
+      "seed": 2026,
+      "num_prompts": 8,
+      "prompt_max_length": 8,
+      "max_new_tokens": 3,
+      "batch_size": 1,
+      "model_id": null,
+      "attempt_real_model_load": false,
+      "attempt_tokenizer_load": false,
+      "local_files_only": false,
+      "allow_synthetic_fallback": true,
+      "nonlinear_modes": [
+        "compatible_islands"
+      ],
+      "mitigation_bundles": [
+        "fresh_perm_only",
+        "fresh_perm_plus_sandwich_plus_pad"
+      ],
+      "use_pad_values": [
+        false,
+        true
+      ],
+      "dtype": "float32",
+      "device": "cpu",
+      "synthetic_vocab_size": 64,
+      "synthetic_hidden_size": 32,
+      "synthetic_intermediate_size": 64,
+      "synthetic_num_attention_heads": 4,
+      "synthetic_num_key_value_heads": 2,
+      "synthetic_head_dim": 8,
+      "max_layers": 2
+    },
+    "model_loading": {
+      "load_status": "synthetic_only",
+      "resolved_model_id": null,
+      "model_family": null,
+      "model_class": null,
+      "load_error": "attempt_real_model_load=False (default); pytest runs the synthetic fallback to avoid network downloads.",
+      "fallback_used": true,
+      "candidates_tried": []
+    },
+    "tokenizer_loading": {
+      "tokenizer_status": "not_requested",
+      "tokenizer_id": null,
+      "tokenizer_error": null
+    },
+    "source": "synthetic_block",
+    "prompt_summary": {
+      "token_source": "synthetic_token_ids",
+      "num_prompts": 8,
+      "prompt_max_length": 8,
+      "prompts_used": [
+        "The capital of France is",
+        "In a secure system, the user",
+        "Machine learning models can",
+        "Privacy preserving inference requires",
+        "The next token should be",
+        "A simple example of encryption is",
+        "The transformer architecture uses",
+        "Large language models generate"
+      ],
+      "encoded_lengths": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "attacker_view_inventory": [
+      "generated token sequence",
+      "per-step top-1 token id",
+      "per-step top-5 token ids",
+      "per-step entropy",
+      "per-step max logit",
+      "per-step top-1 margin",
+      "output length"
+    ],
+    "internal_trace_access": "denied",
+    "prompt_linkability": {
+      "same_prompt_similarity": 0.9999999999999942,
+      "different_prompt_similarity": 0.6512318011174543,
+      "linkability_auc_proxy": 1.0,
+      "nearest_prompt_retrieval_top1": 1.0,
+      "nearest_prompt_retrieval_random_chance": 0.06666666666666667
+    },
+    "prompt_class_inference": {
+      "class_accuracy": 1.0,
+      "random_chance_baseline": 0.26666666666666666,
+      "num_classes": 4,
+      "classes": [
+        "general_knowledge",
+        "generation_template",
+        "machine_learning",
+        "security"
+      ]
+    },
+    "mitigation_mode_distinguishability": {
+      "mode_classification_accuracy": 0.0,
+      "random_chance_baseline": 0.22580645161290322,
+      "modes_observed": [
+        "compatible_islands|fresh_perm_only|use_pad=False",
+        "compatible_islands|fresh_perm_only|use_pad=True",
+        "compatible_islands|fresh_perm_plus_sandwich_plus_pad|use_pad=False",
+        "compatible_islands|fresh_perm_plus_sandwich_plus_pad|use_pad=True"
+      ]
+    },
+    "limitations": [
+      "Black-box attacks only use generated outputs and logits summaries \u2014 no internal traces are read.",
+      "Stage 5.6 black-box attackers are stronger proxy attacks, not formal security proofs.",
+      "Greedy generation produces deterministic outputs, so same-prompt linkability is trivially 1.0 \u2014 this is a property of greedy decoding, not a finding against the obfuscation envelope.",
+      "Mitigation-mode distinguishability is bounded above by the obfuscated/plain token-match rate; Stage 6.4c verified that this rate is 1.0, so distinguishability is at random chance by construction.",
+      "Synthetic fallback results are not real Qwen/TinyLlama API responses.",
+      "Dense sandwiching and fresh permutation reduce tested recovery but do not imply semantic security."
+    ]
+  },
+  "timing_sidechannel_proxy": {
+    "config": {
+      "seed": 2026,
+      "hidden_size": 32,
+      "intermediate_size": 64,
+      "num_attention_heads": 4,
+      "head_dim": 8,
+      "layers": 2,
+      "vocab_size": 64,
+      "batch_size": 1,
+      "prompt_lengths": [
+        4,
+        8,
+        16,
+        32
+      ],
+      "decode_steps": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "methods": [
+        "ours_current",
+        "ours_compatible_nonlinear_islands",
+        "tslp_trusted_nonlinear_baseline"
+      ],
+      "mitigation_bundles_under_ours_compatible": [
+        "fresh_perm_only",
+        "fresh_perm_plus_sandwich_plus_pad"
+      ],
+      "samples_per_bin": 16,
+      "timing_noise_std": 0.05,
+      "gpu_flops_per_ms": 1000000.0,
+      "tee_to_gpu_flops_ratio": 0.05,
+      "tee_call_overhead_ms": 0.5,
+      "tee_bytes_per_ms": 1000000.0
+    },
+    "cost_model_note": "Stage 5.2c illustrative cost model + per-forward op-count formulas. NOT a real TEE wall-time measurement; wall_time_source remains 'projected_from_op_counts'.",
+    "prompt_length_leakage": {
+      "length_bucket_accuracy": 0.40234375,
+      "random_chance_baseline": 0.24902216427640156,
+      "correlation_latency_length": 0.10118062820864475,
+      "risk_level": "medium"
+    },
+    "decode_step_leakage": {
+      "step_accuracy": 0.7486979166666666,
+      "random_chance_baseline": 0.24902216427640156,
+      "correlation_latency_step": 0.7899371356774512,
+      "risk_level": "high"
+    },
+    "method_distinguishability": {
+      "method_accuracy": 0.6015625,
+      "random_chance_baseline": 0.3324641460234681,
+      "risk_level": "medium"
+    },
+    "mitigation_distinguishability": {
+      "mitigation_accuracy": 0.5078125,
+      "random_chance_baseline": 0.49902152641878667,
+      "risk_level": "low"
+    },
+    "boundary_call_pattern": [
+      {
+        "method": "ours_current",
+        "per_forward_boundary_calls": 9,
+        "boundary_call_formula": "L=2 formula: 4L + 1 = 9"
+      },
+      {
+        "method": "ours_compatible_nonlinear_islands",
+        "per_forward_boundary_calls": 4,
+        "boundary_call_formula": "L=2 formula: L + 2 = 4"
+      },
+      {
+        "method": "tslp_trusted_nonlinear_baseline",
+        "per_forward_boundary_calls": 8,
+        "boundary_call_formula": "L=2 formula: 3L + 2 = 8"
+      }
+    ],
+    "overall_max_risk_level": "high",
+    "limitations": [
+      "Timing results are model-based proxies, not real TEE wall-time measurements.",
+      "Latency is computed from Stage 5.2c op-count formulas plus Gaussian noise; the cost model is illustrative, not calibrated to a deployment.",
+      "No hardware side-channel attack (cache, power, EM) is implemented.",
+      "No real TEE isolation is evaluated; `security_profile` stays `proxy-evaluated, not formal`.",
+      "Boundary-call counts are a structural property of each method and are inherently observable from any latency-aware timing channel; constant-time mitigations are NOT implemented in Stage 5.6."
+    ]
+  },
+  "inter_block_masking_gap": {
+    "config": {
+      "seed": 2026,
+      "stage_5_5b_artifact": "outputs/real_token_activation_attacks.json",
+      "inter_block_mask_mode": "plain_boundary",
+      "hidden_size": 32,
+      "intermediate_size": 64,
+      "num_attention_heads": 4,
+      "num_key_value_heads": 2,
+      "head_dim": 8,
+      "batch_size": 1,
+      "seq_len": 8,
+      "dtype": "float32",
+      "device": "cpu",
+      "attempt_model_level_experimental": false
+    },
+    "current_plain_boundary_detected": true,
+    "affected_tensors": [
+      "boundary_input",
+      "final"
+    ],
+    "accounting_risk_level": "high",
+    "accounting_baseline": {
+      "status": "ok",
+      "current_plain_boundary_detected": true,
+      "affected_tensors": [
+        "boundary_input",
+        "final"
+      ],
+      "accounting_risk_level": "high",
+      "per_tensor_evidence": [
+        {
+          "tensor_name": "boundary_input",
+          "inter_block_plain": true,
+          "linear_inverter_rel_l2_error": 0.0029059455264359713,
+          "linkability_visible_vs_plain_cosine": 1.0,
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "evidence_source": "stage_5_5b_artifact"
+        },
+        {
+          "tensor_name": "final",
+          "inter_block_plain": true,
+          "linear_inverter_rel_l2_error": 0.0010932376608252525,
+          "linkability_visible_vs_plain_cosine": 1.0,
+          "risk_level": "high",
+          "default_on_recommendation": "inter_block_plain_recovered",
+          "evidence_source": "stage_5_5b_artifact"
+        }
+      ],
+      "evidence_source": "stage_5_5b_artifact",
+      "recommendation": "needs_inter_block_masking"
+    },
+    "single_transition_probe": {
+      "status": "ok",
+      "rmsnorm_invariant_max_abs_error": 4.76837158203125e-07,
+      "rmsnorm_invariant_allclose": true,
+      "q_projection_path_max_abs_error": 5.7220458984375e-06,
+      "q_projection_path_allclose": true,
+      "residual_recovery_max_abs_error": 4.172325134277344e-07,
+      "residual_recovery_allclose": true,
+      "note": "Single-transition probe: orthogonal N_inter applied to one block boundary; rmsnorm_core is invariant under N_inter and the folded Q-projection (w_q_tilde = N_inter^T @ (\u03b3 \u2299 w_q)) reproduces the plain Q exactly. The attacker view of the inter-block residual is x_tilde = x @ N_inter (orthogonal, information-theoretically equivalent under random-N_inter sampling but with the same caveats as Stage 6.4b)."
+    },
+    "single_transition_probe_status": "single_transition_probe_passed",
+    "masked_boundary_experimental_status": "default_plain_boundary_kept",
+    "masked_boundary_experimental_default": "off",
+    "experimental_detail": {
+      "requested_mode": "plain_boundary",
+      "status": "default_plain_boundary_kept",
+      "default_mode_unchanged": "plain_boundary"
+    },
+    "overall_inter_block_risk_level": "high",
+    "recommendation": "Stage 5.5b structural gap is acknowledged; the single-transition math probe shows the masked inter-block path is correct under an orthogonal N_inter. A full model-level masked boundary requires Stage 5.6 extension or Stage 7.0 (LoRA training path) before the default mode can change.",
+    "limitations": [
+      "Inter-block masking is experimental unless explicitly marked implemented.",
+      "Stage 5.6 ships only an accounting baseline and a single-transition math probe; the full model-wrapper-level masked_boundary_experimental mode is `not_implemented_in_stage_5_6`.",
+      "The single-transition probe uses synthetic weights / synthetic activations; it verifies the orthogonal-mask invariance lemma, not formal security.",
+      "Orthogonal residual masks are information-theoretically weaker than dense masks; the probe inherits Stage 6.4b's N_res caveats.",
+      "Dense sandwiching and fresh permutation reduce tested recovery but do not imply semantic security."
+    ]
+  },
+  "overall_risk_summary": {
+    "envelope_integrity_risk_level": "low",
+    "envelope_blackbox_risk_level": "low",
+    "envelope_timing_risk_level": "low",
+    "structural_leakage_risk_level": "high",
+    "structural_timing_risk_level": "high",
+    "structural_inter_block_risk_level": "high",
+    "overall_risk_level": "high",
+    "security_profile_detail_with_stronger_attackers_eligibility": "yes \u2014 envelope-integrity risk is `low` (modes / bundles are statistically indistinguishable from API output AND from timing). Eligible to label `adaptive-blackbox-and-timing-proxy-evaluated, not formal`. Structural leakage (decode step, prompt length, inter-block plain boundary) is reported separately and is acknowledged as a known limitation of the current model wrapper, not a failure of the mitigation envelope."
+  },
+  "recommendation": {
+    "security_profile_detail_with_stronger_attackers": "adaptive-blackbox-and-timing-proxy-evaluated, not formal",
+    "promotion_eligibility_note": "yes \u2014 envelope-integrity risk is `low` (modes / bundles are statistically indistinguishable from API output AND from timing). Eligible to label `adaptive-blackbox-and-timing-proxy-evaluated, not formal`. Structural leakage (decode step, prompt length, inter-block plain boundary) is reported separately and is acknowledged as a known limitation of the current model wrapper, not a failure of the mitigation envelope.",
+    "inter_block_residual_masking_recommendation": "Single-transition probe verified the orthogonal inter-block mask path is numerically correct. Full model-level masked_boundary_experimental mode is `not_implemented_in_stage_5_6` \u2014 deferred to Stage 5.6 extension or Stage 7.0.",
+    "default_mode_unchanged": "plain_boundary",
+    "default_mitigation_bundle_unchanged": "fresh_perm_only",
+    "default_nonlinear_mode_unchanged": "trusted"
+  },
+  "comparison_with_prior_stages": {
+    "stage_5_4_artifact": "outputs/adaptive_island_attacks.json",
+    "stage_5_5_artifact": "outputs/real_activation_attacks.json",
+    "stage_5_5b_artifact": "outputs/real_token_activation_attacks.json",
+    "stage_5_6_artifact": "outputs/stronger_attackers.json",
+    "summary": "Stage 5.4 \u2014 synthetic adaptive proxy. Stage 5.5 \u2014 real-activation (random hidden input) adaptive proxy. Stage 5.5b \u2014 real-token-prompted real-activation adaptive proxy across prefill + decode_step. Stage 5.6 \u2014 black-box query + timing side-channel proxy + inter-block masking gap analysis. Stages 5.4 / 5.5 / 5.5b all reported `low` risk for masked tensors under the full mitigation bundle; Stage 5.6 extends to attack surfaces that DON'T require paired plain/visible supervision."
+  },
+  "limitations": [
+    "These are stronger proxy attacks, not formal security proofs.",
+    "Black-box attacks only use generated outputs and logits summaries.",
+    "Timing results are model-based proxies, not real TEE timing measurements.",
+    "No hardware side-channel attack is implemented.",
+    "No real TEE isolation is evaluated.",
+    "Synthetic fallback results are not real Qwen/TinyLlama results.",
+    "Inter-block masking is experimental unless explicitly marked implemented.",
+    "Dense sandwiching and fresh permutation reduce tested recovery but do not imply semantic security."
+  ]
+}

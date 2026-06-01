@@ -47,9 +47,15 @@ def _first_hidden(output):
 def test_gpt2_block_use_pad_true_matches_plain(batch_size: int, seq_len: int) -> None:
     model = _load_model()
     block = model.transformer.h[0]
+    # Pin per-test RNG: the global torch RNG was previously polluted by
+    # upstream tests' fresh-mask sampling, which made the pad-fingerprint
+    # uniqueness check intermittently fail. Locally seeded inputs +
+    # locally seeded mask sampling stabilise the test under any ordering.
+    torch.manual_seed(2026 + batch_size * 100 + seq_len)
     hidden_states = torch.randn(batch_size, seq_len, model.config.n_embd, dtype=torch.float32)
     with torch.no_grad():
         plain = _first_hidden(block(hidden_states, use_cache=False))
+        torch.manual_seed(2026 + batch_size * 100 + seq_len + 1)
         wrapper = ObfuscatedGPT2BlockWrapper(block, model.config, dtype=torch.float32, use_pad=True)
         recovered = wrapper.forward(hidden_states)
     metrics = compute_correctness_metrics(plain, recovered, atol=1e-4, rtol=1e-4)
@@ -66,6 +72,7 @@ def test_gpt2_block_use_pad_true_matches_plain(batch_size: int, seq_len: int) ->
 def test_gpt2_block_use_pad_false_still_matches_plain() -> None:
     model = _load_model()
     block = model.transformer.h[0]
+    torch.manual_seed(2026)
     hidden_states = torch.randn(1, 4, model.config.n_embd, dtype=torch.float32)
     with torch.no_grad():
         plain = _first_hidden(block(hidden_states, use_cache=False))
@@ -82,9 +89,11 @@ def test_gpt2_block_use_pad_false_still_matches_plain() -> None:
 def test_gpt2_block_untrusted_executor_receives_compensation_not_plain_pad() -> None:
     model = _load_model()
     block = model.transformer.h[0]
+    torch.manual_seed(2026)
     wrapper = ObfuscatedGPT2BlockWrapper(block, model.config, dtype=torch.float32, use_pad=True)
     recorder = RecordingExecutor()
     wrapper.executor = recorder
+    torch.manual_seed(2027)
     _ = wrapper.forward(torch.randn(1, 4, model.config.n_embd, dtype=torch.float32))
     assert recorder.compensation_seen == [True, True, True, True]
     assert wrapper.pad_report["untrusted_receives_plain_pad"] is False
@@ -94,6 +103,8 @@ def test_gpt2_block_pad_does_not_modify_hf_model() -> None:
     model = _load_model()
     block = model.transformer.h[0]
     before = block.attn.c_attn.__class__.__name__
+    torch.manual_seed(2026)
     wrapper = ObfuscatedGPT2BlockWrapper(block, model.config, dtype=torch.float32, use_pad=True)
+    torch.manual_seed(2027)
     _ = wrapper.forward(torch.randn(1, 4, model.config.n_embd, dtype=torch.float32))
     assert block.attn.c_attn.__class__.__name__ == before

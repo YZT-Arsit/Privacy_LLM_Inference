@@ -445,6 +445,83 @@ def _build_markdown(profile: dict) -> str:
                         " `implemented` / `full_runtime_integrated` /"
                         " `wall_time_source` are unchanged."
                     )
+                if islands_record.get(
+                    "stronger_attackers_status",
+                ) == "implemented":
+                    out.append("")
+                    out.append("### Stage 5.6 Stronger Attackers")
+                    out.append("")
+                    out.append(
+                        "- `stronger_attackers_status = "
+                        f"\"{islands_record['stronger_attackers_status']}\"`."
+                    )
+                    out.append(
+                        "- `stronger_attackers_artifact = "
+                        f"\"{islands_record['stronger_attackers_artifact']}\"`."
+                    )
+                    out.append(
+                        "- `blackbox_proxy_status = "
+                        f"\"{islands_record.get('blackbox_proxy_status')}\"`,"
+                        " `timing_sidechannel_proxy_status = "
+                        f"\"{islands_record.get('timing_sidechannel_proxy_status')}\"`,"
+                        " `inter_block_masking_gap_status = "
+                        f"\"{islands_record.get('inter_block_masking_gap_status')}\"`,"
+                        " `inter_block_masking_experimental_status = "
+                        f"\"{islands_record.get('inter_block_masking_experimental_status')}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_stronger_attackers = "
+                        f"\"{islands_record.get('security_profile_detail_with_stronger_attackers')}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Black-box attacker sees only generated tokens +"
+                        " logits summaries; timing proxy is a model-based"
+                        " latency simulator, NOT a real TEE measurement;"
+                        " inter-block residual masking is `identified` but"
+                        " the model-wrapper `masked_boundary_experimental`"
+                        " mode is `not_implemented_in_stage_5_6` (deferred"
+                        " to Stage 5.6 extension or Stage 7.0)."
+                        " `implemented` / `full_runtime_integrated` /"
+                        " `wall_time_source` are unchanged."
+                    )
+                if islands_record.get(
+                    "real_token_activation_attacker_status",
+                ) == "implemented":
+                    out.append("")
+                    out.append(
+                        "### Stage 5.5b Real-Token-Prompted Real-Activation Attacker"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `real_token_activation_attacker_status = "
+                        f"\"{islands_record['real_token_activation_attacker_status']}\"`."
+                    )
+                    out.append(
+                        "- `real_token_activation_attacker_scope = "
+                        f"\"{islands_record['real_token_activation_attacker_scope']}\"`"
+                        " (Stage 6.4c model-level wrapper prefill + decode_step)."
+                    )
+                    out.append(
+                        "- `real_token_activation_attacker_artifact = "
+                        f"\"{islands_record['real_token_activation_attacker_artifact']}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_real_token_activation = "
+                        f"\"{islands_record['security_profile_detail_with_real_token_activation']}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Real tokenizer / real model loading is opt-in"
+                        " (`--attempt-tokenizer-load --attempt-real-model-load`);"
+                        " pytest defaults stay synthetic. This is NOT a real"
+                        " TEE measurement, NOT formal security, and NOT a"
+                        " black-box / side-channel attack. `implemented` /"
+                        " `full_runtime_integrated` / `wall_time_source` are"
+                        " unchanged."
+                    )
                 if islands_record.get("mitigation_bundle_selectable"):
                     out.append("")
                     out.append("### Stage 5.3e Dense-Sandwich Mitigation Integration")

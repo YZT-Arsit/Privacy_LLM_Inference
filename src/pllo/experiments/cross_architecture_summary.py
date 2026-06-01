@@ -615,6 +615,61 @@ def _compatible_island_integration_status(
                 effective_status.get("real_activation_attacker_artifact")
                 or method.get("real_activation_attacker_artifact")
             ),
+            "real_token_activation_attacker_status": str(
+                effective_status.get("real_token_activation_attacker_status")
+                or method.get("real_token_activation_attacker_status")
+                or "not_yet"
+            ),
+            "real_token_activation_attacker_scope": str(
+                effective_status.get("real_token_activation_attacker_scope")
+                or method.get("real_token_activation_attacker_scope")
+                or "not_yet"
+            ),
+            "real_token_activation_attacker_artifact": (
+                effective_status.get("real_token_activation_attacker_artifact")
+                or method.get("real_token_activation_attacker_artifact")
+            ),
+            "security_profile_detail_with_real_token_activation": (
+                effective_status.get(
+                    "security_profile_detail_with_real_token_activation"
+                )
+                or method.get("security_profile_detail_with_real_token_activation")
+            ),
+            "stronger_attackers_status": str(
+                effective_status.get("stronger_attackers_status")
+                or method.get("stronger_attackers_status")
+                or "not_yet"
+            ),
+            "stronger_attackers_artifact": (
+                effective_status.get("stronger_attackers_artifact")
+                or method.get("stronger_attackers_artifact")
+            ),
+            "blackbox_proxy_status": str(
+                effective_status.get("blackbox_proxy_status")
+                or method.get("blackbox_proxy_status")
+                or "not_yet"
+            ),
+            "timing_sidechannel_proxy_status": str(
+                effective_status.get("timing_sidechannel_proxy_status")
+                or method.get("timing_sidechannel_proxy_status")
+                or "not_yet"
+            ),
+            "inter_block_masking_gap_status": str(
+                effective_status.get("inter_block_masking_gap_status")
+                or method.get("inter_block_masking_gap_status")
+                or "not_yet"
+            ),
+            "inter_block_masking_experimental_status": str(
+                effective_status.get("inter_block_masking_experimental_status")
+                or method.get("inter_block_masking_experimental_status")
+                or "not_yet"
+            ),
+            "security_profile_detail_with_stronger_attackers": (
+                effective_status.get(
+                    "security_profile_detail_with_stronger_attackers"
+                )
+                or method.get("security_profile_detail_with_stronger_attackers")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"
