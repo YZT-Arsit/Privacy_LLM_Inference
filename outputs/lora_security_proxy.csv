@@ -1,0 +1,408 @@
+section,strategy,metric,value
+config,n/a,output_dir,/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs
+config,n/a,seed,2026
+config,n/a,d_in,32
+config,n/a,d_out,16
+config,n/a,rank,4
+config,n/a,alpha,1.0
+config,n/a,use_bias,True
+config,n/a,num_trials,32
+config,n/a,pad_scale,1.0
+config,n/a,dtype,float64
+config,n/a,device,cpu
+config,n/a,strategies,unmasked_adapter_baseline|fixed_masks_fixed_u|fresh_u_only|fresh_masks_fresh_u|fresh_masks_fresh_u_with_pad
+config,n/a,membership_trials_per_sample,8
+adapter_extraction,unmasked_adapter_baseline,delta_w_recovery_rel_l2_mean,0.0
+adapter_extraction,unmasked_adapter_baseline,delta_w_recovery_rel_l2_min,0.0
+adapter_extraction,unmasked_adapter_baseline,adapter_a_recovery_rel_l2_mean,0.0
+adapter_extraction,unmasked_adapter_baseline,adapter_b_recovery_rel_l2_mean,0.0
+adapter_extraction,unmasked_adapter_baseline,rank_signature_a,4
+adapter_extraction,unmasked_adapter_baseline,rank_signature_b,4
+adapter_extraction,unmasked_adapter_baseline,configured_rank,4
+adapter_extraction,unmasked_adapter_baseline,rank_visible_in_a_tilde_shape,True
+adapter_extraction,unmasked_adapter_baseline,subspace_similarity_a_mean,0.9999999999999998
+adapter_extraction,unmasked_adapter_baseline,subspace_similarity_b_mean,1.0
+adapter_extraction,unmasked_adapter_baseline,singular_value_similarity_a_mean,1.0000000000000002
+adapter_extraction,unmasked_adapter_baseline,singular_value_similarity_b_mean,1.0
+adapter_extraction,unmasked_adapter_baseline,num_trials,32
+adapter_extraction,unmasked_adapter_baseline,exact_recovery,True
+adapter_extraction,unmasked_adapter_baseline,interpretation,Adapter is fully exposed; ΔW = A B reconstructible exactly.
+adapter_extraction,fixed_masks_fixed_u,delta_w_recovery_rel_l2_mean,1.4581158095031208
+adapter_extraction,fixed_masks_fixed_u,delta_w_recovery_rel_l2_min,1.4581158095031208
+adapter_extraction,fixed_masks_fixed_u,adapter_a_recovery_rel_l2_mean,1.4406830421865748
+adapter_extraction,fixed_masks_fixed_u,adapter_b_recovery_rel_l2_mean,1.453665242357273
+adapter_extraction,fixed_masks_fixed_u,rank_signature_a,4
+adapter_extraction,fixed_masks_fixed_u,rank_signature_b,4
+adapter_extraction,fixed_masks_fixed_u,configured_rank,4
+adapter_extraction,fixed_masks_fixed_u,rank_visible_in_a_tilde_shape,True
+adapter_extraction,fixed_masks_fixed_u,subspace_similarity_a_mean,0.25627004448227014
+adapter_extraction,fixed_masks_fixed_u,subspace_similarity_b_mean,0.4366138268314591
+adapter_extraction,fixed_masks_fixed_u,singular_value_similarity_a_mean,1.0
+adapter_extraction,fixed_masks_fixed_u,singular_value_similarity_b_mean,1.0
+adapter_extraction,fixed_masks_fixed_u,num_trials,32
+adapter_extraction,fixed_masks_fixed_u,exact_recovery,False
+adapter_extraction,fixed_masks_fixed_u,interpretation,"Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+adapter_extraction,fresh_u_only,delta_w_recovery_rel_l2_mean,1.4581158095031206
+adapter_extraction,fresh_u_only,delta_w_recovery_rel_l2_min,1.4581158095031201
+adapter_extraction,fresh_u_only,adapter_a_recovery_rel_l2_mean,1.4220831217395475
+adapter_extraction,fresh_u_only,adapter_b_recovery_rel_l2_mean,1.4071503734269348
+adapter_extraction,fresh_u_only,rank_signature_a,4
+adapter_extraction,fresh_u_only,rank_signature_b,4
+adapter_extraction,fresh_u_only,configured_rank,4
+adapter_extraction,fresh_u_only,rank_visible_in_a_tilde_shape,True
+adapter_extraction,fresh_u_only,subspace_similarity_a_mean,0.25627004448227014
+adapter_extraction,fresh_u_only,subspace_similarity_b_mean,0.436613826831459
+adapter_extraction,fresh_u_only,singular_value_similarity_a_mean,1.0000000000000002
+adapter_extraction,fresh_u_only,singular_value_similarity_b_mean,1.0
+adapter_extraction,fresh_u_only,num_trials,32
+adapter_extraction,fresh_u_only,exact_recovery,False
+adapter_extraction,fresh_u_only,interpretation,"Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+adapter_extraction,fresh_masks_fresh_u,delta_w_recovery_rel_l2_mean,1.421451041123386
+adapter_extraction,fresh_masks_fresh_u,delta_w_recovery_rel_l2_min,1.3581555705352828
+adapter_extraction,fresh_masks_fresh_u,adapter_a_recovery_rel_l2_mean,1.414296854391157
+adapter_extraction,fresh_masks_fresh_u,adapter_b_recovery_rel_l2_mean,1.400706870941724
+adapter_extraction,fresh_masks_fresh_u,rank_signature_a,4
+adapter_extraction,fresh_masks_fresh_u,rank_signature_b,4
+adapter_extraction,fresh_masks_fresh_u,configured_rank,4
+adapter_extraction,fresh_masks_fresh_u,rank_visible_in_a_tilde_shape,True
+adapter_extraction,fresh_masks_fresh_u,subspace_similarity_a_mean,0.3095163989437129
+adapter_extraction,fresh_masks_fresh_u,subspace_similarity_b_mean,0.39598629527406926
+adapter_extraction,fresh_masks_fresh_u,singular_value_similarity_a_mean,1.0000000000000002
+adapter_extraction,fresh_masks_fresh_u,singular_value_similarity_b_mean,1.0
+adapter_extraction,fresh_masks_fresh_u,num_trials,32
+adapter_extraction,fresh_masks_fresh_u,exact_recovery,False
+adapter_extraction,fresh_masks_fresh_u,interpretation,"Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+adapter_extraction,fresh_masks_fresh_u_with_pad,delta_w_recovery_rel_l2_mean,1.4105836694753255
+adapter_extraction,fresh_masks_fresh_u_with_pad,delta_w_recovery_rel_l2_min,1.3186748695640653
+adapter_extraction,fresh_masks_fresh_u_with_pad,adapter_a_recovery_rel_l2_mean,1.4100895968196243
+adapter_extraction,fresh_masks_fresh_u_with_pad,adapter_b_recovery_rel_l2_mean,1.3977068230639045
+adapter_extraction,fresh_masks_fresh_u_with_pad,rank_signature_a,4
+adapter_extraction,fresh_masks_fresh_u_with_pad,rank_signature_b,4
+adapter_extraction,fresh_masks_fresh_u_with_pad,configured_rank,4
+adapter_extraction,fresh_masks_fresh_u_with_pad,rank_visible_in_a_tilde_shape,True
+adapter_extraction,fresh_masks_fresh_u_with_pad,subspace_similarity_a_mean,0.2786884231134426
+adapter_extraction,fresh_masks_fresh_u_with_pad,subspace_similarity_b_mean,0.4343243649531124
+adapter_extraction,fresh_masks_fresh_u_with_pad,singular_value_similarity_a_mean,1.0000000000000002
+adapter_extraction,fresh_masks_fresh_u_with_pad,singular_value_similarity_b_mean,1.0
+adapter_extraction,fresh_masks_fresh_u_with_pad,num_trials,32
+adapter_extraction,fresh_masks_fresh_u_with_pad,exact_recovery,False
+adapter_extraction,fresh_masks_fresh_u_with_pad,interpretation,"Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+gradient_leakage,unmasked_adapter_baseline,private_input_X.visibility,trusted
+gradient_leakage,unmasked_adapter_baseline,private_input_X.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,private_input_X.leakage_risk,high
+gradient_leakage,unmasked_adapter_baseline,private_input_X.mitigation,Right-mask + optional input pad before crossing the boundary.
+gradient_leakage,unmasked_adapter_baseline,private_input_X.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,private_target_Y.visibility,trusted
+gradient_leakage,unmasked_adapter_baseline,private_target_Y.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,private_target_Y.leakage_risk,low
+gradient_leakage,unmasked_adapter_baseline,private_target_Y.mitigation,Stays trusted; loss computed inside the trusted side.
+gradient_leakage,unmasked_adapter_baseline,private_target_Y.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,adapter_A.visibility,trusted
+gradient_leakage,unmasked_adapter_baseline,adapter_A.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,adapter_A.leakage_risk,high
+gradient_leakage,unmasked_adapter_baseline,adapter_A.mitigation,A_tilde = N_in^{-1} A U; fresh U per call.
+gradient_leakage,unmasked_adapter_baseline,adapter_A.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,adapter_B.visibility,trusted
+gradient_leakage,unmasked_adapter_baseline,adapter_B.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,adapter_B.leakage_risk,high
+gradient_leakage,unmasked_adapter_baseline,adapter_B.mitigation,B_tilde = U^{-1} B N_out; fresh U per call.
+gradient_leakage,unmasked_adapter_baseline,adapter_B.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,grad_A.visibility,trusted
+gradient_leakage,unmasked_adapter_baseline,grad_A.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,grad_A.leakage_risk,low
+gradient_leakage,unmasked_adapter_baseline,grad_A.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,unmasked_adapter_baseline,grad_A.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,unmasked_adapter_baseline,grad_B.visibility,trusted
+gradient_leakage,unmasked_adapter_baseline,grad_B.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,grad_B.leakage_risk,low
+gradient_leakage,unmasked_adapter_baseline,grad_B.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,unmasked_adapter_baseline,grad_B.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,unmasked_adapter_baseline,"optimizer_state (SGD momentum / AdamW m, v).visibility",trusted
+gradient_leakage,unmasked_adapter_baseline,"optimizer_state (SGD momentum / AdamW m, v).contains_plaintext",True
+gradient_leakage,unmasked_adapter_baseline,"optimizer_state (SGD momentum / AdamW m, v).leakage_risk",low
+gradient_leakage,unmasked_adapter_baseline,"optimizer_state (SGD momentum / AdamW m, v).mitigation",Trusted-only; never exported to JSON/CSV/Markdown.
+gradient_leakage,unmasked_adapter_baseline,"optimizer_state (SGD momentum / AdamW m, v).stage_7_0_status",covered
+gradient_leakage,unmasked_adapter_baseline,base_weight_W.visibility,public
+gradient_leakage,unmasked_adapter_baseline,base_weight_W.contains_plaintext,True
+gradient_leakage,unmasked_adapter_baseline,base_weight_W.leakage_risk,low
+gradient_leakage,unmasked_adapter_baseline,base_weight_W.mitigation,Public model weight; ΔW = A B does NOT merge into W.
+gradient_leakage,unmasked_adapter_baseline,base_weight_W.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,X_tilde.visibility,gpu
+gradient_leakage,unmasked_adapter_baseline,X_tilde.contains_plaintext,False
+gradient_leakage,unmasked_adapter_baseline,X_tilde.leakage_risk,low
+gradient_leakage,unmasked_adapter_baseline,X_tilde.mitigation,Right-mask + optional pad; fresh N_in per call.
+gradient_leakage,unmasked_adapter_baseline,X_tilde.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,A_tilde / B_tilde.visibility,gpu
+gradient_leakage,unmasked_adapter_baseline,A_tilde / B_tilde.contains_plaintext,False
+gradient_leakage,unmasked_adapter_baseline,A_tilde / B_tilde.leakage_risk,high
+gradient_leakage,unmasked_adapter_baseline,A_tilde / B_tilde.mitigation,U-mask in rank space; fresh U recommended.
+gradient_leakage,unmasked_adapter_baseline,A_tilde / B_tilde.stage_7_0_status,covered
+gradient_leakage,unmasked_adapter_baseline,Y_tilde.visibility,gpu
+gradient_leakage,unmasked_adapter_baseline,Y_tilde.contains_plaintext,False
+gradient_leakage,unmasked_adapter_baseline,Y_tilde.leakage_risk,low
+gradient_leakage,unmasked_adapter_baseline,Y_tilde.mitigation,Right-mask via N_out; recovered only on trusted side.
+gradient_leakage,unmasked_adapter_baseline,Y_tilde.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,private_input_X.visibility,trusted
+gradient_leakage,fixed_masks_fixed_u,private_input_X.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,private_input_X.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,private_input_X.mitigation,Right-mask + optional input pad before crossing the boundary.
+gradient_leakage,fixed_masks_fixed_u,private_input_X.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,private_target_Y.visibility,trusted
+gradient_leakage,fixed_masks_fixed_u,private_target_Y.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,private_target_Y.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,private_target_Y.mitigation,Stays trusted; loss computed inside the trusted side.
+gradient_leakage,fixed_masks_fixed_u,private_target_Y.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,adapter_A.visibility,trusted
+gradient_leakage,fixed_masks_fixed_u,adapter_A.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,adapter_A.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,adapter_A.mitigation,A_tilde = N_in^{-1} A U; fresh U per call.
+gradient_leakage,fixed_masks_fixed_u,adapter_A.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,adapter_B.visibility,trusted
+gradient_leakage,fixed_masks_fixed_u,adapter_B.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,adapter_B.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,adapter_B.mitigation,B_tilde = U^{-1} B N_out; fresh U per call.
+gradient_leakage,fixed_masks_fixed_u,adapter_B.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,grad_A.visibility,trusted
+gradient_leakage,fixed_masks_fixed_u,grad_A.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,grad_A.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,grad_A.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fixed_masks_fixed_u,grad_A.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fixed_masks_fixed_u,grad_B.visibility,trusted
+gradient_leakage,fixed_masks_fixed_u,grad_B.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,grad_B.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,grad_B.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fixed_masks_fixed_u,grad_B.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fixed_masks_fixed_u,"optimizer_state (SGD momentum / AdamW m, v).visibility",trusted
+gradient_leakage,fixed_masks_fixed_u,"optimizer_state (SGD momentum / AdamW m, v).contains_plaintext",True
+gradient_leakage,fixed_masks_fixed_u,"optimizer_state (SGD momentum / AdamW m, v).leakage_risk",low
+gradient_leakage,fixed_masks_fixed_u,"optimizer_state (SGD momentum / AdamW m, v).mitigation",Trusted-only; never exported to JSON/CSV/Markdown.
+gradient_leakage,fixed_masks_fixed_u,"optimizer_state (SGD momentum / AdamW m, v).stage_7_0_status",covered
+gradient_leakage,fixed_masks_fixed_u,base_weight_W.visibility,public
+gradient_leakage,fixed_masks_fixed_u,base_weight_W.contains_plaintext,True
+gradient_leakage,fixed_masks_fixed_u,base_weight_W.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,base_weight_W.mitigation,Public model weight; ΔW = A B does NOT merge into W.
+gradient_leakage,fixed_masks_fixed_u,base_weight_W.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,X_tilde.visibility,gpu
+gradient_leakage,fixed_masks_fixed_u,X_tilde.contains_plaintext,False
+gradient_leakage,fixed_masks_fixed_u,X_tilde.leakage_risk,medium
+gradient_leakage,fixed_masks_fixed_u,X_tilde.mitigation,Right-mask + optional pad; fresh N_in per call.
+gradient_leakage,fixed_masks_fixed_u,X_tilde.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,A_tilde / B_tilde.visibility,gpu
+gradient_leakage,fixed_masks_fixed_u,A_tilde / B_tilde.contains_plaintext,False
+gradient_leakage,fixed_masks_fixed_u,A_tilde / B_tilde.leakage_risk,medium
+gradient_leakage,fixed_masks_fixed_u,A_tilde / B_tilde.mitigation,U-mask in rank space; fresh U recommended.
+gradient_leakage,fixed_masks_fixed_u,A_tilde / B_tilde.stage_7_0_status,covered
+gradient_leakage,fixed_masks_fixed_u,Y_tilde.visibility,gpu
+gradient_leakage,fixed_masks_fixed_u,Y_tilde.contains_plaintext,False
+gradient_leakage,fixed_masks_fixed_u,Y_tilde.leakage_risk,low
+gradient_leakage,fixed_masks_fixed_u,Y_tilde.mitigation,Right-mask via N_out; recovered only on trusted side.
+gradient_leakage,fixed_masks_fixed_u,Y_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,private_input_X.visibility,trusted
+gradient_leakage,fresh_u_only,private_input_X.contains_plaintext,True
+gradient_leakage,fresh_u_only,private_input_X.leakage_risk,low
+gradient_leakage,fresh_u_only,private_input_X.mitigation,Right-mask + optional input pad before crossing the boundary.
+gradient_leakage,fresh_u_only,private_input_X.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,private_target_Y.visibility,trusted
+gradient_leakage,fresh_u_only,private_target_Y.contains_plaintext,True
+gradient_leakage,fresh_u_only,private_target_Y.leakage_risk,low
+gradient_leakage,fresh_u_only,private_target_Y.mitigation,Stays trusted; loss computed inside the trusted side.
+gradient_leakage,fresh_u_only,private_target_Y.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,adapter_A.visibility,trusted
+gradient_leakage,fresh_u_only,adapter_A.contains_plaintext,True
+gradient_leakage,fresh_u_only,adapter_A.leakage_risk,low
+gradient_leakage,fresh_u_only,adapter_A.mitigation,A_tilde = N_in^{-1} A U; fresh U per call.
+gradient_leakage,fresh_u_only,adapter_A.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,adapter_B.visibility,trusted
+gradient_leakage,fresh_u_only,adapter_B.contains_plaintext,True
+gradient_leakage,fresh_u_only,adapter_B.leakage_risk,low
+gradient_leakage,fresh_u_only,adapter_B.mitigation,B_tilde = U^{-1} B N_out; fresh U per call.
+gradient_leakage,fresh_u_only,adapter_B.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,grad_A.visibility,trusted
+gradient_leakage,fresh_u_only,grad_A.contains_plaintext,True
+gradient_leakage,fresh_u_only,grad_A.leakage_risk,low
+gradient_leakage,fresh_u_only,grad_A.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fresh_u_only,grad_A.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fresh_u_only,grad_B.visibility,trusted
+gradient_leakage,fresh_u_only,grad_B.contains_plaintext,True
+gradient_leakage,fresh_u_only,grad_B.leakage_risk,low
+gradient_leakage,fresh_u_only,grad_B.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fresh_u_only,grad_B.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fresh_u_only,"optimizer_state (SGD momentum / AdamW m, v).visibility",trusted
+gradient_leakage,fresh_u_only,"optimizer_state (SGD momentum / AdamW m, v).contains_plaintext",True
+gradient_leakage,fresh_u_only,"optimizer_state (SGD momentum / AdamW m, v).leakage_risk",low
+gradient_leakage,fresh_u_only,"optimizer_state (SGD momentum / AdamW m, v).mitigation",Trusted-only; never exported to JSON/CSV/Markdown.
+gradient_leakage,fresh_u_only,"optimizer_state (SGD momentum / AdamW m, v).stage_7_0_status",covered
+gradient_leakage,fresh_u_only,base_weight_W.visibility,public
+gradient_leakage,fresh_u_only,base_weight_W.contains_plaintext,True
+gradient_leakage,fresh_u_only,base_weight_W.leakage_risk,low
+gradient_leakage,fresh_u_only,base_weight_W.mitigation,Public model weight; ΔW = A B does NOT merge into W.
+gradient_leakage,fresh_u_only,base_weight_W.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,X_tilde.visibility,gpu
+gradient_leakage,fresh_u_only,X_tilde.contains_plaintext,False
+gradient_leakage,fresh_u_only,X_tilde.leakage_risk,low
+gradient_leakage,fresh_u_only,X_tilde.mitigation,Right-mask + optional pad; fresh N_in per call.
+gradient_leakage,fresh_u_only,X_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,A_tilde / B_tilde.visibility,gpu
+gradient_leakage,fresh_u_only,A_tilde / B_tilde.contains_plaintext,False
+gradient_leakage,fresh_u_only,A_tilde / B_tilde.leakage_risk,medium
+gradient_leakage,fresh_u_only,A_tilde / B_tilde.mitigation,U-mask in rank space; fresh U recommended.
+gradient_leakage,fresh_u_only,A_tilde / B_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_u_only,Y_tilde.visibility,gpu
+gradient_leakage,fresh_u_only,Y_tilde.contains_plaintext,False
+gradient_leakage,fresh_u_only,Y_tilde.leakage_risk,low
+gradient_leakage,fresh_u_only,Y_tilde.mitigation,Right-mask via N_out; recovered only on trusted side.
+gradient_leakage,fresh_u_only,Y_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,private_input_X.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u,private_input_X.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,private_input_X.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,private_input_X.mitigation,Right-mask + optional input pad before crossing the boundary.
+gradient_leakage,fresh_masks_fresh_u,private_input_X.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,private_target_Y.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u,private_target_Y.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,private_target_Y.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,private_target_Y.mitigation,Stays trusted; loss computed inside the trusted side.
+gradient_leakage,fresh_masks_fresh_u,private_target_Y.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,adapter_A.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u,adapter_A.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,adapter_A.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,adapter_A.mitigation,A_tilde = N_in^{-1} A U; fresh U per call.
+gradient_leakage,fresh_masks_fresh_u,adapter_A.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,adapter_B.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u,adapter_B.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,adapter_B.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,adapter_B.mitigation,B_tilde = U^{-1} B N_out; fresh U per call.
+gradient_leakage,fresh_masks_fresh_u,adapter_B.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,grad_A.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u,grad_A.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,grad_A.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,grad_A.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fresh_masks_fresh_u,grad_A.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fresh_masks_fresh_u,grad_B.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u,grad_B.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,grad_B.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,grad_B.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fresh_masks_fresh_u,grad_B.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fresh_masks_fresh_u,"optimizer_state (SGD momentum / AdamW m, v).visibility",trusted
+gradient_leakage,fresh_masks_fresh_u,"optimizer_state (SGD momentum / AdamW m, v).contains_plaintext",True
+gradient_leakage,fresh_masks_fresh_u,"optimizer_state (SGD momentum / AdamW m, v).leakage_risk",low
+gradient_leakage,fresh_masks_fresh_u,"optimizer_state (SGD momentum / AdamW m, v).mitigation",Trusted-only; never exported to JSON/CSV/Markdown.
+gradient_leakage,fresh_masks_fresh_u,"optimizer_state (SGD momentum / AdamW m, v).stage_7_0_status",covered
+gradient_leakage,fresh_masks_fresh_u,base_weight_W.visibility,public
+gradient_leakage,fresh_masks_fresh_u,base_weight_W.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u,base_weight_W.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,base_weight_W.mitigation,Public model weight; ΔW = A B does NOT merge into W.
+gradient_leakage,fresh_masks_fresh_u,base_weight_W.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,X_tilde.visibility,gpu
+gradient_leakage,fresh_masks_fresh_u,X_tilde.contains_plaintext,False
+gradient_leakage,fresh_masks_fresh_u,X_tilde.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,X_tilde.mitigation,Right-mask + optional pad; fresh N_in per call.
+gradient_leakage,fresh_masks_fresh_u,X_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,A_tilde / B_tilde.visibility,gpu
+gradient_leakage,fresh_masks_fresh_u,A_tilde / B_tilde.contains_plaintext,False
+gradient_leakage,fresh_masks_fresh_u,A_tilde / B_tilde.leakage_risk,medium
+gradient_leakage,fresh_masks_fresh_u,A_tilde / B_tilde.mitigation,U-mask in rank space; fresh U recommended.
+gradient_leakage,fresh_masks_fresh_u,A_tilde / B_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u,Y_tilde.visibility,gpu
+gradient_leakage,fresh_masks_fresh_u,Y_tilde.contains_plaintext,False
+gradient_leakage,fresh_masks_fresh_u,Y_tilde.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u,Y_tilde.mitigation,Right-mask via N_out; recovered only on trusted side.
+gradient_leakage,fresh_masks_fresh_u,Y_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_input_X.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_input_X.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_input_X.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_input_X.mitigation,Right-mask + optional input pad before crossing the boundary.
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_input_X.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_target_Y.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_target_Y.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_target_Y.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_target_Y.mitigation,Stays trusted; loss computed inside the trusted side.
+gradient_leakage,fresh_masks_fresh_u_with_pad,private_target_Y.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_A.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_A.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_A.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_A.mitigation,A_tilde = N_in^{-1} A U; fresh U per call.
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_A.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_B.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_B.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_B.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_B.mitigation,B_tilde = U^{-1} B N_out; fresh U per call.
+gradient_leakage,fresh_masks_fresh_u_with_pad,adapter_B.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_A.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_A.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_A.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_A.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_A.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_B.visibility,trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_B.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_B.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_B.mitigation,Backward remains trusted in Stage 7.0; gradient never crosses the boundary.
+gradient_leakage,fresh_masks_fresh_u_with_pad,grad_B.stage_7_0_status,trusted_backward_prototype
+gradient_leakage,fresh_masks_fresh_u_with_pad,"optimizer_state (SGD momentum / AdamW m, v).visibility",trusted
+gradient_leakage,fresh_masks_fresh_u_with_pad,"optimizer_state (SGD momentum / AdamW m, v).contains_plaintext",True
+gradient_leakage,fresh_masks_fresh_u_with_pad,"optimizer_state (SGD momentum / AdamW m, v).leakage_risk",low
+gradient_leakage,fresh_masks_fresh_u_with_pad,"optimizer_state (SGD momentum / AdamW m, v).mitigation",Trusted-only; never exported to JSON/CSV/Markdown.
+gradient_leakage,fresh_masks_fresh_u_with_pad,"optimizer_state (SGD momentum / AdamW m, v).stage_7_0_status",covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,base_weight_W.visibility,public
+gradient_leakage,fresh_masks_fresh_u_with_pad,base_weight_W.contains_plaintext,True
+gradient_leakage,fresh_masks_fresh_u_with_pad,base_weight_W.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,base_weight_W.mitigation,Public model weight; ΔW = A B does NOT merge into W.
+gradient_leakage,fresh_masks_fresh_u_with_pad,base_weight_W.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,X_tilde.visibility,gpu
+gradient_leakage,fresh_masks_fresh_u_with_pad,X_tilde.contains_plaintext,False
+gradient_leakage,fresh_masks_fresh_u_with_pad,X_tilde.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,X_tilde.mitigation,Right-mask + optional pad; fresh N_in per call.
+gradient_leakage,fresh_masks_fresh_u_with_pad,X_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,A_tilde / B_tilde.visibility,gpu
+gradient_leakage,fresh_masks_fresh_u_with_pad,A_tilde / B_tilde.contains_plaintext,False
+gradient_leakage,fresh_masks_fresh_u_with_pad,A_tilde / B_tilde.leakage_risk,medium
+gradient_leakage,fresh_masks_fresh_u_with_pad,A_tilde / B_tilde.mitigation,U-mask in rank space; fresh U recommended.
+gradient_leakage,fresh_masks_fresh_u_with_pad,A_tilde / B_tilde.stage_7_0_status,covered
+gradient_leakage,fresh_masks_fresh_u_with_pad,Y_tilde.visibility,gpu
+gradient_leakage,fresh_masks_fresh_u_with_pad,Y_tilde.contains_plaintext,False
+gradient_leakage,fresh_masks_fresh_u_with_pad,Y_tilde.leakage_risk,low
+gradient_leakage,fresh_masks_fresh_u_with_pad,Y_tilde.mitigation,Right-mask via N_out; recovered only on trusted side.
+gradient_leakage,fresh_masks_fresh_u_with_pad,Y_tilde.stage_7_0_status,covered
+membership_linkability,unmasked_adapter_baseline,same_sample_distance_mean,0.0
+membership_linkability,unmasked_adapter_baseline,different_sample_distance_mean,22.803904148140884
+membership_linkability,unmasked_adapter_baseline,membership_auc_proxy,1.0
+membership_linkability,unmasked_adapter_baseline,linkability_rank,1.0
+membership_linkability,unmasked_adapter_baseline,risk_level,high
+membership_linkability,unmasked_adapter_baseline,trials_per_sample,8
+membership_linkability,unmasked_adapter_baseline,num_same_pairs,56
+membership_linkability,unmasked_adapter_baseline,num_diff_pairs,64
+membership_linkability,fixed_masks_fixed_u,same_sample_distance_mean,0.0
+membership_linkability,fixed_masks_fixed_u,different_sample_distance_mean,22.80390414814088
+membership_linkability,fixed_masks_fixed_u,membership_auc_proxy,1.0
+membership_linkability,fixed_masks_fixed_u,linkability_rank,1.0
+membership_linkability,fixed_masks_fixed_u,risk_level,high
+membership_linkability,fixed_masks_fixed_u,trials_per_sample,8
+membership_linkability,fixed_masks_fixed_u,num_same_pairs,56
+membership_linkability,fixed_masks_fixed_u,num_diff_pairs,64
+membership_linkability,fresh_u_only,same_sample_distance_mean,0.0
+membership_linkability,fresh_u_only,different_sample_distance_mean,22.80390414814088
+membership_linkability,fresh_u_only,membership_auc_proxy,1.0
+membership_linkability,fresh_u_only,linkability_rank,1.0
+membership_linkability,fresh_u_only,risk_level,high
+membership_linkability,fresh_u_only,trials_per_sample,8
+membership_linkability,fresh_u_only,num_same_pairs,56
+membership_linkability,fresh_u_only,num_diff_pairs,64
+membership_linkability,fresh_masks_fresh_u,same_sample_distance_mean,22.925377552697515
+membership_linkability,fresh_masks_fresh_u,different_sample_distance_mean,23.08563249974949
+membership_linkability,fresh_masks_fresh_u,membership_auc_proxy,0.5546875
+membership_linkability,fresh_masks_fresh_u,linkability_rank,0.109375
+membership_linkability,fresh_masks_fresh_u,risk_level,low
+membership_linkability,fresh_masks_fresh_u,trials_per_sample,8
+membership_linkability,fresh_masks_fresh_u,num_same_pairs,56
+membership_linkability,fresh_masks_fresh_u,num_diff_pairs,64
+membership_linkability,fresh_masks_fresh_u_with_pad,same_sample_distance_mean,32.14890498499537
+membership_linkability,fresh_masks_fresh_u_with_pad,different_sample_distance_mean,32.31910969365359
+membership_linkability,fresh_masks_fresh_u_with_pad,membership_auc_proxy,0.5368303571428571
+membership_linkability,fresh_masks_fresh_u_with_pad,linkability_rank,0.07366071428571419
+membership_linkability,fresh_masks_fresh_u_with_pad,risk_level,low
+membership_linkability,fresh_masks_fresh_u_with_pad,trials_per_sample,8
+membership_linkability,fresh_masks_fresh_u_with_pad,num_same_pairs,56
+membership_linkability,fresh_masks_fresh_u_with_pad,num_diff_pairs,64
+interpretation,n/a,linkability_summary,fresh masks reduce membership-style linkability (Δ AUC = +0.463 vs fixed_masks_fixed_u).
+interpretation,n/a,rank_visibility_note,LoRA rank r is visible from the shape of A_tilde / B_tilde under all current strategies; rank padding is NOT implemented in Stage 7.0.
+interpretation,n/a,trusted_backward_status,training backward remains trusted in Stage 7.0 prototype
+interpretation,n/a,merge_adapter_into_w,False

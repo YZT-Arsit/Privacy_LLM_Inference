@@ -700,6 +700,44 @@ def _compatible_island_integration_status(
                 )
                 or method.get("security_profile_detail_with_extended_proxy")
             ),
+            # Stage 7.0 — LoRA private training prototype metadata.
+            "lora_private_training_status": str(
+                effective_status.get("lora_private_training_status")
+                or method.get("lora_private_training_status")
+                or "not_yet"
+            ),
+            "lora_forward_masking_status": str(
+                effective_status.get("lora_forward_masking_status")
+                or method.get("lora_forward_masking_status")
+                or "not_yet"
+            ),
+            "lora_training_step_status": str(
+                effective_status.get("lora_training_step_status")
+                or method.get("lora_training_step_status")
+                or "not_yet"
+            ),
+            "lora_security_proxy_status": str(
+                effective_status.get("lora_security_proxy_status")
+                or method.get("lora_security_proxy_status")
+                or "not_yet"
+            ),
+            "lora_training_artifact": (
+                effective_status.get("lora_training_artifact")
+                or method.get("lora_training_artifact")
+            ),
+            "lora_security_artifact": (
+                effective_status.get("lora_security_artifact")
+                or method.get("lora_security_artifact")
+            ),
+            "lora_merge_adapter_into_w": bool(
+                effective_status.get("lora_merge_adapter_into_w")
+                if "lora_merge_adapter_into_w" in effective_status
+                else method.get("lora_merge_adapter_into_w", False)
+            ),
+            "security_profile_detail_with_lora": (
+                effective_status.get("security_profile_detail_with_lora")
+                or method.get("security_profile_detail_with_lora")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

@@ -1,0 +1,656 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "d_in": 32,
+    "d_out": 16,
+    "rank": 4,
+    "alpha": 1.0,
+    "use_bias": true,
+    "num_trials": 32,
+    "pad_scale": 1.0,
+    "dtype": "float64",
+    "device": "cpu",
+    "strategies": [
+      "unmasked_adapter_baseline",
+      "fixed_masks_fixed_u",
+      "fresh_u_only",
+      "fresh_masks_fresh_u",
+      "fresh_masks_fresh_u_with_pad"
+    ],
+    "membership_trials_per_sample": 8
+  },
+  "scope": "single linear + LoRA, tiny dimensions, synthetic adapter",
+  "strategies": [
+    "unmasked_adapter_baseline",
+    "fixed_masks_fixed_u",
+    "fresh_u_only",
+    "fresh_masks_fresh_u",
+    "fresh_masks_fresh_u_with_pad"
+  ],
+  "adapter_extraction_proxy": [
+    {
+      "strategy": "unmasked_adapter_baseline",
+      "delta_w_recovery_rel_l2_mean": 0.0,
+      "delta_w_recovery_rel_l2_min": 0.0,
+      "adapter_a_recovery_rel_l2_mean": 0.0,
+      "adapter_b_recovery_rel_l2_mean": 0.0,
+      "rank_signature_a": 4,
+      "rank_signature_b": 4,
+      "configured_rank": 4,
+      "rank_visible_in_a_tilde_shape": true,
+      "subspace_similarity_a_mean": 0.9999999999999998,
+      "subspace_similarity_b_mean": 1.0,
+      "singular_value_similarity_a_mean": 1.0000000000000002,
+      "singular_value_similarity_b_mean": 1.0,
+      "num_trials": 32,
+      "exact_recovery": true,
+      "interpretation": "Adapter is fully exposed; \u0394W = A B reconstructible exactly."
+    },
+    {
+      "strategy": "fixed_masks_fixed_u",
+      "delta_w_recovery_rel_l2_mean": 1.4581158095031208,
+      "delta_w_recovery_rel_l2_min": 1.4581158095031208,
+      "adapter_a_recovery_rel_l2_mean": 1.4406830421865748,
+      "adapter_b_recovery_rel_l2_mean": 1.453665242357273,
+      "rank_signature_a": 4,
+      "rank_signature_b": 4,
+      "configured_rank": 4,
+      "rank_visible_in_a_tilde_shape": true,
+      "subspace_similarity_a_mean": 0.25627004448227014,
+      "subspace_similarity_b_mean": 0.4366138268314591,
+      "singular_value_similarity_a_mean": 1.0,
+      "singular_value_similarity_b_mean": 1.0,
+      "num_trials": 32,
+      "exact_recovery": false,
+      "interpretation": "Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+    },
+    {
+      "strategy": "fresh_u_only",
+      "delta_w_recovery_rel_l2_mean": 1.4581158095031206,
+      "delta_w_recovery_rel_l2_min": 1.4581158095031201,
+      "adapter_a_recovery_rel_l2_mean": 1.4220831217395475,
+      "adapter_b_recovery_rel_l2_mean": 1.4071503734269348,
+      "rank_signature_a": 4,
+      "rank_signature_b": 4,
+      "configured_rank": 4,
+      "rank_visible_in_a_tilde_shape": true,
+      "subspace_similarity_a_mean": 0.25627004448227014,
+      "subspace_similarity_b_mean": 0.436613826831459,
+      "singular_value_similarity_a_mean": 1.0000000000000002,
+      "singular_value_similarity_b_mean": 1.0,
+      "num_trials": 32,
+      "exact_recovery": false,
+      "interpretation": "Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+    },
+    {
+      "strategy": "fresh_masks_fresh_u",
+      "delta_w_recovery_rel_l2_mean": 1.421451041123386,
+      "delta_w_recovery_rel_l2_min": 1.3581555705352828,
+      "adapter_a_recovery_rel_l2_mean": 1.414296854391157,
+      "adapter_b_recovery_rel_l2_mean": 1.400706870941724,
+      "rank_signature_a": 4,
+      "rank_signature_b": 4,
+      "configured_rank": 4,
+      "rank_visible_in_a_tilde_shape": true,
+      "subspace_similarity_a_mean": 0.3095163989437129,
+      "subspace_similarity_b_mean": 0.39598629527406926,
+      "singular_value_similarity_a_mean": 1.0000000000000002,
+      "singular_value_similarity_b_mean": 1.0,
+      "num_trials": 32,
+      "exact_recovery": false,
+      "interpretation": "Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+    },
+    {
+      "strategy": "fresh_masks_fresh_u_with_pad",
+      "delta_w_recovery_rel_l2_mean": 1.4105836694753255,
+      "delta_w_recovery_rel_l2_min": 1.3186748695640653,
+      "adapter_a_recovery_rel_l2_mean": 1.4100895968196243,
+      "adapter_b_recovery_rel_l2_mean": 1.3977068230639045,
+      "rank_signature_a": 4,
+      "rank_signature_b": 4,
+      "configured_rank": 4,
+      "rank_visible_in_a_tilde_shape": true,
+      "subspace_similarity_a_mean": 0.2786884231134426,
+      "subspace_similarity_b_mean": 0.4343243649531124,
+      "singular_value_similarity_a_mean": 1.0000000000000002,
+      "singular_value_similarity_b_mean": 1.0,
+      "num_trials": 32,
+      "exact_recovery": false,
+      "interpretation": "Recovery error is large (rel L2 > 0.5) and subspace similarity is low; under this proxy, mask makes naive extraction unreliable."
+    }
+  ],
+  "gradient_leakage_accounting": {
+    "unmasked_adapter_baseline": [
+      {
+        "name": "private_input_X",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "high",
+        "mitigation": "Right-mask + optional input pad before crossing the boundary.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "private_target_Y",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Stays trusted; loss computed inside the trusted side.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "high",
+        "mitigation": "A_tilde = N_in^{-1} A U; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "high",
+        "mitigation": "B_tilde = U^{-1} B N_out; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "grad_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "grad_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "optimizer_state (SGD momentum / AdamW m, v)",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Trusted-only; never exported to JSON/CSV/Markdown.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "base_weight_W",
+        "visibility": "public",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Public model weight; \u0394W = A B does NOT merge into W.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "X_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional pad; fresh N_in per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "A_tilde / B_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "high",
+        "mitigation": "U-mask in rank space; fresh U recommended.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "Y_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask via N_out; recovered only on trusted side.",
+        "stage_7_0_status": "covered"
+      }
+    ],
+    "fixed_masks_fixed_u": [
+      {
+        "name": "private_input_X",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional input pad before crossing the boundary.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "private_target_Y",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Stays trusted; loss computed inside the trusted side.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "A_tilde = N_in^{-1} A U; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "B_tilde = U^{-1} B N_out; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "grad_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "grad_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "optimizer_state (SGD momentum / AdamW m, v)",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Trusted-only; never exported to JSON/CSV/Markdown.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "base_weight_W",
+        "visibility": "public",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Public model weight; \u0394W = A B does NOT merge into W.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "X_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "medium",
+        "mitigation": "Right-mask + optional pad; fresh N_in per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "A_tilde / B_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "medium",
+        "mitigation": "U-mask in rank space; fresh U recommended.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "Y_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask via N_out; recovered only on trusted side.",
+        "stage_7_0_status": "covered"
+      }
+    ],
+    "fresh_u_only": [
+      {
+        "name": "private_input_X",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional input pad before crossing the boundary.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "private_target_Y",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Stays trusted; loss computed inside the trusted side.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "A_tilde = N_in^{-1} A U; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "B_tilde = U^{-1} B N_out; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "grad_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "grad_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "optimizer_state (SGD momentum / AdamW m, v)",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Trusted-only; never exported to JSON/CSV/Markdown.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "base_weight_W",
+        "visibility": "public",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Public model weight; \u0394W = A B does NOT merge into W.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "X_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional pad; fresh N_in per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "A_tilde / B_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "medium",
+        "mitigation": "U-mask in rank space; fresh U recommended.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "Y_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask via N_out; recovered only on trusted side.",
+        "stage_7_0_status": "covered"
+      }
+    ],
+    "fresh_masks_fresh_u": [
+      {
+        "name": "private_input_X",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional input pad before crossing the boundary.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "private_target_Y",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Stays trusted; loss computed inside the trusted side.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "A_tilde = N_in^{-1} A U; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "B_tilde = U^{-1} B N_out; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "grad_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "grad_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "optimizer_state (SGD momentum / AdamW m, v)",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Trusted-only; never exported to JSON/CSV/Markdown.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "base_weight_W",
+        "visibility": "public",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Public model weight; \u0394W = A B does NOT merge into W.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "X_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional pad; fresh N_in per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "A_tilde / B_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "medium",
+        "mitigation": "U-mask in rank space; fresh U recommended.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "Y_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask via N_out; recovered only on trusted side.",
+        "stage_7_0_status": "covered"
+      }
+    ],
+    "fresh_masks_fresh_u_with_pad": [
+      {
+        "name": "private_input_X",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional input pad before crossing the boundary.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "private_target_Y",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Stays trusted; loss computed inside the trusted side.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "A_tilde = N_in^{-1} A U; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "adapter_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "B_tilde = U^{-1} B N_out; fresh U per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "grad_A",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "grad_B",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Backward remains trusted in Stage 7.0; gradient never crosses the boundary.",
+        "stage_7_0_status": "trusted_backward_prototype"
+      },
+      {
+        "name": "optimizer_state (SGD momentum / AdamW m, v)",
+        "visibility": "trusted",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Trusted-only; never exported to JSON/CSV/Markdown.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "base_weight_W",
+        "visibility": "public",
+        "contains_plaintext": true,
+        "leakage_risk": "low",
+        "mitigation": "Public model weight; \u0394W = A B does NOT merge into W.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "X_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask + optional pad; fresh N_in per call.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "A_tilde / B_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "medium",
+        "mitigation": "U-mask in rank space; fresh U recommended.",
+        "stage_7_0_status": "covered"
+      },
+      {
+        "name": "Y_tilde",
+        "visibility": "gpu",
+        "contains_plaintext": false,
+        "leakage_risk": "low",
+        "mitigation": "Right-mask via N_out; recovered only on trusted side.",
+        "stage_7_0_status": "covered"
+      }
+    ]
+  },
+  "membership_style_linkability_proxy": [
+    {
+      "strategy": "unmasked_adapter_baseline",
+      "same_sample_distance_mean": 0.0,
+      "different_sample_distance_mean": 22.803904148140884,
+      "membership_auc_proxy": 1.0,
+      "linkability_rank": 1.0,
+      "risk_level": "high",
+      "trials_per_sample": 8,
+      "num_same_pairs": 56,
+      "num_diff_pairs": 64
+    },
+    {
+      "strategy": "fixed_masks_fixed_u",
+      "same_sample_distance_mean": 0.0,
+      "different_sample_distance_mean": 22.80390414814088,
+      "membership_auc_proxy": 1.0,
+      "linkability_rank": 1.0,
+      "risk_level": "high",
+      "trials_per_sample": 8,
+      "num_same_pairs": 56,
+      "num_diff_pairs": 64
+    },
+    {
+      "strategy": "fresh_u_only",
+      "same_sample_distance_mean": 0.0,
+      "different_sample_distance_mean": 22.80390414814088,
+      "membership_auc_proxy": 1.0,
+      "linkability_rank": 1.0,
+      "risk_level": "high",
+      "trials_per_sample": 8,
+      "num_same_pairs": 56,
+      "num_diff_pairs": 64
+    },
+    {
+      "strategy": "fresh_masks_fresh_u",
+      "same_sample_distance_mean": 22.925377552697515,
+      "different_sample_distance_mean": 23.08563249974949,
+      "membership_auc_proxy": 0.5546875,
+      "linkability_rank": 0.109375,
+      "risk_level": "low",
+      "trials_per_sample": 8,
+      "num_same_pairs": 56,
+      "num_diff_pairs": 64
+    },
+    {
+      "strategy": "fresh_masks_fresh_u_with_pad",
+      "same_sample_distance_mean": 32.14890498499537,
+      "different_sample_distance_mean": 32.31910969365359,
+      "membership_auc_proxy": 0.5368303571428571,
+      "linkability_rank": 0.07366071428571419,
+      "risk_level": "low",
+      "trials_per_sample": 8,
+      "num_same_pairs": 56,
+      "num_diff_pairs": 64
+    }
+  ],
+  "interpretation": {
+    "linkability_summary": "fresh masks reduce membership-style linkability (\u0394 AUC = +0.463 vs fixed_masks_fixed_u).",
+    "rank_visibility_note": "LoRA rank r is visible from the shape of A_tilde / B_tilde under all current strategies; rank padding is NOT implemented in Stage 7.0.",
+    "trusted_backward_status": "training backward remains trusted in Stage 7.0 prototype",
+    "merge_adapter_into_w": false
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora": "private-adapter-trusted-backward, not formal",
+  "lora_security_proxy_status": "implemented",
+  "limitations": [
+    "These are proxy attacks, not formal security proofs.",
+    "LoRA rank ``r`` remains visible from the shape of A_tilde / B_tilde unless explicit rank padding is implemented (NOT in Stage 7.0).",
+    "Optimizer state (SGD momentum / AdamW moments) remains trusted-only in Stage 7.0 and is never exported.",
+    "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+    "No full private fine-tuning workload is evaluated; this is a single-linear, tiny-dimension proxy.",
+    "Adversary model is a passive GPU observer of (X_tilde, W_tilde, A_tilde, B_tilde, Y_tilde) transcripts plus the dimensions; active boundary-attack and adaptive-attack proxies are deferred to later stages.",
+    "Hardware side-channel attacks (cache / power / EM) are NOT evaluated.",
+    "Adapter is NEVER merged into the public base weight W (constraint 7)."
+  ],
+  "next_stage_plan": [
+    "Stage 7.1 \u2014 masked backward / gradient-side obfuscation.",
+    "Stage 7.2 \u2014 rank padding to hide r.",
+    "Stage 7.3 \u2014 multi-layer LoRA + cross-layer adapter linkability."
+  ]
+}

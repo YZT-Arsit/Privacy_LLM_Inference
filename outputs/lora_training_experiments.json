@@ -1,0 +1,317 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "batch_size": 4,
+    "d_in": 32,
+    "d_out": 16,
+    "rank": 4,
+    "alpha": 1.0,
+    "use_bias": true,
+    "num_steps": 5,
+    "lr": 0.01,
+    "optimizer": "sgd",
+    "weight_decay": 0.0,
+    "adamw_beta1": 0.9,
+    "adamw_beta2": 0.999,
+    "adamw_eps": 1e-08,
+    "use_pad": true,
+    "fresh_u_per_step": true,
+    "fresh_masks_per_step": true,
+    "pad_scale": 1.0,
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "lora_config_fingerprint": {
+    "d_in": 32,
+    "d_out": 16,
+    "rank": 4,
+    "alpha": 1.0,
+    "use_bias": true
+  },
+  "training_step_correctness": {
+    "num_steps": 5,
+    "per_step": [
+      {
+        "step": 0,
+        "loss_plain": 49.32336467244431,
+        "loss_masked": 49.3233646724443,
+        "loss_diff_abs": 1.4210854715202004e-14,
+        "forward_max_abs_err": 1.6209256159527285e-14,
+        "grad_a_max_abs_err": 2.168404344971009e-18,
+        "grad_b_max_abs_err": 5.551115123125783e-16,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 5.204170427930421e-18,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.65685424949238
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 10.848273725556158
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 1,
+        "loss_plain": 49.27996814382146,
+        "loss_masked": 49.27996814382148,
+        "loss_diff_abs": 1.4210854715202004e-14,
+        "forward_max_abs_err": 1.7763568394002505e-14,
+        "grad_a_max_abs_err": 4.7704895589362195e-18,
+        "grad_b_max_abs_err": 6.661338147750939e-16,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 1.0408340855860843e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.656854249492381
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 10.7866882589327
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 2,
+        "loss_plain": 49.23657819966006,
+        "loss_masked": 49.236578199660016,
+        "loss_diff_abs": 4.263256414560601e-14,
+        "forward_max_abs_err": 2.842170943040401e-14,
+        "grad_a_max_abs_err": 1.3877787807814457e-17,
+        "grad_b_max_abs_err": 6.38378239159465e-16,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 1.214306433183765e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.65685424949238
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 3.9999999999999996
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0000000000000004
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 11.47717595813306
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 3,
+        "loss_plain": 49.193046239631535,
+        "loss_masked": 49.1930462396315,
+        "loss_diff_abs": 3.552713678800501e-14,
+        "forward_max_abs_err": 2.3092638912203256e-14,
+        "grad_a_max_abs_err": 4.163336342344337e-17,
+        "grad_b_max_abs_err": 8.396061623727746e-16,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 1.734723475976807e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.656854249492381
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 10.682150253020769
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 4,
+        "loss_plain": 49.149224302646644,
+        "loss_masked": 49.149224302646644,
+        "loss_diff_abs": 0.0,
+        "forward_max_abs_err": 2.1316282072803006e-14,
+        "grad_a_max_abs_err": 2.7755575615628914e-17,
+        "grad_b_max_abs_err": 5.551115123125783e-16,
+        "adapter_a_update_max_abs_err": 4.336808689942018e-19,
+        "adapter_b_update_max_abs_err": 1.734723475976807e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.656854249492381
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 11.444139869677684
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      }
+    ],
+    "max_loss_diff": 4.263256414560601e-14,
+    "max_grad_a_err": 4.163336342344337e-17,
+    "max_grad_b_err": 8.396061623727746e-16,
+    "final_adapter_a_update_err": 4.336808689942018e-19,
+    "final_adapter_b_update_err": 1.734723475976807e-17,
+    "final_output_err": 1.7763568394002505e-14,
+    "tolerance_forward": 1e-09,
+    "tolerance_grad": 1e-09,
+    "tolerance_update": 1e-09,
+    "allclose": true
+  },
+  "gradient_and_optimizer_handling": {
+    "backward_location": "trusted",
+    "optimizer_state_location": "trusted",
+    "adapter_location": "trusted",
+    "private_data_location": "trusted",
+    "gpu_visibility": {
+      "x_tilde": true,
+      "w_tilde": true,
+      "a_tilde": true,
+      "b_tilde": true,
+      "bias_tilde": true,
+      "pad_compensation": true,
+      "raw_x": false,
+      "raw_a": false,
+      "raw_b": false,
+      "grad_a": false,
+      "grad_b": false,
+      "optimizer_state": false,
+      "private_target_y": false
+    },
+    "trusted_backward_status": "training backward remains trusted in Stage 7.0 prototype",
+    "masked_backward_status": "not_implemented; deferred to Stage 7.1 (masked backward / gradient-side obfuscation)",
+    "merge_adapter_into_w": false
+  },
+  "pad_compensation": {
+    "use_pad": true,
+    "pad_scale": 1.0,
+    "compensation_formula": "C = T_in W N_out + (alpha / r) T_in A B N_out",
+    "is_trusted_only": true,
+    "forward_err_under_pad": 2.842170943040401e-14
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora": "private-adapter-trusted-backward, not formal",
+  "lora_private_training_status": "prototype",
+  "limitations": [
+    "Stage 7.0 is a prototype LoRA private training path, not full Qwen/TinyLlama LoRA fine-tuning.",
+    "Backward / optimizer update remains trusted in Stage 7.0 \u2014 only the forward is masked and offloaded.",
+    "Optimizer state (SGD momentum / AdamW moments) is trusted-only and never exported to JSON/CSV/Markdown.",
+    "PEFT / DeepSpeed / vLLM / FlashAttention are NOT integrated.",
+    "Real TEE isolation is NOT evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+    "LoRA adapter is NEVER merged into the public base weight W.",
+    "Distributed training is NOT implemented.",
+    "Reported metrics are summary statistics + fingerprints. Private data, raw adapter tensors, masks, and pads are never emitted in outputs.",
+    "No formal / cryptographic / semantic security is claimed."
+  ],
+  "next_stage_plan": [
+    "Stage 7.1 \u2014 masked backward path: send masked gradients to GPU (e.g. fold N into the gradient pipeline) so the trusted side only generates and applies the update.",
+    "Stage 7.2 \u2014 multi-layer LoRA in a tiny transformer block end-to-end.",
+    "Stage 7.3 \u2014 calibrated LoRA workload + LoRA timing-side proxy."
+  ]
+}

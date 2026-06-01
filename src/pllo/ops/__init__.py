@@ -46,6 +46,22 @@ from pllo.ops.nonlinear_islands import (
 )
 from pllo.ops.lm_head import lm_head_obfuscated, lm_head_plain
 from pllo.ops.lora_linear import lora_linear_plain, lora_linear_obfuscated
+from pllo.ops.lora import (
+    LoRAConfig,
+    LoRAState,
+    MaskedLoRAForwardConfig,
+    create_masked_lora_state,
+    init_lora_adapters,
+    lora_state_fingerprint,
+    make_lora_pad_compensation,
+    masked_lora_linear_forward,
+    obfuscate_lora_input,
+    plain_lora_linear_forward,
+    recover_masked_output,
+    run_masked_lora_linear,
+    transform_linear_weight_lora,
+    transform_lora_adapter,
+)
 from pllo.ops.mlp import mlp_obfuscated, mlp_plain
 
 __all__ = [
@@ -93,4 +109,18 @@ __all__ = [
     "run_swiglu_paired_permutation_island",
     "silu_reference",
     "swiglu_reference",
+    "LoRAConfig",
+    "LoRAState",
+    "MaskedLoRAForwardConfig",
+    "create_masked_lora_state",
+    "init_lora_adapters",
+    "lora_state_fingerprint",
+    "make_lora_pad_compensation",
+    "masked_lora_linear_forward",
+    "obfuscate_lora_input",
+    "plain_lora_linear_forward",
+    "recover_masked_output",
+    "run_masked_lora_linear",
+    "transform_linear_weight_lora",
+    "transform_lora_adapter",
 ]

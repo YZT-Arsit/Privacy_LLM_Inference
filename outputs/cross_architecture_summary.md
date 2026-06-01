@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.478e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 3.783e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.350e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.229e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -175,9 +175,21 @@ Stage 5.5b drives the Stage 6.4c model-level wrapper (embedding + prefill + deco
 
 Stage 5.6 extension wires `masked_boundary_experimental` through ObfuscatedModernDecoderModelWrapper so the inter-block residual stays in a fresh orthogonal `n_inter` mask space across all layers; the LM head absorbs `n_inter` and `boundary_input` / `final` join the masked tensor set. A `constant_time_decode_mode = "proxy_equalized"` lever in the timing proxy equalises per-step simulated latency to a per-method upper bound (PROXY only — no sleep, no real wall-time change). Defaults stay `plain_boundary` and `off`. Both opt-in via CLI flags. Promotion eligibility: `security_profile_detail_with_extended_proxy = "inter-block-and-constant-time-proxy-evaluated, not formal"` when both modes are on and the envelope stays low-risk. Not formal security; not a real TEE measurement.
 
+| lora_private_training_status | prototype |
+| lora_forward_masking_status | implemented |
+| lora_training_step_status | trusted_backward_prototype |
+| lora_security_proxy_status | implemented |
+| lora_training_artifact | `outputs/lora_training_experiments.json` |
+| lora_security_artifact | `outputs/lora_security_proxy.json` |
+| lora_merge_adapter_into_w | False |
+| security_profile_detail_with_lora | private-adapter-trusted-backward, not formal |
 ### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)
 
 Stage 5.6 ships three proxy attackers that do NOT require paired plaintext/visible internal supervision. (1) Black-box query attacker uses only generated tokens + per-step logits summaries; mode / bundle / use_pad distinguishability sits at random chance under Stage 6.4c's exact-token-match guarantee. (2) Timing side-channel proxy uses the Stage 5.2c op-count cost model + Gaussian noise; decode_step and prompt-length latency leakage is `high` (structural — any latency observer can count decode steps), mitigation-bundle distinguishability is `low`. (3) Inter-block residual masking gap analysis confirms the Stage 5.5b finding that `boundary_input` / `final` are plain at the model-wrapper boundary; a single-transition math probe verifies the orthogonal-mask fix is numerically correct, but the full `masked_boundary_experimental` mode is `not_implemented_in_stage_5_6` (deferred to Stage 5.6 extension / Stage 7.0). Envelope-integrity risk: `low`. Structural-leakage risk: `high`. Not formal security; not a real TEE measurement.
+
+### Stage 7.0 — LoRA Private Training Prototype
+
+Stage 7.0 lands a LoRA primitive (`src/pllo/ops/lora.py`) + training-step correctness probe + leakage proxy: GPU sees only masked transcript `(X_tilde, W_tilde, A_tilde, B_tilde, Y_tilde)`; backward / optimizer remain trusted; the adapter is NEVER merged into the public base weight. `lora_private_training_status = "prototype"`. Forward correctness allclose under both `use_pad=True` / `use_pad=False`; per-step loss / gradient / update-error match the plain reference to float64 precision. Leakage proxy ranks five strategies (unmasked / fixed / fresh-U / fresh-masks / fresh+pad) under three sub-attacks (adapter extraction, gradient visibility accounting, membership-style linkability). Rank `r` is visible from the shape of A_tilde / B_tilde — rank padding is NOT implemented in Stage 7.0. `security_profile_detail_with_lora = "private-adapter-trusted-backward, not formal"`. `security_profile` itself is unchanged (`"proxy-evaluated, not formal"`). This is NOT full Qwen / TinyLlama LoRA fine-tuning, NOT PEFT integration, NOT distributed training, NOT real TEE training.
 
 - Default mode for the wider system remains `"trusted"`; default mitigation bundle remains `"fresh_perm_only"`.
 - This is block-level integration, not a full model-level wrapper; `full_runtime_integrated` stays False.

@@ -963,6 +963,24 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             )
             record["default_inter_block_mask_mode"] = "plain_boundary"
             record["default_constant_time_decode_mode"] = "off"
+            # Stage 7.0 — LoRA private training prototype. Inference-side
+            # defaults are NOT touched; these fields describe the support
+            # surface of the LoRA primitive + training probe + leakage
+            # proxy, not a runtime change to the model wrapper.
+            record["lora_private_training_status"] = "prototype"
+            record["lora_forward_masking_status"] = "implemented"
+            record["lora_training_step_status"] = "trusted_backward_prototype"
+            record["lora_security_proxy_status"] = "implemented"
+            record["lora_training_artifact"] = (
+                "outputs/lora_training_experiments.json"
+            )
+            record["lora_security_artifact"] = (
+                "outputs/lora_security_proxy.json"
+            )
+            record["lora_merge_adapter_into_w"] = False
+            record["security_profile_detail_with_lora"] = (
+                "private-adapter-trusted-backward, not formal"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1236,6 +1254,20 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 ),
                 "default_inter_block_mask_mode": "plain_boundary",
                 "default_constant_time_decode_mode": "off",
+                "lora_private_training_status": "prototype",
+                "lora_forward_masking_status": "implemented",
+                "lora_training_step_status": "trusted_backward_prototype",
+                "lora_security_proxy_status": "implemented",
+                "lora_training_artifact": (
+                    "outputs/lora_training_experiments.json"
+                ),
+                "lora_security_artifact": (
+                    "outputs/lora_security_proxy.json"
+                ),
+                "lora_merge_adapter_into_w": False,
+                "security_profile_detail_with_lora": (
+                    "private-adapter-trusted-backward, not formal"
+                ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"
                     " into the GPT-2 single-block wrapper behind a"

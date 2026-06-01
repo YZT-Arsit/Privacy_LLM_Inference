@@ -727,6 +727,30 @@ def _build_markdown(summary: dict) -> str:
                     " measurement."
                 )
                 out.append("")
+            lora_status = modern_row.get("lora_private_training_status")
+            if lora_status and lora_status != "not_yet":
+                out.append("| lora_private_training_status |"
+                           f" {lora_status} |")
+                out.append("| lora_forward_masking_status |"
+                           f" {modern_row.get('lora_forward_masking_status')} |")
+                out.append("| lora_training_step_status |"
+                           f" {modern_row.get('lora_training_step_status')} |")
+                out.append("| lora_security_proxy_status |"
+                           f" {modern_row.get('lora_security_proxy_status')} |")
+                out.append("| lora_training_artifact |"
+                           f" `{modern_row.get('lora_training_artifact')}` |")
+                out.append("| lora_security_artifact |"
+                           f" `{modern_row.get('lora_security_artifact')}` |")
+                out.append("| lora_merge_adapter_into_w |"
+                           f" {modern_row.get('lora_merge_adapter_into_w')} |")
+                lora_detail = modern_row.get(
+                    "security_profile_detail_with_lora"
+                )
+                if lora_detail:
+                    out.append(
+                        "| security_profile_detail_with_lora |"
+                        f" {lora_detail} |"
+                    )
             if sa_status and sa_status != "not_yet":
                 out.append(
                     "### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)"
@@ -753,6 +777,36 @@ def _build_markdown(summary: dict) -> str:
                     " extension / Stage 7.0). Envelope-integrity risk:"
                     " `low`. Structural-leakage risk: `high`. Not formal"
                     " security; not a real TEE measurement."
+                )
+                out.append("")
+            if lora_status and lora_status != "not_yet":
+                out.append(
+                    "### Stage 7.0 — LoRA Private Training Prototype"
+                )
+                out.append("")
+                out.append(
+                    "Stage 7.0 lands a LoRA primitive (`src/pllo/ops/lora.py`)"
+                    " + training-step correctness probe + leakage proxy:"
+                    " GPU sees only masked transcript"
+                    " `(X_tilde, W_tilde, A_tilde, B_tilde, Y_tilde)`;"
+                    " backward / optimizer remain trusted; the adapter is"
+                    " NEVER merged into the public base weight."
+                    " `lora_private_training_status = \"prototype\"`."
+                    " Forward correctness allclose under both"
+                    " `use_pad=True` / `use_pad=False`; per-step loss /"
+                    " gradient / update-error match the plain reference to"
+                    " float64 precision. Leakage proxy ranks five strategies"
+                    " (unmasked / fixed / fresh-U / fresh-masks / fresh+pad)"
+                    " under three sub-attacks (adapter extraction, gradient"
+                    " visibility accounting, membership-style linkability)."
+                    " Rank `r` is visible from the shape of A_tilde / B_tilde"
+                    " — rank padding is NOT implemented in Stage 7.0."
+                    " `security_profile_detail_with_lora ="
+                    " \"private-adapter-trusted-backward, not formal\"`."
+                    " `security_profile` itself is unchanged"
+                    " (`\"proxy-evaluated, not formal\"`). This is NOT full"
+                    " Qwen / TinyLlama LoRA fine-tuning, NOT PEFT integration,"
+                    " NOT distributed training, NOT real TEE training."
                 )
                 out.append("")
             out.append(

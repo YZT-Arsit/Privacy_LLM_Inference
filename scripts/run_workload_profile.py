@@ -528,6 +528,52 @@ def _build_markdown(profile: dict) -> str:
                         " `wall_time_source` are unchanged."
                     )
                 if islands_record.get(
+                    "lora_private_training_status",
+                ) == "prototype":
+                    out.append("")
+                    out.append(
+                        "### Stage 7.0 — LoRA Private Training Prototype"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `lora_private_training_status = "
+                        f"\"{islands_record.get('lora_private_training_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_forward_masking_status = "
+                        f"\"{islands_record.get('lora_forward_masking_status')}\"`,"
+                        " `lora_training_step_status = "
+                        f"\"{islands_record.get('lora_training_step_status')}\"`,"
+                        " `lora_security_proxy_status = "
+                        f"\"{islands_record.get('lora_security_proxy_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_training_artifact = "
+                        f"\"{islands_record.get('lora_training_artifact')}\"`,"
+                        " `lora_security_artifact = "
+                        f"\"{islands_record.get('lora_security_artifact')}\"`."
+                    )
+                    out.append(
+                        "- `lora_merge_adapter_into_w = "
+                        f"{islands_record.get('lora_merge_adapter_into_w')}`"
+                        " (constraint 7 — adapter is NEVER merged into the"
+                        " public base weight)."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_lora = "
+                        f"\"{islands_record.get('security_profile_detail_with_lora')}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- This is a single-linear, tiny-dimension prototype."
+                        " It is NOT full Qwen / TinyLlama LoRA fine-tuning,"
+                        " NOT PEFT integration, NOT distributed training, and"
+                        " NOT real TEE training. Backward / optimizer remain"
+                        " trusted in Stage 7.0; a masked-gradient GPU path is"
+                        " deferred to Stage 7.1."
+                    )
+                if islands_record.get(
                     "real_token_activation_attacker_status",
                 ) == "implemented":
                     out.append("")
