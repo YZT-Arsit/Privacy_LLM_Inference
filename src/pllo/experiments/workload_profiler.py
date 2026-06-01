@@ -981,6 +981,27 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["security_profile_detail_with_lora"] = (
                 "private-adapter-trusted-backward, not formal"
             )
+            # Stage 7.1 — masked backward / gradient-side obfuscation
+            # prototype. Loss + optimizer remain trusted; the GPU now sees
+            # G_tilde / grad_A_tilde / grad_B_tilde in addition to the
+            # Stage 7.0 forward transcript.
+            record["lora_backward_status"] = "masked_backward_prototype"
+            record["lora_loss_status"] = "trusted_loss"
+            record["lora_optimizer_status"] = "trusted_optimizer"
+            record["lora_gradient_security_proxy_status"] = "implemented"
+            record["lora_backward_artifact"] = (
+                "outputs/lora_backward_experiments.json"
+            )
+            record["lora_gradient_security_artifact"] = (
+                "outputs/lora_gradient_security_proxy.json"
+            )
+            record["security_profile_detail_with_lora_backward"] = (
+                "masked-gradient-proxy-evaluated, not formal"
+            )
+            # The Stage 7.0 trusted-backward status is superseded by the
+            # Stage 7.1 masked-backward status; keep the Stage 7.0 forward
+            # field intact for backward compatibility with downstream
+            # consumers.
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1267,6 +1288,19 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "lora_merge_adapter_into_w": False,
                 "security_profile_detail_with_lora": (
                     "private-adapter-trusted-backward, not formal"
+                ),
+                "lora_backward_status": "masked_backward_prototype",
+                "lora_loss_status": "trusted_loss",
+                "lora_optimizer_status": "trusted_optimizer",
+                "lora_gradient_security_proxy_status": "implemented",
+                "lora_backward_artifact": (
+                    "outputs/lora_backward_experiments.json"
+                ),
+                "lora_gradient_security_artifact": (
+                    "outputs/lora_gradient_security_proxy.json"
+                ),
+                "security_profile_detail_with_lora_backward": (
+                    "masked-gradient-proxy-evaluated, not formal"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

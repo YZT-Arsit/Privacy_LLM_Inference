@@ -728,6 +728,7 @@ def _build_markdown(summary: dict) -> str:
                 )
                 out.append("")
             lora_status = modern_row.get("lora_private_training_status")
+            lora_backward_status = modern_row.get("lora_backward_status")
             if lora_status and lora_status != "not_yet":
                 out.append("| lora_private_training_status |"
                            f" {lora_status} |")
@@ -750,6 +751,27 @@ def _build_markdown(summary: dict) -> str:
                     out.append(
                         "| security_profile_detail_with_lora |"
                         f" {lora_detail} |"
+                    )
+            if lora_backward_status and lora_backward_status != "not_yet":
+                out.append("| lora_backward_status |"
+                           f" {lora_backward_status} |")
+                out.append("| lora_loss_status |"
+                           f" {modern_row.get('lora_loss_status')} |")
+                out.append("| lora_optimizer_status |"
+                           f" {modern_row.get('lora_optimizer_status')} |")
+                out.append("| lora_gradient_security_proxy_status |"
+                           f" {modern_row.get('lora_gradient_security_proxy_status')} |")
+                out.append("| lora_backward_artifact |"
+                           f" `{modern_row.get('lora_backward_artifact')}` |")
+                out.append("| lora_gradient_security_artifact |"
+                           f" `{modern_row.get('lora_gradient_security_artifact')}` |")
+                lb_detail = modern_row.get(
+                    "security_profile_detail_with_lora_backward"
+                )
+                if lb_detail:
+                    out.append(
+                        "| security_profile_detail_with_lora_backward |"
+                        f" {lb_detail} |"
                     )
             if sa_status and sa_status != "not_yet":
                 out.append(
@@ -777,6 +799,38 @@ def _build_markdown(summary: dict) -> str:
                     " extension / Stage 7.0). Envelope-integrity risk:"
                     " `low`. Structural-leakage risk: `high`. Not formal"
                     " security; not a real TEE measurement."
+                )
+                out.append("")
+            if lora_backward_status and lora_backward_status != "not_yet":
+                out.append(
+                    "### Stage 7.1 — LoRA Masked Backward / Gradient-Side Obfuscation"
+                )
+                out.append("")
+                out.append(
+                    "Stage 7.1 extends Stage 7.0 by sending masked gradient"
+                    " tensors through the GPU boundary as well. The trusted"
+                    " side still computes G = dL/dY (loss stays trusted) and"
+                    " applies the optimizer update (SGD / AdamW state stays"
+                    " trusted); the GPU runs the gradient matmuls on masked"
+                    " tensors (G_tilde, X_tilde, A_tilde, B_tilde,"
+                    " grad_A_tilde, grad_B_tilde, optional grad_X_tilde) and"
+                    " returns masked gradients. Trusted side recovers via"
+                    " grad_A = N_in^{-T} grad_A_tilde U^T (+ pad compensation"
+                    " when use_pad=True) and grad_B = U^{-T} grad_B_tilde"
+                    " N_out^T (+ pad compensation). Per-step grad_A / grad_B"
+                    " match plain autograd to float64 precision across SGD /"
+                    " AdamW × use_pad ∈ {True, False} × fresh_u_per_step ∈"
+                    " {True, False}. Gradient leakage proxy ranks five"
+                    " strategies; fresh masks drive gradient-side"
+                    " membership-style AUC from ≈ 1.0 (fixed) to ≈ 0.5"
+                    " (random) — though LoRA rank `r` is still visible from"
+                    " the shape of grad_A_tilde / grad_B_tilde (rank padding"
+                    " is Stage 7.2). `security_profile_detail_with_lora_backward"
+                    " = \"masked-gradient-proxy-evaluated, not formal\"`."
+                    " `security_profile` itself stays `\"proxy-evaluated, not"
+                    " formal\"`. This is NOT full Qwen / TinyLlama LoRA"
+                    " fine-tuning, NOT PEFT integration, NOT distributed"
+                    " training, NOT real TEE training."
                 )
                 out.append("")
             if lora_status and lora_status != "not_yet":

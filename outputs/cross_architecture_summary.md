@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 3.783e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 3.022e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.229e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.206e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -183,9 +183,20 @@ Stage 5.6 extension wires `masked_boundary_experimental` through ObfuscatedModer
 | lora_security_artifact | `outputs/lora_security_proxy.json` |
 | lora_merge_adapter_into_w | False |
 | security_profile_detail_with_lora | private-adapter-trusted-backward, not formal |
+| lora_backward_status | masked_backward_prototype |
+| lora_loss_status | trusted_loss |
+| lora_optimizer_status | trusted_optimizer |
+| lora_gradient_security_proxy_status | implemented |
+| lora_backward_artifact | `outputs/lora_backward_experiments.json` |
+| lora_gradient_security_artifact | `outputs/lora_gradient_security_proxy.json` |
+| security_profile_detail_with_lora_backward | masked-gradient-proxy-evaluated, not formal |
 ### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)
 
 Stage 5.6 ships three proxy attackers that do NOT require paired plaintext/visible internal supervision. (1) Black-box query attacker uses only generated tokens + per-step logits summaries; mode / bundle / use_pad distinguishability sits at random chance under Stage 6.4c's exact-token-match guarantee. (2) Timing side-channel proxy uses the Stage 5.2c op-count cost model + Gaussian noise; decode_step and prompt-length latency leakage is `high` (structural — any latency observer can count decode steps), mitigation-bundle distinguishability is `low`. (3) Inter-block residual masking gap analysis confirms the Stage 5.5b finding that `boundary_input` / `final` are plain at the model-wrapper boundary; a single-transition math probe verifies the orthogonal-mask fix is numerically correct, but the full `masked_boundary_experimental` mode is `not_implemented_in_stage_5_6` (deferred to Stage 5.6 extension / Stage 7.0). Envelope-integrity risk: `low`. Structural-leakage risk: `high`. Not formal security; not a real TEE measurement.
+
+### Stage 7.1 — LoRA Masked Backward / Gradient-Side Obfuscation
+
+Stage 7.1 extends Stage 7.0 by sending masked gradient tensors through the GPU boundary as well. The trusted side still computes G = dL/dY (loss stays trusted) and applies the optimizer update (SGD / AdamW state stays trusted); the GPU runs the gradient matmuls on masked tensors (G_tilde, X_tilde, A_tilde, B_tilde, grad_A_tilde, grad_B_tilde, optional grad_X_tilde) and returns masked gradients. Trusted side recovers via grad_A = N_in^{-T} grad_A_tilde U^T (+ pad compensation when use_pad=True) and grad_B = U^{-T} grad_B_tilde N_out^T (+ pad compensation). Per-step grad_A / grad_B match plain autograd to float64 precision across SGD / AdamW × use_pad ∈ {True, False} × fresh_u_per_step ∈ {True, False}. Gradient leakage proxy ranks five strategies; fresh masks drive gradient-side membership-style AUC from ≈ 1.0 (fixed) to ≈ 0.5 (random) — though LoRA rank `r` is still visible from the shape of grad_A_tilde / grad_B_tilde (rank padding is Stage 7.2). `security_profile_detail_with_lora_backward = "masked-gradient-proxy-evaluated, not formal"`. `security_profile` itself stays `"proxy-evaluated, not formal"`. This is NOT full Qwen / TinyLlama LoRA fine-tuning, NOT PEFT integration, NOT distributed training, NOT real TEE training.
 
 ### Stage 7.0 — LoRA Private Training Prototype
 

@@ -738,6 +738,41 @@ def _compatible_island_integration_status(
                 effective_status.get("security_profile_detail_with_lora")
                 or method.get("security_profile_detail_with_lora")
             ),
+            # Stage 7.1 — masked backward / gradient-side obfuscation
+            "lora_backward_status": str(
+                effective_status.get("lora_backward_status")
+                or method.get("lora_backward_status")
+                or "not_yet"
+            ),
+            "lora_loss_status": str(
+                effective_status.get("lora_loss_status")
+                or method.get("lora_loss_status")
+                or "not_yet"
+            ),
+            "lora_optimizer_status": str(
+                effective_status.get("lora_optimizer_status")
+                or method.get("lora_optimizer_status")
+                or "not_yet"
+            ),
+            "lora_gradient_security_proxy_status": str(
+                effective_status.get("lora_gradient_security_proxy_status")
+                or method.get("lora_gradient_security_proxy_status")
+                or "not_yet"
+            ),
+            "lora_backward_artifact": (
+                effective_status.get("lora_backward_artifact")
+                or method.get("lora_backward_artifact")
+            ),
+            "lora_gradient_security_artifact": (
+                effective_status.get("lora_gradient_security_artifact")
+                or method.get("lora_gradient_security_artifact")
+            ),
+            "security_profile_detail_with_lora_backward": (
+                effective_status.get(
+                    "security_profile_detail_with_lora_backward"
+                )
+                or method.get("security_profile_detail_with_lora_backward")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

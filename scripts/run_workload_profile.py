@@ -574,6 +574,45 @@ def _build_markdown(profile: dict) -> str:
                         " deferred to Stage 7.1."
                     )
                 if islands_record.get(
+                    "lora_backward_status",
+                ) == "masked_backward_prototype":
+                    out.append("")
+                    out.append(
+                        "### Stage 7.1 — LoRA Masked Backward / Gradient-Side Obfuscation"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `lora_backward_status = "
+                        f"\"{islands_record.get('lora_backward_status')}\"`,"
+                        " `lora_loss_status = "
+                        f"\"{islands_record.get('lora_loss_status')}\"`,"
+                        " `lora_optimizer_status = "
+                        f"\"{islands_record.get('lora_optimizer_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_gradient_security_proxy_status = "
+                        f"\"{islands_record.get('lora_gradient_security_proxy_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_backward_artifact = "
+                        f"\"{islands_record.get('lora_backward_artifact')}\"`,"
+                        " `lora_gradient_security_artifact = "
+                        f"\"{islands_record.get('lora_gradient_security_artifact')}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_lora_backward = "
+                        f"\"{islands_record.get('security_profile_detail_with_lora_backward')}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Loss computation and optimizer update remain trusted."
+                        " GPU only sees masked transcript including"
+                        " `G_tilde / grad_A_tilde / grad_B_tilde`. Rank padding"
+                        " is NOT implemented in Stage 7.1; LoRA rank `r` is"
+                        " still visible from gradient shape (deferred to Stage 7.2)."
+                    )
+                if islands_record.get(
                     "real_token_activation_attacker_status",
                 ) == "implemented":
                     out.append("")

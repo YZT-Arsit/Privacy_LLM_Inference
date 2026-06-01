@@ -1,0 +1,131 @@
+section,step,metric,value
+config,n/a,output_dir,/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs
+config,n/a,seed,2026
+config,n/a,batch_size,4
+config,n/a,d_in,32
+config,n/a,d_out,16
+config,n/a,rank,4
+config,n/a,alpha,1.0
+config,n/a,use_bias,True
+config,n/a,num_steps,5
+config,n/a,lr,0.01
+config,n/a,optimizer,sgd
+config,n/a,weight_decay,0.0
+config,n/a,adamw_beta1,0.9
+config,n/a,adamw_beta2,0.999
+config,n/a,adamw_eps,1e-08
+config,n/a,use_pad,True
+config,n/a,fresh_u_per_step,True
+config,n/a,fresh_masks_per_step,True
+config,n/a,pad_scale,1.0
+config,n/a,recover_grad_x,True
+config,n/a,dtype,float64
+config,n/a,device,cpu
+autograd_cross_check,0,grad_a,4.336808689942018e-19
+autograd_cross_check,0,grad_b,0.0
+autograd_cross_check,0,grad_x,0.0
+per_step,0,step,0
+per_step,0,loss_plain,49.32336467244431
+per_step,0,loss_masked,49.3233646724443
+per_step,0,loss_diff_abs,1.4210854715202004e-14
+per_step,0,forward_max_abs_err,1.6209256159527285e-14
+per_step,0,upstream_gradient_invariance_err,1.4210854715202004e-14
+per_step,0,grad_a_max_abs_err,2.6020852139652106e-18
+per_step,0,grad_b_max_abs_err,7.771561172376096e-16
+per_step,0,grad_x_max_abs_err,3.1086244689504383e-15
+per_step,0,adapter_a_update_max_abs_err,0.0
+per_step,0,adapter_b_update_max_abs_err,7.806255641895632e-18
+per_step,1,step,1
+per_step,1,loss_plain,49.27996814382146
+per_step,1,loss_masked,49.27996814382148
+per_step,1,loss_diff_abs,1.4210854715202004e-14
+per_step,1,forward_max_abs_err,1.7763568394002505e-14
+per_step,1,upstream_gradient_invariance_err,0.0
+per_step,1,grad_a_max_abs_err,2.949029909160572e-17
+per_step,1,grad_b_max_abs_err,5.551115123125783e-16
+per_step,1,grad_x_max_abs_err,2.55351295663786e-15
+per_step,1,adapter_a_update_max_abs_err,0.0
+per_step,1,adapter_b_update_max_abs_err,1.214306433183765e-17
+per_step,2,step,2
+per_step,2,loss_plain,49.23657819966006
+per_step,2,loss_masked,49.236578199660016
+per_step,2,loss_diff_abs,4.263256414560601e-14
+per_step,2,forward_max_abs_err,2.842170943040401e-14
+per_step,2,upstream_gradient_invariance_err,0.0
+per_step,2,grad_a_max_abs_err,4.5102810375396984e-17
+per_step,2,grad_b_max_abs_err,9.71445146547012e-16
+per_step,2,grad_x_max_abs_err,5.773159728050814e-15
+per_step,2,adapter_a_update_max_abs_err,0.0
+per_step,2,adapter_b_update_max_abs_err,1.3877787807814457e-17
+per_step,3,step,3
+per_step,3,loss_plain,49.193046239631535
+per_step,3,loss_masked,49.1930462396315
+per_step,3,loss_diff_abs,3.552713678800501e-14
+per_step,3,forward_max_abs_err,2.3092638912203256e-14
+per_step,3,upstream_gradient_invariance_err,1.4210854715202004e-14
+per_step,3,grad_a_max_abs_err,8.326672684688674e-17
+per_step,3,grad_b_max_abs_err,9.992007221626409e-16
+per_step,3,grad_x_max_abs_err,6.661338147750939e-15
+per_step,3,adapter_a_update_max_abs_err,1.3877787807814457e-17
+per_step,3,adapter_b_update_max_abs_err,2.0816681711721685e-17
+per_step,4,step,4
+per_step,4,loss_plain,49.149224302646644
+per_step,4,loss_masked,49.149224302646644
+per_step,4,loss_diff_abs,0.0
+per_step,4,forward_max_abs_err,2.1316282072803006e-14
+per_step,4,upstream_gradient_invariance_err,1.4210854715202004e-14
+per_step,4,grad_a_max_abs_err,6.591949208711867e-17
+per_step,4,grad_b_max_abs_err,3.95516952522712e-16
+per_step,4,grad_x_max_abs_err,2.9976021664879227e-15
+per_step,4,adapter_a_update_max_abs_err,1.3877787807814457e-17
+per_step,4,adapter_b_update_max_abs_err,2.42861286636753e-17
+summary,final,max_loss_diff,4.263256414560601e-14
+summary,final,max_grad_a_err,8.326672684688674e-17
+summary,final,max_grad_b_err,9.992007221626409e-16
+summary,final,max_grad_x_err,6.661338147750939e-15
+summary,final,max_upstream_gradient_invariance_err,1.4210854715202004e-14
+summary,final,final_adapter_a_update_err,1.3877787807814457e-17
+summary,final,final_adapter_b_update_err,2.42861286636753e-17
+summary,final,final_output_err,1.7763568394002505e-14
+summary,final,allclose,True
+summary,final,masked_backward_allclose,True
+loss_handling,n/a,location,trusted
+loss_handling,n/a,stage_7_1_status,trusted_loss
+loss_handling,n/a,note,"Trusted side computes L = MSE(Y_recovered, Y_target) and G = dL/dY = (2/N)(Y - Y_target). Only G_tilde = G N_out^{-T} is sent to the GPU backward."
+gradient_handling,n/a,backward_location,masked_gpu
+gradient_handling,n/a,stage_7_1_status,masked_backward_prototype
+gradient_handling,n/a,gpu_visibility.x_tilde,True
+gradient_handling,n/a,gpu_visibility.w_tilde,True
+gradient_handling,n/a,gpu_visibility.a_tilde,True
+gradient_handling,n/a,gpu_visibility.b_tilde,True
+gradient_handling,n/a,gpu_visibility.grad_y_tilde,True
+gradient_handling,n/a,gpu_visibility.grad_a_tilde,True
+gradient_handling,n/a,gpu_visibility.grad_b_tilde,True
+gradient_handling,n/a,gpu_visibility.grad_x_tilde,True
+gradient_handling,n/a,gpu_visibility.raw_x,False
+gradient_handling,n/a,gpu_visibility.raw_a,False
+gradient_handling,n/a,gpu_visibility.raw_b,False
+gradient_handling,n/a,gpu_visibility.raw_grad_a,False
+gradient_handling,n/a,gpu_visibility.raw_grad_b,False
+gradient_handling,n/a,gpu_visibility.raw_upstream_gradient_g,False
+gradient_handling,n/a,gpu_visibility.optimizer_state,False
+gradient_handling,n/a,gpu_visibility.private_target_y,False
+optimizer_handling,n/a,location,trusted
+optimizer_handling,n/a,stage_7_1_status,trusted_optimizer
+optimizer_handling,n/a,optimizer,sgd
+optimizer_handling,n/a,lr,0.01
+optimizer_handling,n/a,weight_decay,0.0
+optimizer_handling,n/a,note,"Optimizer state (SGD momentum / AdamW m, v) lives entirely on the trusted side and is never exposed to the GPU or to JSON / CSV / Markdown reports."
+pad_compensation,n/a,use_pad,True
+pad_compensation,n/a,pad_scale,1.0
+pad_compensation,n/a,grad_a_compensation_formula,"(alpha / r) T_in^T G B^T   (trusted side, plain space)"
+pad_compensation,n/a,grad_b_compensation_formula,"(alpha / r) A^T T_in^T G   (trusted side, plain space)"
+pad_compensation,n/a,is_trusted_only,True
+masked_backward_formula,n/a,upstream_gradient_mask,G_tilde = G N_out^{-T}
+masked_backward_formula,n/a,grad_a_tilde,s X_tilde^T (G_tilde B_tilde^T)
+masked_backward_formula,n/a,grad_b_tilde,s (X_tilde A_tilde)^T G_tilde
+masked_backward_formula,n/a,grad_x_tilde,G_tilde W_tilde^T + s G_tilde B_tilde^T A_tilde^T
+masked_backward_formula,n/a,grad_a_recovery,grad_A = N_in^{-T} grad_A_tilde U^T (+ trusted pad compensation)
+masked_backward_formula,n/a,grad_b_recovery,grad_B = U^{-T}    grad_B_tilde N_out^T (+ trusted pad compensation)
+masked_backward_formula,n/a,grad_x_recovery,grad_X = grad_X_tilde N_in^T
+masked_backward_formula,n/a,chain_rule_invariance,tr(G^T dY) = tr(G_tilde^T dY_tilde) for Y_tilde = Y N_out

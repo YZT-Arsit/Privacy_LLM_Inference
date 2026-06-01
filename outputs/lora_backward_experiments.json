@@ -1,0 +1,361 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "batch_size": 4,
+    "d_in": 32,
+    "d_out": 16,
+    "rank": 4,
+    "alpha": 1.0,
+    "use_bias": true,
+    "num_steps": 5,
+    "lr": 0.01,
+    "optimizer": "sgd",
+    "weight_decay": 0.0,
+    "adamw_beta1": 0.9,
+    "adamw_beta2": 0.999,
+    "adamw_eps": 1e-08,
+    "use_pad": true,
+    "fresh_u_per_step": true,
+    "fresh_masks_per_step": true,
+    "pad_scale": 1.0,
+    "recover_grad_x": true,
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "lora_config_fingerprint": {
+    "d_in": 32,
+    "d_out": 16,
+    "rank": 4,
+    "alpha": 1.0,
+    "use_bias": true
+  },
+  "autograd_vs_analytic_step0": {
+    "grad_a": 4.336808689942018e-19,
+    "grad_b": 0.0,
+    "grad_x": 0.0
+  },
+  "masked_backward_correctness": {
+    "num_steps": 5,
+    "per_step": [
+      {
+        "step": 0,
+        "loss_plain": 49.32336467244431,
+        "loss_masked": 49.3233646724443,
+        "loss_diff_abs": 1.4210854715202004e-14,
+        "forward_max_abs_err": 1.6209256159527285e-14,
+        "upstream_gradient_invariance_err": 1.4210854715202004e-14,
+        "grad_a_max_abs_err": 2.6020852139652106e-18,
+        "grad_b_max_abs_err": 7.771561172376096e-16,
+        "grad_x_max_abs_err": 3.1086244689504383e-15,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 7.806255641895632e-18,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.65685424949238
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 10.848273725556158
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 1,
+        "loss_plain": 49.27996814382146,
+        "loss_masked": 49.27996814382148,
+        "loss_diff_abs": 1.4210854715202004e-14,
+        "forward_max_abs_err": 1.7763568394002505e-14,
+        "upstream_gradient_invariance_err": 0.0,
+        "grad_a_max_abs_err": 2.949029909160572e-17,
+        "grad_b_max_abs_err": 5.551115123125783e-16,
+        "grad_x_max_abs_err": 2.55351295663786e-15,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 1.214306433183765e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.656854249492381
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 10.7866882589327
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 2,
+        "loss_plain": 49.23657819966006,
+        "loss_masked": 49.236578199660016,
+        "loss_diff_abs": 4.263256414560601e-14,
+        "forward_max_abs_err": 2.842170943040401e-14,
+        "upstream_gradient_invariance_err": 0.0,
+        "grad_a_max_abs_err": 4.5102810375396984e-17,
+        "grad_b_max_abs_err": 9.71445146547012e-16,
+        "grad_x_max_abs_err": 5.773159728050814e-15,
+        "adapter_a_update_max_abs_err": 0.0,
+        "adapter_b_update_max_abs_err": 1.3877787807814457e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.65685424949238
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 3.9999999999999996
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0000000000000004
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 11.47717595813306
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 3,
+        "loss_plain": 49.193046239631535,
+        "loss_masked": 49.1930462396315,
+        "loss_diff_abs": 3.552713678800501e-14,
+        "forward_max_abs_err": 2.3092638912203256e-14,
+        "upstream_gradient_invariance_err": 1.4210854715202004e-14,
+        "grad_a_max_abs_err": 8.326672684688674e-17,
+        "grad_b_max_abs_err": 9.992007221626409e-16,
+        "grad_x_max_abs_err": 6.661338147750939e-15,
+        "adapter_a_update_max_abs_err": 1.3877787807814457e-17,
+        "adapter_b_update_max_abs_err": 2.0816681711721685e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.656854249492381
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 10.682150253020769
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      },
+      {
+        "step": 4,
+        "loss_plain": 49.149224302646644,
+        "loss_masked": 49.149224302646644,
+        "loss_diff_abs": 0.0,
+        "forward_max_abs_err": 2.1316282072803006e-14,
+        "upstream_gradient_invariance_err": 1.4210854715202004e-14,
+        "grad_a_max_abs_err": 6.591949208711867e-17,
+        "grad_b_max_abs_err": 3.95516952522712e-16,
+        "grad_x_max_abs_err": 2.9976021664879227e-15,
+        "adapter_a_update_max_abs_err": 1.3877787807814457e-17,
+        "adapter_b_update_max_abs_err": 2.42861286636753e-17,
+        "lora_state_fingerprint": {
+          "n_in": {
+            "shape": [
+              32,
+              32
+            ],
+            "frobenius_norm_digest": 5.656854249492381
+          },
+          "n_out": {
+            "shape": [
+              16,
+              16
+            ],
+            "frobenius_norm_digest": 4.0
+          },
+          "u": {
+            "shape": [
+              4,
+              4
+            ],
+            "frobenius_norm_digest": 2.0
+          },
+          "pad_present": true,
+          "pad": {
+            "shape": [
+              4,
+              32
+            ],
+            "frobenius_norm_digest": 11.444139869677684
+          },
+          "rank": 4,
+          "alpha": 1.0
+        }
+      }
+    ],
+    "max_loss_diff": 4.263256414560601e-14,
+    "max_grad_a_err": 8.326672684688674e-17,
+    "max_grad_b_err": 9.992007221626409e-16,
+    "max_grad_x_err": 6.661338147750939e-15,
+    "max_upstream_gradient_invariance_err": 1.4210854715202004e-14,
+    "final_adapter_a_update_err": 1.3877787807814457e-17,
+    "final_adapter_b_update_err": 2.42861286636753e-17,
+    "final_output_err": 1.7763568394002505e-14,
+    "tolerance_forward": 1e-09,
+    "tolerance_grad": 1e-09,
+    "tolerance_update": 1e-09,
+    "tolerance_invariance": 1e-09,
+    "allclose": true,
+    "masked_backward_allclose": true
+  },
+  "loss_handling": {
+    "location": "trusted",
+    "stage_7_1_status": "trusted_loss",
+    "note": "Trusted side computes L = MSE(Y_recovered, Y_target) and G = dL/dY = (2/N)(Y - Y_target). Only G_tilde = G N_out^{-T} is sent to the GPU backward."
+  },
+  "gradient_handling": {
+    "backward_location": "masked_gpu",
+    "stage_7_1_status": "masked_backward_prototype",
+    "gpu_visibility": {
+      "x_tilde": true,
+      "w_tilde": true,
+      "a_tilde": true,
+      "b_tilde": true,
+      "grad_y_tilde": true,
+      "grad_a_tilde": true,
+      "grad_b_tilde": true,
+      "grad_x_tilde": true,
+      "raw_x": false,
+      "raw_a": false,
+      "raw_b": false,
+      "raw_grad_a": false,
+      "raw_grad_b": false,
+      "raw_upstream_gradient_g": false,
+      "optimizer_state": false,
+      "private_target_y": false
+    }
+  },
+  "optimizer_handling": {
+    "location": "trusted",
+    "stage_7_1_status": "trusted_optimizer",
+    "optimizer": "sgd",
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "note": "Optimizer state (SGD momentum / AdamW m, v) lives entirely on the trusted side and is never exposed to the GPU or to JSON / CSV / Markdown reports."
+  },
+  "pad_compensation": {
+    "use_pad": true,
+    "pad_scale": 1.0,
+    "grad_a_compensation_formula": "(alpha / r) T_in^T G B^T   (trusted side, plain space)",
+    "grad_b_compensation_formula": "(alpha / r) A^T T_in^T G   (trusted side, plain space)",
+    "is_trusted_only": true
+  },
+  "masked_backward_formula": {
+    "upstream_gradient_mask": "G_tilde = G N_out^{-T}",
+    "grad_a_tilde": "s X_tilde^T (G_tilde B_tilde^T)",
+    "grad_b_tilde": "s (X_tilde A_tilde)^T G_tilde",
+    "grad_x_tilde": "G_tilde W_tilde^T + s G_tilde B_tilde^T A_tilde^T",
+    "grad_a_recovery": "grad_A = N_in^{-T} grad_A_tilde U^T (+ trusted pad compensation)",
+    "grad_b_recovery": "grad_B = U^{-T}    grad_B_tilde N_out^T (+ trusted pad compensation)",
+    "grad_x_recovery": "grad_X = grad_X_tilde N_in^T",
+    "chain_rule_invariance": "tr(G^T dY) = tr(G_tilde^T dY_tilde) for Y_tilde = Y N_out"
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_backward": "masked-gradient-proxy-evaluated, not formal",
+  "lora_private_training_status": "prototype",
+  "lora_backward_status": "masked_backward_prototype",
+  "lora_loss_status": "trusted_loss",
+  "lora_optimizer_status": "trusted_optimizer",
+  "limitations": [
+    "Stage 7.1 implements masked-gradient prototype, not full private fine-tuning.",
+    "Loss computation remains trusted (G = dL/dY is computed on the trusted side).",
+    "Optimizer update remains trusted (SGD momentum / AdamW m, v never cross the boundary).",
+    "PEFT / DeepSpeed / vLLM / FlashAttention are NOT integrated.",
+    "This is not real TEE training; security_profile stays 'proxy-evaluated, not formal'.",
+    "Rank padding is NOT implemented; LoRA rank r is still visible from A_tilde / B_tilde / grad_A_tilde / grad_B_tilde shapes (deferred to Stage 7.2).",
+    "LoRA adapter is NEVER merged into the public base weight W.",
+    "Distributed training is NOT implemented.",
+    "Reports publish summary metrics + fingerprints only. Private data, raw adapter tensors, raw gradients, optimizer state, and masks are never emitted in outputs.",
+    "No formal / cryptographic / semantic security is claimed."
+  ],
+  "next_stage_plan": [
+    "Stage 7.2 \u2014 rank padding to hide r from A_tilde / B_tilde / grad_A_tilde / grad_B_tilde shapes.",
+    "Stage 7.3 \u2014 multi-layer LoRA in a tiny transformer block end-to-end; calibrated LoRA workload + LoRA timing-side proxy."
+  ]
+}

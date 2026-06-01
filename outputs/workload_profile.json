@@ -18,7 +18,7 @@
     }
   },
   "calibration": {
-    "gpu_flops_per_ms": 1172226.1708420056,
+    "gpu_flops_per_ms": 1467441.144575645,
     "calibrated_from": "plain_hf_gpu"
   },
   "methods": {
@@ -40,10 +40,10 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 3.7829082051757723,
-      "measured_wall_time_ms": 3.7829082051757723,
-      "measured_wall_time_ms_median": 3.564458020264283,
-      "measured_wall_time_ms_stdev": 0.800529205436276,
+      "projected_wall_time_ms": 3.0218751984648407,
+      "measured_wall_time_ms": 3.0218751984648407,
+      "measured_wall_time_ms_median": 2.771500003291294,
+      "measured_wall_time_ms_stdev": 0.41532741774088616,
       "wall_time_source": "measured"
     },
     "tslp_trusted_nonlinear_baseline": {
@@ -64,7 +64,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 55.41777084694208,
+      "projected_wall_time_ms": 45.13067509454079,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -88,10 +88,10 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 55.698253855675354,
-      "measured_wall_time_ms": 6.228866596939042,
-      "measured_wall_time_ms_median": 6.103583000367507,
-      "measured_wall_time_ms_stdev": 0.3949101916653371,
+      "projected_wall_time_ms": 45.35898581798062,
+      "measured_wall_time_ms": 6.206308596301824,
+      "measured_wall_time_ms_median": 6.105750013375655,
+      "measured_wall_time_ms_stdev": 0.28140749915443797,
       "wall_time_source": "measured"
     },
     "ours_ideal_gpu_nonlinear": {
@@ -112,7 +112,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 55.082392534499604,
+      "projected_wall_time_ms": 44.83377796136686,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -175,6 +175,13 @@
       "lora_security_artifact": "outputs/lora_security_proxy.json",
       "lora_merge_adapter_into_w": false,
       "security_profile_detail_with_lora": "private-adapter-trusted-backward, not formal",
+      "lora_backward_status": "masked_backward_prototype",
+      "lora_loss_status": "trusted_loss",
+      "lora_optimizer_status": "trusted_optimizer",
+      "lora_gradient_security_proxy_status": "implemented",
+      "lora_backward_artifact": "outputs/lora_backward_experiments.json",
+      "lora_gradient_security_artifact": "outputs/lora_gradient_security_proxy.json",
+      "security_profile_detail_with_lora_backward": "masked-gradient-proxy-evaluated, not formal",
       "mitigation_bundle_selectable": true,
       "default_mitigation_bundle": "fresh_perm_only",
       "recommended_default_on_bundle": "fresh_perm_plus_sandwich_plus_pad",
@@ -202,7 +209,7 @@
         "permutation_absorption_ops": 128,
         "compatible_mask_generation_ops": 40
       },
-      "projected_wall_time_ms": 55.15055526930932,
+      "projected_wall_time_ms": 44.90043044581283,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -226,7 +233,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 55.082392534499604,
+      "projected_wall_time_ms": 44.83377796136686,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -1217,6 +1224,13 @@
       "lora_security_artifact": "outputs/lora_security_proxy.json",
       "lora_merge_adapter_into_w": false,
       "security_profile_detail_with_lora": "private-adapter-trusted-backward, not formal",
+      "lora_backward_status": "masked_backward_prototype",
+      "lora_loss_status": "trusted_loss",
+      "lora_optimizer_status": "trusted_optimizer",
+      "lora_gradient_security_proxy_status": "implemented",
+      "lora_backward_artifact": "outputs/lora_backward_experiments.json",
+      "lora_gradient_security_artifact": "outputs/lora_gradient_security_proxy.json",
+      "security_profile_detail_with_lora_backward": "masked-gradient-proxy-evaluated, not formal",
       "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag; Stage 5.3b propagates the same flag through the GPT-2 model-level wrapper (full forward + prefill / decode_step + greedy generation). Stage 5.3c extends the same flag to probe-level BERT (Stage 6.1) and T5 / BART (Stage 6.2) FFN island probes \u2014 encoder GELU / ReLU MLP islands and gated-SiLU MLP islands, with explicit unsupported status for gated-GELU which Stage 5.2a does not yet cover. Stage 6.4 adds a probe-level migration for modern decoder-only models (Qwen / TinyLlama / LLaMA \u2014 RMSNorm + SwiGLU + RoPE-post-mask + GQA/MQA tensor-level probes, default synthetic). Stage 6.4b extends that to a block-level wrapper that loads a real HF LLaMA-style model (or synthetic fallback), extracts one transformer block and verifies the obfuscated block output recovers to the plain reference for both mitigation bundles and both use_pad values. Default mode remains 'trusted'; ours_compatible_nonlinear_islands stays partial_implementation=True because BERT / T5 / modern-decoder are block-/probe-level integrations, not full wrappers (full_runtime_integrated=False). This is a measured GPT-2 model-level smoke plus BERT / T5 probe-level correctness plus modern-decoder block-level correctness, not a full cross-architecture measurement."
     }
   },

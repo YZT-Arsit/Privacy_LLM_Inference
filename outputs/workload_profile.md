@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `1.172e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `1.467e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 3.783 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 55.418 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 6.229 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 55.082 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 55.151 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 55.082 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 3.022 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 45.131 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 6.206 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 44.834 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 44.900 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 44.834 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -219,6 +219,14 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - `lora_merge_adapter_into_w = False` (constraint 7 — adapter is NEVER merged into the public base weight).
 - `security_profile_detail_with_lora = "private-adapter-trusted-backward, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
 - This is a single-linear, tiny-dimension prototype. It is NOT full Qwen / TinyLlama LoRA fine-tuning, NOT PEFT integration, NOT distributed training, and NOT real TEE training. Backward / optimizer remain trusted in Stage 7.0; a masked-gradient GPU path is deferred to Stage 7.1.
+
+### Stage 7.1 — LoRA Masked Backward / Gradient-Side Obfuscation
+
+- `lora_backward_status = "masked_backward_prototype"`, `lora_loss_status = "trusted_loss"`, `lora_optimizer_status = "trusted_optimizer"`.
+- `lora_gradient_security_proxy_status = "implemented"`.
+- `lora_backward_artifact = "outputs/lora_backward_experiments.json"`, `lora_gradient_security_artifact = "outputs/lora_gradient_security_proxy.json"`.
+- `security_profile_detail_with_lora_backward = "masked-gradient-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
+- Loss computation and optimizer update remain trusted. GPU only sees masked transcript including `G_tilde / grad_A_tilde / grad_B_tilde`. Rank padding is NOT implemented in Stage 7.1; LoRA rank `r` is still visible from gradient shape (deferred to Stage 7.2).
 
 ### Stage 5.5b Real-Token-Prompted Real-Activation Attacker
 

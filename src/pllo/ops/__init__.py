@@ -62,6 +62,16 @@ from pllo.ops.lora import (
     transform_linear_weight_lora,
     transform_lora_adapter,
 )
+from pllo.ops.lora_backward import (
+    MaskedLoRABackwardConfig,
+    invert_upstream_gradient_mask,
+    make_lora_grad_pad_compensation,
+    masked_lora_backward,
+    plain_lora_backward_reference,
+    recover_lora_gradients,
+    run_masked_lora_backward,
+    transform_upstream_gradient,
+)
 from pllo.ops.mlp import mlp_obfuscated, mlp_plain
 
 __all__ = [
@@ -123,4 +133,12 @@ __all__ = [
     "run_masked_lora_linear",
     "transform_linear_weight_lora",
     "transform_lora_adapter",
+    "MaskedLoRABackwardConfig",
+    "invert_upstream_gradient_mask",
+    "make_lora_grad_pad_compensation",
+    "masked_lora_backward",
+    "plain_lora_backward_reference",
+    "recover_lora_gradients",
+    "run_masked_lora_backward",
+    "transform_upstream_gradient",
 ]
