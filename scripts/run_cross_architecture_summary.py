@@ -748,6 +748,15 @@ def _build_markdown(summary: dict) -> str:
             lora_spectral_rank_hardening_status = modern_row.get(
                 "lora_spectral_rank_hardening_status"
             )
+            paper_artifact_consolidation_status = modern_row.get(
+                "paper_artifact_consolidation_status"
+            )
+            measured_runtime_evaluation_status = modern_row.get(
+                "measured_runtime_evaluation_status"
+            )
+            paper_claims_audit_status = modern_row.get(
+                "paper_claims_audit_status"
+            )
             if lora_status and lora_status != "not_yet":
                 out.append("| lora_private_training_status |"
                            f" {lora_status} |")
@@ -846,6 +855,32 @@ def _build_markdown(summary: dict) -> str:
                     )
             if (
                 (
+                    paper_artifact_consolidation_status
+                    and paper_artifact_consolidation_status != "not_yet"
+                )
+                or (
+                    measured_runtime_evaluation_status
+                    and measured_runtime_evaluation_status != "not_yet"
+                )
+                or (
+                    paper_claims_audit_status
+                    and paper_claims_audit_status != "not_yet"
+                )
+            ):
+                out.append("| paper_artifact_consolidation_status |"
+                           f" {paper_artifact_consolidation_status} |")
+                out.append("| paper_artifact_consolidation_artifact |"
+                           f" `{modern_row.get('paper_artifact_consolidation_artifact')}` |")
+                out.append("| measured_runtime_evaluation_status |"
+                           f" {measured_runtime_evaluation_status} |")
+                out.append("| measured_runtime_artifact |"
+                           f" `{modern_row.get('measured_runtime_artifact')}` |")
+                out.append("| paper_claims_audit_status |"
+                           f" {paper_claims_audit_status} |")
+                out.append("| paper_claims_audit_artifact |"
+                           f" `{modern_row.get('paper_claims_audit_artifact')}` |")
+            if (
+                (
                     lora_stronger_dummy_status
                     and lora_stronger_dummy_status != "not_yet"
                 )
@@ -898,6 +933,59 @@ def _build_markdown(summary: dict) -> str:
                     " extension / Stage 7.0). Envelope-integrity risk:"
                     " `low`. Structural-leakage risk: `high`. Not formal"
                     " security; not a real TEE measurement."
+                )
+                out.append("")
+            if (
+                (
+                    paper_artifact_consolidation_status
+                    and paper_artifact_consolidation_status != "not_yet"
+                )
+                or (
+                    measured_runtime_evaluation_status
+                    and measured_runtime_evaluation_status != "not_yet"
+                )
+                or (
+                    paper_claims_audit_status
+                    and paper_claims_audit_status != "not_yet"
+                )
+            ):
+                out.append(
+                    "### Stage 7.5 — Paper Artifact Consolidation +"
+                    " Measured Runtime + Claims Audit"
+                )
+                out.append("")
+                out.append(
+                    "Stage 7.5 aggregates every existing"
+                    " `outputs/*.json` produced by Stage 1 through Stage"
+                    " 7.4 into paper-ready CSV / Markdown / LaTeX"
+                    " tables, runs local-emulation wall-clock"
+                    " measurements on the plain / masked / rank-padded /"
+                    " multi-layer LoRA primitives, and classifies every"
+                    " paper claim into `supported / proxy_supported /"
+                    " unsupported`. **This is local emulation only —"
+                    " NOT a real TEE wall-time measurement and NOT a"
+                    " formal / cryptographic / semantic security claim.**"
+                    " No new obfuscation primitives, no new attackers,"
+                    " no inference-side default behaviour changes."
+                    " The aggregator emits artifact_inventory,"
+                    " correctness_summary, security_proxy_summary,"
+                    " workload_summary, lora_training_summary,"
+                    " limitations_summary, paper_claims_audit, and the"
+                    " consolidated `paper_results/summary.md`. The"
+                    " measured-runtime evaluator records mean / median /"
+                    " std / min / max wall-time per component without"
+                    " calling `time.sleep` and without loading any"
+                    " network model. The claims audit ensures that"
+                    " unsupported items (formal / cryptographic /"
+                    " semantic security, real TEE wall-time, hardware"
+                    " side-channel security, full Qwen / TinyLlama"
+                    " fine-tune, PEFT integration, padded_rank hidden,"
+                    " loss / optimizer outsourced, compromised-TEE"
+                    " protection) carry explicit `paper_safe_wording`"
+                    " + `unsafe_wording_to_avoid` flags so the paper"
+                    " writer never accidentally overclaims."
+                    " `security_profile` itself remains"
+                    " `\"proxy-evaluated, not formal\"`."
                 )
                 out.append("")
             if (

@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.829e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.435e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.196e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.813e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -204,6 +204,12 @@ Stage 5.6 extension wires `masked_boundary_experimental` through ObfuscatedModer
 | lora_training_timing_proxy_status | implemented |
 | lora_training_timing_artifact | `outputs/lora_training_timing_proxy.json` |
 | security_profile_detail_with_lora_multilayer | multi-layer-lora-proxy-evaluated, not formal |
+| paper_artifact_consolidation_status | implemented |
+| paper_artifact_consolidation_artifact | `paper_results/summary.md` |
+| measured_runtime_evaluation_status | implemented |
+| measured_runtime_artifact | `paper_results/json/measured_runtime.json` |
+| paper_claims_audit_status | implemented |
+| paper_claims_audit_artifact | `paper_results/markdown/paper_claims_audit.md` |
 | lora_stronger_dummy_status | implemented |
 | lora_stronger_dummy_artifact | `outputs/lora_stronger_dummy_experiments.json` |
 | lora_stronger_dummy_security_status | implemented |
@@ -213,6 +219,10 @@ Stage 5.6 extension wires `masked_boundary_experimental` through ObfuscatedModer
 ### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)
 
 Stage 5.6 ships three proxy attackers that do NOT require paired plaintext/visible internal supervision. (1) Black-box query attacker uses only generated tokens + per-step logits summaries; mode / bundle / use_pad distinguishability sits at random chance under Stage 6.4c's exact-token-match guarantee. (2) Timing side-channel proxy uses the Stage 5.2c op-count cost model + Gaussian noise; decode_step and prompt-length latency leakage is `high` (structural — any latency observer can count decode steps), mitigation-bundle distinguishability is `low`. (3) Inter-block residual masking gap analysis confirms the Stage 5.5b finding that `boundary_input` / `final` are plain at the model-wrapper boundary; a single-transition math probe verifies the orthogonal-mask fix is numerically correct, but the full `masked_boundary_experimental` mode is `not_implemented_in_stage_5_6` (deferred to Stage 5.6 extension / Stage 7.0). Envelope-integrity risk: `low`. Structural-leakage risk: `high`. Not formal security; not a real TEE measurement.
+
+### Stage 7.5 — Paper Artifact Consolidation + Measured Runtime + Claims Audit
+
+Stage 7.5 aggregates every existing `outputs/*.json` produced by Stage 1 through Stage 7.4 into paper-ready CSV / Markdown / LaTeX tables, runs local-emulation wall-clock measurements on the plain / masked / rank-padded / multi-layer LoRA primitives, and classifies every paper claim into `supported / proxy_supported / unsupported`. **This is local emulation only — NOT a real TEE wall-time measurement and NOT a formal / cryptographic / semantic security claim.** No new obfuscation primitives, no new attackers, no inference-side default behaviour changes. The aggregator emits artifact_inventory, correctness_summary, security_proxy_summary, workload_summary, lora_training_summary, limitations_summary, paper_claims_audit, and the consolidated `paper_results/summary.md`. The measured-runtime evaluator records mean / median / std / min / max wall-time per component without calling `time.sleep` and without loading any network model. The claims audit ensures that unsupported items (formal / cryptographic / semantic security, real TEE wall-time, hardware side-channel security, full Qwen / TinyLlama fine-tune, PEFT integration, padded_rank hidden, loss / optimizer outsourced, compromised-TEE protection) carry explicit `paper_safe_wording` + `unsafe_wording_to_avoid` flags so the paper writer never accidentally overclaims. `security_profile` itself remains `"proxy-evaluated, not formal"`.
 
 ### Stage 7.4 — Stronger Dummy Distributions / Spectral-Rank Hardening
 

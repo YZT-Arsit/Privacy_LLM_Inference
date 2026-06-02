@@ -1,0 +1,12 @@
+stage,training_scope,num_layers,num_lora_modules,true_rank,padded_rank,optimizer,loss_diff,grad_error,update_error,rank_hidden_from_shape,risk_level,artifact_path
+7.0,single_linear,1,1,4,4,sgd,,,,False,needs_more_evaluation,outputs/lora_training_experiments.json
+7.1,single_linear_masked_backward,1,1,4,4,sgd,,,,False,needs_more_evaluation,outputs/lora_backward_experiments.json
+7.2,single_linear_rank_padded,1,1,4,8,sgd,4.263256414560601e-14,1.3062467774105357e-15,1.1102230246251565e-16,True,needs_more_evaluation,outputs/lora_rank_padding_experiments.json
+7.3,multi_layer_decoder,2,14,4,8,sgd,1.0658141036401503e-14,1.8446615762668372e-15,5.551115123125783e-17,True,needs_more_evaluation,outputs/multilayer_lora_training_experiments.json
+7.4::zero_dummy,single_linear_stronger_dummy,1,1,4,16,sgd,5.684341886080802e-14,1.1102230246251565e-16,2.7755575615628914e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json
+7.4::paired_cancellation_dummy,single_linear_stronger_dummy,1,1,4,16,sgd,6.394884621840902e-14,2.5283594662361963e-15,5.551115123125783e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json
+7.4::gaussian_matched_dummy,single_linear_stronger_dummy,1,1,4,16,sgd,1.4210854715202004e-14,1.1102230246251565e-16,5.551115123125783e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json
+7.4::spectrum_matched_dummy,single_linear_stronger_dummy,1,1,4,16,sgd,2.842170943040401e-14,1.942890293094024e-16,5.551115123125783e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json
+7.4::noise_injected_cancellation_dummy,single_linear_stronger_dummy,1,1,4,16,sgd,2.842170943040401e-14,2.5431046157819992e-15,5.551115123125783e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json
+7.4::orthogonalized_cancellation_dummy,single_linear_stronger_dummy,1,1,4,16,sgd,3.552713678800501e-14,7.528699885739343e-16,5.551115123125783e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json
+7.4::mixed_dummy_ensemble,single_linear_stronger_dummy,1,1,4,16,sgd,2.842170943040401e-14,7.754213937616328e-16,5.551115123125783e-17,True,needs_more_evaluation,outputs/lora_stronger_dummy_experiments.json

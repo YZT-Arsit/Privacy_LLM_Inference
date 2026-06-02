@@ -878,6 +878,35 @@ def _compatible_island_integration_status(
                     "security_profile_detail_with_lora_dummy_hardening"
                 )
             ),
+            # Stage 7.5 — paper artifact consolidation + measured
+            # runtime + paper claims audit metadata.
+            "paper_artifact_consolidation_status": str(
+                effective_status.get("paper_artifact_consolidation_status")
+                or method.get("paper_artifact_consolidation_status")
+                or "not_yet"
+            ),
+            "paper_artifact_consolidation_artifact": (
+                effective_status.get("paper_artifact_consolidation_artifact")
+                or method.get("paper_artifact_consolidation_artifact")
+            ),
+            "measured_runtime_evaluation_status": str(
+                effective_status.get("measured_runtime_evaluation_status")
+                or method.get("measured_runtime_evaluation_status")
+                or "not_yet"
+            ),
+            "measured_runtime_artifact": (
+                effective_status.get("measured_runtime_artifact")
+                or method.get("measured_runtime_artifact")
+            ),
+            "paper_claims_audit_status": str(
+                effective_status.get("paper_claims_audit_status")
+                or method.get("paper_claims_audit_status")
+                or "not_yet"
+            ),
+            "paper_claims_audit_artifact": (
+                effective_status.get("paper_claims_audit_artifact")
+                or method.get("paper_claims_audit_artifact")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

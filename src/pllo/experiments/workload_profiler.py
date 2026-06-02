@@ -1056,6 +1056,22 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["security_profile_detail_with_lora_dummy_hardening"] = (
                 "spectral-rank-hardening-proxy-evaluated, not formal"
             )
+            # Stage 7.5 — paper artifact consolidation + measured
+            # runtime evaluation + paper claims audit. Pure aggregation /
+            # paper-side metadata; runtime defaults of GPT-2 / BERT /
+            # T5 / modern decoder inference are NOT modified.
+            record["paper_artifact_consolidation_status"] = "implemented"
+            record["paper_artifact_consolidation_artifact"] = (
+                "paper_results/summary.md"
+            )
+            record["measured_runtime_evaluation_status"] = "implemented"
+            record["measured_runtime_artifact"] = (
+                "paper_results/json/measured_runtime.json"
+            )
+            record["paper_claims_audit_status"] = "implemented"
+            record["paper_claims_audit_artifact"] = (
+                "paper_results/markdown/paper_claims_audit.md"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1395,6 +1411,18 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "lora_spectral_rank_hardening_status": "proxy-evaluated",
                 "security_profile_detail_with_lora_dummy_hardening": (
                     "spectral-rank-hardening-proxy-evaluated, not formal"
+                ),
+                "paper_artifact_consolidation_status": "implemented",
+                "paper_artifact_consolidation_artifact": (
+                    "paper_results/summary.md"
+                ),
+                "measured_runtime_evaluation_status": "implemented",
+                "measured_runtime_artifact": (
+                    "paper_results/json/measured_runtime.json"
+                ),
+                "paper_claims_audit_status": "implemented",
+                "paper_claims_audit_artifact": (
+                    "paper_results/markdown/paper_claims_audit.md"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

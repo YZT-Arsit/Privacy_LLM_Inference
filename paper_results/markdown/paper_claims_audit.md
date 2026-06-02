@@ -1,0 +1,207 @@
+# Paper Claims Audit
+
+Each claim is classified as `supported` (direct artifact evidence), `proxy_supported` (proxy attacker / cost-model evidence only), or `unsupported` (do NOT write into the paper).
+
+## supported
+
+### Masked execution preserves output equality vs the plain reference for the tested GPT-2 model-level wrapper (full forward + prefill + decode_step + greedy generation).
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/gpt2_model_correctness.json`
+  - `outputs/gpt2_generation_correctness.json`
+  - `outputs/workload_profile.json`
+- **paper_safe_wording:** We empirically verify that the GPT-2 model-level masked wrapper reproduces the plain reference output token-for-token in our tested configurations.
+- **unsafe_wording_to_avoid:** Masked execution provably preserves output equality.
+- **notes:** Empirical allclose on tested configs only; no proof.
+
+### Masked execution preserves output equality vs the plain reference for the tested modern-decoder model-level wrapper (RMSNorm + SwiGLU + RoPE + GQA, prefill + decode_step + greedy generation).
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/modern_decoder_model_wrapper_smoke.json`
+  - `outputs/modern_decoder_block_wrapper_smoke.json`
+  - `outputs/modern_decoder_probe.json`
+- **paper_safe_wording:** We empirically verify that the modern decoder-only model-level masked wrapper reproduces the plain reference output token-for-token in our tested configurations.
+- **unsafe_wording_to_avoid:** Masked execution provably preserves output equality for all modern decoder models.
+- **notes:** Synthetic and small HF configurations only.
+
+### Compatible nonlinear islands preserve output correctness across the tested architectures (decoder-only / encoder-only / encoder-decoder, plus modern decoder).
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/nonlinear_island_experiments.json`
+  - `outputs/cross_architecture_summary.json`
+  - `outputs/cross_architecture_compatible_island_smoke.json`
+- **paper_safe_wording:** Compatible mask families (mean-preserving orthogonal for LayerNorm, channel permutation for GELU/ReLU, paired permutation for SwiGLU) preserve output correctness in our tests; we do not claim they extend beyond the tested mask families.
+- **unsafe_wording_to_avoid:** Compatible mask families preserve correctness universally.
+- **notes:** Only tested mask families and tested architectures.
+
+### KV cache append invariant holds for the tested decoder-only generation paths.
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/kv_cache_correctness.json`
+  - `outputs/gpt2_cache_correctness.json`
+  - `outputs/modern_decoder_model_wrapper_smoke.json`
+- **paper_safe_wording:** We verify the KV cache append invariant matches the plain reference in our tested decoder-only generation paths.
+- **unsafe_wording_to_avoid:** Our KV cache implementation is provably secure.
+- **notes:** Empirical, not formal.
+
+### LoRA masked forward, masked backward, and rank-padded forward/backward reproduce the plain rank-r reference to float64 precision in synthetic single-linear tests.
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/lora_training_experiments.json`
+  - `outputs/lora_backward_experiments.json`
+  - `outputs/lora_rank_padding_experiments.json`
+- **paper_safe_wording:** We empirically verify that the masked LoRA forward / backward / rank-padded primitives match the plain rank-r reference to float64 precision on synthetic single-linear tests.
+- **unsafe_wording_to_avoid:** Our LoRA implementation provably matches the plain reference.
+- **notes:** Synthetic tile only; no full Qwen / TinyLlama fine-tune.
+
+### Multi-layer rank-padded LoRA training reproduces the plain reference loss / gradient / SGD / AdamW update across every per-module slice in synthetic multi-layer tests.
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/multilayer_lora_training_experiments.json`
+- **paper_safe_wording:** We empirically verify that a synthetic multi-layer rank-padded LoRA training step matches the plain reference on every per-module slice.
+- **unsafe_wording_to_avoid:** Our multi-layer LoRA training scheme is identical to plain LoRA for any model.
+- **notes:** Synthetic tile only.
+
+### All Stage 7.4 stronger dummy distributions preserve A_pad B_pad = A_real B_real exactly (cancellation strategies) or with a tracked trusted-side correction (noise_injected_cancellation_dummy), and all five preserve forward / backward / SGD / AdamW update correctness to float64 precision.
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/lora_stronger_dummy_experiments.json`
+- **paper_safe_wording:** Every tested stronger-dummy strategy preserves the rank-padded LoRA invariant A_pad B_pad = A_real B_real (either exactly or via a tracked trusted-side correction) and matches plain training to float64 precision in our tests.
+- **unsafe_wording_to_avoid:** Our stronger dummy distributions provably hide the true LoRA rank.
+- **notes:** Empirical correctness only.
+
+### Constant-time training mode (proxy_equalized) reduces the cost-model timing classifier accuracy to near random chance in our tests.
+
+- **status:** `supported`
+- **evidence_artifacts:**
+  - `outputs/lora_training_timing_proxy.json`
+- **paper_safe_wording:** Under the cost-model proxy, equalizing per-step latency to the upper bucket reduces the worst-case timing classifier accuracy to near random chance in our tests.
+- **unsafe_wording_to_avoid:** Constant-time training closes timing side channels.
+- **notes:** Cost-model proxy only; no real wall-time, no real side-channel evaluation.
+
+## proxy_supported
+
+### Activation-recovery / linkability adaptive proxy attackers are bounded under the full mitigation bundle (fresh permutation + dense sandwich + boundary pad) in the tested configurations.
+
+- **status:** `proxy_supported`
+- **evidence_artifacts:**
+  - `outputs/adaptive_island_attacks.json`
+  - `outputs/real_activation_attacks.json`
+  - `outputs/real_token_activation_attacks.json`
+  - `outputs/stronger_attackers.json`
+- **paper_safe_wording:** Under our adaptive proxy attackers (ridge, small MLP, signature / Sinkhorn permutation recovery, linkability), the full mitigation bundle keeps the worst-case attacker close to random chance in our tested configurations.
+- **unsafe_wording_to_avoid:** Our mitigation bundle is secure against arbitrary adversaries.
+- **notes:** Proxy attackers only; the artifacts explicitly say `proxy-evaluated, not formal`.
+
+### Cost-model timing side-channel proxy is bounded under proxy_equalized constant-time decode / training modes in our tests.
+
+- **status:** `proxy_supported`
+- **evidence_artifacts:**
+  - `outputs/stronger_attackers.json`
+  - `outputs/lora_training_timing_proxy.json`
+- **paper_safe_wording:** Under our cost-model timing proxy, equalizing latency to the upper bucket reduces classifier accuracy near random chance.
+- **unsafe_wording_to_avoid:** Constant-time mode prevents timing side-channel attacks.
+- **notes:** Cost-model proxy only; no real wall-time.
+
+### LoRA adapter extraction / gradient leakage proxy attackers are bounded under fresh masks + pad in the tested configurations.
+
+- **status:** `proxy_supported`
+- **evidence_artifacts:**
+  - `outputs/lora_security_proxy.json`
+  - `outputs/lora_gradient_security_proxy.json`
+- **paper_safe_wording:** Under our LoRA adapter / gradient leakage proxy attackers, fresh masks + pad bring the linkability AUC close to 0.5 (random chance) in our tests.
+- **unsafe_wording_to_avoid:** Our LoRA path is secure against adapter / gradient extraction.
+- **notes:** Proxy only; rank still visible from shape under Stage 7.1 (Stage 7.2 addresses shape).
+
+### Rank padding hides true_rank from the GPU-visible tensor shape, and stronger dummy distributions reduce the proxy spectral-cliff inference accuracy of true_rank.
+
+- **status:** `proxy_supported`
+- **evidence_artifacts:**
+  - `outputs/lora_rank_security_proxy.json`
+  - `outputs/lora_stronger_dummy_security_proxy.json`
+- **paper_safe_wording:** Rank padding hides true_rank from tensor shape; under our spectral-cliff / energy / elbow / ensemble proxy detectors, stronger dummy strategies fail to recover true_rank reliably in our tests (`needs_more_evaluation`).
+- **unsafe_wording_to_avoid:** Our rank-padding scheme cryptographically hides the LoRA rank.
+- **notes:** Constraint 12: never claim 'low' / 'hidden' unconditionally; report `needs_more_evaluation`.
+
+### Cross-layer adapter linkage is low under fresh masks + paired cancellation across the tested multi-layer configuration.
+
+- **status:** `proxy_supported`
+- **evidence_artifacts:**
+  - `outputs/multilayer_lora_security_proxy.json`
+  - `outputs/lora_stronger_dummy_security_proxy.json`
+- **paper_safe_wording:** Under our cross-layer linkability proxy, fresh masks per module keep the AUC near 0.5 across the tested multi-layer configuration.
+- **unsafe_wording_to_avoid:** Cross-layer linkability is impossible.
+- **notes:** Proxy only; `fixed_masks_shared_u` baseline is `high` by construction.
+
+## unsupported
+
+### Formal / cryptographic / semantic security of the masked path.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** We make no formal / cryptographic / semantic security claims.
+- **unsafe_wording_to_avoid:** Our scheme provides formal / cryptographic / semantic security.
+- **notes:** Every artifact's `security_profile` is `proxy-evaluated, not formal`.
+
+### Real TEE wall-time / hardware-isolation evaluation.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** We report measured local-emulation latencies; we do not claim real TEE wall-time.
+- **unsafe_wording_to_avoid:** Our wrapper achieves X ms latency on real TEE.
+- **notes:** All `wall_time_source` values are either `projected_from_op_counts` or `measured_local_emulation`.
+
+### Hardware side-channel security (cache / power / EM).
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** We do not evaluate hardware side-channels (cache / power / EM).
+- **unsafe_wording_to_avoid:** Our system is resistant to hardware side-channel attacks.
+- **notes:** Out of scope; only cost-model timing proxy is evaluated.
+
+### Full Qwen / TinyLlama / LLaMA LoRA fine-tuning.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** Our LoRA experiments use synthetic single-linear and multi-layer tiles; we do not run full Qwen / TinyLlama / LLaMA LoRA fine-tuning.
+- **unsafe_wording_to_avoid:** Our LoRA path supports full Qwen / TinyLlama / LLaMA fine-tuning.
+- **notes:** Stage 7.7 deferred.
+
+### PEFT / DeepSpeed / vLLM / FlashAttention compatibility.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** We do not integrate PEFT / DeepSpeed / vLLM / FlashAttention; our LoRA primitives are stand-alone functional API.
+- **unsafe_wording_to_avoid:** Our scheme drops into PEFT / DeepSpeed / vLLM / FlashAttention.
+- **notes:** Stage 7.x deferred.
+
+### padded_rank is hidden from the GPU.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** Stage 7.2 / 7.3 / 7.4 hide true_rank from tensor shape; padded_rank itself remains visible to the GPU.
+- **unsafe_wording_to_avoid:** Our rank padding hides the LoRA rank.
+- **notes:** Stage 7.6 (heterogeneous padded_rank) is deferred.
+
+### Loss / optimizer is fully outsourced to the GPU.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** Loss + optimizer remain trusted-side; only forward / backward matmuls cross the boundary.
+- **unsafe_wording_to_avoid:** Loss / optimizer run on the untrusted GPU.
+- **notes:** Stage 7.1 / 7.4 contract: loss + optimizer trusted.
+
+### Protection against a compromised TEE.
+
+- **status:** `unsupported`
+- **evidence_artifacts:** _(none — this is unsupported)_
+- **paper_safe_wording:** We assume the TEE is honest; a compromised TEE breaks every guarantee we evaluate.
+- **unsafe_wording_to_avoid:** Our scheme protects against a compromised TEE.
+- **notes:** Out of scope.

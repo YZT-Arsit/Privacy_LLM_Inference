@@ -1,0 +1,2144 @@
+{
+  "config": {
+    "outputs_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "paper_results_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/paper_results",
+    "strict": false,
+    "include_missing_artifacts": true
+  },
+  "artifact_inventory": [
+    {
+      "slot": "inference",
+      "artifact_name": "workload_profile",
+      "artifact_path": "outputs/workload_profile.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 54856,
+      "top_level_keys": "calibration|config|interaction_breakdown|interpretation|limitations|methods|module_breakdown|paper_metrics|wrapper_integration_status"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "cross_architecture_summary",
+      "artifact_path": "outputs/cross_architecture_summary.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 57316,
+      "top_level_keys": "architectures|compatible_island_integration_status|compatible_island_projection|config|global_summary|stage_note|workload"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "nonlinear_island_experiments",
+      "artifact_path": "outputs/nonlinear_island_experiments.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 24024,
+      "top_level_keys": "activation_island_cells|config|global_summary|mask_family_assignments|mlp_island_cells|norm_island_cells|pad_placement_rule"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "nonlinear_island_security",
+      "artifact_path": "outputs/nonlinear_island_security.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 14024,
+      "top_level_keys": "config|global_summary|island_linkability|limitations|mask_family_accounting|permutation_recovery|threat_model"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "adaptive_island_attacks",
+      "artifact_path": "outputs/adaptive_island_attacks.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 20536,
+      "top_level_keys": "comparison_with_naive_proxy|config|limitations|linear_inverter|mitigation_summary|mlp_inverter|permutation_recovery|structured_data|threat_model"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "modern_decoder_probe",
+      "artifact_path": "outputs/modern_decoder_probe.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 13228,
+      "top_level_keys": "architecture_spec|both_bundles_summary|config|global_summary|gqa_probe|limitations|model_loading|rmsnorm_probe|rope_probe|swiglu_probe"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "modern_decoder_block_wrapper_smoke",
+      "artifact_path": "outputs/modern_decoder_block_wrapper_smoke.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 17728,
+      "top_level_keys": "block_spec|caveats|config|model_loading|per_run|source|summary"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "modern_decoder_model_wrapper_smoke",
+      "artifact_path": "outputs/modern_decoder_model_wrapper_smoke.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 39584,
+      "top_level_keys": "block_spec|caveats|config|input_ids_shape|model_loading|per_run|source|summary"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "real_activation_attacks",
+      "artifact_path": "outputs/real_activation_attacks.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 57732,
+      "top_level_keys": "attacker_summary|block_spec|bundle_comparison|config|limitations|model_loading|recommendation|source|target_tensor_results|trace_summary"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "real_token_activation_attacks",
+      "artifact_path": "outputs/real_token_activation_attacks.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 136397,
+      "top_level_keys": "attacker_summary|block_spec_summary|bundle_comparison|comparison_with_stage_5_5|config|decode_step_log|generation_summary|limitations|metadata|model_loading|prompt_summary|recommendation|source|target_tensor_results|tokenizer_loading|trace_summary"
+    },
+    {
+      "slot": "inference",
+      "artifact_name": "stronger_attackers",
+      "artifact_path": "outputs/stronger_attackers.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 22128,
+      "top_level_keys": "blackbox_attacker|comparison_with_prior_stages|config|constant_time_decode_summary|inter_block_closure_summary|inter_block_masking_gap|limitations|model_loading|overall_risk_summary|recommendation|source|timing_sidechannel_proxy|tokenizer_loading"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_training_experiments",
+      "artifact_path": "outputs/lora_training_experiments.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 9430,
+      "top_level_keys": "config|gradient_and_optimizer_handling|limitations|lora_config_fingerprint|lora_private_training_status|next_stage_plan|pad_compensation|security_profile|security_profile_detail_with_lora|training_step_correctness"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_security_proxy",
+      "artifact_path": "outputs/lora_security_proxy.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 23587,
+      "top_level_keys": "adapter_extraction_proxy|config|gradient_leakage_accounting|interpretation|limitations|lora_security_proxy_status|membership_style_linkability_proxy|next_stage_plan|scope|security_profile|security_profile_detail_with_lora|strategies"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_backward_experiments",
+      "artifact_path": "outputs/lora_backward_experiments.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 11538,
+      "top_level_keys": "autograd_vs_analytic_step0|config|gradient_handling|limitations|lora_backward_status|lora_config_fingerprint|lora_loss_status|lora_optimizer_status|lora_private_training_status|loss_handling|masked_backward_correctness|masked_backward_formula|next_stage_plan|optimizer_handling|pad_compensation|security_profile|security_profile_detail_with_lora_backward"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_gradient_security_proxy",
+      "artifact_path": "outputs/lora_gradient_security_proxy.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 25084,
+      "top_level_keys": "config|gradient_extraction_proxy|gradient_leakage_accounting|gradient_membership_style_linkability_proxy|interpretation|limitations|lora_gradient_security_proxy_status|next_stage_plan|scope|security_profile|security_profile_detail_with_lora_backward|strategies"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_rank_padding_experiments",
+      "artifact_path": "outputs/lora_rank_padding_experiments.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 6860,
+      "top_level_keys": "config|dummy_rank_strategy|limitations|lora_config_fingerprint|lora_hidden_rank_status|lora_padded_rank_visible|lora_rank_padding_status|lora_true_rank_hidden_from_shape|next_stage_plan|optimizer_handling|rank_padding_correctness|security_profile|security_profile_detail_with_lora_rank_padding|shape_level_rank_hiding"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_rank_security_proxy",
+      "artifact_path": "outputs/lora_rank_security_proxy.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 9904,
+      "top_level_keys": "config|gradient_rank_inference|interpretation|limitations|lora_rank_security_proxy_status|membership_style_linkability|next_stage_plan|scope|security_profile|security_profile_detail_with_lora_rank_padding|shape_level_rank_leakage|spectral_rank_inference"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "multilayer_lora_training_experiments",
+      "artifact_path": "outputs/multilayer_lora_training_experiments.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 19518,
+      "top_level_keys": "config|limitations|lora_multilayer_training_status|model_spec|next_stage_plan|optimizer_summary|per_layer_metrics|rank_padding_summary|security_profile|security_profile_detail_with_lora_multilayer|training_correctness"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "multilayer_lora_security_proxy",
+      "artifact_path": "outputs/multilayer_lora_security_proxy.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 12542,
+      "top_level_keys": "config|cross_layer_adapter_linkage|heterogeneous_true_rank_with_shared_padded_rank|interpretation|limitations|lora_multilayer_security_proxy_status|multi_step_membership_linkability|next_stage_plan|scope|security_profile|security_profile_detail_with_lora_multilayer"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_training_timing_proxy",
+      "artifact_path": "outputs/lora_training_timing_proxy.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 8404,
+      "top_level_keys": "config|constant_time_training_proxy|interpretation|leakage_tasks_off|leakage_tasks_proxy_equalized|limitations|lora_training_timing_proxy_status|next_stage_plan|overhead_proxy|scope|security_profile|security_profile_detail_with_lora_timing|summary|training_timing_model"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_stronger_dummy_experiments",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 37062,
+      "top_level_keys": "config|limitations|lora_config_fingerprint|lora_spectral_rank_hardening_status|lora_stronger_dummy_status|next_stage_plan|per_strategy|security_profile|security_profile_detail_with_lora_dummy_hardening|stronger_dummy_strategy_design"
+    },
+    {
+      "slot": "lora",
+      "artifact_name": "lora_stronger_dummy_security_proxy",
+      "artifact_path": "outputs/lora_stronger_dummy_security_proxy.json",
+      "status": "present",
+      "json_error": "",
+      "size_bytes": 26893,
+      "top_level_keys": "config|cross_layer_linkage|dummy_strategy_classification|gradient_rank_inference|interpretation|limitations|lora_spectral_rank_hardening_status|lora_stronger_dummy_security_status|next_stage_plan|scope|security_profile|security_profile_detail_with_lora_dummy_hardening|spectral_rank_inference"
+    }
+  ],
+  "correctness_summary": [
+    {
+      "stage": "1-4",
+      "component": "ours_current_greedy",
+      "architecture": "sshleifer/tiny-gpt2",
+      "scope": "gpt2_model_level_greedy",
+      "metric": "measured_wall_time_ms",
+      "value": 6.196050000289688,
+      "allclose": "see token_match in generation_correctness",
+      "artifact_path": "outputs/workload_profile.json",
+      "notes": "GPT-2 model-level greedy measured wall-time."
+    },
+    {
+      "stage": "5.2",
+      "component": "compatible_nonlinear_islands",
+      "architecture": "cross_architecture",
+      "scope": "tensor_level",
+      "metric": "max_max_abs_error",
+      "value": "see artifact",
+      "allclose": null,
+      "artifact_path": "outputs/nonlinear_island_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "6.4b",
+      "component": "modern_decoder_block_wrapper",
+      "architecture": "modern_decoder",
+      "scope": "block_level",
+      "metric": "max_abs_error",
+      "value": "see artifact",
+      "allclose": null,
+      "artifact_path": "outputs/modern_decoder_block_wrapper_smoke.json",
+      "notes": ""
+    },
+    {
+      "stage": "6.4c",
+      "component": "modern_decoder_model_wrapper",
+      "architecture": "modern_decoder",
+      "scope": "model_level_greedy",
+      "metric": "sequence_exact_match",
+      "value": "see artifact",
+      "allclose": false,
+      "artifact_path": "outputs/modern_decoder_model_wrapper_smoke.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.0",
+      "component": "lora_forward",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_loss_diff",
+      "value": null,
+      "allclose": null,
+      "artifact_path": "outputs/lora_training_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.1",
+      "component": "lora_backward",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_grad_a_err",
+      "value": null,
+      "allclose": null,
+      "artifact_path": "outputs/lora_backward_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.1",
+      "component": "lora_backward",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_grad_b_err",
+      "value": null,
+      "allclose": null,
+      "artifact_path": "outputs/lora_backward_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.2",
+      "component": "rank_padded_lora_forward",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 2.1760371282653068e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_rank_padding_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.2",
+      "component": "rank_padded_lora_backward",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_grad_a_real_err",
+      "value": 1.3062467774105357e-15,
+      "allclose": true,
+      "artifact_path": "outputs/lora_rank_padding_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.2",
+      "component": "rank_hiding",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "true_rank_hidden_from_shape",
+      "value": true,
+      "allclose": true,
+      "artifact_path": "outputs/lora_rank_padding_experiments.json",
+      "notes": "true_rank hidden from shape; padded_rank still visible."
+    },
+    {
+      "stage": "7.3",
+      "component": "multi_layer_lora_training",
+      "architecture": "synthetic_multi_layer_decoder",
+      "scope": "layers=2, modules=14",
+      "metric": "max_loss_diff",
+      "value": 1.0658141036401503e-14,
+      "allclose": true,
+      "artifact_path": "outputs/multilayer_lora_training_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.3",
+      "component": "multi_layer_lora_training",
+      "architecture": "synthetic_multi_layer_decoder",
+      "scope": "layers=2, modules=14",
+      "metric": "max_grad_a_real_err",
+      "value": 1.8446615762668372e-15,
+      "allclose": true,
+      "artifact_path": "outputs/multilayer_lora_training_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::zero_dummy",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 2.842170943040401e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::paired_cancellation_dummy",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 2.4868995751603507e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::gaussian_matched_dummy",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 2.6645352591003757e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::spectrum_matched_dummy",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 3.019806626980426e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::noise_injected_cancellation_dummy",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 1.9539925233402755e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::orthogonalized_cancellation_dummy",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 2.220446049250313e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    },
+    {
+      "stage": "7.4",
+      "component": "stronger_dummy::mixed_dummy_ensemble",
+      "architecture": "synthetic_linear",
+      "scope": "single_step",
+      "metric": "max_forward_err",
+      "value": 2.1316282072803006e-14,
+      "allclose": true,
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json",
+      "notes": ""
+    }
+  ],
+  "security_proxy_summary": [
+    {
+      "stage": "5.5",
+      "attack_family": "real_activation_adaptive_proxy",
+      "target": "modern_decoder_block",
+      "strategy": "ridge_linear_plus_mlp",
+      "metric": "linkability_auc",
+      "value": null,
+      "risk_level": "needs_more_evaluation",
+      "recommendation": "fresh_perm + sandwich + pad",
+      "artifact_path": "outputs/real_activation_attacks.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "5.5b",
+      "attack_family": "real_token_real_activation_proxy",
+      "target": "modern_decoder_model_level",
+      "strategy": "real_token_proxy",
+      "metric": "linkability_auc",
+      "value": null,
+      "risk_level": "needs_more_evaluation",
+      "recommendation": "fresh_perm + sandwich + pad",
+      "artifact_path": "outputs/real_token_activation_attacks.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "5.6",
+      "attack_family": "blackbox_query_attacker",
+      "target": "modern_decoder_model_level",
+      "strategy": "n/a",
+      "metric": "best_distinguishability",
+      "value": null,
+      "risk_level": "low",
+      "recommendation": "exact-token-match guarantee",
+      "artifact_path": "outputs/stronger_attackers.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "5.6",
+      "attack_family": "timing_sidechannel_proxy",
+      "target": "modern_decoder_model_level",
+      "strategy": "off",
+      "metric": "best_classification_accuracy",
+      "value": null,
+      "risk_level": null,
+      "recommendation": "constant_time_decode_mode=proxy_equalized",
+      "artifact_path": "outputs/stronger_attackers.json",
+      "claim_supported": "proxy-supported only (cost-model)"
+    },
+    {
+      "stage": "7.0",
+      "attack_family": "lora_adapter_extraction",
+      "target": "synthetic_lora_linear",
+      "strategy": "fresh_masks_fresh_u_with_pad",
+      "metric": "linkability_auc_summary",
+      "value": "fresh masks reduce membership-style linkability (\u0394 AUC = +0.463 vs fixed_masks_fixed_u).",
+      "risk_level": "needs_more_evaluation",
+      "recommendation": "fresh masks + pad",
+      "artifact_path": "outputs/lora_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.1",
+      "attack_family": "lora_gradient_leakage",
+      "target": "synthetic_lora_linear_backward",
+      "strategy": "fresh_masks_fresh_u_with_pad",
+      "metric": "linkability_summary",
+      "value": "fresh masks reduce gradient-side membership linkability (\u0394 AUC = +0.478 vs fixed_masks_fixed_u).",
+      "risk_level": "needs_more_evaluation",
+      "recommendation": "fresh masks + pad; rank still visible from shape",
+      "artifact_path": "outputs/lora_gradient_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.2",
+      "attack_family": "spectral_rank_inference",
+      "target": "rank_padded_lora",
+      "strategy": "paired_cancellation_dummy",
+      "metric": "spectral_inference_summary",
+      "value": "Across true_ranks=[2, 4, 8] with dummy_strategy='paired_cancellation_dummy', the spectral rank inference risk is **needs_more_evaluation**.",
+      "risk_level": "needs_more_evaluation",
+      "recommendation": "use stronger dummy distributions (Stage 7.4)",
+      "artifact_path": "outputs/lora_rank_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.2",
+      "attack_family": "gradient_rank_inference",
+      "target": "rank_padded_lora",
+      "strategy": "paired_cancellation_dummy",
+      "metric": "gradient_inference_summary",
+      "value": "Gradient-side spectral inference risk under the same dummy strategy is **high**.",
+      "risk_level": "high",
+      "recommendation": "use stronger dummy distributions (Stage 7.4)",
+      "artifact_path": "outputs/lora_rank_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.3",
+      "attack_family": "cross_layer_linkage",
+      "target": "multi_layer_rank_padded_lora",
+      "strategy": "fresh_masks_independent_u",
+      "metric": "cross_layer_linkage_summary",
+      "value": "Cross-layer linkage risk under multi-layer strategies is **high** (worst-case).",
+      "risk_level": "high",
+      "recommendation": "fresh masks per module + paired cancellation",
+      "artifact_path": "outputs/multilayer_lora_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.3",
+      "attack_family": "training_timing_sidechannel_proxy",
+      "target": "lora_training_step_cost_model",
+      "strategy": "proxy_equalized",
+      "metric": "max_classification_accuracy_proxy_equalized",
+      "value": 0.5123697916666666,
+      "risk_level": "low",
+      "recommendation": "proxy_equalized constant-time mode",
+      "artifact_path": "outputs/lora_training_timing_proxy.json",
+      "claim_supported": "proxy-supported only (cost-model)"
+    },
+    {
+      "stage": "7.4",
+      "attack_family": "stronger_dummy::spectral_rank_inference",
+      "target": "rank_padded_lora_with_stronger_dummies",
+      "strategy": "ensemble",
+      "metric": "spectral_summary",
+      "value": "Worst spectral rank inference risk across strategies: **high**.",
+      "risk_level": "high",
+      "recommendation": "spectrum_matched_dummy / mixed_dummy_ensemble",
+      "artifact_path": "outputs/lora_stronger_dummy_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.4",
+      "attack_family": "stronger_dummy::gradient_rank_inference",
+      "target": "rank_padded_lora_with_stronger_dummies",
+      "strategy": "ensemble",
+      "metric": "gradient_summary",
+      "value": "Worst gradient rank inference risk across strategies: **high**.",
+      "risk_level": "high",
+      "recommendation": "spectrum_matched_dummy / mixed_dummy_ensemble",
+      "artifact_path": "outputs/lora_stronger_dummy_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.4",
+      "attack_family": "stronger_dummy::dummy_strategy_classification",
+      "target": "rank_padded_lora_with_stronger_dummies",
+      "strategy": "ensemble",
+      "metric": "dummy_strategy_classification_summary",
+      "value": "Dummy strategy classifier accuracy: 0.476 (chance 0.143), risk **medium**.",
+      "risk_level": "medium",
+      "recommendation": "spectrum_matched_dummy / mixed_dummy_ensemble",
+      "artifact_path": "outputs/lora_stronger_dummy_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    },
+    {
+      "stage": "7.4",
+      "attack_family": "stronger_dummy::cross_layer_linkage",
+      "target": "rank_padded_lora_with_stronger_dummies",
+      "strategy": "ensemble",
+      "metric": "cross_layer_linkage_summary",
+      "value": "Worst cross-layer linkage risk across strategies: **low**.",
+      "risk_level": "low",
+      "recommendation": "spectrum_matched_dummy / mixed_dummy_ensemble",
+      "artifact_path": "outputs/lora_stronger_dummy_security_proxy.json",
+      "claim_supported": "proxy-supported only"
+    }
+  ],
+  "workload_summary": [
+    {
+      "method": "plain_hf_gpu",
+      "architecture": "sshleifer/tiny-gpt2",
+      "integration_level": "projected",
+      "boundary_calls": 0,
+      "trusted_compute": 0,
+      "gpu_compute": 4434424,
+      "preprocessing_cost": 0,
+      "online_extra_matmul_count": 0,
+      "measured_wall_time_ms": 2.8292586001043674,
+      "projected_wall_time_ms": 2.8292586001043674,
+      "wall_time_source": "measured",
+      "artifact_path": "outputs/workload_profile.json"
+    },
+    {
+      "method": "tslp_trusted_nonlinear_baseline",
+      "architecture": "sshleifer/tiny-gpt2",
+      "integration_level": "projected",
+      "boundary_calls": 32,
+      "trusted_compute": 1110230,
+      "gpu_compute": 4429848,
+      "preprocessing_cost": 0,
+      "online_extra_matmul_count": 0,
+      "measured_wall_time_ms": null,
+      "projected_wall_time_ms": 42.52702272550677,
+      "wall_time_source": "projected_from_op_counts",
+      "artifact_path": "outputs/workload_profile.json"
+    },
+    {
+      "method": "ours_current",
+      "architecture": "sshleifer/tiny-gpt2",
+      "integration_level": "projected",
+      "boundary_calls": 36,
+      "trusted_compute": 1116310,
+      "gpu_compute": 4429848,
+      "preprocessing_cost": 403784,
+      "online_extra_matmul_count": 0,
+      "measured_wall_time_ms": 6.196050000289688,
+      "projected_wall_time_ms": 42.742128702196716,
+      "wall_time_source": "measured",
+      "artifact_path": "outputs/workload_profile.json"
+    },
+    {
+      "method": "ours_ideal_gpu_nonlinear",
+      "architecture": "sshleifer/tiny-gpt2",
+      "integration_level": "projected",
+      "boundary_calls": 4,
+      "trusted_compute": 1105654,
+      "gpu_compute": 4434424,
+      "preprocessing_cost": 403784,
+      "online_extra_matmul_count": 0,
+      "measured_wall_time_ms": null,
+      "projected_wall_time_ms": 42.23986513554088,
+      "wall_time_source": "projected_from_op_counts",
+      "artifact_path": "outputs/workload_profile.json"
+    },
+    {
+      "method": "ours_compatible_nonlinear_islands",
+      "architecture": "sshleifer/tiny-gpt2",
+      "integration_level": "model_level_smoke",
+      "boundary_calls": 16,
+      "trusted_compute": 1105830,
+      "gpu_compute": 4434424,
+      "preprocessing_cost": 403992,
+      "online_extra_matmul_count": 0,
+      "measured_wall_time_ms": null,
+      "projected_wall_time_ms": 42.306135377317766,
+      "wall_time_source": "projected_from_op_counts",
+      "artifact_path": "outputs/workload_profile.json"
+    },
+    {
+      "method": "amulet_style_reference",
+      "architecture": "sshleifer/tiny-gpt2",
+      "integration_level": "projected",
+      "boundary_calls": 4,
+      "trusted_compute": 1105654,
+      "gpu_compute": 4434424,
+      "preprocessing_cost": 403784,
+      "online_extra_matmul_count": 0,
+      "measured_wall_time_ms": null,
+      "projected_wall_time_ms": 42.23986513554088,
+      "wall_time_source": "projected_from_op_counts",
+      "artifact_path": "outputs/workload_profile.json"
+    }
+  ],
+  "lora_training_summary": [
+    {
+      "stage": "7.0",
+      "training_scope": "single_linear",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 4,
+      "optimizer": "sgd",
+      "loss_diff": null,
+      "grad_error": null,
+      "update_error": null,
+      "rank_hidden_from_shape": false,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_training_experiments.json"
+    },
+    {
+      "stage": "7.1",
+      "training_scope": "single_linear_masked_backward",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 4,
+      "optimizer": "sgd",
+      "loss_diff": null,
+      "grad_error": null,
+      "update_error": null,
+      "rank_hidden_from_shape": false,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "stage": "7.2",
+      "training_scope": "single_linear_rank_padded",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 8,
+      "optimizer": "sgd",
+      "loss_diff": 4.263256414560601e-14,
+      "grad_error": 1.3062467774105357e-15,
+      "update_error": 1.1102230246251565e-16,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "stage": "7.3",
+      "training_scope": "multi_layer_decoder",
+      "num_layers": 2,
+      "num_lora_modules": 14,
+      "true_rank": 4,
+      "padded_rank": 8,
+      "optimizer": "sgd",
+      "loss_diff": 1.0658141036401503e-14,
+      "grad_error": 1.8446615762668372e-15,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "stage": "7.4::zero_dummy",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 5.684341886080802e-14,
+      "grad_error": 1.1102230246251565e-16,
+      "update_error": 2.7755575615628914e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "stage": "7.4::paired_cancellation_dummy",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 6.394884621840902e-14,
+      "grad_error": 2.5283594662361963e-15,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "stage": "7.4::gaussian_matched_dummy",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 1.4210854715202004e-14,
+      "grad_error": 1.1102230246251565e-16,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "stage": "7.4::spectrum_matched_dummy",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 2.842170943040401e-14,
+      "grad_error": 1.942890293094024e-16,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "stage": "7.4::noise_injected_cancellation_dummy",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 2.842170943040401e-14,
+      "grad_error": 2.5431046157819992e-15,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "stage": "7.4::orthogonalized_cancellation_dummy",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 3.552713678800501e-14,
+      "grad_error": 7.528699885739343e-16,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "stage": "7.4::mixed_dummy_ensemble",
+      "training_scope": "single_linear_stronger_dummy",
+      "num_layers": 1,
+      "num_lora_modules": 1,
+      "true_rank": 4,
+      "padded_rank": 16,
+      "optimizer": "sgd",
+      "loss_diff": 2.842170943040401e-14,
+      "grad_error": 7.754213937616328e-16,
+      "update_error": 5.551115123125783e-17,
+      "rank_hidden_from_shape": true,
+      "risk_level": "needs_more_evaluation",
+      "artifact_path": "outputs/lora_stronger_dummy_experiments.json"
+    }
+  ],
+  "limitations_summary": [
+    {
+      "category": "workload_profile",
+      "limitation": "Simulated TEE cost model \u2014 not real SGX wall-clock.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/workload_profile.json"
+    },
+    {
+      "category": "workload_profile",
+      "limitation": "Wall time for tslp_baseline, ours_ideal, and amulet_style_reference is projected, not measured.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/workload_profile.json"
+    },
+    {
+      "category": "workload_profile",
+      "limitation": "tiny-gpt2 (n_layer=2, n_embd=2, n_head=2) is far smaller than production GPT-2.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/workload_profile.json"
+    },
+    {
+      "category": "workload_profile",
+      "limitation": "FLOP / byte proxies use coarse constants; absolute numbers are illustrative.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/workload_profile.json"
+    },
+    {
+      "category": "workload_profile",
+      "limitation": "Qwen / Llama not yet covered \u2014 see Stage 5.4 roadmap.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/workload_profile.json"
+    },
+    {
+      "category": "workload_profile",
+      "limitation": "amulet_style_reference is a reference cost model, not a re-implementation of any published system.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/workload_profile.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "These experiments are security proxies, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "Compatible mask families are weaker than unrestricted dense masks inside nonlinear islands.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "Permutation islands hide channel identity but do not hide coordinate-value multisets.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "Orthogonal masks preserve row norms by design.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "Mean-preserving orthogonal masks preserve row means and centered norms by design.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "Fresh permutation reduces stable statistical recovery but does not provide dense linear mixing.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "Dense sandwiching and pad at Linear boundaries are required mitigations.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "This stage does not implement adaptive learned inversion attacks.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "This stage does not implement real TEE isolation.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "nonlinear_island_security",
+      "limitation": "This stage does not prove semantic security.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/nonlinear_island_security.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "These are adaptive/proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "The attacks use synthetic structured channel data, not full real-model activation traces.",
+      "affected_claim": "other",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "No adaptive black-box querying of a deployed LLM is implemented.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "No side-channel attack is implemented.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "No real TEE isolation is evaluated.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "Dense sandwiching reduces tested recovery but does not imply semantic security.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "adaptive_island_attacks",
+      "limitation": "Default-on recommendations are conditional on the tested threat model only.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/adaptive_island_attacks.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "Compatible mask families are weaker than unrestricted dense masks.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "Fresh permutation, dense sandwiching, and pad at Linear boundaries are required mitigations.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "Probe-level migration only \u2014 not a full Qwen / TinyLlama wrapper integration.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "No Qwen / TinyLlama generation path is implemented.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "GQA / MQA is tensor-level only, not full runtime KV cache integration.",
+      "affected_claim": "other",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "Compatible islands inherit Stage 5.4 mitigation requirements: fresh permutation + dense sandwich + pad at Linear boundaries.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "This is not a real TEE measurement.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "modern_decoder_probe",
+      "limitation": "This is not formal security.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/modern_decoder_probe.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "These are real-activation adaptive proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "If synthetic fallback is used, results are not real Qwen/TinyLlama activation traces.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "Random hidden-state block input is not the same as real token distribution unless tokenizer/embedding path is added.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "No black-box query attack is implemented.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "No side-channel attack is implemented.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "No real TEE isolation is evaluated.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "Dense sandwiching reduces tested recovery but does not imply semantic security.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "This stage does not implement full model-level generation or KV cache runtime.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_activation_attacks",
+      "limitation": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4b wrapper; the two bundles produce numerically identical traces. fixed_permutation_debug is a debug baseline only \u2014 never recommended for deployment.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "These are real-token-prompted adaptive proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "If synthetic token fallback is used, results are not real tokenizer-driven traces.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "If synthetic model fallback is used, results are not real Qwen/TinyLlama traces.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "Prompt set is small and not representative of all user data.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "No black-box query attack is implemented.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "No side-channel attack is implemented.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "No real TEE isolation is evaluated.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "Dense sandwiching reduces tested recovery but does not imply semantic security.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "This stage only evaluates greedy generation traces, not sampling / beam search / top-k / top-p.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "Inter-block hidden states (boundary_input, final) are recovered to plain space between layers under the Stage 6.4c model-level wrapper; an attacker observing those boundaries sees plaintext. This is a known model-wrapper limitation, not a Stage 5.5b attacker finding.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "real_token_activation_attacks",
+      "limitation": "fresh_perm_only and fresh_perm_plus_sandwich_plus_pad share the same per-call mask sampling under the Stage 6.4c wrapper; the two bundles produce numerically identical traces for masked tensors.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/real_token_activation_attacks.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "These are stronger proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "Black-box attacks only use generated outputs and logits summaries.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "Timing results are model-based proxies, not real TEE timing measurements.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "No hardware side-channel attack is implemented.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "No real TEE isolation is evaluated.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "Synthetic fallback results are not real Qwen/TinyLlama results.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "Inter-block masking is experimental unless explicitly marked implemented.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "stronger_attackers",
+      "limitation": "Dense sandwiching and fresh permutation reduce tested recovery but do not imply semantic security.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/stronger_attackers.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "Stage 7.0 is a prototype LoRA private training path, not full Qwen/TinyLlama LoRA fine-tuning.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "Backward / optimizer update remains trusted in Stage 7.0 \u2014 only the forward is masked and offloaded.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "Optimizer state (SGD momentum / AdamW moments) is trusted-only and never exported to JSON/CSV/Markdown.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "PEFT / DeepSpeed / vLLM / FlashAttention are NOT integrated.",
+      "affected_claim": "peft_integration",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "Real TEE isolation is NOT evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "LoRA adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "Distributed training is NOT implemented.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "Reported metrics are summary statistics + fingerprints. Private data, raw adapter tensors, masks, and pads are never emitted in outputs.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_training_experiments",
+      "limitation": "No formal / cryptographic / semantic security is claimed.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_experiments.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "These are proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "LoRA rank ``r`` remains visible from the shape of A_tilde / B_tilde unless explicit rank padding is implemented (NOT in Stage 7.0).",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "Optimizer state (SGD momentum / AdamW moments) remains trusted-only in Stage 7.0 and is never exported.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "No full private fine-tuning workload is evaluated; this is a single-linear, tiny-dimension proxy.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "Adversary model is a passive GPU observer of (X_tilde, W_tilde, A_tilde, B_tilde, Y_tilde) transcripts plus the dimensions; active boundary-attack and adaptive-attack proxies are deferred to later stages.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "Hardware side-channel attacks (cache / power / EM) are NOT evaluated.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_security_proxy",
+      "limitation": "Adapter is NEVER merged into the public base weight W (constraint 7).",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_security_proxy.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "Stage 7.1 implements masked-gradient prototype, not full private fine-tuning.",
+      "affected_claim": "other",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "Loss computation remains trusted (G = dL/dY is computed on the trusted side).",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "Optimizer update remains trusted (SGD momentum / AdamW m, v never cross the boundary).",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "PEFT / DeepSpeed / vLLM / FlashAttention are NOT integrated.",
+      "affected_claim": "peft_integration",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "This is not real TEE training; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "Rank padding is NOT implemented; LoRA rank r is still visible from A_tilde / B_tilde / grad_A_tilde / grad_B_tilde shapes (deferred to Stage 7.2).",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "LoRA adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "Distributed training is NOT implemented.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "Reports publish summary metrics + fingerprints only. Private data, raw adapter tensors, raw gradients, optimizer state, and masks are never emitted in outputs.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_backward_experiments",
+      "limitation": "No formal / cryptographic / semantic security is claimed.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_backward_experiments.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "These are gradient-side proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "Gradient tensors may leak rank (`grad_A_tilde` is (d_in \u00d7 r); `grad_B_tilde` is (r \u00d7 d_out)). Rank padding is NOT implemented in Stage 7.1 (deferred to Stage 7.2).",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "Optimizer state remains trusted-only in Stage 7.1; SGD momentum / AdamW (m, v) are never exposed to the GPU.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "Loss / upstream gradient computation remains trusted-only; only G_tilde crosses the boundary.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "No full model LoRA fine-tuning is evaluated; this is a single-linear, tiny-dimension gradient proxy.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "Adversary model is a passive GPU observer of (X_tilde, W_tilde, A_tilde, B_tilde, Y_tilde, G_tilde, grad_A_tilde, grad_B_tilde) transcripts plus the dimensions; active / adaptive attackers and hardware side-channels are NOT evaluated.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_gradient_security_proxy",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_gradient_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Stage 7.2 hides true rank from tensor shape by exposing padded rank.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Padded rank r_pad remains visible to the GPU.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Dummy rank indistinguishability is evaluated by proxy (Stage 7.2 security proxy), not formally proven.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Optimizer state remains trusted-only and is sized to true_rank, never padded_rank.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Backward / loss computation remains trusted (Stage 7.1 contract): only G_tilde, A_pad_tilde, B_pad_tilde, grad_A_pad_tilde, grad_B_pad_tilde cross the boundary.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+      "affected_claim": "peft_integration",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "No real TEE training.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "No full Qwen / TinyLlama / LLaMA LoRA fine-tuning.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "No formal / cryptographic / semantic security is claimed.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_padding_experiments",
+      "limitation": "Reports publish summary metrics + fingerprints. Private data, raw adapters (real or padded), raw gradients, optimizer state, and dense masks are never emitted in outputs.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_padding_experiments.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "These are rank-leakage proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "True rank is hidden only from shape-level leakage when rank padding is enabled. Padded rank r_pad remains visible.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "Spectral / statistical rank inference may still be possible depending on dummy strategy. zero_dummy explicitly leaks true rank via SVD of B_pad.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "paired_cancellation_dummy reduces obvious zero-norm leakage but the spectral upper bound `true_rank + \u230a(r_pad - r) / 2\u230b` still narrows the attacker's range; this is reported as needs_more_evaluation, not low.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "Optimizer state remains trusted-only and is sized to true_rank.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "No full model LoRA fine-tuning is evaluated; this is a single-linear, tiny-dimension proxy.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "lora_rank_security_proxy",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_rank_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "This is a synthetic multi-layer LoRA training prototype over a tiny tile, not a full Qwen / TinyLlama / LLaMA fine-tuning.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "Loss + optimizer remain trusted-side (Stage 7.1 contract).",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "Optimizer state is sized to true_rank, never padded_rank, for every LoRA module.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "Padded rank r_pad remains visible from tensor shape; only true_rank is hidden from shape-level leakage.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+      "affected_claim": "peft_integration",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "No real TEE training; security_profile remains 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "No distributed training.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "Attention is a simple scaled-dot-product proxy, not a correctness benchmark for full GQA / RoPE / KV-cache.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_training_experiments",
+      "limitation": "Reports publish summary metrics + fingerprints; private data, raw adapters, raw gradients, optimizer state, and dense masks are never emitted.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_training_experiments.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "These are cross-layer leakage proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "True rank is hidden from shape-level leakage only when padded_rank is shared across modules.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "padded_rank itself remains visible from tensor shape.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "Spectral / gradient rank inference may still narrow the attacker's range, especially under zero_dummy.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "Cross-layer linkability under fixed_masks_shared_u is reported high by construction; the no-mitigation baseline IS leaky.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "Optimizer state remains trusted-only and is sized to true_rank for every module.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "No full Qwen / TinyLlama / LLaMA fine-tuning is evaluated; this is a multi-linear, tiny-dimension proxy.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "multilayer_lora_security_proxy",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/multilayer_lora_security_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "Timing results are proxy estimates from an FLOP-and-boundary cost model, not real TEE wall-time.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "Constant-time training mode is simulated (upper-bound latency padding); the proxy does NOT sleep, does NOT modify real runtime.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "Cost-model constants are coarse; absolute latencies are illustrative.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "Leakage classifier uses bucket-mean labels as the attacker; this is a generous attacker model.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+      "affected_claim": "peft_integration",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "No real Qwen / TinyLlama / LLaMA fine-tuning; this is a multi-linear cost-model proxy.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_training_timing_proxy",
+      "limitation": "No formal / cryptographic / semantic security is claimed.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_training_timing_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "Stronger dummy distributions are proxy-evaluated, not formal.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "Padded rank remains visible unless heterogeneous padded_rank is separately enabled.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "Spectral hardening does not imply cryptographic hiding.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "Optimizer state remains trusted-only and is sized to true_rank for every LoRA module.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "No real TEE training is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "No full Qwen / TinyLlama / LLaMA LoRA fine-tuning is evaluated; this is a single-linear probe.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+      "affected_claim": "peft_integration",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_experiments",
+      "limitation": "Reports publish summary metrics + fingerprints only; private data, raw adapters, raw gradients, optimizer state, and dense masks are never emitted.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_experiments.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "These are stronger-dummy proxy attacks, not formal security proofs.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "Padded rank r_pad remains visible from tensor shape \u2014 only true_rank is hidden.",
+      "affected_claim": "padded_rank_hidden",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "Spectral hardening does not imply cryptographic hiding.",
+      "affected_claim": "formal_security",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "Dummy strategy classification uses a generous bucket-mean attacker model.",
+      "affected_claim": "other",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+      "affected_claim": "real_tee_wall_time",
+      "severity": "high",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "Optimizer state remains trusted-only and is sized to true_rank.",
+      "affected_claim": "optimizer_trusted_outsourced",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+      "affected_claim": "hardware_sidechannel_security",
+      "severity": "medium",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "No full Qwen / TinyLlama / LLaMA LoRA fine-tuning is evaluated; this is a single-linear + cross-layer proxy.",
+      "affected_claim": "full_model_lora_finetune",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    },
+    {
+      "category": "lora_stronger_dummy_security_proxy",
+      "limitation": "Adapter is NEVER merged into the public base weight W.",
+      "affected_claim": "no_adapter_merge",
+      "severity": "low",
+      "paper_wording": "Treat as a limitation in the paper's threat-model section; do not advertise the property it disclaims.",
+      "artifact_support": "outputs/lora_stronger_dummy_security_proxy.json"
+    }
+  ],
+  "missing_artifacts": [],
+  "paper_artifact_consolidation_status": "implemented",
+  "security_profile": "proxy-evaluated, not formal",
+  "limitations": [
+    "Pure aggregation; no new ops, no new attacks, no new probes.",
+    "Outputs are derived from existing outputs/*.json; if an upstream artifact is stale, the consolidated tables are stale.",
+    "LaTeX tables use plain tabular; large tables may need manual layout.",
+    "Figures are produced by run_paper_artifact_consolidation_figures (separate script); this module emits tables only.",
+    "Reports publish summary metrics + fingerprints only; raw tensors / masks / adapters / gradients / private data are never emitted.",
+    "No formal / cryptographic / semantic security is claimed.",
+    "No real TEE wall-time is claimed."
+  ]
+}

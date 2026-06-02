@@ -660,6 +660,46 @@ def _build_markdown(profile: dict) -> str:
                         " `needs_more_evaluation`, not `low`."
                     )
                 if islands_record.get(
+                    "paper_artifact_consolidation_status",
+                ) == "implemented":
+                    out.append("")
+                    out.append(
+                        "### Stage 7.5 — Paper Artifact Consolidation +"
+                        " Measured Runtime + Claims Audit"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `paper_artifact_consolidation_status = "
+                        f"\"{islands_record.get('paper_artifact_consolidation_status')}\"`,"
+                        " `measured_runtime_evaluation_status = "
+                        f"\"{islands_record.get('measured_runtime_evaluation_status')}\"`,"
+                        " `paper_claims_audit_status = "
+                        f"\"{islands_record.get('paper_claims_audit_status')}\"`."
+                    )
+                    out.append(
+                        "- `paper_artifact_consolidation_artifact = "
+                        f"\"{islands_record.get('paper_artifact_consolidation_artifact')}\"`,"
+                        " `measured_runtime_artifact = "
+                        f"\"{islands_record.get('measured_runtime_artifact')}\"`,"
+                        " `paper_claims_audit_artifact = "
+                        f"\"{islands_record.get('paper_claims_audit_artifact')}\"`."
+                    )
+                    out.append(
+                        "- Stage 7.5 aggregates every existing"
+                        " `outputs/*.json` into paper-ready CSV / Markdown"
+                        " / LaTeX tables (`artifact_inventory`,"
+                        " `correctness_summary`, `security_proxy_summary`,"
+                        " `workload_summary`, `lora_training_summary`,"
+                        " `limitations_summary`), measures local"
+                        " wall-clock latency for plain / masked /"
+                        " rank-padded / multi-layer LoRA primitives"
+                        " (**local emulation, NOT real TEE wall-time;"
+                        " no real sleep**), and classifies every paper"
+                        " claim into `supported / proxy_supported /"
+                        " unsupported`. No new obfuscation primitives,"
+                        " no new attackers."
+                    )
+                if islands_record.get(
                     "lora_stronger_dummy_status",
                 ) == "implemented":
                     out.append("")
