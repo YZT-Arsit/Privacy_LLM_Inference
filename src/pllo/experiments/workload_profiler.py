@@ -1039,6 +1039,23 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["security_profile_detail_with_lora_multilayer"] = (
                 "multi-layer-lora-proxy-evaluated, not formal"
             )
+            # Stage 7.4 — stronger dummy distributions / spectral-rank
+            # hardening. Additive metadata; runtime defaults of GPT-2 /
+            # BERT / T5 / modern decoder inference are NOT modified.
+            record["lora_stronger_dummy_status"] = "implemented"
+            record["lora_stronger_dummy_artifact"] = (
+                "outputs/lora_stronger_dummy_experiments.json"
+            )
+            record["lora_stronger_dummy_security_status"] = "implemented"
+            record["lora_stronger_dummy_security_artifact"] = (
+                "outputs/lora_stronger_dummy_security_proxy.json"
+            )
+            record["lora_spectral_rank_hardening_status"] = (
+                "proxy-evaluated"
+            )
+            record["security_profile_detail_with_lora_dummy_hardening"] = (
+                "spectral-rank-hardening-proxy-evaluated, not formal"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1366,6 +1383,18 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 ),
                 "security_profile_detail_with_lora_multilayer": (
                     "multi-layer-lora-proxy-evaluated, not formal"
+                ),
+                "lora_stronger_dummy_status": "implemented",
+                "lora_stronger_dummy_artifact": (
+                    "outputs/lora_stronger_dummy_experiments.json"
+                ),
+                "lora_stronger_dummy_security_status": "implemented",
+                "lora_stronger_dummy_security_artifact": (
+                    "outputs/lora_stronger_dummy_security_proxy.json"
+                ),
+                "lora_spectral_rank_hardening_status": "proxy-evaluated",
+                "security_profile_detail_with_lora_dummy_hardening": (
+                    "spectral-rank-hardening-proxy-evaluated, not formal"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

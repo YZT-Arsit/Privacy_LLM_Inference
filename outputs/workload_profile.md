@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `1.529e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `1.567e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 2.900 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 43.479 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 6.640 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 43.189 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 43.255 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 43.189 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 2.829 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 42.527 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 6.196 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 42.240 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 42.306 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 42.240 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -235,6 +235,14 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - `lora_rank_padding_artifact = "outputs/lora_rank_padding_experiments.json"`, `lora_rank_security_artifact = "outputs/lora_rank_security_proxy.json"`.
 - `security_profile_detail_with_lora_rank_padding = "rank-padding-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
 - Stage 7.2 hides true_rank from the GPU-visible shape of `A_pad_tilde / B_pad_tilde / grad_A_pad_tilde / grad_B_pad_tilde`. **padded_rank itself remains visible** to the GPU. dummy_strategy ∈ {"zero_dummy", "paired_cancellation_dummy"}; `zero_dummy` keeps shape-level hiding but the spectral attacker reads `true_rank` back from `SVD(B_pad_tilde)` exactly — the proxy reports `risk_level = high` accordingly. `paired_cancellation_dummy` raises the SVD-cliff from `true_rank` to `true_rank + ⌊(r_pad - r) / 2⌋`, an upper bound only — reported as `needs_more_evaluation`, not `low`.
+
+### Stage 7.4 — Stronger Dummy Distributions / Spectral-Rank Hardening
+
+- `lora_stronger_dummy_status = "implemented"`, `lora_stronger_dummy_security_status = "implemented"`, `lora_spectral_rank_hardening_status = "proxy-evaluated"`.
+- `lora_stronger_dummy_artifact = "outputs/lora_stronger_dummy_experiments.json"`, `lora_stronger_dummy_security_artifact = "outputs/lora_stronger_dummy_security_proxy.json"`.
+- `security_profile_detail_with_lora_dummy_hardening = "spectral-rank-hardening-proxy-evaluated, not formal"` — additive label only; top-level `security_profile` remains `"proxy-evaluated, not formal"`.
+- Stage 7.4 adds five stronger dummy strategies (`gaussian_matched_dummy / spectrum_matched_dummy / noise_injected_cancellation_dummy / orthogonalized_cancellation_dummy / mixed_dummy_ensemble`) on top of Stage 7.2's `zero_dummy / paired_cancellation_dummy`. Every stronger strategy preserves `A_pad B_pad = A_real B_real` either exactly (cancellation strategies) or with a tracked trusted-side correction (`noise_injected_cancellation_dummy`). Stage 7.0 / 7.1 / 7.2 / 7.3 primitives are NOT modified; Stage 7.4 wraps them.
+- Security proxy reports ensemble spectral-cliff / 99%-energy / log-elbow detectors over `A_tilde / B_tilde / grad_A_tilde / grad_B_tilde`, plus a dummy-strategy classifier and the Stage 7.3 cross-layer linkage proxy parametrised by dummy strategy. Conservative verdicts per requirement 12 — every paired-cancellation-derived strategy is reported as `needs_more_evaluation` when accuracy is low; `zero_dummy` is `high`. The dummy-strategy classifier itself is reported honestly — Stage 7.4 does NOT claim cryptographic hiding.
 
 ### Stage 7.3 — Multi-Layer LoRA Training + Cross-Layer Proxy + Training Timing Proxy
 

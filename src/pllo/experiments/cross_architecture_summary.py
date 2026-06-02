@@ -845,6 +845,39 @@ def _compatible_island_integration_status(
                     "security_profile_detail_with_lora_multilayer"
                 )
             ),
+            # Stage 7.4 — stronger dummy distributions / spectral-rank
+            # hardening.
+            "lora_stronger_dummy_status": str(
+                effective_status.get("lora_stronger_dummy_status")
+                or method.get("lora_stronger_dummy_status")
+                or "not_yet"
+            ),
+            "lora_stronger_dummy_artifact": (
+                effective_status.get("lora_stronger_dummy_artifact")
+                or method.get("lora_stronger_dummy_artifact")
+            ),
+            "lora_stronger_dummy_security_status": str(
+                effective_status.get("lora_stronger_dummy_security_status")
+                or method.get("lora_stronger_dummy_security_status")
+                or "not_yet"
+            ),
+            "lora_stronger_dummy_security_artifact": (
+                effective_status.get("lora_stronger_dummy_security_artifact")
+                or method.get("lora_stronger_dummy_security_artifact")
+            ),
+            "lora_spectral_rank_hardening_status": str(
+                effective_status.get("lora_spectral_rank_hardening_status")
+                or method.get("lora_spectral_rank_hardening_status")
+                or "not_yet"
+            ),
+            "security_profile_detail_with_lora_dummy_hardening": (
+                effective_status.get(
+                    "security_profile_detail_with_lora_dummy_hardening"
+                )
+                or method.get(
+                    "security_profile_detail_with_lora_dummy_hardening"
+                )
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

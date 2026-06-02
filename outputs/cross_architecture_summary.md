@@ -40,9 +40,9 @@ Cross-architecture summary aggregates Stage 5.0 (decoder-only), Stage 6.1 (encod
 
 | method | implemented | boundary calls | boundary calls formula | trusted compute ops | gpu ops | measured wall-time (ms) | source |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.900e+00 | measured |
+| plain_hf_gpu | true | 0 | 0 (no boundary) | 0 | 4434424 | 2.829e+00 | measured |
 | tslp_trusted_nonlinear_baseline | false | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4429848 | — | projected_from_op_counts |
-| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.640e+00 | measured |
+| ours_current | true | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4429848 | 6.196e+00 | measured |
 | ours_ideal_gpu_nonlinear | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
 | ours_compatible_nonlinear_islands | false | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4434424 | — | projected_from_op_counts |
 | amulet_style_reference | false | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4434424 | — | projected_from_op_counts |
@@ -204,9 +204,19 @@ Stage 5.6 extension wires `masked_boundary_experimental` through ObfuscatedModer
 | lora_training_timing_proxy_status | implemented |
 | lora_training_timing_artifact | `outputs/lora_training_timing_proxy.json` |
 | security_profile_detail_with_lora_multilayer | multi-layer-lora-proxy-evaluated, not formal |
+| lora_stronger_dummy_status | implemented |
+| lora_stronger_dummy_artifact | `outputs/lora_stronger_dummy_experiments.json` |
+| lora_stronger_dummy_security_status | implemented |
+| lora_stronger_dummy_security_artifact | `outputs/lora_stronger_dummy_security_proxy.json` |
+| lora_spectral_rank_hardening_status | proxy-evaluated |
+| security_profile_detail_with_lora_dummy_hardening | spectral-rank-hardening-proxy-evaluated, not formal |
 ### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)
 
 Stage 5.6 ships three proxy attackers that do NOT require paired plaintext/visible internal supervision. (1) Black-box query attacker uses only generated tokens + per-step logits summaries; mode / bundle / use_pad distinguishability sits at random chance under Stage 6.4c's exact-token-match guarantee. (2) Timing side-channel proxy uses the Stage 5.2c op-count cost model + Gaussian noise; decode_step and prompt-length latency leakage is `high` (structural — any latency observer can count decode steps), mitigation-bundle distinguishability is `low`. (3) Inter-block residual masking gap analysis confirms the Stage 5.5b finding that `boundary_input` / `final` are plain at the model-wrapper boundary; a single-transition math probe verifies the orthogonal-mask fix is numerically correct, but the full `masked_boundary_experimental` mode is `not_implemented_in_stage_5_6` (deferred to Stage 5.6 extension / Stage 7.0). Envelope-integrity risk: `low`. Structural-leakage risk: `high`. Not formal security; not a real TEE measurement.
+
+### Stage 7.4 — Stronger Dummy Distributions / Spectral-Rank Hardening
+
+Stage 7.4 adds five stronger dummy strategies on top of Stage 7.2's `zero_dummy / paired_cancellation_dummy` baseline: (1) `gaussian_matched_dummy` — paired cancellation with R / S drawn from a Gaussian matched to per-column statistics of `A_real` / `B_real`; (2) `spectrum_matched_dummy` — paired cancellation where R / S are scaled by singular values cycled from the empirical `A_real` / `B_real` spectrum; (3) `noise_injected_cancellation_dummy` — paired cancellation + small noise on the dummy slice, with a tracked trusted-side correction `correction = A_pad[:, r:] @ B_pad[r:, :]` that the harness subtracts via `(α / true_rank) X @ correction` from the recovered output; (4) `orthogonalized_cancellation_dummy` — paired cancellation with R / S projected orthogonal to the column / row span of `A_real` / `B_real`; (5) `mixed_dummy_ensemble` — per-pair random selection from the four cancellation strategies above. All five preserve forward / backward / SGD / AdamW update correctness to float64 precision; the stronger-dummy probe verifies `loss_diff` / `max_grad_*_real_err` / `max_update_*_err` ≤ 1e-9 across every supported strategy. `lora_stronger_dummy_status = "implemented"`, `lora_spectral_rank_hardening_status = "proxy-evaluated"`. The security proxy reports four sub-attacks: ensemble spectral-cliff / 99%-energy / log-elbow inference, gradient-side spectral inference, dummy-strategy classification via nearest-bucket-mean on top-k normalised singular values, and the Stage 7.3 cross-layer linkage proxy parametrised by dummy strategy. Conservative verdicts per requirement 12 — every paired-cancellation-derived strategy is reported as `needs_more_evaluation` when accuracy ≤ 0.2; `zero_dummy` stays at `high`. The dummy-strategy classifier itself is reported honestly — Stage 7.4 does NOT claim cryptographic hiding. `lora_stronger_dummy_security_status = "implemented"`, `security_profile_detail_with_lora_dummy_hardening = "spectral-rank-hardening-proxy-evaluated, not formal"` (additive label only — top-level `security_profile` stays `"proxy-evaluated, not formal"`). NOT full Qwen / TinyLlama / LLaMA LoRA fine-tuning, NOT PEFT integration, NOT distributed training, NOT real TEE training, NOT a real hardware side-channel evaluation, NOT a heterogeneous `padded_rank` scheme — `padded_rank` itself remains visible from tensor shape.
 
 ### Stage 7.3 — Multi-Layer LoRA Training + Cross-Layer Proxy + Training Timing Proxy
 

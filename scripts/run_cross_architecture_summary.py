@@ -739,6 +739,15 @@ def _build_markdown(summary: dict) -> str:
             lora_training_timing_status = modern_row.get(
                 "lora_training_timing_proxy_status"
             )
+            lora_stronger_dummy_status = modern_row.get(
+                "lora_stronger_dummy_status"
+            )
+            lora_stronger_dummy_security_status = modern_row.get(
+                "lora_stronger_dummy_security_status"
+            )
+            lora_spectral_rank_hardening_status = modern_row.get(
+                "lora_spectral_rank_hardening_status"
+            )
             if lora_status and lora_status != "not_yet":
                 out.append("| lora_private_training_status |"
                            f" {lora_status} |")
@@ -835,6 +844,34 @@ def _build_markdown(summary: dict) -> str:
                         "| security_profile_detail_with_lora_multilayer |"
                         f" {ml_detail} |"
                     )
+            if (
+                (
+                    lora_stronger_dummy_status
+                    and lora_stronger_dummy_status != "not_yet"
+                )
+                or (
+                    lora_stronger_dummy_security_status
+                    and lora_stronger_dummy_security_status != "not_yet"
+                )
+            ):
+                out.append("| lora_stronger_dummy_status |"
+                           f" {lora_stronger_dummy_status} |")
+                out.append("| lora_stronger_dummy_artifact |"
+                           f" `{modern_row.get('lora_stronger_dummy_artifact')}` |")
+                out.append("| lora_stronger_dummy_security_status |"
+                           f" {lora_stronger_dummy_security_status} |")
+                out.append("| lora_stronger_dummy_security_artifact |"
+                           f" `{modern_row.get('lora_stronger_dummy_security_artifact')}` |")
+                out.append("| lora_spectral_rank_hardening_status |"
+                           f" {lora_spectral_rank_hardening_status} |")
+                sdh_detail = modern_row.get(
+                    "security_profile_detail_with_lora_dummy_hardening"
+                )
+                if sdh_detail:
+                    out.append(
+                        "| security_profile_detail_with_lora_dummy_hardening |"
+                        f" {sdh_detail} |"
+                    )
             if sa_status and sa_status != "not_yet":
                 out.append(
                     "### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)"
@@ -861,6 +898,77 @@ def _build_markdown(summary: dict) -> str:
                     " extension / Stage 7.0). Envelope-integrity risk:"
                     " `low`. Structural-leakage risk: `high`. Not formal"
                     " security; not a real TEE measurement."
+                )
+                out.append("")
+            if (
+                (
+                    lora_stronger_dummy_status
+                    and lora_stronger_dummy_status != "not_yet"
+                )
+                or (
+                    lora_stronger_dummy_security_status
+                    and lora_stronger_dummy_security_status != "not_yet"
+                )
+            ):
+                out.append(
+                    "### Stage 7.4 — Stronger Dummy Distributions /"
+                    " Spectral-Rank Hardening"
+                )
+                out.append("")
+                out.append(
+                    "Stage 7.4 adds five stronger dummy strategies on top of"
+                    " Stage 7.2's `zero_dummy / paired_cancellation_dummy`"
+                    " baseline:"
+                    " (1) `gaussian_matched_dummy` — paired cancellation with"
+                    " R / S drawn from a Gaussian matched to per-column"
+                    " statistics of `A_real` / `B_real`;"
+                    " (2) `spectrum_matched_dummy` — paired cancellation"
+                    " where R / S are scaled by singular values cycled from"
+                    " the empirical `A_real` / `B_real` spectrum;"
+                    " (3) `noise_injected_cancellation_dummy` — paired"
+                    " cancellation + small noise on the dummy slice, with a"
+                    " tracked trusted-side correction `correction ="
+                    " A_pad[:, r:] @ B_pad[r:, :]` that the harness"
+                    " subtracts via `(α / true_rank) X @ correction` from"
+                    " the recovered output;"
+                    " (4) `orthogonalized_cancellation_dummy` — paired"
+                    " cancellation with R / S projected orthogonal to the"
+                    " column / row span of `A_real` / `B_real`;"
+                    " (5) `mixed_dummy_ensemble` — per-pair random"
+                    " selection from the four cancellation strategies above."
+                    " All five preserve forward / backward / SGD / AdamW"
+                    " update correctness to float64 precision; the"
+                    " stronger-dummy probe verifies `loss_diff` /"
+                    " `max_grad_*_real_err` / `max_update_*_err` ≤ 1e-9"
+                    " across every supported strategy."
+                    " `lora_stronger_dummy_status = \"implemented\"`,"
+                    " `lora_spectral_rank_hardening_status ="
+                    " \"proxy-evaluated\"`."
+                    " The security proxy reports four sub-attacks:"
+                    " ensemble spectral-cliff / 99%-energy / log-elbow"
+                    " inference, gradient-side spectral inference,"
+                    " dummy-strategy classification via nearest-bucket-mean"
+                    " on top-k normalised singular values, and the Stage"
+                    " 7.3 cross-layer linkage proxy parametrised by dummy"
+                    " strategy. Conservative verdicts per requirement 12 —"
+                    " every paired-cancellation-derived strategy is reported"
+                    " as `needs_more_evaluation` when accuracy ≤ 0.2;"
+                    " `zero_dummy` stays at `high`. The dummy-strategy"
+                    " classifier itself is reported honestly — Stage 7.4"
+                    " does NOT claim cryptographic hiding."
+                    " `lora_stronger_dummy_security_status ="
+                    " \"implemented\"`,"
+                    " `security_profile_detail_with_lora_dummy_hardening ="
+                    " \"spectral-rank-hardening-proxy-evaluated, not"
+                    " formal\"` (additive label only — top-level"
+                    " `security_profile` stays `\"proxy-evaluated, not"
+                    " formal\"`)."
+                    " NOT full Qwen / TinyLlama / LLaMA LoRA fine-tuning,"
+                    " NOT PEFT integration, NOT distributed training,"
+                    " NOT real TEE training, NOT a real hardware"
+                    " side-channel evaluation, NOT a heterogeneous"
+                    " `padded_rank` scheme — `padded_rank` itself remains"
+                    " visible from tensor shape."
                 )
                 out.append("")
             if (

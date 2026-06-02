@@ -660,6 +660,63 @@ def _build_markdown(profile: dict) -> str:
                         " `needs_more_evaluation`, not `low`."
                     )
                 if islands_record.get(
+                    "lora_stronger_dummy_status",
+                ) == "implemented":
+                    out.append("")
+                    out.append(
+                        "### Stage 7.4 — Stronger Dummy Distributions /"
+                        " Spectral-Rank Hardening"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `lora_stronger_dummy_status = "
+                        f"\"{islands_record.get('lora_stronger_dummy_status')}\"`,"
+                        " `lora_stronger_dummy_security_status = "
+                        f"\"{islands_record.get('lora_stronger_dummy_security_status')}\"`,"
+                        " `lora_spectral_rank_hardening_status = "
+                        f"\"{islands_record.get('lora_spectral_rank_hardening_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_stronger_dummy_artifact = "
+                        f"\"{islands_record.get('lora_stronger_dummy_artifact')}\"`,"
+                        " `lora_stronger_dummy_security_artifact = "
+                        f"\"{islands_record.get('lora_stronger_dummy_security_artifact')}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_lora_dummy_hardening = "
+                        f"\"{islands_record.get('security_profile_detail_with_lora_dummy_hardening')}\"`"
+                        " — additive label only; top-level `security_profile`"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Stage 7.4 adds five stronger dummy strategies"
+                        " (`gaussian_matched_dummy / spectrum_matched_dummy /"
+                        " noise_injected_cancellation_dummy /"
+                        " orthogonalized_cancellation_dummy /"
+                        " mixed_dummy_ensemble`) on top of Stage 7.2's"
+                        " `zero_dummy / paired_cancellation_dummy`. Every"
+                        " stronger strategy preserves `A_pad B_pad ="
+                        " A_real B_real` either exactly (cancellation"
+                        " strategies) or with a tracked trusted-side"
+                        " correction (`noise_injected_cancellation_dummy`)."
+                        " Stage 7.0 / 7.1 / 7.2 / 7.3 primitives are NOT"
+                        " modified; Stage 7.4 wraps them."
+                    )
+                    out.append(
+                        "- Security proxy reports ensemble spectral-cliff /"
+                        " 99%-energy / log-elbow detectors over `A_tilde /"
+                        " B_tilde / grad_A_tilde / grad_B_tilde`, plus a"
+                        " dummy-strategy classifier and the Stage 7.3"
+                        " cross-layer linkage proxy parametrised by"
+                        " dummy strategy. Conservative verdicts per"
+                        " requirement 12 — every paired-cancellation-derived"
+                        " strategy is reported as `needs_more_evaluation`"
+                        " when accuracy is low; `zero_dummy` is `high`. The"
+                        " dummy-strategy classifier itself is reported"
+                        " honestly — Stage 7.4 does NOT claim cryptographic"
+                        " hiding."
+                    )
+                if islands_record.get(
                     "lora_multilayer_training_status",
                 ) == "prototype":
                     out.append("")

@@ -1,0 +1,694 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "d_in": 32,
+    "d_out": 16,
+    "true_ranks": [
+      2,
+      4,
+      8
+    ],
+    "padded_rank": 16,
+    "alpha": 1.0,
+    "num_trials": 24,
+    "num_lora_modules_for_linkage": 4,
+    "use_pad": true,
+    "pad_scale": 1.0,
+    "dummy_scale": 1.0,
+    "noise_scale": 0.001,
+    "spectrum_match_strength": 1.0,
+    "dummy_strategies": [
+      "zero_dummy",
+      "paired_cancellation_dummy",
+      "gaussian_matched_dummy",
+      "spectrum_matched_dummy",
+      "noise_injected_cancellation_dummy",
+      "orthogonalized_cancellation_dummy",
+      "mixed_dummy_ensemble"
+    ],
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "scope": "stronger-dummy LoRA security proxy: spectral inference, gradient inference, dummy strategy classification, cross-layer linkage",
+  "spectral_rank_inference": {
+    "rows": [
+      {
+        "dummy_strategy": "zero_dummy",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 2.0,
+        "inferred_rank_energy_b_mean": 2.0,
+        "inferred_rank_elbow_b_mean": 2.0,
+        "cliff_inference_accuracy": 1.0,
+        "energy_inference_accuracy": 1.0,
+        "elbow_inference_accuracy": 1.0,
+        "ensemble_inference_accuracy": 1.0,
+        "confidence_gap_b": 1.5232792396998057e-16,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "zero_dummy",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 4.0,
+        "inferred_rank_energy_b_mean": 4.0,
+        "inferred_rank_elbow_b_mean": 4.0,
+        "cliff_inference_accuracy": 1.0,
+        "energy_inference_accuracy": 1.0,
+        "elbow_inference_accuracy": 1.0,
+        "ensemble_inference_accuracy": 1.0,
+        "confidence_gap_b": 2.7545712157322966e-16,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "zero_dummy",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 8.0,
+        "inferred_rank_energy_b_mean": 7.875,
+        "inferred_rank_elbow_b_mean": 8.0,
+        "cliff_inference_accuracy": 1.0,
+        "energy_inference_accuracy": 0.875,
+        "elbow_inference_accuracy": 1.0,
+        "ensemble_inference_accuracy": 1.0,
+        "confidence_gap_b": 6.051109219441164e-16,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 9.0,
+        "inferred_rank_energy_b_mean": 7.0,
+        "inferred_rank_elbow_b_mean": 9.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 5.408840845951325e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 10.0,
+        "inferred_rank_energy_b_mean": 6.0,
+        "inferred_rank_elbow_b_mean": 10.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 6.780169515716895e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 12.0,
+        "inferred_rank_energy_b_mean": 4.125,
+        "inferred_rank_elbow_b_mean": 12.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 5.94286895294045e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 9.0,
+        "inferred_rank_energy_b_mean": 8.375,
+        "inferred_rank_elbow_b_mean": 9.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 9.459727413682287e-16,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 10.0,
+        "inferred_rank_energy_b_mean": 9.083333333333334,
+        "inferred_rank_elbow_b_mean": 10.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 9.440269784209088e-16,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 12.0,
+        "inferred_rank_energy_b_mean": 10.458333333333334,
+        "inferred_rank_elbow_b_mean": 12.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 1.3392175470030677e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 9.0,
+        "inferred_rank_energy_b_mean": 8.541666666666666,
+        "inferred_rank_elbow_b_mean": 9.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 7.685798859187952e-16,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 10.0,
+        "inferred_rank_energy_b_mean": 9.166666666666666,
+        "inferred_rank_elbow_b_mean": 10.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 9.574652099667117e-16,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 12.0,
+        "inferred_rank_energy_b_mean": 10.416666666666666,
+        "inferred_rank_elbow_b_mean": 12.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 1.573324755977232e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 9.25,
+        "inferred_rank_energy_b_mean": 6.958333333333333,
+        "inferred_rank_elbow_b_mean": 9.25,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 0.02100178230596682,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 10.0,
+        "inferred_rank_energy_b_mean": 6.0,
+        "inferred_rank_elbow_b_mean": 10.208333333333334,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 0.02789514837606737,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 12.125,
+        "inferred_rank_energy_b_mean": 4.166666666666667,
+        "inferred_rank_elbow_b_mean": 12.25,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 0.03302344923462842,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 9.0,
+        "inferred_rank_energy_b_mean": 6.916666666666667,
+        "inferred_rank_elbow_b_mean": 9.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 3.4082770499904126e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 10.0,
+        "inferred_rank_energy_b_mean": 6.0,
+        "inferred_rank_elbow_b_mean": 10.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 2.71396749775142e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 12.0,
+        "inferred_rank_energy_b_mean": 6.625,
+        "inferred_rank_elbow_b_mean": 12.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.16666666666666666,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 2.457398909502006e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "true_rank": 2,
+        "inferred_rank_cliff_b_mean": 9.0,
+        "inferred_rank_energy_b_mean": 4.375,
+        "inferred_rank_elbow_b_mean": 9.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.0,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 3.927110312587679e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "true_rank": 4,
+        "inferred_rank_cliff_b_mean": 10.0,
+        "inferred_rank_energy_b_mean": 5.0,
+        "inferred_rank_elbow_b_mean": 10.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.4166666666666667,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 3.158011490960949e-15,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "true_rank": 8,
+        "inferred_rank_cliff_b_mean": 12.0,
+        "inferred_rank_energy_b_mean": 7.375,
+        "inferred_rank_elbow_b_mean": 12.0,
+        "cliff_inference_accuracy": 0.0,
+        "energy_inference_accuracy": 0.16666666666666666,
+        "elbow_inference_accuracy": 0.0,
+        "ensemble_inference_accuracy": 0.0,
+        "confidence_gap_b": 2.6423834477063616e-15,
+        "risk_level": "needs_more_evaluation"
+      }
+    ],
+    "interpretation": "Spectral rank inference with three detectors (SVD-cliff, 99%-energy, log-elbow) and a majority ensemble. Higher accuracy \u21d2 true_rank more readable from the visible spectrum. Conservative verdicts per requirement 12."
+  },
+  "gradient_rank_inference": {
+    "rows": [
+      {
+        "dummy_strategy": "zero_dummy",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 2.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "zero_dummy",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 4.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "zero_dummy",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "true_rank": 2,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "true_rank": 4,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 0.0,
+        "grad_b_cliff_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "true_rank": 8,
+        "inferred_rank_grad_a_cliff_mean": 8.0,
+        "inferred_rank_grad_b_cliff_mean": 8.0,
+        "grad_a_cliff_accuracy": 1.0,
+        "grad_b_cliff_accuracy": 1.0,
+        "gradient_rank_inference_accuracy": 1.0,
+        "risk_level": "high"
+      }
+    ],
+    "interpretation": "Gradient-side spectral rank inference. Gradients depend on (X, A, B, G); their spectrum may differ from the static adapter spectrum. Conservative verdicts per requirement 12."
+  },
+  "dummy_strategy_classification": {
+    "strategy_classification_accuracy": 0.47619047619047616,
+    "random_chance_baseline": 0.14285714285714285,
+    "risk_level": "medium",
+    "confusion_counts": {
+      "zero_dummy": {
+        "zero_dummy": 24,
+        "paired_cancellation_dummy": 0,
+        "gaussian_matched_dummy": 0,
+        "spectrum_matched_dummy": 0,
+        "noise_injected_cancellation_dummy": 0,
+        "orthogonalized_cancellation_dummy": 0,
+        "mixed_dummy_ensemble": 0
+      },
+      "paired_cancellation_dummy": {
+        "zero_dummy": 0,
+        "paired_cancellation_dummy": 3,
+        "gaussian_matched_dummy": 4,
+        "spectrum_matched_dummy": 9,
+        "noise_injected_cancellation_dummy": 3,
+        "orthogonalized_cancellation_dummy": 5,
+        "mixed_dummy_ensemble": 0
+      },
+      "gaussian_matched_dummy": {
+        "zero_dummy": 0,
+        "paired_cancellation_dummy": 2,
+        "gaussian_matched_dummy": 8,
+        "spectrum_matched_dummy": 5,
+        "noise_injected_cancellation_dummy": 4,
+        "orthogonalized_cancellation_dummy": 5,
+        "mixed_dummy_ensemble": 0
+      },
+      "spectrum_matched_dummy": {
+        "zero_dummy": 0,
+        "paired_cancellation_dummy": 2,
+        "gaussian_matched_dummy": 4,
+        "spectrum_matched_dummy": 14,
+        "noise_injected_cancellation_dummy": 2,
+        "orthogonalized_cancellation_dummy": 2,
+        "mixed_dummy_ensemble": 0
+      },
+      "noise_injected_cancellation_dummy": {
+        "zero_dummy": 0,
+        "paired_cancellation_dummy": 2,
+        "gaussian_matched_dummy": 5,
+        "spectrum_matched_dummy": 3,
+        "noise_injected_cancellation_dummy": 8,
+        "orthogonalized_cancellation_dummy": 6,
+        "mixed_dummy_ensemble": 0
+      },
+      "orthogonalized_cancellation_dummy": {
+        "zero_dummy": 0,
+        "paired_cancellation_dummy": 2,
+        "gaussian_matched_dummy": 7,
+        "spectrum_matched_dummy": 6,
+        "noise_injected_cancellation_dummy": 2,
+        "orthogonalized_cancellation_dummy": 7,
+        "mixed_dummy_ensemble": 0
+      },
+      "mixed_dummy_ensemble": {
+        "zero_dummy": 0,
+        "paired_cancellation_dummy": 1,
+        "gaussian_matched_dummy": 6,
+        "spectrum_matched_dummy": 0,
+        "noise_injected_cancellation_dummy": 1,
+        "orthogonalized_cancellation_dummy": 0,
+        "mixed_dummy_ensemble": 16
+      }
+    },
+    "interpretation": "Nearest-bucket-mean classifier on top-k normalised singular values of A_pad_tilde / B_pad_tilde. Higher accuracy \u21d2 the visible spectrum carries enough signal to discriminate the trusted-side dummy strategy choice."
+  },
+  "cross_layer_linkage": {
+    "rows": [
+      {
+        "dummy_strategy": "zero_dummy",
+        "layer_linkability_auc": 0.4810112847222222,
+        "module_identity_retrieval_top1": 0.11458333333333333,
+        "same_module_similarity": 0.804296204300619,
+        "different_module_similarity": 0.7491102967953068,
+        "rank_group_retrieval_top1": 0.11458333333333333,
+        "risk_level": "low"
+      },
+      {
+        "dummy_strategy": "paired_cancellation_dummy",
+        "layer_linkability_auc": 0.5359700520833334,
+        "module_identity_retrieval_top1": 0.171875,
+        "same_module_similarity": 1.0566351217710053,
+        "different_module_similarity": 1.1018617936948987,
+        "rank_group_retrieval_top1": 0.171875,
+        "risk_level": "low"
+      },
+      {
+        "dummy_strategy": "gaussian_matched_dummy",
+        "layer_linkability_auc": 0.49877025462962965,
+        "module_identity_retrieval_top1": 0.16666666666666666,
+        "same_module_similarity": 0.4330782621822853,
+        "different_module_similarity": 0.4444755829073503,
+        "rank_group_retrieval_top1": 0.16666666666666666,
+        "risk_level": "low"
+      },
+      {
+        "dummy_strategy": "spectrum_matched_dummy",
+        "layer_linkability_auc": 0.5398220486111112,
+        "module_identity_retrieval_top1": 0.16145833333333334,
+        "same_module_similarity": 0.36005405241419663,
+        "different_module_similarity": 0.40724569238982505,
+        "rank_group_retrieval_top1": 0.16145833333333334,
+        "risk_level": "low"
+      },
+      {
+        "dummy_strategy": "noise_injected_cancellation_dummy",
+        "layer_linkability_auc": 0.46459056712962965,
+        "module_identity_retrieval_top1": 0.11458333333333333,
+        "same_module_similarity": 1.0807049279238468,
+        "different_module_similarity": 1.0343430014746091,
+        "rank_group_retrieval_top1": 0.11458333333333333,
+        "risk_level": "low"
+      },
+      {
+        "dummy_strategy": "orthogonalized_cancellation_dummy",
+        "layer_linkability_auc": 0.45883969907407407,
+        "module_identity_retrieval_top1": 0.10416666666666667,
+        "same_module_similarity": 1.1662221289766432,
+        "different_module_similarity": 1.0405643849907582,
+        "rank_group_retrieval_top1": 0.10416666666666667,
+        "risk_level": "low"
+      },
+      {
+        "dummy_strategy": "mixed_dummy_ensemble",
+        "layer_linkability_auc": 0.5185004340277778,
+        "module_identity_retrieval_top1": 0.15625,
+        "same_module_similarity": 3.57506408059836,
+        "different_module_similarity": 3.7559080065457318,
+        "rank_group_retrieval_top1": 0.15625,
+        "risk_level": "low"
+      }
+    ],
+    "interpretation": "Cross-layer linkage proxy under fresh masks per module. AUC \u2248 0.5 \u21d2 same-module / different-module distance distributions overlap; retrieval_top1 near 1/(num_modules - 1) \u21d2 no systematic linkage. Stronger dummies aim to bring both statistics closer to the random baseline."
+  },
+  "interpretation": {
+    "spectral_summary": "Worst spectral rank inference risk across strategies: **high**.",
+    "gradient_summary": "Worst gradient rank inference risk across strategies: **high**.",
+    "dummy_strategy_classification_summary": "Dummy strategy classifier accuracy: 0.476 (chance 0.143), risk **medium**.",
+    "cross_layer_linkage_summary": "Worst cross-layer linkage risk across strategies: **low**.",
+    "true_rank_shape_hidden_when_padded": true,
+    "padded_rank_visibility_note": "padded_rank itself remains visible from tensor shape; hiding it is out of Stage 7.4 scope.",
+    "merge_adapter_into_w": false
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_dummy_hardening": "spectral-rank-hardening-proxy-evaluated, not formal",
+  "lora_stronger_dummy_security_status": "implemented",
+  "lora_spectral_rank_hardening_status": "proxy-evaluated",
+  "limitations": [
+    "These are stronger-dummy proxy attacks, not formal security proofs.",
+    "Padded rank r_pad remains visible from tensor shape \u2014 only true_rank is hidden.",
+    "Spectral hardening does not imply cryptographic hiding.",
+    "Dummy strategy classification uses a generous bucket-mean attacker model.",
+    "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+    "Optimizer state remains trusted-only and is sized to true_rank.",
+    "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+    "No full Qwen / TinyLlama / LLaMA LoRA fine-tuning is evaluated; this is a single-linear + cross-layer proxy.",
+    "Adapter is NEVER merged into the public base weight W."
+  ],
+  "next_stage_plan": [
+    "Stage 7.5 \u2014 paper artifact consolidation + projected vs measured runtime alignment.",
+    "Stage 7.x \u2014 heterogeneous padded_rank across modules / layers to hide padded_rank itself."
+  ]
+}
