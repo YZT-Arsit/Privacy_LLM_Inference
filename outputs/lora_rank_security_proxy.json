@@ -1,0 +1,231 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "d_in": 32,
+    "d_out": 16,
+    "true_ranks": [
+      2,
+      4,
+      8
+    ],
+    "padded_rank": 16,
+    "alpha": 1.0,
+    "use_bias": true,
+    "num_trials": 32,
+    "pad_scale": 1.0,
+    "dummy_scale": 1.0,
+    "dummy_strategy": "paired_cancellation_dummy",
+    "use_pad": true,
+    "dtype": "float64",
+    "device": "cpu",
+    "membership_trials_per_sample": 8
+  },
+  "scope": "single linear + LoRA, tiny dimensions, synthetic adapter + synthetic upstream gradient, rank padding via dummy_strategy",
+  "shape_level_rank_leakage": {
+    "no_padding": [
+      {
+        "true_rank": 2,
+        "rank_visible_from_a_shape": 2,
+        "rank_visible_from_b_shape": 2,
+        "rank_visible_from_grad_shape": 2,
+        "exposed_rank_value": 2,
+        "true_rank_hidden_from_shape": false
+      },
+      {
+        "true_rank": 4,
+        "rank_visible_from_a_shape": 4,
+        "rank_visible_from_b_shape": 4,
+        "rank_visible_from_grad_shape": 4,
+        "exposed_rank_value": 4,
+        "true_rank_hidden_from_shape": false
+      },
+      {
+        "true_rank": 8,
+        "rank_visible_from_a_shape": 8,
+        "rank_visible_from_b_shape": 8,
+        "rank_visible_from_grad_shape": 8,
+        "exposed_rank_value": 8,
+        "true_rank_hidden_from_shape": false
+      }
+    ],
+    "rank_padding": [
+      {
+        "true_rank": 2,
+        "rank_visible_from_a_shape": 16,
+        "rank_visible_from_b_shape": 16,
+        "rank_visible_from_grad_shape": 16,
+        "exposed_rank_value": 16,
+        "true_rank_hidden_from_shape": true
+      },
+      {
+        "true_rank": 4,
+        "rank_visible_from_a_shape": 16,
+        "rank_visible_from_b_shape": 16,
+        "rank_visible_from_grad_shape": 16,
+        "exposed_rank_value": 16,
+        "true_rank_hidden_from_shape": true
+      },
+      {
+        "true_rank": 8,
+        "rank_visible_from_a_shape": 16,
+        "rank_visible_from_b_shape": 16,
+        "rank_visible_from_grad_shape": 16,
+        "exposed_rank_value": 16,
+        "true_rank_hidden_from_shape": true
+      }
+    ],
+    "interpretation": "Without padding, the rank dimension of A_tilde / B_tilde / grad_A_tilde / grad_B_tilde equals the true LoRA rank r. With rank padding, the GPU-visible rank dimension is the padded rank r_pad and r is hidden from shape."
+  },
+  "spectral_rank_inference": {
+    "rows": [
+      {
+        "true_rank": 2,
+        "no_padding": {
+          "inferred_rank_mean": 1.0,
+          "rank_inference_accuracy": 0.0,
+          "mean_rank_error": 1.0,
+          "confidence_gap": 0.7321150503103696
+        },
+        "rank_padding": {
+          "inferred_rank_from_a_tilde_pad_mean": 9.0,
+          "inferred_rank_from_b_tilde_pad_mean": 9.0,
+          "inferred_rank_from_grad_b_tilde_pad_mean": 8.0,
+          "rank_inference_accuracy": 0.0,
+          "mean_rank_error": 7.0,
+          "confidence_gap_a": 2.2661208876081245e-15,
+          "confidence_gap_b": 5.317127512382826e-15,
+          "confidence_gap_grad_b": 8.392166995651151e-15,
+          "risk_level": "needs_more_evaluation",
+          "verdict": "Spectral attacker recovers true rank in fewer than 20% of trials. The inferred rank may still be an upper bound constrained by paired-cancellation structure; this is a proxy result, not a formal claim."
+        }
+      },
+      {
+        "true_rank": 4,
+        "no_padding": {
+          "inferred_rank_mean": 2.28125,
+          "rank_inference_accuracy": 0.0,
+          "mean_rank_error": 1.71875,
+          "confidence_gap": 0.6819769808731494
+        },
+        "rank_padding": {
+          "inferred_rank_from_a_tilde_pad_mean": 10.0,
+          "inferred_rank_from_b_tilde_pad_mean": 10.0,
+          "inferred_rank_from_grad_b_tilde_pad_mean": 8.0,
+          "rank_inference_accuracy": 0.0,
+          "mean_rank_error": 6.0,
+          "confidence_gap_a": 1.961529797841614e-15,
+          "confidence_gap_b": 6.8880980094657286e-15,
+          "confidence_gap_grad_b": 5.58712459358282e-15,
+          "risk_level": "needs_more_evaluation",
+          "verdict": "Spectral attacker recovers true rank in fewer than 20% of trials. The inferred rank may still be an upper bound constrained by paired-cancellation structure; this is a proxy result, not a formal claim."
+        }
+      },
+      {
+        "true_rank": 8,
+        "no_padding": {
+          "inferred_rank_mean": 6.09375,
+          "rank_inference_accuracy": 0.0,
+          "mean_rank_error": 1.90625,
+          "confidence_gap": 0.6579546984359672
+        },
+        "rank_padding": {
+          "inferred_rank_from_a_tilde_pad_mean": 12.0,
+          "inferred_rank_from_b_tilde_pad_mean": 12.0,
+          "inferred_rank_from_grad_b_tilde_pad_mean": 8.0,
+          "rank_inference_accuracy": 0.0,
+          "mean_rank_error": 4.0,
+          "confidence_gap_a": 1.6126238175149427e-15,
+          "confidence_gap_b": 7.257029189815088e-15,
+          "confidence_gap_grad_b": 4.693468097474983e-15,
+          "risk_level": "needs_more_evaluation",
+          "verdict": "Spectral attacker recovers true rank in fewer than 20% of trials. The inferred rank may still be an upper bound constrained by paired-cancellation structure; this is a proxy result, not a formal claim."
+        }
+      }
+    ],
+    "interpretation": "Spectral rank inference threshold: largest \u03c3_{i+1}/\u03c3_i drop in the singular-value spectrum. The inferred rank is the index just before the cliff. For zero_dummy this aligns with the true rank exactly (B_pad has zero rows). For paired_cancellation_dummy the inferred rank is bounded by true_rank + \u230a(r_pad - r) / 2\u230b + leftover_zero."
+  },
+  "gradient_rank_inference": {
+    "rows": [
+      {
+        "true_rank": 2,
+        "inferred_rank_from_grad_a_tilde_pad_mean": 8.0,
+        "inferred_rank_from_grad_b_tilde_pad_mean": 8.0,
+        "rank_inference_accuracy": 0.0,
+        "mean_rank_error_min_ab": 6.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "true_rank": 4,
+        "inferred_rank_from_grad_a_tilde_pad_mean": 8.0,
+        "inferred_rank_from_grad_b_tilde_pad_mean": 8.0,
+        "rank_inference_accuracy": 0.0,
+        "mean_rank_error_min_ab": 4.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "true_rank": 8,
+        "inferred_rank_from_grad_a_tilde_pad_mean": 8.0,
+        "inferred_rank_from_grad_b_tilde_pad_mean": 8.0,
+        "rank_inference_accuracy": 1.0,
+        "mean_rank_error_min_ab": 0.0,
+        "risk_level": "high"
+      }
+    ],
+    "interpretation": "Gradient-side spectral rank inference uses the same SVD-cliff detector but on grad_A_tilde_pad / grad_B_tilde_pad. Because gradients depend on (X, A, B, G), the spectrum may differ from the static adapter spectrum and warrants a separate section."
+  },
+  "membership_style_linkability": {
+    "rows": [
+      {
+        "true_rank": 2,
+        "same_sample_distance_mean": 353.3884205574708,
+        "different_sample_distance_mean": 354.55490884596963,
+        "membership_auc_proxy": 0.5407366071428571,
+        "linkability_rank": 0.08147321428571419,
+        "risk_level": "low"
+      },
+      {
+        "true_rank": 4,
+        "same_sample_distance_mean": 167.75496100175948,
+        "different_sample_distance_mean": 166.91233990988476,
+        "membership_auc_proxy": 0.48744419642857145,
+        "linkability_rank": 0.025111607142857095,
+        "risk_level": "low"
+      },
+      {
+        "true_rank": 8,
+        "same_sample_distance_mean": 70.47253900496659,
+        "different_sample_distance_mean": 70.65636538113311,
+        "membership_auc_proxy": 0.5047433035714286,
+        "linkability_rank": 0.009486607142857206,
+        "risk_level": "low"
+      }
+    ]
+  },
+  "interpretation": {
+    "shape_level_summary": "Rank padding hides true_rank from tensor shape; padded_rank remains visible.",
+    "spectral_inference_summary": "Across true_ranks=[2, 4, 8] with dummy_strategy='paired_cancellation_dummy', the spectral rank inference risk is **needs_more_evaluation**.",
+    "gradient_inference_summary": "Gradient-side spectral inference risk under the same dummy strategy is **high**.",
+    "padded_rank_visibility_note": "Padded rank r_pad is still visible from tensor shape; hiding it is out of Stage 7.2 scope.",
+    "merge_adapter_into_w": false
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_rank_padding": "rank-padding-proxy-evaluated, not formal",
+  "lora_rank_security_proxy_status": "implemented",
+  "limitations": [
+    "These are rank-leakage proxy attacks, not formal security proofs.",
+    "True rank is hidden only from shape-level leakage when rank padding is enabled. Padded rank r_pad remains visible.",
+    "Spectral / statistical rank inference may still be possible depending on dummy strategy. zero_dummy explicitly leaks true rank via SVD of B_pad.",
+    "paired_cancellation_dummy reduces obvious zero-norm leakage but the spectral upper bound `true_rank + \u230a(r_pad - r) / 2\u230b` still narrows the attacker's range; this is reported as needs_more_evaluation, not low.",
+    "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+    "Optimizer state remains trusted-only and is sized to true_rank.",
+    "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+    "No full model LoRA fine-tuning is evaluated; this is a single-linear, tiny-dimension proxy.",
+    "Adapter is NEVER merged into the public base weight W."
+  ],
+  "next_stage_plan": [
+    "Stage 7.3 \u2014 multi-layer LoRA + LoRA training timing-side proxy.",
+    "Stage 7.x \u2014 stronger dummy distributions that resist spectral and gradient rank inference.",
+    "Stage 7.x \u2014 explore hiding padded_rank itself (e.g. tiled padding across multiple linears)."
+  ]
+}

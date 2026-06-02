@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `1.467e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `2.103e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 3.022 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 45.131 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 6.206 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 44.834 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 44.900 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 44.834 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 2.109 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 32.792 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 7.428 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 32.541 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 32.606 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 32.541 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -227,6 +227,14 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - `lora_backward_artifact = "outputs/lora_backward_experiments.json"`, `lora_gradient_security_artifact = "outputs/lora_gradient_security_proxy.json"`.
 - `security_profile_detail_with_lora_backward = "masked-gradient-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
 - Loss computation and optimizer update remain trusted. GPU only sees masked transcript including `G_tilde / grad_A_tilde / grad_B_tilde`. Rank padding is NOT implemented in Stage 7.1; LoRA rank `r` is still visible from gradient shape (deferred to Stage 7.2).
+
+### Stage 7.2 — LoRA Rank Padding / Hidden-Rank Prototype
+
+- `lora_rank_padding_status = "implemented"`, `lora_hidden_rank_status = "padded-rank-prototype"`.
+- `lora_true_rank_hidden_from_shape = True`, `lora_padded_rank_visible = True`.
+- `lora_rank_padding_artifact = "outputs/lora_rank_padding_experiments.json"`, `lora_rank_security_artifact = "outputs/lora_rank_security_proxy.json"`.
+- `security_profile_detail_with_lora_rank_padding = "rank-padding-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
+- Stage 7.2 hides true_rank from the GPU-visible shape of `A_pad_tilde / B_pad_tilde / grad_A_pad_tilde / grad_B_pad_tilde`. **padded_rank itself remains visible** to the GPU. dummy_strategy ∈ {"zero_dummy", "paired_cancellation_dummy"}; `zero_dummy` keeps shape-level hiding but the spectral attacker reads `true_rank` back from `SVD(B_pad_tilde)` exactly — the proxy reports `risk_level = high` accordingly. `paired_cancellation_dummy` raises the SVD-cliff from `true_rank` to `true_rank + ⌊(r_pad - r) / 2⌋`, an upper bound only — reported as `needs_more_evaluation`, not `low`.
 
 ### Stage 5.5b Real-Token-Prompted Real-Activation Attacker
 

@@ -613,6 +613,53 @@ def _build_markdown(profile: dict) -> str:
                         " still visible from gradient shape (deferred to Stage 7.2)."
                     )
                 if islands_record.get(
+                    "lora_rank_padding_status",
+                ) == "implemented":
+                    out.append("")
+                    out.append(
+                        "### Stage 7.2 — LoRA Rank Padding / Hidden-Rank Prototype"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `lora_rank_padding_status = "
+                        f"\"{islands_record.get('lora_rank_padding_status')}\"`,"
+                        " `lora_hidden_rank_status = "
+                        f"\"{islands_record.get('lora_hidden_rank_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_true_rank_hidden_from_shape = "
+                        f"{islands_record.get('lora_true_rank_hidden_from_shape')}`,"
+                        " `lora_padded_rank_visible = "
+                        f"{islands_record.get('lora_padded_rank_visible')}`."
+                    )
+                    out.append(
+                        "- `lora_rank_padding_artifact = "
+                        f"\"{islands_record.get('lora_rank_padding_artifact')}\"`,"
+                        " `lora_rank_security_artifact = "
+                        f"\"{islands_record.get('lora_rank_security_artifact')}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_lora_rank_padding = "
+                        f"\"{islands_record.get('security_profile_detail_with_lora_rank_padding')}\"`"
+                        " — additive label only; `security_profile` itself"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Stage 7.2 hides true_rank from the GPU-visible"
+                        " shape of `A_pad_tilde / B_pad_tilde / grad_A_pad_tilde"
+                        " / grad_B_pad_tilde`. **padded_rank itself remains"
+                        " visible** to the GPU. dummy_strategy ∈"
+                        " {\"zero_dummy\", \"paired_cancellation_dummy\"};"
+                        " `zero_dummy` keeps shape-level hiding but the"
+                        " spectral attacker reads `true_rank` back from"
+                        " `SVD(B_pad_tilde)` exactly — the proxy reports"
+                        " `risk_level = high` accordingly."
+                        " `paired_cancellation_dummy` raises the SVD-cliff"
+                        " from `true_rank` to `true_rank + ⌊(r_pad - r) / 2⌋`,"
+                        " an upper bound only — reported as"
+                        " `needs_more_evaluation`, not `low`."
+                    )
+                if islands_record.get(
                     "real_token_activation_attacker_status",
                 ) == "implemented":
                     out.append("")

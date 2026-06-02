@@ -773,6 +773,41 @@ def _compatible_island_integration_status(
                 )
                 or method.get("security_profile_detail_with_lora_backward")
             ),
+            # Stage 7.2 — rank padding / hidden-rank LoRA
+            "lora_rank_padding_status": str(
+                effective_status.get("lora_rank_padding_status")
+                or method.get("lora_rank_padding_status")
+                or "not_yet"
+            ),
+            "lora_hidden_rank_status": str(
+                effective_status.get("lora_hidden_rank_status")
+                or method.get("lora_hidden_rank_status")
+                or "not_yet"
+            ),
+            "lora_true_rank_hidden_from_shape": bool(
+                effective_status.get("lora_true_rank_hidden_from_shape")
+                if "lora_true_rank_hidden_from_shape" in effective_status
+                else method.get("lora_true_rank_hidden_from_shape", False)
+            ),
+            "lora_padded_rank_visible": bool(
+                effective_status.get("lora_padded_rank_visible")
+                if "lora_padded_rank_visible" in effective_status
+                else method.get("lora_padded_rank_visible", False)
+            ),
+            "lora_rank_padding_artifact": (
+                effective_status.get("lora_rank_padding_artifact")
+                or method.get("lora_rank_padding_artifact")
+            ),
+            "lora_rank_security_artifact": (
+                effective_status.get("lora_rank_security_artifact")
+                or method.get("lora_rank_security_artifact")
+            ),
+            "security_profile_detail_with_lora_rank_padding": (
+                effective_status.get(
+                    "security_profile_detail_with_lora_rank_padding"
+                )
+                or method.get("security_profile_detail_with_lora_rank_padding")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

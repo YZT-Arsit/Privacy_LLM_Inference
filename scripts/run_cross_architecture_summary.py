@@ -729,6 +729,7 @@ def _build_markdown(summary: dict) -> str:
                 out.append("")
             lora_status = modern_row.get("lora_private_training_status")
             lora_backward_status = modern_row.get("lora_backward_status")
+            lora_rank_padding_status = modern_row.get("lora_rank_padding_status")
             if lora_status and lora_status != "not_yet":
                 out.append("| lora_private_training_status |"
                            f" {lora_status} |")
@@ -773,6 +774,27 @@ def _build_markdown(summary: dict) -> str:
                         "| security_profile_detail_with_lora_backward |"
                         f" {lb_detail} |"
                     )
+            if lora_rank_padding_status and lora_rank_padding_status != "not_yet":
+                out.append("| lora_rank_padding_status |"
+                           f" {lora_rank_padding_status} |")
+                out.append("| lora_hidden_rank_status |"
+                           f" {modern_row.get('lora_hidden_rank_status')} |")
+                out.append("| lora_true_rank_hidden_from_shape |"
+                           f" {modern_row.get('lora_true_rank_hidden_from_shape')} |")
+                out.append("| lora_padded_rank_visible |"
+                           f" {modern_row.get('lora_padded_rank_visible')} |")
+                out.append("| lora_rank_padding_artifact |"
+                           f" `{modern_row.get('lora_rank_padding_artifact')}` |")
+                out.append("| lora_rank_security_artifact |"
+                           f" `{modern_row.get('lora_rank_security_artifact')}` |")
+                lrp_detail = modern_row.get(
+                    "security_profile_detail_with_lora_rank_padding"
+                )
+                if lrp_detail:
+                    out.append(
+                        "| security_profile_detail_with_lora_rank_padding |"
+                        f" {lrp_detail} |"
+                    )
             if sa_status and sa_status != "not_yet":
                 out.append(
                     "### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)"
@@ -799,6 +821,44 @@ def _build_markdown(summary: dict) -> str:
                     " extension / Stage 7.0). Envelope-integrity risk:"
                     " `low`. Structural-leakage risk: `high`. Not formal"
                     " security; not a real TEE measurement."
+                )
+                out.append("")
+            if lora_rank_padding_status and lora_rank_padding_status != "not_yet":
+                out.append(
+                    "### Stage 7.2 — LoRA Rank Padding / Hidden-Rank Prototype"
+                )
+                out.append("")
+                out.append(
+                    "Stage 7.2 stacks rank padding on top of the Stage 7.0"
+                    " forward + Stage 7.1 backward path. The trusted side"
+                    " constructs `A_pad ∈ R^{d_in × r_pad}`, `B_pad ∈"
+                    " R^{r_pad × d_out}` with `A_pad B_pad = A_real B_real`"
+                    " exactly, so the function value (and the LoRA scaling"
+                    " `α / r`) are unchanged. The GPU only ever sees"
+                    " `A_pad_tilde / B_pad_tilde / grad_A_pad_tilde /"
+                    " grad_B_pad_tilde` whose rank dimension is `r_pad`;"
+                    " **true rank `r` is hidden from tensor shape**. After"
+                    " masked backward recovery, the trusted side slices"
+                    " `grad_A_pad[:, :true_rank]` / `grad_B_pad[:true_rank, :]`"
+                    " and feeds those into the SGD / AdamW step. The"
+                    " optimizer state is sized to `true_rank`, never"
+                    " `padded_rank`; the dummy slice is re-sampled fresh and"
+                    " never persists into the optimizer. Two dummy strategies"
+                    " are supported: `zero_dummy` (baseline; spectral"
+                    " attacker reads `true_rank` back from `SVD(B_pad_tilde)`"
+                    " exactly — proxy `risk_level = high`) and"
+                    " `paired_cancellation_dummy` (pair dummies as"
+                    " `[R, R], [S, -S]` so the spectral cliff sits at"
+                    " `true_rank + ⌊(r_pad - r) / 2⌋`, an upper bound only —"
+                    " proxy `risk_level = needs_more_evaluation`)."
+                    " `padded_rank` itself remains visible to the GPU (Stage"
+                    " 7.2 does not hide `r_pad`)."
+                    " `security_profile_detail_with_lora_rank_padding ="
+                    " \"rank-padding-proxy-evaluated, not formal\"`."
+                    " `security_profile` itself stays `\"proxy-evaluated, not"
+                    " formal\"`. NOT full Qwen / TinyLlama LoRA fine-tuning,"
+                    " NOT PEFT integration, NOT distributed training, NOT"
+                    " real TEE training."
                 )
                 out.append("")
             if lora_backward_status and lora_backward_status != "not_yet":

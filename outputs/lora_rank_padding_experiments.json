@@ -1,0 +1,180 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "batch_size": 4,
+    "d_in": 32,
+    "d_out": 16,
+    "true_rank": 4,
+    "padded_rank": 8,
+    "alpha": 1.0,
+    "use_bias": true,
+    "num_steps": 5,
+    "lr": 0.01,
+    "optimizer": "sgd",
+    "weight_decay": 0.0,
+    "adamw_beta1": 0.9,
+    "adamw_beta2": 0.999,
+    "adamw_eps": 1e-08,
+    "use_pad": true,
+    "fresh_u_per_step": true,
+    "fresh_masks_per_step": true,
+    "fresh_dummy_per_step": true,
+    "dummy_strategy": "paired_cancellation_dummy",
+    "dummy_scale": 1.0,
+    "pad_scale": 1.0,
+    "recover_grad_x": false,
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "lora_config_fingerprint": {
+    "d_in": 32,
+    "d_out": 16,
+    "true_rank": 4,
+    "padded_rank": 8,
+    "alpha": 1.0,
+    "use_bias": true
+  },
+  "dummy_rank_strategy": {
+    "requested": "paired_cancellation_dummy",
+    "effective": "paired_cancellation_dummy",
+    "dummy_size": 4,
+    "dummy_scale": 1.0,
+    "fresh_dummy_per_step": true,
+    "max_dummy_contribution_norm": 0.0
+  },
+  "rank_padding_correctness": {
+    "num_steps": 5,
+    "per_step": [
+      {
+        "step": 0,
+        "loss_plain": 49.32336467244431,
+        "loss_padded": 49.323364672444356,
+        "loss_diff_abs": 4.263256414560601e-14,
+        "forward_max_abs_err": 2.1316282072803006e-14,
+        "dummy_contribution_norm": 0.0,
+        "grad_a_real_max_abs_err": 1.17316096073794e-15,
+        "grad_b_real_max_abs_err": 1.887379141862766e-15,
+        "adapter_a_update_max_abs_err": 5.551115123125783e-17,
+        "adapter_b_update_max_abs_err": 1.9081958235744878e-17
+      },
+      {
+        "step": 1,
+        "loss_plain": 49.27996814382146,
+        "loss_padded": 49.27996814382147,
+        "loss_diff_abs": 7.105427357601002e-15,
+        "forward_max_abs_err": 2.1760371282653068e-14,
+        "dummy_contribution_norm": 0.0,
+        "grad_a_real_max_abs_err": 7.147060721024445e-16,
+        "grad_b_real_max_abs_err": 7.632783294297951e-16,
+        "adapter_a_update_max_abs_err": 5.551115123125783e-17,
+        "adapter_b_update_max_abs_err": 1.3877787807814457e-17
+      },
+      {
+        "step": 2,
+        "loss_plain": 49.23657819966006,
+        "loss_padded": 49.23657819966002,
+        "loss_diff_abs": 3.552713678800501e-14,
+        "forward_max_abs_err": 1.7763568394002505e-14,
+        "dummy_contribution_norm": 0.0,
+        "grad_a_real_max_abs_err": 5.84601811404184e-16,
+        "grad_b_real_max_abs_err": 1.2212453270876722e-15,
+        "adapter_a_update_max_abs_err": 5.551115123125783e-17,
+        "adapter_b_update_max_abs_err": 1.0408340855860843e-17
+      },
+      {
+        "step": 3,
+        "loss_plain": 49.193046239631535,
+        "loss_padded": 49.193046239631556,
+        "loss_diff_abs": 2.1316282072803006e-14,
+        "forward_max_abs_err": 1.9539925233402755e-14,
+        "dummy_contribution_norm": 0.0,
+        "grad_a_real_max_abs_err": 9.228728892196614e-16,
+        "grad_b_real_max_abs_err": 6.938893903907228e-16,
+        "adapter_a_update_max_abs_err": 5.551115123125783e-17,
+        "adapter_b_update_max_abs_err": 1.3877787807814457e-17
+      },
+      {
+        "step": 4,
+        "loss_plain": 49.149224302646644,
+        "loss_padded": 49.14922430264663,
+        "loss_diff_abs": 1.4210854715202004e-14,
+        "forward_max_abs_err": 1.9539925233402755e-14,
+        "dummy_contribution_norm": 0.0,
+        "grad_a_real_max_abs_err": 1.3062467774105357e-15,
+        "grad_b_real_max_abs_err": 1.2212453270876722e-15,
+        "adapter_a_update_max_abs_err": 1.1102230246251565e-16,
+        "adapter_b_update_max_abs_err": 2.0816681711721685e-17
+      }
+    ],
+    "max_loss_diff": 4.263256414560601e-14,
+    "max_grad_a_real_err": 1.3062467774105357e-15,
+    "max_grad_b_real_err": 1.887379141862766e-15,
+    "max_dummy_contribution_norm": 0.0,
+    "final_adapter_a_update_err": 1.1102230246251565e-16,
+    "final_adapter_b_update_err": 2.0816681711721685e-17,
+    "tolerance_forward": 1e-09,
+    "tolerance_grad": 1e-09,
+    "tolerance_update": 1e-09,
+    "tolerance_dummy": 1e-09,
+    "allclose": true
+  },
+  "optimizer_handling": {
+    "location": "trusted",
+    "stage_7_2_status": "trusted_optimizer_rank_r",
+    "optimizer": "sgd",
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "trainable_adapter_shape_a": [
+      32,
+      4
+    ],
+    "trainable_adapter_shape_b": [
+      4,
+      16
+    ],
+    "optimizer_state_shape_a": null,
+    "optimizer_state_shape_b": null,
+    "optimizer_state_contains_dummy": false,
+    "dummy_update_applied": false,
+    "note": "Optimizer state (and the trainable A_real / B_real tensors) is sized to true_rank, never padded_rank. The dummy slice is re-sampled from scratch each step and never enters the optimizer."
+  },
+  "shape_level_rank_hiding": {
+    "a_tilde_pad_shape": [
+      32,
+      8
+    ],
+    "b_tilde_pad_shape": [
+      8,
+      16
+    ],
+    "visible_rank_from_a_shape": 8,
+    "visible_rank_from_b_shape": 8,
+    "true_rank_hidden_from_shape": true,
+    "padded_rank_visible": true,
+    "note": "Stage 7.2 hides true_rank from the dimensions of A_pad_tilde / B_pad_tilde / grad_A_pad_tilde / grad_B_pad_tilde. The padded_rank itself remains visible \u2014 see the security proxy for residual spectral / gradient-side inference risk."
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_rank_padding": "rank-padding-proxy-evaluated, not formal",
+  "lora_rank_padding_status": "implemented",
+  "lora_hidden_rank_status": "padded-rank-prototype",
+  "lora_true_rank_hidden_from_shape": true,
+  "lora_padded_rank_visible": true,
+  "limitations": [
+    "Stage 7.2 hides true rank from tensor shape by exposing padded rank.",
+    "Padded rank r_pad remains visible to the GPU.",
+    "Dummy rank indistinguishability is evaluated by proxy (Stage 7.2 security proxy), not formally proven.",
+    "Optimizer state remains trusted-only and is sized to true_rank, never padded_rank.",
+    "Backward / loss computation remains trusted (Stage 7.1 contract): only G_tilde, A_pad_tilde, B_pad_tilde, grad_A_pad_tilde, grad_B_pad_tilde cross the boundary.",
+    "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+    "No real TEE training.",
+    "No full Qwen / TinyLlama / LLaMA LoRA fine-tuning.",
+    "Adapter is NEVER merged into the public base weight W.",
+    "No formal / cryptographic / semantic security is claimed.",
+    "Reports publish summary metrics + fingerprints. Private data, raw adapters (real or padded), raw gradients, optimizer state, and dense masks are never emitted in outputs."
+  ],
+  "next_stage_plan": [
+    "Stage 7.3 \u2014 multi-layer LoRA end-to-end + LoRA training timing-side proxy.",
+    "Stage 7.x \u2014 stronger spectral / gradient-side dummy strategies that resist rank inference proxies."
+  ]
+}

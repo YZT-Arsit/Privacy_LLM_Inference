@@ -1002,6 +1002,22 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             # Stage 7.1 masked-backward status; keep the Stage 7.0 forward
             # field intact for backward compatibility with downstream
             # consumers.
+            # Stage 7.2 — rank padding / hidden-rank LoRA prototype. Hides
+            # true_rank from the GPU-visible tensor shape; padded_rank
+            # remains visible.
+            record["lora_rank_padding_status"] = "implemented"
+            record["lora_hidden_rank_status"] = "padded-rank-prototype"
+            record["lora_true_rank_hidden_from_shape"] = True
+            record["lora_padded_rank_visible"] = True
+            record["lora_rank_padding_artifact"] = (
+                "outputs/lora_rank_padding_experiments.json"
+            )
+            record["lora_rank_security_artifact"] = (
+                "outputs/lora_rank_security_proxy.json"
+            )
+            record["security_profile_detail_with_lora_rank_padding"] = (
+                "rank-padding-proxy-evaluated, not formal"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1301,6 +1317,19 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 ),
                 "security_profile_detail_with_lora_backward": (
                     "masked-gradient-proxy-evaluated, not formal"
+                ),
+                "lora_rank_padding_status": "implemented",
+                "lora_hidden_rank_status": "padded-rank-prototype",
+                "lora_true_rank_hidden_from_shape": True,
+                "lora_padded_rank_visible": True,
+                "lora_rank_padding_artifact": (
+                    "outputs/lora_rank_padding_experiments.json"
+                ),
+                "lora_rank_security_artifact": (
+                    "outputs/lora_rank_security_proxy.json"
+                ),
+                "security_profile_detail_with_lora_rank_padding": (
+                    "rank-padding-proxy-evaluated, not formal"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

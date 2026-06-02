@@ -72,6 +72,19 @@ from pllo.ops.lora_backward import (
     run_masked_lora_backward,
     transform_upstream_gradient,
 )
+from pllo.ops.lora_rank_padding import (
+    RankPaddingConfig,
+    VALID_DUMMY_STRATEGIES,
+    create_rank_padded_lora_adapters,
+    dummy_contribution_norm,
+    extract_real_gradients,
+    plain_rank_padded_lora_backward_reference,
+    plain_rank_padded_lora_forward,
+    run_masked_rank_padded_lora_backward,
+    run_masked_rank_padded_lora_linear,
+    validate_rank_padding_config,
+    visible_shape_fingerprint,
+)
 from pllo.ops.mlp import mlp_obfuscated, mlp_plain
 
 __all__ = [
@@ -141,4 +154,15 @@ __all__ = [
     "recover_lora_gradients",
     "run_masked_lora_backward",
     "transform_upstream_gradient",
+    "RankPaddingConfig",
+    "VALID_DUMMY_STRATEGIES",
+    "create_rank_padded_lora_adapters",
+    "dummy_contribution_norm",
+    "extract_real_gradients",
+    "plain_rank_padded_lora_backward_reference",
+    "plain_rank_padded_lora_forward",
+    "run_masked_rank_padded_lora_backward",
+    "run_masked_rank_padded_lora_linear",
+    "validate_rank_padding_config",
+    "visible_shape_fingerprint",
 ]
