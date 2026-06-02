@@ -4,19 +4,19 @@ Cost model splits every method into four explicit slices: **preprocessing truste
 
 `model_id=sshleifer/tiny-gpt2`, `batch_size=2`, `prompt_len=8`, `max_new_tokens=4`, `device=cpu`, `dtype=float32`, `use_pad=True`, `warmup=2`, `repeat=5`.
 
-GPU-FLOPs/ms calibration constant: `2.103e+06` (derived from measured `plain_hf_gpu` wall time).
+GPU-FLOPs/ms calibration constant: `1.529e+06` (derived from measured `plain_hf_gpu` wall time).
 
 > **Warning:** simulated cost model, not real SGX.
 
 ## Method comparison
 | method | impl? | wall_time_ms (measured/proj.) | boundary calls | boundary formula | trusted compute (ops) | trusted transfer (bytes) | gpu (ops) |
 |---|---|---|---|---|---|---|---|
-| plain_hf_gpu | true | 2.109 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
-| tslp_trusted_nonlinear_baseline | false | 32.792 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
-| ours_current | true | 7.428 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
-| ours_ideal_gpu_nonlinear | false | 32.541 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
-| ours_compatible_nonlinear_islands | false | 32.606 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
-| amulet_style_reference | false | 32.541 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| plain_hf_gpu | true | 2.900 | 0 | 0 (no boundary) | 0 | 0 | 4434424 |
+| tslp_trusted_nonlinear_baseline | false | 43.479 (proj.) | 32 | 3L + 2 = 8 per forward (LN_1 + LN_2 + GELU per layer + ln_f + LM head) | 1110230 | 4427192 | 4429848 |
+| ours_current | true | 6.640 | 36 | 4L + 1 = 9 per forward (4 obfuscated linears per layer + LM head) | 1116310 | 4428424 | 4429848 |
+| ours_ideal_gpu_nonlinear | false | 43.189 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
+| ours_compatible_nonlinear_islands | false | 43.255 (proj.) | 16 | L + 2 = 4 per forward (1 input mask + L per-layer dense-mask transition between islands + 1 LM head; projected, conservative model) | 1105830 | 4423496 | 4434424 |
+| amulet_style_reference | false | 43.189 (proj.) | 4 | 1 per forward (single fused GPU pipeline round trip) | 1105654 | 4422792 | 4434424 |
 
 ## Preprocessing (amortised; excluded from online latency)
 | method | preprocessing_trusted_ops | preprocessing_transfer_bytes |
@@ -235,6 +235,14 @@ ours_compatible_nonlinear_islands is a projected method based on Stage 5.2a corr
 - `lora_rank_padding_artifact = "outputs/lora_rank_padding_experiments.json"`, `lora_rank_security_artifact = "outputs/lora_rank_security_proxy.json"`.
 - `security_profile_detail_with_lora_rank_padding = "rank-padding-proxy-evaluated, not formal"` — additive label only; `security_profile` itself remains `"proxy-evaluated, not formal"`.
 - Stage 7.2 hides true_rank from the GPU-visible shape of `A_pad_tilde / B_pad_tilde / grad_A_pad_tilde / grad_B_pad_tilde`. **padded_rank itself remains visible** to the GPU. dummy_strategy ∈ {"zero_dummy", "paired_cancellation_dummy"}; `zero_dummy` keeps shape-level hiding but the spectral attacker reads `true_rank` back from `SVD(B_pad_tilde)` exactly — the proxy reports `risk_level = high` accordingly. `paired_cancellation_dummy` raises the SVD-cliff from `true_rank` to `true_rank + ⌊(r_pad - r) / 2⌋`, an upper bound only — reported as `needs_more_evaluation`, not `low`.
+
+### Stage 7.3 — Multi-Layer LoRA Training + Cross-Layer Proxy + Training Timing Proxy
+
+- `lora_multilayer_training_status = "prototype"`, `lora_multilayer_security_proxy_status = "implemented"`, `lora_training_timing_proxy_status = "implemented"`.
+- `lora_multilayer_training_artifact = "outputs/multilayer_lora_training_experiments.json"`, `lora_multilayer_security_artifact = "outputs/multilayer_lora_security_proxy.json"`, `lora_training_timing_artifact = "outputs/lora_training_timing_proxy.json"`.
+- `security_profile_detail_with_lora_multilayer = "multi-layer-lora-proxy-evaluated, not formal"` — additive label only; top-level `security_profile` remains `"proxy-evaluated, not formal"`.
+- Stage 7.3 stacks Stage 7.0 / 7.1 / 7.2 across multiple LoRA-augmented linears (q/k/v/o + SwiGLU MLP) in a tiny synthetic block stack and verifies per-module loss / forward / grad / update allclose plain↔masked. Loss + optimizer remain trusted; adapter is NEVER merged into the public base weight `W`.
+- Cross-layer security proxy reports linkage AUC across `fixed_masks_shared_u / independent_u_per_layer / fresh_masks_independent_u / rank_padding_full_bundle`; heterogeneous true_rank with shared padded_rank hides shape-level rank across all modules. Training-timing proxy is a cost-model latency simulator (NOT a real TEE wall-time; NO real sleep). `constant_time_training_mode ∈ {"off", "proxy_equalized"}` with `proxy_equalized` padding every step to the upper-bucket latency.
 
 ### Stage 5.5b Real-Token-Prompted Real-Activation Attacker
 

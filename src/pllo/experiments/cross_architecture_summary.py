@@ -808,6 +808,43 @@ def _compatible_island_integration_status(
                 )
                 or method.get("security_profile_detail_with_lora_rank_padding")
             ),
+            # Stage 7.3 — multi-layer LoRA end-to-end training prototype +
+            # cross-layer security proxy + LoRA training timing-side proxy.
+            "lora_multilayer_training_status": str(
+                effective_status.get("lora_multilayer_training_status")
+                or method.get("lora_multilayer_training_status")
+                or "not_yet"
+            ),
+            "lora_multilayer_training_artifact": (
+                effective_status.get("lora_multilayer_training_artifact")
+                or method.get("lora_multilayer_training_artifact")
+            ),
+            "lora_multilayer_security_proxy_status": str(
+                effective_status.get("lora_multilayer_security_proxy_status")
+                or method.get("lora_multilayer_security_proxy_status")
+                or "not_yet"
+            ),
+            "lora_multilayer_security_artifact": (
+                effective_status.get("lora_multilayer_security_artifact")
+                or method.get("lora_multilayer_security_artifact")
+            ),
+            "lora_training_timing_proxy_status": str(
+                effective_status.get("lora_training_timing_proxy_status")
+                or method.get("lora_training_timing_proxy_status")
+                or "not_yet"
+            ),
+            "lora_training_timing_artifact": (
+                effective_status.get("lora_training_timing_artifact")
+                or method.get("lora_training_timing_artifact")
+            ),
+            "security_profile_detail_with_lora_multilayer": (
+                effective_status.get(
+                    "security_profile_detail_with_lora_multilayer"
+                )
+                or method.get(
+                    "security_profile_detail_with_lora_multilayer"
+                )
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

@@ -1,0 +1,646 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "num_layers": 2,
+    "hidden_size": 32,
+    "intermediate_size": 64,
+    "vocab_size": 128,
+    "seq_len": 8,
+    "batch_size": 4,
+    "true_rank": 4,
+    "padded_rank": 8,
+    "alpha": 1.0,
+    "num_steps": 3,
+    "lr": 0.01,
+    "optimizer": "sgd",
+    "weight_decay": 0.0,
+    "adamw_beta1": 0.9,
+    "adamw_beta2": 0.999,
+    "adamw_eps": 1e-08,
+    "use_pad": true,
+    "fresh_u_per_step": true,
+    "fresh_masks_per_step": true,
+    "fresh_dummy_per_step": true,
+    "dummy_strategy": "paired_cancellation_dummy",
+    "dummy_scale": 1.0,
+    "pad_scale": 1.0,
+    "lora_targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "model_spec": {
+    "num_layers": 2,
+    "hidden_size": 32,
+    "intermediate_size": 64,
+    "vocab_size": 128,
+    "seq_len": 8,
+    "batch_size": 4,
+    "true_rank": 4,
+    "padded_rank": 8,
+    "alpha": 1.0,
+    "lora_targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "modules_per_layer": 7,
+    "total_lora_modules": 14,
+    "per_layer_modules": [
+      {
+        "layer_index": 0,
+        "module_name": "q_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 0,
+        "module_name": "k_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 0,
+        "module_name": "v_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 0,
+        "module_name": "o_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 0,
+        "module_name": "gate_proj",
+        "d_in": 32,
+        "d_out": 64,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 0,
+        "module_name": "up_proj",
+        "d_in": 32,
+        "d_out": 64,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 0,
+        "module_name": "down_proj",
+        "d_in": 64,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "q_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "k_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "v_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "o_proj",
+        "d_in": 32,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "gate_proj",
+        "d_in": 32,
+        "d_out": 64,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "up_proj",
+        "d_in": 32,
+        "d_out": 64,
+        "true_rank": 4,
+        "padded_rank": 8
+      },
+      {
+        "layer_index": 1,
+        "module_name": "down_proj",
+        "d_in": 64,
+        "d_out": 32,
+        "true_rank": 4,
+        "padded_rank": 8
+      }
+    ],
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "training_correctness": {
+    "num_steps": 3,
+    "per_step": [
+      {
+        "step": 0,
+        "loss_plain": 10.991006819418232,
+        "loss_masked": 10.991006819418232,
+        "loss_diff_abs": 0.0,
+        "logits_max_abs_err": 1.2967404927621828e-13,
+        "max_forward_err": 9.814371537686384e-14,
+        "max_grad_a_real_err": 1.0926589494308914e-15,
+        "max_grad_b_real_err": 3.497202527569243e-15,
+        "max_update_a_err": 5.551115123125783e-17,
+        "max_update_b_err": 3.469446951953614e-17,
+        "max_dummy_contribution_norm": 3.4475115469429723e-15
+      },
+      {
+        "step": 1,
+        "loss_plain": 10.843240592001603,
+        "loss_masked": 10.843240592001614,
+        "loss_diff_abs": 1.0658141036401503e-14,
+        "logits_max_abs_err": 1.3322676295501878e-13,
+        "max_forward_err": 7.72715225139109e-14,
+        "max_grad_a_real_err": 1.407728100755179e-15,
+        "max_grad_b_real_err": 3.3584246494910985e-15,
+        "max_update_a_err": 5.551115123125783e-17,
+        "max_update_b_err": 4.5102810375396984e-17,
+        "max_dummy_contribution_norm": 3.565276306643763e-15
+      },
+      {
+        "step": 2,
+        "loss_plain": 10.701020205934476,
+        "loss_masked": 10.701020205934485,
+        "loss_diff_abs": 8.881784197001252e-15,
+        "logits_max_abs_err": 9.459100169806334e-14,
+        "max_forward_err": 6.472600233564663e-14,
+        "max_grad_a_real_err": 1.8446615762668372e-15,
+        "max_grad_b_real_err": 2.886579864025407e-15,
+        "max_update_a_err": 5.551115123125783e-17,
+        "max_update_b_err": 6.938893903907228e-17,
+        "max_dummy_contribution_norm": 3.57572595327284e-15
+      }
+    ],
+    "max_loss_diff": 1.0658141036401503e-14,
+    "max_forward_err": 9.814371537686384e-14,
+    "max_grad_a_real_err": 1.8446615762668372e-15,
+    "max_grad_b_real_err": 3.497202527569243e-15,
+    "max_update_a_err": 5.551115123125783e-17,
+    "max_update_b_err": 6.938893903907228e-17,
+    "max_dummy_contribution_norm": 3.57572595327284e-15,
+    "tolerance_loss": 1e-09,
+    "tolerance_forward": 1e-09,
+    "tolerance_grad": 1e-07,
+    "tolerance_update": 1e-07,
+    "tolerance_dummy": 1e-09,
+    "allclose": true
+  },
+  "per_layer_metrics": [
+    {
+      "layer_index": 0,
+      "module_name": "q_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 8.992806499463768e-15,
+      "grad_a_real_max_abs_err": 5.160802341031001e-16,
+      "grad_b_real_max_abs_err": 2.914335439641036e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 5.551115123125783e-17,
+      "max_dummy_contribution_norm": 2.7397312812083328e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 0,
+      "module_name": "k_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 6.661338147750939e-15,
+      "grad_a_real_max_abs_err": 6.767589960654519e-16,
+      "grad_b_real_max_abs_err": 2.858824288409778e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 4.85722573273506e-17,
+      "max_dummy_contribution_norm": 2.2099983440345446e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 0,
+      "module_name": "v_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 1.04638520070921e-14,
+      "grad_a_real_max_abs_err": 4.692427002517263e-16,
+      "grad_b_real_max_abs_err": 2.4424906541753444e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 3.0357660829594124e-17,
+      "max_dummy_contribution_norm": 2.178381147109488e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 0,
+      "module_name": "o_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 9.71445146547012e-15,
+      "grad_a_real_max_abs_err": 1.8446615762668372e-15,
+      "grad_b_real_max_abs_err": 2.581268532253489e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 3.838075690598686e-17,
+      "max_dummy_contribution_norm": 2.2518749135622505e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 0,
+      "module_name": "gate_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 1.0103029524088925e-14,
+      "grad_a_real_max_abs_err": 6.140921104957897e-16,
+      "grad_b_real_max_abs_err": 2.4077961846558082e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 3.382710778154774e-17,
+      "max_dummy_contribution_norm": 3.0927102500057812e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        64
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 0,
+      "module_name": "up_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 1.1102230246251565e-14,
+      "grad_a_real_max_abs_err": 1.3638450178238282e-15,
+      "grad_b_real_max_abs_err": 3.3861802251067274e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 6.938893903907228e-17,
+      "max_dummy_contribution_norm": 3.5634104732823484e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        64
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 0,
+      "module_name": "down_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 1.659783421814609e-14,
+      "grad_a_real_max_abs_err": 1.407728100755179e-15,
+      "grad_b_real_max_abs_err": 3.497202527569243e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 4.683753385137379e-17,
+      "max_dummy_contribution_norm": 3.3104404696631143e-15,
+      "trainable_adapter_shape_a": [
+        64,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "q_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 2.5757174171303632e-14,
+      "grad_a_real_max_abs_err": 4.581838380923742e-16,
+      "grad_b_real_max_abs_err": 2.7087707077377843e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 4.597017211338539e-17,
+      "max_dummy_contribution_norm": 2.299676764749932e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "k_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 2.220446049250313e-14,
+      "grad_a_real_max_abs_err": 6.713379852030243e-16,
+      "grad_b_real_max_abs_err": 3.219646771412954e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 5.767955557622884e-17,
+      "max_dummy_contribution_norm": 2.413840539601854e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "v_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 2.4868995751603507e-14,
+      "grad_a_real_max_abs_err": 1.1405806854547507e-15,
+      "grad_b_real_max_abs_err": 2.095545958979983e-15,
+      "update_a_max_abs_err": 2.7755575615628914e-17,
+      "update_b_max_abs_err": 3.3528952184114225e-17,
+      "max_dummy_contribution_norm": 2.183405569334994e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "o_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 5.417888360170764e-14,
+      "grad_a_real_max_abs_err": 7.428953285870676e-16,
+      "grad_b_real_max_abs_err": 2.8033131371785203e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 4.5102810375396984e-17,
+      "max_dummy_contribution_norm": 2.530533029786953e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "gate_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 5.950795411990839e-14,
+      "grad_a_real_max_abs_err": 6.256049823148702e-16,
+      "grad_b_real_max_abs_err": 1.9984014443252818e-15,
+      "update_a_max_abs_err": 5.551115123125783e-17,
+      "update_b_max_abs_err": 3.469446951953614e-17,
+      "max_dummy_contribution_norm": 3.57572595327284e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        64
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "up_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 4.4853010194856324e-14,
+      "grad_a_real_max_abs_err": 5.182486384480711e-16,
+      "grad_b_real_max_abs_err": 1.7763568394002505e-15,
+      "update_a_max_abs_err": 2.7755575615628914e-17,
+      "update_b_max_abs_err": 2.3418766925686896e-17,
+      "max_dummy_contribution_norm": 2.9140707063530537e-15,
+      "trainable_adapter_shape_a": [
+        32,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        64
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    },
+    {
+      "layer_index": 1,
+      "module_name": "down_proj",
+      "true_rank": 4,
+      "padded_rank": 8,
+      "forward_max_abs_err": 9.814371537686384e-14,
+      "grad_a_real_max_abs_err": 3.4342103813478353e-16,
+      "grad_b_real_max_abs_err": 1.790234627208065e-15,
+      "update_a_max_abs_err": 2.7755575615628914e-17,
+      "update_b_max_abs_err": 2.688821387764051e-17,
+      "max_dummy_contribution_norm": 3.565276306643763e-15,
+      "trainable_adapter_shape_a": [
+        64,
+        4
+      ],
+      "trainable_adapter_shape_b": [
+        4,
+        32
+      ],
+      "visible_rank_from_a_shape": 8,
+      "visible_rank_from_b_shape": 8,
+      "true_rank_hidden_from_shape": true,
+      "padded_rank_visible": true,
+      "dummy_update_applied": false,
+      "optimizer_state_contains_dummy": false
+    }
+  ],
+  "optimizer_summary": {
+    "location": "trusted",
+    "optimizer": "sgd",
+    "lr": 0.01,
+    "weight_decay": 0.0,
+    "any_optimizer_state_contains_dummy": false,
+    "any_dummy_update_applied": false,
+    "note": "Optimizer state and trainable adapters are sized to true_rank for every LoRA module. The dummy slice is re-sampled per step and never enters the optimizer."
+  },
+  "rank_padding_summary": {
+    "dummy_strategy_requested": "paired_cancellation_dummy",
+    "true_rank": 4,
+    "padded_rank": 8,
+    "lora_targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "num_lora_modules": 14,
+    "true_rank_hidden_from_shape": true,
+    "padded_rank_visible": true
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_multilayer": "multi-layer-lora-proxy-evaluated, not formal",
+  "lora_multilayer_training_status": "prototype",
+  "limitations": [
+    "This is a synthetic multi-layer LoRA training prototype over a tiny tile, not a full Qwen / TinyLlama / LLaMA fine-tuning.",
+    "Loss + optimizer remain trusted-side (Stage 7.1 contract).",
+    "Optimizer state is sized to true_rank, never padded_rank, for every LoRA module.",
+    "Padded rank r_pad remains visible from tensor shape; only true_rank is hidden from shape-level leakage.",
+    "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+    "No real TEE training; security_profile remains 'proxy-evaluated, not formal'.",
+    "No distributed training.",
+    "Attention is a simple scaled-dot-product proxy, not a correctness benchmark for full GQA / RoPE / KV-cache.",
+    "Adapter is NEVER merged into the public base weight W.",
+    "Reports publish summary metrics + fingerprints; private data, raw adapters, raw gradients, optimizer state, and dense masks are never emitted."
+  ],
+  "next_stage_plan": [
+    "Stage 7.4 \u2014 stronger dummy distributions / spectral-rank hardening.",
+    "Stage 7.x \u2014 real Qwen / TinyLlama / LLaMA LoRA fine-tuning behind a real TEE."
+  ]
+}

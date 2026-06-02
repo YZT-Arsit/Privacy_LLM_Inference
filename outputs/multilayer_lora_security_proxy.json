@@ -1,0 +1,314 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "num_layers": 2,
+    "hidden_size": 32,
+    "intermediate_size": 64,
+    "true_ranks": [
+      2,
+      4
+    ],
+    "padded_rank": 8,
+    "alpha": 1.0,
+    "num_trials": 32,
+    "use_pad": true,
+    "dummy_strategy": "paired_cancellation_dummy",
+    "pad_scale": 1.0,
+    "dummy_scale": 1.0,
+    "membership_trials_per_sample": 6,
+    "membership_num_steps": 3,
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "scope": "multi-layer tiny LoRA model (q/k/v/o/gate/up/down per layer), synthetic adapters + synthetic upstream gradients, rank padding optional per strategy",
+  "cross_layer_adapter_linkage": {
+    "rows": [
+      {
+        "strategy": "fixed_masks_shared_u",
+        "layer_linkability_auc": 0.46814047884778914,
+        "module_identity_retrieval_top1": 0.30357142857142855,
+        "same_module_similarity": 0.14233743579427524,
+        "different_module_similarity": 0.133993202960156,
+        "risk_level": "high"
+      },
+      {
+        "strategy": "independent_u_per_layer",
+        "layer_linkability_auc": 0.5016309258078231,
+        "module_identity_retrieval_top1": 0.32142857142857145,
+        "same_module_similarity": 0.13366858787881472,
+        "different_module_similarity": 0.13122961894763346,
+        "risk_level": "medium"
+      },
+      {
+        "strategy": "fresh_masks_independent_u",
+        "layer_linkability_auc": 0.5135655824829932,
+        "module_identity_retrieval_top1": 0.31473214285714285,
+        "same_module_similarity": 0.1325510247254202,
+        "different_module_similarity": 0.1351652913187576,
+        "risk_level": "medium"
+      },
+      {
+        "strategy": "rank_padding_full_bundle",
+        "layer_linkability_auc": 0.6294593032525511,
+        "module_identity_retrieval_top1": 0.3236607142857143,
+        "same_module_similarity": 1.2227436160322978,
+        "different_module_similarity": 2.4253029844161724,
+        "risk_level": "medium"
+      }
+    ],
+    "interpretation": "Cross-layer adapter linkage proxy. AUC > 0.5 means the attacker's same-module distance distribution is smaller than the different-module distribution, so transcript fingerprints correlate with module identity across layers. fixed_masks_shared_u is the worst case; rank_padding_full_bundle is the most defensive setting tested here, but no result below is formally secure."
+  },
+  "heterogeneous_true_rank_with_shared_padded_rank": {
+    "rows": [
+      {
+        "layer_index": 0,
+        "module_name": "q_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 0,
+        "module_name": "k_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 0,
+        "module_name": "v_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 0,
+        "module_name": "o_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 0,
+        "module_name": "gate_proj",
+        "true_rank": 4,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 0,
+        "module_name": "up_proj",
+        "true_rank": 4,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 0,
+        "module_name": "down_proj",
+        "true_rank": 4,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "q_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "k_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "v_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "o_proj",
+        "true_rank": 2,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "gate_proj",
+        "true_rank": 4,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "up_proj",
+        "true_rank": 4,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      },
+      {
+        "layer_index": 1,
+        "module_name": "down_proj",
+        "true_rank": 4,
+        "padded_rank": 8,
+        "visible_rank_from_shape": 8,
+        "true_rank_shape_hidden_rate": 1.0,
+        "spectral_rank_inference_accuracy": 0.0,
+        "gradient_rank_inference_accuracy": 0.0,
+        "risk_level": "needs_more_evaluation"
+      }
+    ],
+    "interpretation": "Heterogeneous true_rank with a shared padded_rank. Shape-level leakage is fully closed in all rows when padded_rank is the same across modules (true_rank_shape_hidden_rate == 1.0). Spectral / gradient inference is reported per module under dummy_strategy='paired_cancellation_dummy'; paired_cancellation yields needs_more_evaluation, zero_dummy is high."
+  },
+  "multi_step_membership_linkability": {
+    "rows": [
+      {
+        "module_name": "q_proj",
+        "same_sample_distance_mean": 323.50500550476283,
+        "different_sample_distance_mean": 323.284065182747,
+        "membership_auc_proxy": 0.4979020414750262,
+        "linkability_rank": 0.004195917049947595,
+        "risk_level": "low"
+      },
+      {
+        "module_name": "k_proj",
+        "same_sample_distance_mean": 302.9104109556845,
+        "different_sample_distance_mean": 303.8991665442282,
+        "membership_auc_proxy": 0.5088860647139514,
+        "linkability_rank": 0.01777212942790274,
+        "risk_level": "low"
+      },
+      {
+        "module_name": "v_proj",
+        "same_sample_distance_mean": 330.10154498120755,
+        "different_sample_distance_mean": 328.94676160825315,
+        "membership_auc_proxy": 0.48694827725328815,
+        "linkability_rank": 0.026103445493423694,
+        "risk_level": "low"
+      },
+      {
+        "module_name": "o_proj",
+        "same_sample_distance_mean": 296.51648057683775,
+        "different_sample_distance_mean": 296.32523862971675,
+        "membership_auc_proxy": 0.5083716614217704,
+        "linkability_rank": 0.016743322843540742,
+        "risk_level": "low"
+      },
+      {
+        "module_name": "gate_proj",
+        "same_sample_distance_mean": 462.2072806351727,
+        "different_sample_distance_mean": 463.0485465749121,
+        "membership_auc_proxy": 0.5049423061405632,
+        "linkability_rank": 0.00988461228112647,
+        "risk_level": "low"
+      },
+      {
+        "module_name": "up_proj",
+        "same_sample_distance_mean": 448.8887688010868,
+        "different_sample_distance_mean": 448.26662523977,
+        "membership_auc_proxy": 0.4966311627531671,
+        "linkability_rank": 0.006737674493665802,
+        "risk_level": "low"
+      },
+      {
+        "module_name": "down_proj",
+        "same_sample_distance_mean": 449.78000606826123,
+        "different_sample_distance_mean": 450.03056574363075,
+        "membership_auc_proxy": 0.5005244896312434,
+        "linkability_rank": 0.0010489792624868155,
+        "risk_level": "low"
+      }
+    ],
+    "aggregate": {
+      "mean_membership_auc_proxy": 0.5006008576270015,
+      "adapter_update_linkability": 0.001201715254002922
+    },
+    "interpretation": "Per-module multi-step membership linkability proxy. Under fresh masks per call + paired_cancellation_dummy, the transcript distance distribution should be roughly the same for same-sample replays and different-sample comparisons, so AUC \u2248 0.5 and linkability_rank \u2248 0."
+  },
+  "interpretation": {
+    "shape_level_summary": "true_rank is hidden from tensor shape across all modules when padded_rank is shared; padded_rank itself remains visible.",
+    "cross_layer_linkage_summary": "Cross-layer linkage risk under multi-layer strategies is **high** (worst-case).",
+    "heterogeneous_rank_summary": "Heterogeneous true_rank with shared padded_rank inference risk under dummy_strategy='paired_cancellation_dummy' is **needs_more_evaluation**.",
+    "true_rank_shape_hidden_rate": 1.0,
+    "padded_rank_visibility_note": "padded_rank is still visible across modules; hiding it is out of Stage 7.3 scope.",
+    "merge_adapter_into_w": false
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_multilayer": "multi-layer-lora-proxy-evaluated, not formal",
+  "lora_multilayer_security_proxy_status": "implemented",
+  "limitations": [
+    "These are cross-layer leakage proxy attacks, not formal security proofs.",
+    "True rank is hidden from shape-level leakage only when padded_rank is shared across modules.",
+    "padded_rank itself remains visible from tensor shape.",
+    "Spectral / gradient rank inference may still narrow the attacker's range, especially under zero_dummy.",
+    "Cross-layer linkability under fixed_masks_shared_u is reported high by construction; the no-mitigation baseline IS leaky.",
+    "No real TEE isolation is evaluated; security_profile stays 'proxy-evaluated, not formal'.",
+    "Optimizer state remains trusted-only and is sized to true_rank for every module.",
+    "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+    "No full Qwen / TinyLlama / LLaMA fine-tuning is evaluated; this is a multi-linear, tiny-dimension proxy.",
+    "Adapter is NEVER merged into the public base weight W."
+  ],
+  "next_stage_plan": [
+    "Stage 7.4 \u2014 stronger dummy distributions / spectral-rank hardening.",
+    "Stage 7.x \u2014 heterogeneous padded_rank across modules to hide r_pad itself.",
+    "Stage 7.x \u2014 gradient-side noise to weaken cross-layer linkability under shared-U setups."
+  ]
+}

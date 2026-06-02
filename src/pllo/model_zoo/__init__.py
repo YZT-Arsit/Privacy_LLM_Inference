@@ -14,6 +14,14 @@ from pllo.model_zoo.gpt2_spec import get_gpt2_module_spec, is_gpt2_like
 from pllo.model_zoo.hf_loader import HuggingFaceModelLoader
 from pllo.model_zoo.model_inspector import inspect_model_modules
 from pllo.model_zoo.registry import get_model_loader
+from pllo.model_zoo.tiny_lora_transformer import (
+    TinyLoRATransformerConfig,
+    VALID_LORA_TARGETS,
+    init_base_weights as init_tiny_lora_base_weights,
+    init_lora_adapters as init_tiny_lora_adapters,
+    model_spec as tiny_lora_model_spec,
+    simple_attention_proxy as tiny_lora_attention_proxy,
+)
 
 __all__ = [
     "ExternalModelConfig",
@@ -31,4 +39,10 @@ __all__ = [
     "is_gpt2_like",
     "split_gpt2_c_attn_weights",
     "torch_dtype_from_string",
+    "TinyLoRATransformerConfig",
+    "VALID_LORA_TARGETS",
+    "init_tiny_lora_base_weights",
+    "init_tiny_lora_adapters",
+    "tiny_lora_model_spec",
+    "tiny_lora_attention_proxy",
 ]

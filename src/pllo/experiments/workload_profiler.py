@@ -1018,6 +1018,27 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["security_profile_detail_with_lora_rank_padding"] = (
                 "rank-padding-proxy-evaluated, not formal"
             )
+            # Stage 7.3 — multi-layer LoRA end-to-end training prototype +
+            # cross-layer security proxy + LoRA training timing-side proxy.
+            # The runtime defaults of GPT-2 / BERT / T5 / modern decoder
+            # inference are NOT modified. These fields describe the support
+            # surface of the multi-layer training prototype + the two
+            # accompanying proxies.
+            record["lora_multilayer_training_status"] = "prototype"
+            record["lora_multilayer_training_artifact"] = (
+                "outputs/multilayer_lora_training_experiments.json"
+            )
+            record["lora_multilayer_security_proxy_status"] = "implemented"
+            record["lora_multilayer_security_artifact"] = (
+                "outputs/multilayer_lora_security_proxy.json"
+            )
+            record["lora_training_timing_proxy_status"] = "implemented"
+            record["lora_training_timing_artifact"] = (
+                "outputs/lora_training_timing_proxy.json"
+            )
+            record["security_profile_detail_with_lora_multilayer"] = (
+                "multi-layer-lora-proxy-evaluated, not formal"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1330,6 +1351,21 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 ),
                 "security_profile_detail_with_lora_rank_padding": (
                     "rank-padding-proxy-evaluated, not formal"
+                ),
+                "lora_multilayer_training_status": "prototype",
+                "lora_multilayer_training_artifact": (
+                    "outputs/multilayer_lora_training_experiments.json"
+                ),
+                "lora_multilayer_security_proxy_status": "implemented",
+                "lora_multilayer_security_artifact": (
+                    "outputs/multilayer_lora_security_proxy.json"
+                ),
+                "lora_training_timing_proxy_status": "implemented",
+                "lora_training_timing_artifact": (
+                    "outputs/lora_training_timing_proxy.json"
+                ),
+                "security_profile_detail_with_lora_multilayer": (
+                    "multi-layer-lora-proxy-evaluated, not formal"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

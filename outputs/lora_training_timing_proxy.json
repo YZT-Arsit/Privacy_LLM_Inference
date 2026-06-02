@@ -1,0 +1,244 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "batch_sizes": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "seq_lens": [
+      4,
+      8,
+      16
+    ],
+    "true_ranks": [
+      2,
+      4,
+      8
+    ],
+    "padded_ranks": [
+      8,
+      16
+    ],
+    "num_lora_modules": [
+      2,
+      4,
+      7,
+      14
+    ],
+    "optimizers": [
+      "sgd",
+      "adamw"
+    ],
+    "timing_noise_std": 0.05,
+    "constant_time_training_mode": "proxy_equalized",
+    "samples_per_config": 8,
+    "base_hidden": 64,
+    "base_intermediate": 128,
+    "gpu_cost_per_flop_ms": 1e-09,
+    "trusted_cost_per_flop_ms": 4e-09,
+    "mask_gen_cost_per_flop_ms": 4e-09,
+    "boundary_call_cost_ms": 0.02,
+    "base_overhead_ms": 0.1,
+    "rank_padding_dummy_cost_ms": 0.01,
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "scope": "FLOP / boundary cost-model proxy for LoRA training step latency; not real TEE wall-time",
+  "training_timing_model": {
+    "components": [
+      "forward_ms",
+      "backward_ms",
+      "optimizer_ms",
+      "mask_generation_ms",
+      "boundary_ms",
+      "rank_padding_dummy_ms",
+      "base_overhead_ms"
+    ],
+    "cost_model_constants": {
+      "gpu_cost_per_flop_ms": 1e-09,
+      "trusted_cost_per_flop_ms": 4e-09,
+      "mask_gen_cost_per_flop_ms": 4e-09,
+      "boundary_call_cost_ms": 0.02,
+      "base_overhead_ms": 0.1,
+      "rank_padding_dummy_cost_ms": 0.01,
+      "timing_noise_std": 0.05
+    },
+    "num_samples_default": 4608,
+    "num_samples_rank_padding_off": 4608,
+    "num_samples_zero_dummy": 4608,
+    "num_samples_paired_dummy": 4608,
+    "note": "Each sample = one training step latency under one (batch_size, seq_len, true_rank, padded_rank, num_modules, optimizer, dummy_strategy, rank_padding_on) configuration, with Gaussian timing noise applied."
+  },
+  "leakage_tasks_off": {
+    "batch_size": {
+      "classification_accuracy": 0.2588975694444444,
+      "random_chance_baseline": 0.25,
+      "bucket_separation": 0.01743125885867377,
+      "risk_level": "low"
+    },
+    "seq_len": {
+      "classification_accuracy": 0.3404947916666667,
+      "random_chance_baseline": 0.3333333333333333,
+      "bucket_separation": 0.012521808709915656,
+      "risk_level": "low"
+    },
+    "true_rank": {
+      "classification_accuracy": 0.3355034722222222,
+      "random_chance_baseline": 0.3333333333333333,
+      "bucket_separation": 0.0015173984369842132,
+      "risk_level": "low"
+    },
+    "padded_rank": {
+      "classification_accuracy": 0.4973958333333333,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 0.003350094440587942,
+      "risk_level": "low"
+    },
+    "num_modules": {
+      "classification_accuracy": 1.0,
+      "random_chance_baseline": 0.25,
+      "bucket_separation": 1.539390070160283,
+      "risk_level": "high"
+    },
+    "optimizer": {
+      "classification_accuracy": 0.5069444444444444,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 0.001799997096506059,
+      "risk_level": "low"
+    },
+    "rank_padding_on": {
+      "classification_accuracy": 0.625,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 0.49923132471572934,
+      "risk_level": "low"
+    },
+    "dummy_strategy": {
+      "classification_accuracy": 0.5720486111111112,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 0.10662335409716976,
+      "risk_level": "low"
+    }
+  },
+  "leakage_tasks_proxy_equalized": {
+    "batch_size": {
+      "classification_accuracy": 0.2595486111111111,
+      "random_chance_baseline": 0.25,
+      "bucket_separation": 0.004028206803853305,
+      "risk_level": "low"
+    },
+    "seq_len": {
+      "classification_accuracy": 0.3448350694444444,
+      "random_chance_baseline": 0.3333333333333333,
+      "bucket_separation": 0.004527977958270693,
+      "risk_level": "low"
+    },
+    "true_rank": {
+      "classification_accuracy": 0.3385416666666667,
+      "random_chance_baseline": 0.3333333333333333,
+      "bucket_separation": 0.002431779679783769,
+      "risk_level": "low"
+    },
+    "padded_rank": {
+      "classification_accuracy": 0.5123697916666666,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 0.0018113624992845531,
+      "risk_level": "low"
+    },
+    "num_modules": {
+      "classification_accuracy": 0.255859375,
+      "random_chance_baseline": 0.25,
+      "bucket_separation": 0.00220538262341308,
+      "risk_level": "low"
+    },
+    "optimizer": {
+      "classification_accuracy": 0.4993489583333333,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 8.129360190180874e-05,
+      "risk_level": "low"
+    },
+    "rank_padding_on": {
+      "classification_accuracy": 0.5060763888888888,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 0.0011868722465878992,
+      "risk_level": "low"
+    },
+    "dummy_strategy": {
+      "classification_accuracy": 0.5011935763888888,
+      "random_chance_baseline": 0.5,
+      "bucket_separation": 8.272453728732801e-06,
+      "risk_level": "low"
+    }
+  },
+  "constant_time_training_proxy": {
+    "constant_time_training_mode": "proxy_equalized",
+    "upper_bucket": {
+      "upper_batch_size": 8,
+      "upper_seq_len": 16,
+      "upper_padded_rank": 16,
+      "upper_num_modules": 14,
+      "upper_optimizer": "adamw",
+      "upper_latency_ms": 1.3632453119999999
+    },
+    "did_actually_sleep": false,
+    "note": "proxy_equalized pads every step to the upper-bucket latency; we never invoke real sleep / runtime gating."
+  },
+  "overhead_proxy": {
+    "mean_native_latency_ms": 0.678898432,
+    "upper_latency_ms": 1.3632453119999999,
+    "overhead_ratio": 1.008025424339174,
+    "overhead_pct": 100.8025424339174,
+    "note": "Proxy estimate; no real wall-clock measurement. The equalization pads every step to the upper bucket latency across sensitive dimensions, so the overhead is the maximum of the original variance."
+  },
+  "summary": {
+    "max_classification_accuracy_off": 1.0,
+    "max_classification_accuracy_proxy_equalized": 0.5123697916666666,
+    "leakage_reduction_after_equalization": 0.48763020833333337,
+    "leakage_summary_off": {
+      "batch_size": 0.2588975694444444,
+      "seq_len": 0.3404947916666667,
+      "true_rank": 0.3355034722222222,
+      "padded_rank": 0.4973958333333333,
+      "num_modules": 1.0,
+      "optimizer": 0.5069444444444444,
+      "rank_padding_on": 0.625,
+      "dummy_strategy": 0.5720486111111112
+    },
+    "leakage_summary_proxy_equalized": {
+      "batch_size": 0.2595486111111111,
+      "seq_len": 0.3448350694444444,
+      "true_rank": 0.3385416666666667,
+      "padded_rank": 0.5123697916666666,
+      "num_modules": 0.255859375,
+      "optimizer": 0.4993489583333333,
+      "rank_padding_on": 0.5060763888888888,
+      "dummy_strategy": 0.5011935763888888
+    }
+  },
+  "interpretation": {
+    "headline": "Cost-model proxy: under constant_time_training_mode='off' the worst-case classifier accuracy is 1.000; under proxy_equalized it is 0.5123697916666666.",
+    "overhead_summary": "Proxy overhead from equalization is 100.8%.",
+    "merge_adapter_into_w": false
+  },
+  "security_profile": "proxy-evaluated, not formal",
+  "security_profile_detail_with_lora_timing": "lora-training-timing-proxy-evaluated, not formal",
+  "lora_training_timing_proxy_status": "implemented",
+  "limitations": [
+    "Timing results are proxy estimates from an FLOP-and-boundary cost model, not real TEE wall-time.",
+    "Constant-time training mode is simulated (upper-bound latency padding); the proxy does NOT sleep, does NOT modify real runtime.",
+    "Hardware side-channels (cache / power / EM) are NOT evaluated.",
+    "Cost-model constants are coarse; absolute latencies are illustrative.",
+    "Leakage classifier uses bucket-mean labels as the attacker; this is a generous attacker model.",
+    "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+    "No real Qwen / TinyLlama / LLaMA fine-tuning; this is a multi-linear cost-model proxy.",
+    "Adapter is NEVER merged into the public base weight W.",
+    "No formal / cryptographic / semantic security is claimed."
+  ],
+  "next_stage_plan": [
+    "Stage 7.4 \u2014 stronger dummy distributions / spectral-rank hardening.",
+    "Stage 7.x \u2014 real TEE wall-time integration with actual constant-time gating.",
+    "Stage 7.x \u2014 hardware side-channel (cache / power) proxies."
+  ]
+}

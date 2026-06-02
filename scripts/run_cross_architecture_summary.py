@@ -730,6 +730,15 @@ def _build_markdown(summary: dict) -> str:
             lora_status = modern_row.get("lora_private_training_status")
             lora_backward_status = modern_row.get("lora_backward_status")
             lora_rank_padding_status = modern_row.get("lora_rank_padding_status")
+            lora_multilayer_status = modern_row.get(
+                "lora_multilayer_training_status"
+            )
+            lora_multilayer_security_status = modern_row.get(
+                "lora_multilayer_security_proxy_status"
+            )
+            lora_training_timing_status = modern_row.get(
+                "lora_training_timing_proxy_status"
+            )
             if lora_status and lora_status != "not_yet":
                 out.append("| lora_private_training_status |"
                            f" {lora_status} |")
@@ -795,6 +804,37 @@ def _build_markdown(summary: dict) -> str:
                         "| security_profile_detail_with_lora_rank_padding |"
                         f" {lrp_detail} |"
                     )
+            if (
+                (lora_multilayer_status and lora_multilayer_status != "not_yet")
+                or (
+                    lora_multilayer_security_status
+                    and lora_multilayer_security_status != "not_yet"
+                )
+                or (
+                    lora_training_timing_status
+                    and lora_training_timing_status != "not_yet"
+                )
+            ):
+                out.append("| lora_multilayer_training_status |"
+                           f" {lora_multilayer_status} |")
+                out.append("| lora_multilayer_training_artifact |"
+                           f" `{modern_row.get('lora_multilayer_training_artifact')}` |")
+                out.append("| lora_multilayer_security_proxy_status |"
+                           f" {lora_multilayer_security_status} |")
+                out.append("| lora_multilayer_security_artifact |"
+                           f" `{modern_row.get('lora_multilayer_security_artifact')}` |")
+                out.append("| lora_training_timing_proxy_status |"
+                           f" {lora_training_timing_status} |")
+                out.append("| lora_training_timing_artifact |"
+                           f" `{modern_row.get('lora_training_timing_artifact')}` |")
+                ml_detail = modern_row.get(
+                    "security_profile_detail_with_lora_multilayer"
+                )
+                if ml_detail:
+                    out.append(
+                        "| security_profile_detail_with_lora_multilayer |"
+                        f" {ml_detail} |"
+                    )
             if sa_status and sa_status != "not_yet":
                 out.append(
                     "### Stage 5.6 Stronger Attackers (Black-box + Timing + Inter-block Gap)"
@@ -821,6 +861,72 @@ def _build_markdown(summary: dict) -> str:
                     " extension / Stage 7.0). Envelope-integrity risk:"
                     " `low`. Structural-leakage risk: `high`. Not formal"
                     " security; not a real TEE measurement."
+                )
+                out.append("")
+            if (
+                (lora_multilayer_status and lora_multilayer_status != "not_yet")
+                or (
+                    lora_multilayer_security_status
+                    and lora_multilayer_security_status != "not_yet"
+                )
+                or (
+                    lora_training_timing_status
+                    and lora_training_timing_status != "not_yet"
+                )
+            ):
+                out.append(
+                    "### Stage 7.3 — Multi-Layer LoRA Training +"
+                    " Cross-Layer Proxy + Training Timing Proxy"
+                )
+                out.append("")
+                out.append(
+                    "Stage 7.3 stacks the Stage 7.0 forward / Stage 7.1"
+                    " masked backward / Stage 7.2 rank padding"
+                    " primitives across multiple LoRA-augmented linears"
+                    " (`q_proj / k_proj / v_proj / o_proj / gate_proj /"
+                    " up_proj / down_proj`) in a tiny synthetic"
+                    " Transformer-style block stack and verifies that"
+                    " every per-module recovered output, every per-module"
+                    " gradient (real slice), and every per-module"
+                    " SGD / AdamW update matches the plain rank-`r`"
+                    " reference to float64 precision. The optimizer state"
+                    " is sized to `true_rank` for every LoRA module; the"
+                    " dummy slice is never updated."
+                    " `lora_multilayer_training_status = \"prototype\"`."
+                    " The cross-layer security proxy reports linkage AUC"
+                    " across four strategies"
+                    " (`fixed_masks_shared_u / independent_u_per_layer /"
+                    " fresh_masks_independent_u /"
+                    " rank_padding_full_bundle`), inference accuracy under"
+                    " heterogeneous `true_rank` with shared `padded_rank`"
+                    " (shape-level rank hidden rate stays at 1.0 — only"
+                    " `true_rank` is hidden, `padded_rank` remains"
+                    " visible), and per-module multi-step membership"
+                    " linkability."
+                    " `lora_multilayer_security_proxy_status ="
+                    " \"implemented\"`."
+                    " The training timing proxy is a cost-model latency"
+                    " simulator: per-step latency is composed from"
+                    " `forward / backward / optimizer / mask_generation /"
+                    " boundary / rank_padding_dummy` slices plus Gaussian"
+                    " noise; we evaluate eight leakage tasks"
+                    " (batch_size, seq_len, true_rank, padded_rank,"
+                    " num_modules, optimizer, rank_padding_on,"
+                    " dummy_strategy) under"
+                    " `constant_time_training_mode ∈ {\"off\","
+                    " \"proxy_equalized\"}`, with `proxy_equalized`"
+                    " padding every step to the upper-bucket latency."
+                    " **No real sleep, no real TEE wall-time, no"
+                    " hardware side-channel.**"
+                    " `lora_training_timing_proxy_status = \"implemented\"`."
+                    " `security_profile_detail_with_lora_multilayer ="
+                    " \"multi-layer-lora-proxy-evaluated, not formal\"`."
+                    " `security_profile` itself remains"
+                    " `\"proxy-evaluated, not formal\"`."
+                    " NOT full Qwen / TinyLlama / LLaMA LoRA fine-tuning,"
+                    " NOT PEFT integration, NOT distributed training,"
+                    " NOT real TEE training, NOT a real hardware"
+                    " side-channel evaluation."
                 )
                 out.append("")
             if lora_rank_padding_status and lora_rank_padding_status != "not_yet":

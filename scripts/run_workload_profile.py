@@ -660,6 +660,60 @@ def _build_markdown(profile: dict) -> str:
                         " `needs_more_evaluation`, not `low`."
                     )
                 if islands_record.get(
+                    "lora_multilayer_training_status",
+                ) == "prototype":
+                    out.append("")
+                    out.append(
+                        "### Stage 7.3 — Multi-Layer LoRA Training +"
+                        " Cross-Layer Proxy + Training Timing Proxy"
+                    )
+                    out.append("")
+                    out.append(
+                        "- `lora_multilayer_training_status = "
+                        f"\"{islands_record.get('lora_multilayer_training_status')}\"`,"
+                        " `lora_multilayer_security_proxy_status = "
+                        f"\"{islands_record.get('lora_multilayer_security_proxy_status')}\"`,"
+                        " `lora_training_timing_proxy_status = "
+                        f"\"{islands_record.get('lora_training_timing_proxy_status')}\"`."
+                    )
+                    out.append(
+                        "- `lora_multilayer_training_artifact = "
+                        f"\"{islands_record.get('lora_multilayer_training_artifact')}\"`,"
+                        " `lora_multilayer_security_artifact = "
+                        f"\"{islands_record.get('lora_multilayer_security_artifact')}\"`,"
+                        " `lora_training_timing_artifact = "
+                        f"\"{islands_record.get('lora_training_timing_artifact')}\"`."
+                    )
+                    out.append(
+                        "- `security_profile_detail_with_lora_multilayer = "
+                        f"\"{islands_record.get('security_profile_detail_with_lora_multilayer')}\"`"
+                        " — additive label only; top-level `security_profile`"
+                        " remains `\"proxy-evaluated, not formal\"`."
+                    )
+                    out.append(
+                        "- Stage 7.3 stacks Stage 7.0 / 7.1 / 7.2 across"
+                        " multiple LoRA-augmented linears (q/k/v/o + SwiGLU"
+                        " MLP) in a tiny synthetic block stack and verifies"
+                        " per-module loss / forward / grad / update allclose"
+                        " plain↔masked. Loss + optimizer remain trusted;"
+                        " adapter is NEVER merged into the public base"
+                        " weight `W`."
+                    )
+                    out.append(
+                        "- Cross-layer security proxy reports linkage AUC"
+                        " across `fixed_masks_shared_u /"
+                        " independent_u_per_layer /"
+                        " fresh_masks_independent_u /"
+                        " rank_padding_full_bundle`; heterogeneous true_rank"
+                        " with shared padded_rank hides shape-level rank"
+                        " across all modules. Training-timing proxy is a"
+                        " cost-model latency simulator (NOT a real TEE"
+                        " wall-time; NO real sleep)."
+                        " `constant_time_training_mode ∈ {\"off\","
+                        " \"proxy_equalized\"}` with `proxy_equalized`"
+                        " padding every step to the upper-bucket latency."
+                    )
+                if islands_record.get(
                     "real_token_activation_attacker_status",
                 ) == "implemented":
                     out.append("")

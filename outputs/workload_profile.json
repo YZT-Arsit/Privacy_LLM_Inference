@@ -18,7 +18,7 @@
     }
   },
   "calibration": {
-    "gpu_flops_per_ms": 2102544.480447021,
+    "gpu_flops_per_ms": 1529265.4946885419,
     "calibrated_from": "plain_hf_gpu"
   },
   "methods": {
@@ -40,10 +40,10 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 2.109074999953009,
-      "measured_wall_time_ms": 2.109074999953009,
-      "measured_wall_time_ms_median": 2.1659999997609702,
-      "measured_wall_time_ms_stdev": 0.13462376348843383,
+      "projected_wall_time_ms": 2.899708399490919,
+      "measured_wall_time_ms": 2.899708399490919,
+      "measured_wall_time_ms_median": 2.900499999668682,
+      "measured_wall_time_ms_stdev": 0.2885456446020791,
       "wall_time_source": "measured"
     },
     "tslp_trusted_nonlinear_baseline": {
@@ -64,7 +64,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 32.792099813181416,
+      "projected_wall_time_ms": 43.4793123445327,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -88,10 +88,10 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 32.95783391779823,
-      "measured_wall_time_ms": 7.427766600085306,
-      "measured_wall_time_ms_median": 6.721624999954656,
-      "measured_wall_time_ms_stdev": 1.2355138394419358,
+      "projected_wall_time_ms": 43.69924797644134,
+      "measured_wall_time_ms": 6.640116601192858,
+      "measured_wall_time_ms_median": 6.709833000059007,
+      "measured_wall_time_ms_stdev": 0.16134896412761482,
       "wall_time_source": "measured"
     },
     "ours_ideal_gpu_nonlinear": {
@@ -112,7 +112,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 32.54135787664884,
+      "projected_wall_time_ms": 43.18859250255446,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -189,6 +189,13 @@
       "lora_rank_padding_artifact": "outputs/lora_rank_padding_experiments.json",
       "lora_rank_security_artifact": "outputs/lora_rank_security_proxy.json",
       "security_profile_detail_with_lora_rank_padding": "rank-padding-proxy-evaluated, not formal",
+      "lora_multilayer_training_status": "prototype",
+      "lora_multilayer_training_artifact": "outputs/multilayer_lora_training_experiments.json",
+      "lora_multilayer_security_proxy_status": "implemented",
+      "lora_multilayer_security_artifact": "outputs/multilayer_lora_security_proxy.json",
+      "lora_training_timing_proxy_status": "implemented",
+      "lora_training_timing_artifact": "outputs/lora_training_timing_proxy.json",
+      "security_profile_detail_with_lora_multilayer": "multi-layer-lora-proxy-evaluated, not formal",
       "mitigation_bundle_selectable": true,
       "default_mitigation_bundle": "fresh_perm_only",
       "recommended_default_on_bundle": "fresh_perm_plus_sandwich_plus_pad",
@@ -216,7 +223,7 @@
         "permutation_absorption_ops": 128,
         "compatible_mask_generation_ops": 40
       },
-      "projected_wall_time_ms": 32.60619893265519,
+      "projected_wall_time_ms": 43.255002550140304,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -240,7 +247,7 @@
       "uses_fresh_permutation": false,
       "online_extra_matmul_count": 0,
       "security_profile": "n/a",
-      "projected_wall_time_ms": 32.54135787664884,
+      "projected_wall_time_ms": 43.18859250255446,
       "measured_wall_time_ms": null,
       "measured_wall_time_ms_median": null,
       "measured_wall_time_ms_stdev": null,
@@ -1245,6 +1252,13 @@
       "lora_rank_padding_artifact": "outputs/lora_rank_padding_experiments.json",
       "lora_rank_security_artifact": "outputs/lora_rank_security_proxy.json",
       "security_profile_detail_with_lora_rank_padding": "rank-padding-proxy-evaluated, not formal",
+      "lora_multilayer_training_status": "prototype",
+      "lora_multilayer_training_artifact": "outputs/multilayer_lora_training_experiments.json",
+      "lora_multilayer_security_proxy_status": "implemented",
+      "lora_multilayer_security_artifact": "outputs/multilayer_lora_security_proxy.json",
+      "lora_training_timing_proxy_status": "implemented",
+      "lora_training_timing_artifact": "outputs/lora_training_timing_proxy.json",
+      "security_profile_detail_with_lora_multilayer": "multi-layer-lora-proxy-evaluated, not formal",
       "note": "Stage 5.3a integrates the compatible GELU MLP island into the GPT-2 single-block wrapper behind a nonlinear_mode feature flag; Stage 5.3b propagates the same flag through the GPT-2 model-level wrapper (full forward + prefill / decode_step + greedy generation). Stage 5.3c extends the same flag to probe-level BERT (Stage 6.1) and T5 / BART (Stage 6.2) FFN island probes \u2014 encoder GELU / ReLU MLP islands and gated-SiLU MLP islands, with explicit unsupported status for gated-GELU which Stage 5.2a does not yet cover. Stage 6.4 adds a probe-level migration for modern decoder-only models (Qwen / TinyLlama / LLaMA \u2014 RMSNorm + SwiGLU + RoPE-post-mask + GQA/MQA tensor-level probes, default synthetic). Stage 6.4b extends that to a block-level wrapper that loads a real HF LLaMA-style model (or synthetic fallback), extracts one transformer block and verifies the obfuscated block output recovers to the plain reference for both mitigation bundles and both use_pad values. Default mode remains 'trusted'; ours_compatible_nonlinear_islands stays partial_implementation=True because BERT / T5 / modern-decoder are block-/probe-level integrations, not full wrappers (full_runtime_integrated=False). This is a measured GPT-2 model-level smoke plus BERT / T5 probe-level correctness plus modern-decoder block-level correctness, not a full cross-architecture measurement."
     }
   },
