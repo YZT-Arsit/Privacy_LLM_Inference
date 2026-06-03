@@ -1,0 +1,32 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{TEE-assisted ML inference.}
+A body of work runs ML inference end-to-end inside a TEE such as Intel SGX or AMD SEV~\cite{hunt2018chiron, kunkel2019tensorscone}, trading throughput for confidentiality. Hybrid TEE--GPU partitioning systems push a fraction of the computation to the GPU~\cite{tramer2019slalom, volos2018graviton} but typically expose plain activations at the boundary. Our scheme keeps a TEE-like trusted controller and the loss and optimizer on the trusted side while pushing \emph{masked} dense matmuls to the untrusted GPU, retaining GPU throughput without exposing plain activations.
+
+\paragraph{Privacy-preserving ML inference.}
+Cryptographic systems compile inference to homomorphic-encryption or secret-shared circuits~\cite{dowlin2016cryptonets, juvekar2018gazelle, mishra2020delphi, mohassel2017secureml, liu2017minionn}. They give formal-security guarantees but pay one to several orders of magnitude in overhead and restrict the operator set. Our approach is not a cryptographic alternative; it offers a different point on the spectrum---proxy-evaluated security with near-GPU-native dense matmul throughput---and is best read as complementary to formal-security work.
+
+\paragraph{Amulet-style and matrix obfuscation methods.}
+The Amulet line of work~\cite{amulet2024todo} and the broader family of matrix-mask offload schemes introduced the boundary-mask pattern we build on. These designs do not natively pass through pointwise nonlinearities, RMSNorm/LayerNorm (different invariance groups), SwiGLU (paired permutation required), RoPE (head-block structure), or LoRA personalization (rank leakage). Operator-compatible nonlinear islands, a dense Linear sandwich, and a boundary pad extend the boundary skeleton to a full decoder-only stack and to a private LoRA training path.
+
+\paragraph{Secure GPU offloading.}
+Approaches that treat the GPU as an untrusted accelerator use cryptographic or obfuscation techniques to keep operands hidden~\cite{tramer2019slalom, volos2018graviton}. We trade formal-security guarantees for proxy-evaluated security under named attackers in exchange for keeping plain GPU dense matmul kernels on the hot path. Our Limitations make the boundary explicit.
+
+\paragraph{FHE and MPC for private inference.}
+Fully homomorphic encryption and secure multi-party computation~\cite{gilad2016cryptonets, juvekar2018gazelle, mishra2020delphi, mohassel2017secureml} give formal guarantees of input privacy at the cost of large overheads. Recent FHE-friendly transformer designs reduce overhead but remain well below GPU dense-matmul throughput. Our approach is complementary, not a replacement.
+
+\paragraph{KV cache privacy.}
+KV cache leakage has been documented as an end-to-end channel for prompt-content recovery in modern serving stacks~\cite{kwon2023vllm}. Mitigations proposed in the literature include cache eviction, cache encryption at rest, and cache partitioning across tenants. Our scheme keeps the KV cache in masked space across the entire decode trajectory: per-step append concatenates $\K_t\NK$ and $\V_t\NV$ onto a cache never recovered to plain space inside the GPU; the attention identity is preserved by $\NQ\NK^{\top} = \mathbf{I}$.
+
+\paragraph{LoRA personalization security.}
+A growing body of work shows that LoRA factor publication leaks training-data signatures and enables membership inference~\cite{shokri2017membership, hu2022lora, dettmers2023qlora}. Mitigations include differential privacy at the optimizer, gradient clipping, and adapter watermarking. Our LoRA path masks $(\A, \B)$ with a trusted inner mask $\UU$ such that $\At = \Nin^{-1}\A\UU$ and $\Bt = \UU^{-1}\B\Nout$, keeps the optimizer and loss trusted-side, and adds rank padding with stronger dummy distributions. The adapter is never merged into the public base weight $\W$.
+
+\paragraph{Gradient leakage and membership inference.}
+Deep Leakage from Gradients~\cite{zhu2019dlg}, iDLG~\cite{zhao2020idlg}, GradInversion~\cite{yin2021gradinversion}, and follow-up work show that per-step gradients are highly informative about training data. Defenses range from gradient clipping to local SGD to differential privacy~\cite{abadi2016dpsgd}. We do not propose a differential-privacy bound. We mask the per-step gradients in the same right-masked space as the forward path, so the GPU-visible $\widetilde{\partial\A}, \widetilde{\partial\B}$ are not the plain gradients; the membership-style linkability AUC is brought close to random chance under our proxy attackers in tested configurations. We report this as \texttt{proxy\_supported}, not \texttt{provably private}.
+
+\paragraph{Side-channel defenses.}
+Constant-time programming, branch-balanced code, padded data flow, and traffic shaping are standard side-channel defenses~\cite{kocher2019spectre, vanbulck2018foreshadow}. Our \texttt{proxy\_equalized} constant-time-emulated training mode is a cost-model proxy, not a real wall-time defense. We make no hardware-side-channel claim.
+
+\paragraph{Positioning summary.}
+Our work sits at the intersection of (a)~hybrid TEE--GPU systems that need a clean abstraction for the masked boundary, (b)~matrix-obfuscation methods that need an extension to nonlinear and autoregressive paths, and (c)~LoRA personalization that needs a tractable adapter-and-gradient mask. The principal new ingredients we contribute are generation-compatible right masking, operator-compatible nonlinear islands, a private LoRA training path, and an artifact-backed claim-audited proxy security evaluation. The principal deliberate non-contributions are: no cryptographic/formal/semantic security claim; no real-TEE deployment; no full production fine-tune; no PEFT/vLLM/DeepSpeed/FlashAttention integration.

@@ -1,0 +1,22 @@
+\section{Notation}
+\label{app:notation}
+
+\subsection*{Tensors and dimensions}
+$\X$ is the token-by-feature activation matrix entering a Linear layer (shape $[T \times \dinX]$); $\W$ the public base-model weight ($[\dinX \times \doutX]$); $\mathbf{b}$ the bias; $\Y = \X\W + \mathbf{b}$ the plain output. $\Tpad$ is a trusted-side translation tensor. $\Z$ is a generic intermediate inside a nonlinear island. $\phi(\cdot)$ is a pointwise activation. $\RMSCore(\cdot)$ and $\LNCore(\cdot)$ are the orthogonally-invariant cores of RMSNorm and LayerNorm. $\Q, \K, \V$ are the attention queries, keys, and values per head. $\A, \B$ are LoRA factors ($[\dinX \times \rtrue]$ and $[\rtrue \times \doutX]$); $\rtrue$ is the true LoRA rank; $\rpad \geq \rtrue$ is the GPU-visible padded LoRA rank; $\alpha$ is the LoRA scale.
+
+\subsection*{Mask families}
+$\Nin, \Nout, \NQ, \NK, \NV$ are right-multiplicative boundary masks; $\PP$ is a channel permutation matrix used inside a nonlinear island; $\UU$ is a trusted-side inner LoRA mask satisfying $\UU\UU^{-1} = \mathbf{I}$.
+
+\subsection*{Decorated symbols}
+$\Xt, \Yt, \Wt, \At, \Bt, \Qt, \Kt, \Vt, \Zt$ are the GPU-visible masked counterparts of the plain tensors. $\Apad, \Bpad$ are the rank-padded LoRA factors actually shipped to the GPU, satisfying $\Apad\Bpad = \A\B$ exactly (or up to a tracked trusted-side correction for \texttt{noise\_injected\_cancellation\_dummy}). $\Ct = \Tpad\W\Nout$ is the trusted-side compensation absorbed at recovery.
+
+\subsection*{Equality conventions}
+$=$ denotes plain equality at the trusted side. $\eqtested$ denotes empirical \texttt{allclose} equality in our reported configurations; we never use it to mean formal proof of equality across arbitrary inputs.
+
+\subsection*{Parties}
+\paragraph{TEE-like controller (trusted side).} Holds the user prompt, the user's LoRA adapter $(\A, \B)$, the optimizer state, the loss closure, the sampler, and the mask sampler. In this prototype the controller is emulated as a local trusted runtime.
+
+\paragraph{GPU (untrusted side).} Performs masked matmuls and masked nonlinearities (when an operator-compatible mask family is used), masked attention, and masked LoRA forward/backward matmuls. Observes shapes, sequence length, and the cost-model timing proxy.
+
+\subsection*{Phrases this paper never uses positively}
+``provably'', ``guaranteed'', ``cryptographically secure'', ``semantically secure'', ``TEE-level secure'', ``prevents all leakage'', ``hides padded rank'', ``production wall-time on TEE'', ``full Qwen/TinyLlama/LLaMA fine-tuning'', ``fully outsourced loss/optimizer''. Any sentence in the body that would require one of these to be true is reworded as ``in our tested configurations'' or moved to \Cref{sec:limitations}.

@@ -1,0 +1,82 @@
+% macros.tex --- shared math macros for the paper draft.
+% Notation is intentionally kept close to the conventions in sections/a_notation.tex.
+
+% Plain tensors.
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\Y}{\mathbf{Y}}
+\newcommand{\W}{\mathbf{W}}
+\newcommand{\Z}{\mathbf{Z}}
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\Q}{\mathbf{Q}}
+\renewcommand{\K}{\mathbf{K}}
+\newcommand{\V}{\mathbf{V}}
+\newcommand{\G}{\mathbf{G}}
+
+% Mask family.
+\newcommand{\N}{\mathbf{N}}
+\newcommand{\Nin}{\mathbf{N}_{\mathrm{in}}}
+\newcommand{\Nout}{\mathbf{N}_{\mathrm{out}}}
+\newcommand{\NQ}{\mathbf{N}_{Q}}
+\newcommand{\NK}{\mathbf{N}_{K}}
+\newcommand{\NV}{\mathbf{N}_{V}}
+\newcommand{\PP}{\mathbf{P}}
+\newcommand{\UU}{\mathbf{U}}
+
+% Trusted pads and compensations.
+\newcommand{\Tpad}{\mathbf{T}}
+\newcommand{\Ct}{\mathbf{C}_{T}}
+\newcommand{\Cone}{\mathbf{C}_{1}}
+
+% Masked (tilde) variants.
+\newcommand{\Ht}{\widetilde{\mathbf{H}}}
+\newcommand{\Xt}{\widetilde{\mathbf{X}}}
+\newcommand{\Yt}{\widetilde{\mathbf{Y}}}
+\newcommand{\Wt}{\widetilde{\mathbf{W}}}
+\newcommand{\At}{\widetilde{\mathbf{A}}}
+\newcommand{\Bt}{\widetilde{\mathbf{B}}}
+\newcommand{\Gt}{\widetilde{\mathbf{G}}}
+\newcommand{\Qt}{\widetilde{\mathbf{Q}}}
+\newcommand{\Kt}{\widetilde{\mathbf{K}}}
+\newcommand{\Vt}{\widetilde{\mathbf{V}}}
+\newcommand{\Zt}{\widetilde{\mathbf{Z}}}
+\newcommand{\Apad}{\mathbf{A}_{\mathrm{pad}}}
+\newcommand{\Bpad}{\mathbf{B}_{\mathrm{pad}}}
+\newcommand{\Adummy}{\mathbf{A}_{\mathrm{dummy}}}
+\newcommand{\Bdummy}{\mathbf{B}_{\mathrm{dummy}}}
+
+% Operator macros.
+\newcommand{\RMSCore}{\mathrm{RMSCore}}
+\newcommand{\LNCore}{\mathrm{LNCore}}
+\newcommand{\softmax}{\mathrm{softmax}}
+\newcommand{\SiLU}{\mathrm{SiLU}}
+\newcommand{\GELU}{\mathrm{GELU}}
+\newcommand{\ReLU}{\mathrm{ReLU}}
+\newcommand{\SwiGLU}{\mathrm{SwiGLU}}
+\newcommand{\RoPE}{\mathrm{RoPE}}
+\newcommand{\KV}{\mathrm{KV}}
+\newcommand{\LoRA}{\mathrm{LoRA}}
+
+% Other notation.
+\newcommand{\rtrue}{r}
+\newcommand{\rpad}{r_{\mathrm{pad}}}
+\newcommand{\dinX}{d_{\mathrm{in}}}
+\newcommand{\doutX}{d_{\mathrm{out}}}
+\newcommand{\eqtested}{\stackrel{\text{tested}}{=}}
+\newcommand{\circs}{\odot} % SwiGLU elementwise product.
+
+% Theorem / lemma environments.
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Margin notes for safe-wording reminders during writing (turn off for camera-ready).
+\newcommand{\safewording}[1]{} % no-op in final draft.

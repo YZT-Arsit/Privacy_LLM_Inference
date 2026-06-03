@@ -12,7 +12,7 @@
       "artifact_path": "outputs/workload_profile.json",
       "status": "present",
       "json_error": "",
-      "size_bytes": 54856,
+      "size_bytes": 55668,
       "top_level_keys": "calibration|config|interaction_breakdown|interpretation|limitations|methods|module_breakdown|paper_metrics|wrapper_integration_status"
     },
     {
@@ -21,7 +21,7 @@
       "artifact_path": "outputs/cross_architecture_summary.json",
       "status": "present",
       "json_error": "",
-      "size_bytes": 57316,
+      "size_bytes": 58979,
       "top_level_keys": "architectures|compatible_island_integration_status|compatible_island_projection|config|global_summary|stage_note|workload"
     },
     {
@@ -212,7 +212,7 @@
       "architecture": "sshleifer/tiny-gpt2",
       "scope": "gpt2_model_level_greedy",
       "metric": "measured_wall_time_ms",
-      "value": 6.196050000289688,
+      "value": 6.813033198704943,
       "allclose": "see token_match in generation_correctness",
       "artifact_path": "outputs/workload_profile.json",
       "notes": "GPT-2 model-level greedy measured wall-time."
@@ -596,8 +596,8 @@
       "gpu_compute": 4434424,
       "preprocessing_cost": 0,
       "online_extra_matmul_count": 0,
-      "measured_wall_time_ms": 2.8292586001043674,
-      "projected_wall_time_ms": 2.8292586001043674,
+      "measured_wall_time_ms": 2.434716999414377,
+      "projected_wall_time_ms": 2.434716999414377,
       "wall_time_source": "measured",
       "artifact_path": "outputs/workload_profile.json"
     },
@@ -611,7 +611,7 @@
       "preprocessing_cost": 0,
       "online_extra_matmul_count": 0,
       "measured_wall_time_ms": null,
-      "projected_wall_time_ms": 42.52702272550677,
+      "projected_wall_time_ms": 37.193893690611645,
       "wall_time_source": "projected_from_op_counts",
       "artifact_path": "outputs/workload_profile.json"
     },
@@ -624,8 +624,8 @@
       "gpu_compute": 4429848,
       "preprocessing_cost": 403784,
       "online_extra_matmul_count": 0,
-      "measured_wall_time_ms": 6.196050000289688,
-      "projected_wall_time_ms": 42.742128702196716,
+      "measured_wall_time_ms": 6.813033198704943,
+      "projected_wall_time_ms": 37.38195204023441,
       "wall_time_source": "measured",
       "artifact_path": "outputs/workload_profile.json"
     },
@@ -639,7 +639,7 @@
       "preprocessing_cost": 403784,
       "online_extra_matmul_count": 0,
       "measured_wall_time_ms": null,
-      "projected_wall_time_ms": 42.23986513554088,
+      "projected_wall_time_ms": 36.92668586094678,
       "wall_time_source": "projected_from_op_counts",
       "artifact_path": "outputs/workload_profile.json"
     },
@@ -653,7 +653,7 @@
       "preprocessing_cost": 403992,
       "online_extra_matmul_count": 0,
       "measured_wall_time_ms": null,
-      "projected_wall_time_ms": 42.306135377317766,
+      "projected_wall_time_ms": 36.99217314509804,
       "wall_time_source": "projected_from_op_counts",
       "artifact_path": "outputs/workload_profile.json"
     },
@@ -667,7 +667,7 @@
       "preprocessing_cost": 403784,
       "online_extra_matmul_count": 0,
       "measured_wall_time_ms": null,
-      "projected_wall_time_ms": 42.23986513554088,
+      "projected_wall_time_ms": 36.92668586094678,
       "wall_time_source": "projected_from_op_counts",
       "artifact_path": "outputs/workload_profile.json"
     }

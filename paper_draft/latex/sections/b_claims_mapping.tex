@@ -1,0 +1,45 @@
+\section{Claims Mapping}
+\label{app:claims}
+
+This appendix pins every body claim to one of three audit buckets. \texttt{supported} claims have direct artifact evidence (\texttt{allclose} or exact-token-match). \texttt{proxy\_supported} claims have proxy-attacker or cost-model evidence only and are worded ``in our tested configurations.'' \texttt{unsupported} claims must \emph{never} appear as positive claims in the body.
+
+\subsection*{Supported claims (S1--S8)}
+\begin{description}[leftmargin=*, style=unboxed]
+  \item[S1] GPT-2 model-level masked execution reproduces the plain reference output token-for-token in our tested configurations.
+  \item[S2] Modern decoder-only model-level masked execution reproduces the plain reference output token-for-token in our tested configurations.
+  \item[S3] Compatible mask families preserve correctness across the tested architectures.
+  \item[S4] KV cache append invariant holds for the tested decoder-only generation paths.
+  \item[S5] Masked LoRA forward/backward/rank-padded primitives match the plain rank-$\rtrue$ reference to float64 precision on synthetic single-linear tests.
+  \item[S6] Synthetic multi-layer rank-padded LoRA training matches the plain reference on every per-module slice.
+  \item[S7] Every tested stronger-dummy strategy preserves the rank-padded LoRA invariant $\Apad\Bpad = \A\B$ (exactly or via a tracked trusted-side correction) and matches plain training to float64 precision.
+  \item[S8] Under the cost-model proxy, equalizing per-step latency to the upper bucket reduces the worst-case timing classifier accuracy to near random chance.
+\end{description}
+
+\subsection*{Proxy-supported claims (P1--P5)}
+\begin{description}[leftmargin=*, style=unboxed]
+  \item[P1] Under our adaptive proxy attackers (ridge, MLP, signature- and Sinkhorn-based permutation recovery, linkability), the full mitigation bundle keeps the worst-case attacker close to random chance in our tested configurations.
+  \item[P2] Under our cost-model timing proxy, the \texttt{proxy\_equalized} mode reduces classifier accuracy to near random chance.
+  \item[P3] Under our LoRA adapter and gradient leakage proxy attackers, fresh masks $+$ pad bring the linkability AUC close to $0.5$ in our tests.
+  \item[P4] Rank padding hides $\rtrue$ from tensor shape; under our spectral-cliff, energy, elbow, and ensemble proxy detectors, stronger dummy strategies fail to recover $\rtrue$ reliably in our tests (\texttt{needs\_more\_evaluation}).
+  \item[P5] Under our cross-layer linkability proxy, fresh masks per module keep the AUC near $0.5$ across the tested multi-layer configuration.
+\end{description}
+
+\subsection*{Unsupported claims (U1--U8) --- must NOT appear as positive claims in the body}
+\begin{description}[leftmargin=*, style=unboxed]
+  \item[U1] Formal/cryptographic/semantic security of the masked path. Safe wording: \emph{We make no formal/cryptographic/semantic security claims.}
+  \item[U2] Real TEE wall-time. Safe wording: \emph{We report measured local-emulation latencies; we do not claim real TEE wall-time.}
+  \item[U3] Hardware side-channel security (cache, power, EM).
+  \item[U4] Full Qwen/TinyLlama/LLaMA LoRA fine-tuning.
+  \item[U5] PEFT/DeepSpeed/vLLM/FlashAttention compatibility.
+  \item[U6] $\rpad$ is hidden from the GPU.
+  \item[U7] Loss/optimizer is fully outsourced to the GPU.
+  \item[U8] Protection against a compromised TEE.
+\end{description}
+
+\subsection*{Body $\to$ claim mapping}
+\Cref{sec:introduction} (Contributions) maps C1 to S1, S2, S4; C2 to S3; C3 to S5, S6, S7; C4 cites the audit and summary directly. \Cref{sec:threat} lists U1--U8 verbatim under out-of-scope. \Cref{sec:design:rank-pad,sec:design:lora-backward} explicitly call out U6 (padded rank visible) and U7 (loss/optimizer trusted). \Cref{sec:correctness} carries only S1--S8 under theorem labels. \Cref{sec:security} carries only P1--P5 in positive statements; every paragraph is hedged with ``in our tested configurations.'' \Cref{sec:evaluation} tags each RQ with the claims it instantiates. \Cref{sec:limitations} expands U1--U8 into items 1--15. \Cref{sec:related} uses ``proxy-evaluated, not formal'' throughout. \Cref{sec:conclusion} closes with the same U1--U8 disclaimer block.
+
+\paragraph{Wording check.}
+If a candidate sentence contains any of: \texttt{secure}, \texttt{provably}, \texttt{cryptographic}, \texttt{semantic security}, \texttt{prevents all leakage}, \texttt{guarantees}, \texttt{real TEE wall-time}, \texttt{hides padded rank}, \texttt{Qwen fine-tune}, \texttt{LLaMA fine-tune}, \texttt{PEFT}, \texttt{DeepSpeed}, \texttt{vLLM}, \texttt{FlashAttention}, or \texttt{fully outsourced loss/optimizer}, that sentence requires a corresponding \texttt{unsupported} audit row; re-read U1--U8 and either re-word or move to Limitations. The complete audit lives in \texttt{paper\_results/markdown/paper\_claims\_audit.md} and is reproduced verbatim in \Cref{tab:paper-claims-audit}.
+
+\input{tables/paper_claims_audit.tex}

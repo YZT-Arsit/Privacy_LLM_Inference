@@ -1,5 +1,5 @@
 stage,component,architecture,scope,metric,value,allclose,artifact_path,notes
-1-4,ours_current_greedy,sshleifer/tiny-gpt2,gpt2_model_level_greedy,measured_wall_time_ms,6.196050000289688,see token_match in generation_correctness,outputs/workload_profile.json,GPT-2 model-level greedy measured wall-time.
+1-4,ours_current_greedy,sshleifer/tiny-gpt2,gpt2_model_level_greedy,measured_wall_time_ms,6.813033198704943,see token_match in generation_correctness,outputs/workload_profile.json,GPT-2 model-level greedy measured wall-time.
 5.2,compatible_nonlinear_islands,cross_architecture,tensor_level,max_max_abs_error,see artifact,,outputs/nonlinear_island_experiments.json,
 6.4b,modern_decoder_block_wrapper,modern_decoder,block_level,max_abs_error,see artifact,,outputs/modern_decoder_block_wrapper_smoke.json,
 6.4c,modern_decoder_model_wrapper,modern_decoder,model_level_greedy,sequence_exact_match,see artifact,False,outputs/modern_decoder_model_wrapper_smoke.json,

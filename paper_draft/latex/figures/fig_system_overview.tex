@@ -1,0 +1,60 @@
+% Figure 1: System overview.
+% TikZ schematic of the trusted-side controller and the untrusted GPU.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  node distance=4mm and 8mm,
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, font=\footnotesize},
+  tee/.style={box, fill=blue!6, minimum width=64mm, minimum height=42mm},
+  gpu/.style={box, fill=red!6, minimum width=64mm, minimum height=28mm},
+  item/.style={box, fill=white, minimum width=28mm},
+  arrow/.style={->, thick},
+  label/.style={font=\scriptsize, midway, fill=white, inner sep=1pt}
+]
+
+% TEE box.
+\node[tee] (tee) {};
+\node[anchor=north west, font=\footnotesize\bfseries] at (tee.north west) {Trusted controller (TEE-like, locally emulated)};
+
+% Items inside TEE.
+\node[item] (prompt) at ($(tee.north west)+(16mm,-9mm)$) {prompt $\X$};
+\node[item, right=2mm of prompt] (mask)   {masks $\Nin,\Nout,\NQ,\NK,\NV,\PP,\UU$};
+\node[item, below=1.5mm of prompt]  (lora)  {LoRA $(\A,\B)$};
+\node[item, right=2mm of lora]    (opt)   {optimizer state};
+\node[item, below=1.5mm of lora]  (loss)  {loss closure};
+\node[item, right=2mm of loss]    (samp)  {sampler / recovery};
+
+% GPU box.
+\node[gpu, below=12mm of tee] (gpu) {};
+\node[anchor=north west, font=\footnotesize\bfseries] at (gpu.north west) {Untrusted GPU};
+\node[item, fill=red!1] (mm) at ($(gpu.center)+(-20mm,2mm)$) {masked matmul};
+\node[item, fill=red!1, right=2mm of mm] (att) {masked attention};
+\node[item, fill=red!1, below=1.5mm of mm]   (kv) {masked KV cache $\Kt,\Vt$};
+\node[item, fill=red!1, right=2mm of kv]     (lf) {masked LoRA fwd/bwd};
+
+% Public weight box, lateral.
+\node[box, fill=gray!10, right=12mm of gpu] (pubW) {public base\\weight $\W$};
+
+% User in.
+\node[font=\footnotesize] (userin) at ($(tee.north)+(0,6mm)$) {user prompt};
+\draw[arrow] (userin) -- (tee.north);
+
+% TEE -> GPU.
+\draw[arrow] ($(tee.south)+(-14mm,0)$) -- ($(gpu.north)+(-14mm,0)$)
+   node[label, midway, anchor=east] {$\Xt,\Wt,\At,\Bt$};
+\draw[arrow] ($(gpu.north)+(10mm,0)$) -- ($(tee.south)+(10mm,0)$)
+   node[label, midway, anchor=west] {$\Yt,\widetilde{\partial\A},\widetilde{\partial\B}$};
+
+% GPU <-> public weight.
+\draw[arrow] (pubW.west) -- (gpu.east);
+
+% Output.
+\node[font=\footnotesize] (userout) at ($(tee.east)+(18mm,0)$) {output token};
+\draw[arrow] (tee.east) -- (userout);
+
+\end{tikzpicture}
+\caption{System overview. The trusted-side controller (locally emulated; \emph{not} a real TEE in this prototype) samples masks, holds the LoRA adapter and optimizer state, and dispatches masked dense matmuls to the untrusted GPU. The GPU never sees plain activations, plain adapter factors, or plain gradients; it only sees masked tensors $\Xt, \Wt, \At, \Bt, \Kt, \Vt$.}
+\label{fig:system-overview}
+\end{figure}

@@ -1,0 +1,37 @@
+% Figure 4: Dense sandwich + pad compensation.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  blk/.style={draw, rounded corners=2pt, minimum width=30mm, minimum height=9mm, align=center, inner sep=3pt, font=\footnotesize},
+  pad/.style={blk, fill=yellow!20},
+  lin/.style={blk, fill=gray!10},
+  isl/.style={blk, fill=green!10},
+  comp/.style={blk, fill=orange!10},
+  arrow/.style={->, thick}
+]
+
+\node[pad] (in)   at (0,0)   {$\Xt = (\X - \Tpad)\Nin$};
+\node[lin, right=8mm of in] (lin1) {dense Linear\\$\Wt = \Nin^{-1}\W\PP$};
+\node[isl, right=8mm of lin1] (isl) {island operator\\(permutation / orthogonal)};
+\node[lin, right=8mm of isl] (lin2) {dense Linear\\$\PP^{-1}\W'\Nout$};
+\node[pad, right=8mm of lin2] (out)  {$\Yt = \Y\Nout$};
+
+\draw[arrow] (in) -- (lin1);
+\draw[arrow] (lin1) -- (isl);
+\draw[arrow] (isl) -- (lin2);
+\draw[arrow] (lin2) -- (out);
+
+% Compensation arrow from trusted side.
+\node[comp] (ct) at ($(lin1)+(0,-14mm)$) {trusted compensation\\$\Ct = \Tpad\W\Nout$};
+\draw[arrow, dashed] (ct.north) -- (lin1.south);
+
+% Boundary pad label.
+\node[font=\scriptsize, anchor=south, align=center] at ($(in.north)+(0,1.5mm)$) {trusted boundary pad};
+\node[font=\scriptsize, anchor=north, align=center] at ($(isl.south)+(0,-1.5mm)$) {restricted mask family $\PP$ (or orthogonal)};
+
+\end{tikzpicture}
+\caption{Dense sandwich and pad compensation. The island operator commutes with a restricted mask family; the surrounding dense Linear boundaries upgrade the GPU-visible mask to a dense invertible transformation; the boundary pad $\Tpad$ randomizes the centered hidden state at the island boundary, and the compensation $\Ct = \Tpad\W\Nout$ is absorbed on the trusted side.}
+\label{fig:dense-sandwich}
+\end{figure}

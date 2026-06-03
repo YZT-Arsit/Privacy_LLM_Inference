@@ -1,0 +1,56 @@
+% main.tex --- top-level paper draft.
+% Compile order: pdflatex main && bibtex main && pdflatex main && pdflatex main.
+% See BUILD.md and compile_notes.md.
+
+\documentclass[10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\usetikzlibrary{arrows.meta, positioning, calc, fit, shapes.geometric, decorations.pathreplacing}
+
+\input{macros}
+
+\title{Masked Execution Islands for Private Generative LLM Inference and Personalization}
+\author{Anonymous Submission}
+\date{}
+
+\begin{document}
+\maketitle
+
+\input{sections/00_abstract}
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_system_and_threat_model}
+\input{sections/04_design}
+\input{sections/05_correctness}
+\input{sections/06_security_analysis}
+\input{sections/07_evaluation}
+\input{sections/08_limitations}
+\input{sections/09_related_work}
+\input{sections/10_conclusion}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\appendix
+\input{sections/a_notation}
+\input{sections/b_claims_mapping}
+
+\end{document}

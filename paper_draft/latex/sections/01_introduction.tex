@@ -1,0 +1,56 @@
+\section{Introduction}
+\label{sec:introduction}
+
+\subsection{Privacy in modern LLM deployment}
+LLM-as-a-service deployments now mediate a large fraction of sensitive user workflows: legal drafting, medical summarization, source-code refactoring, customer-support routing, and personalized fine-tuning on enterprise data. Even when the \emph{base} model weights are public, the runtime data flowing through a serving GPU is not. Four channels are already documented in the literature:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{Prompt and hidden-state privacy.} The token embedding of the user's prompt is the first activation entering layer~$0$; every residual stream and every KV cache entry is derived from it.
+  \item \textbf{Generation-trace privacy.} During autoregressive decoding, the sequence of decoded tokens is itself sensitive (e.g., a partial draft of a confidential contract).
+  \item \textbf{LoRA personalization privacy.} When a user fine-tunes a LoRA adapter $(\A, \B)$~\cite{hu2022lora} on private data, the adapter factors and their per-step gradients are derived from that data and enable membership inference~\cite{shokri2017membership} and partial training-data reconstruction~\cite{zhu2019dlg, zhao2020idlg, yin2021gradinversion}.
+  \item \textbf{Gradient and adapter leakage.} Gradient tensors crossing a TEE-GPU boundary expose mini-batch composition; published adapter factors expose statistical signatures of the fine-tuning corpus.
+\end{itemize}
+
+In short, a deployment that treats a GPU as fully trusted ships the user's data straight to the least-trusted component in the trust chain.
+
+\subsection{Why naive TEE partitioning is not enough}
+The natural defense is to run the model inside a confidential-computing TEE such as Intel SGX, TDX, AMD SEV-SNP, or NVIDIA H100 Confidential Computing. Two problems prevent this from being a complete answer:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{TEEs are unsuited to LLM-scale dense linear algebra.} Effective TEE memory bandwidth and compute throughput are an order of magnitude or more below datacenter GPUs for the kinds of dense, large-tile matmuls that dominate LLM inference and training. Prior systems work~\cite{tramer2019slalom, volos2018graviton} confirms the gap.
+  \item \textbf{GPU acceleration is required, but the GPU sits outside the TEE.} Even ``confidential GPU'' deployments expose a transcript at the GPU device interface that colocated code, a compromised host, or a curious cloud operator can observe.
+\end{itemize}
+
+\noindent The engineering problem is therefore concrete: \emph{keep dense linear algebra on the GPU while keeping the user's data out of any plain-text representation the GPU can observe.}
+
+\subsection{Why prior obfuscation does not cover generative LLMs}
+Boundary-masking schemes---Amulet-style matrix obfuscation~\cite{amulet2024todo}, secret-shared offload~\cite{mohassel2017secureml, liu2017minionn}, and hybrid TEE-accelerator partitioning~\cite{tramer2019slalom, hunt2018chiron, kunkel2019tensorscone}---typically apply an invertible left-mask to the activation and an inverse right-mask to the weight, so the accelerator computes $(\mathbf{M}^{-1}\X)(\mathbf{M}\W) = \X\W$ without observing $\X$ or $\W$. Three properties of generative LLMs make a direct port unsatisfactory:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{Decoder-only autoregressive generation needs a stable token axis.} The KV cache is appended token-by-token; a left mask along the token dimension breaks the cache concatenation identity and requires re-masking the prefix on every step.
+  \item \textbf{Nonlinear layers do not commute with arbitrary dense masks.} For pointwise $\phi$, $\phi(\mathbf{M}\X) \neq \phi(\X)\mathbf{M}$ for generic dense $\mathbf{M}$. Modern decoder blocks also include RMSNorm, SwiGLU, and RoPE inside GQA, each with its own structural symmetry that any ``compatible'' mask family must respect.
+  \item \textbf{LoRA personalization introduces structural leakage.} The factors $(\A, \B)$ reveal the rank $\rtrue$ from their tensor shape; the per-step gradients $\partial \A, \partial \B$ reveal mini-batch identity; and a low-rank adapter is itself an extraction-friendly target.
+\end{itemize}
+
+\subsection{Our approach}
+We design and prototype a generation-compatible masked execution layer with four ingredients:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{Generation-compatible right masking.} Masks act on the \emph{feature} axis of the activation rather than the token axis. KV cache append, RoPE rotation, and the attention dot-product identity are preserved because the right mask commutes with token-axis concatenation and with per-head feature blocks.
+  \item \textbf{Operator-compatible nonlinear islands.} Around each nonlinear layer we use a family-restricted mask (channel permutation for elementwise activations and paired permutation for SwiGLU; orthogonal mask for RMSNorm; mean-preserving orthogonal mask for LayerNorm). Inside each island the mask family commutes with the operator; outside the island we recover the dense Linear regime.
+  \item \textbf{Dense sandwich plus boundary pad.} Each nonlinear island is sandwiched by fully dense Linear masks; a trusted-side translation $\Tpad$ is added before the island and absorbed into the next Linear's bias.
+  \item \textbf{Private LoRA training path.} The LoRA factors $(\A, \B)$ are masked with a trusted inner mask $\UU$ such that $\At = \Nin^{-1} \A \UU$ and $\Bt = \UU^{-1} \B \Nout$. The factor product is unchanged, the per-step backward gradient identity holds in masked space, and a rank pad with stronger dummy distributions hides the true rank from the tensor shape (the padded rank itself remains visible).
+\end{itemize}
+
+\subsection{Contributions}
+We make four contributions, each backed by an explicit artifact in the paper-side artifact registry:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{C1: Generation-compatible masked execution for decoder-only LLMs.} A right-masked wrapper supporting prefill, decode-step, greedy generation, KV cache append, RoPE, and GQA, reproducing the plain reference output token-for-token on GPT-2 and a modern decoder-only wrapper in our tested configurations.
+  \item \textbf{C2: Operator-compatible nonlinear islands with rigorous correctness conditions.} Paired channel permutations for GELU/ReLU and SwiGLU; orthogonal masks for RMSNorm; mean-preserving orthogonal masks for LayerNorm; each surrounded by a dense Linear sandwich and a boundary pad whose compensation algebra is closed in trusted space.
+  \item \textbf{C3: A private LoRA personalization path.} Masked LoRA forward, masked LoRA backward, rank padding with five stronger dummy distributions, and a multi-layer LoRA training step. Loss and optimizer remain trusted-side; the adapter is never merged into the public base weight.
+  \item \textbf{C4: An artifact-backed evaluation.} Six paper tables, a measured local-emulation runtime evaluation, seven figures, and a claims-mapping document classifying every claim as \texttt{supported}, \texttt{proxy\_supported}, or \texttt{unsupported}.
+\end{itemize}
+
+\subsection{What this paper is not}
+This paper is \emph{not} a formal-security paper. We do not prove cryptographic indistinguishability, semantic security, or differential privacy of the masked transcript; we do not measure real TEE wall-time; we do not implement a full Qwen/TinyLlama/LLaMA LoRA fine-tune; we do not claim PEFT/DeepSpeed/vLLM/FlashAttention compatibility; we do not claim that the padded LoRA rank itself is hidden. The Limitations (\Cref{sec:limitations}) and the claims mapping (\Cref{app:claims}) make every such boundary explicit.

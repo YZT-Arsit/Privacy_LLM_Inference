@@ -1,0 +1,59 @@
+\section{System and Threat Model}
+\label{sec:threat}
+
+\subsection{System model}
+The system has two parties and a one-way data plane (\Cref{fig:system-overview}).
+
+\paragraph{Trusted-side controller (TEE-like, locally emulated).}
+Holds the user prompt and any retrieved private context; the user's LoRA adapter $(\A, \B)$; the optimizer state (SGD momentum, AdamW moments); the loss closure; the sampler (greedy, top-$k$, top-$p$); the mask sampler that draws fresh masks $\Nin, \Nout, \NQ, \NK, \NV, \PP, \UU$ per call; the boundary pad $\Tpad$; and the trusted compensation tensors $\Ct$ and $\Cone$. The controller embeds the prompt, applies right masking to each Linear boundary, dispatches every dense matmul to the GPU, recovers plain-space results when an inter-block boundary requires it, samples the next token, and orchestrates the LoRA backward and optimizer step entirely on the trusted side. In our prototype the controller is \textbf{emulated as a local trusted runtime; it is not a real TEE}.
+
+\paragraph{Untrusted GPU.}
+Performs masked Linear matmuls; masked nonlinear layers when an operator-compatible mask family is in use; masked attention $\Qt\Kt^{\top} = \Q\K^{\top}$ when $\NQ\NK^{\top} = \mathbf{I}$; KV cache reads and per-step appends in masked space; LoRA forward $\X(\W + (\alpha/\rtrue)\Apad\Bpad)\Nout$; and masked backward matmuls. The GPU observes every input/output tensor, every kernel argument shape, and the elapsed real time it spends per call.
+
+\paragraph{Data plane.}
+The controller pushes masked tensors $\Xt, \Wt, \At, \Bt, \Kt, \Vt$ and reads back masked outputs $\Yt, \widetilde{\partial \A}, \widetilde{\partial \B}$. The controller never pushes plain $\X, \A, \B, \partial \A, \partial \B$ to the GPU.
+
+\subsection{Threat model}
+
+\paragraph{Protected assets.}
+Prompt and private input tensors; hidden states and residual stream between Linear layers; KV cache entries $(\K, \V)$ in plain space; pre-sampling logits; LoRA adapter factors $\A, \B$; per-step LoRA gradients $\partial\A, \partial\B$; private training data inside the LoRA training loop; and the optimizer state.
+
+\paragraph{Allowed leakage.}
+Model architecture (layer counts, head counts, dtype); the public base-model weights (assumed public by the problem statement); tensor shapes, unless a separate pad hides a particular dimension; the padded LoRA rank $\rpad$ (see \Cref{sec:limitations}); the output text/token, which the user receives and the system does not try to hide from the GPU; sequence length, unless a separate sequence-length pad is engaged (not implemented); and local-runtime metadata exposed by our local-emulation harness, which is a prototype artifact, not a real-TEE measurement.
+
+\paragraph{Out of scope.}
+The following are not covered by this paper, and the design does not claim to defend against them:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{A compromised TEE.} We assume the controller is honest; a compromised controller breaks every guarantee we evaluate.
+  \item \textbf{Hardware side-channels} (cache, power, EM, microarchitectural transient execution~\cite{kocher2019spectre, vanbulck2018foreshadow}). Not evaluated.
+  \item \textbf{Formal / semantic / cryptographic security.} We make no formal indistinguishability or semantic-security claim; every security number in this paper is a proxy under a specific, named attacker.
+  \item \textbf{Real TEE wall-time.} Our runtime numbers are local-emulation measurements via \texttt{time.perf\_counter}, not real TEE wall-time.
+  \item \textbf{Full production Qwen/TinyLlama/LLaMA LoRA fine-tuning.} Our LoRA evaluation uses synthetic single-linear and multi-layer tiles only.
+  \item \textbf{Framework integration.} We do not integrate PEFT~\cite{peft2022}, vLLM~\cite{kwon2023vllm}, DeepSpeed~\cite{rasley2020deepspeed}, or FlashAttention~\cite{dao2022flashattention}.
+  \item \textbf{Padded-rank hiding.} Rank padding hides the \emph{true} rank from the tensor shape, but $\rpad$ itself remains visible.
+  \item \textbf{Fully outsourced loss/optimizer.} Loss and optimizer remain trusted-side; only forward/backward matmuls cross the boundary.
+\end{itemize}
+
+\paragraph{Adversary capabilities exercised in evaluation.}
+Ridge and small-MLP activation inverters trained on $(\Xt, \Yt)$ pairs; signature- and Sinkhorn-based permutation-recovery attackers against permutation islands; membership-style linkability AUC over per-call masked traces; LoRA adapter extraction and gradient extraction proxies~\cite{zhu2019dlg, zhao2020idlg}; spectral-cliff, energy, elbow, and ensemble rank-inference proxies against rank-padded LoRA; a cost-model timing classifier that distinguishes execution profiles when constant-time mode is off; and a black-box query attacker over (output token, summary-logits) traces.
+
+A summary of the threat model and leakage boundary is given in \Cref{tab:threat-model}.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Threat model and leakage boundary. The trusted-side controller is locally emulated in this prototype; it is not a real TEE.}
+\label{tab:threat-model}
+\begin{tabularx}{\linewidth}{lXX}
+\toprule
+& \textbf{Trusted-side controller} & \textbf{Untrusted GPU} \\
+\midrule
+Holds & prompt, LoRA $(\A,\B)$, optimizer state, masks, pads, sampler, loss closure & nothing private \\
+Observes & user input plaintext (by design) & $\Xt, \Wt, \At, \Bt, \Kt, \Vt, \Yt$, shapes, dtypes, per-call timing \\
+Protected & all hidden states, KV cache in plain space, logits, gradients, training data & --- \\
+Allowed leakage & --- & shapes; $\rpad$; output token; arch; public $\W$ \\
+Out of scope & compromised TEE; HW side-channels; formal security; real TEE wall-time; full Qwen/LLaMA fine-tune; PEFT/vLLM/DeepSpeed/FlashAttention; padded-rank hiding; outsourced loss/optimizer & --- \\
+\bottomrule
+\end{tabularx}
+\end{table}

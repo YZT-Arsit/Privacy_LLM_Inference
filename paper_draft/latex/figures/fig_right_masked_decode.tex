@@ -1,0 +1,51 @@
+% Figure 2: Right-masked decode and KV cache append.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  cell/.style={draw, minimum width=10mm, minimum height=6mm, font=\scriptsize, inner sep=0pt},
+  newcell/.style={cell, fill=orange!20},
+  oldcell/.style={cell, fill=blue!8},
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, font=\footnotesize},
+  arrow/.style={->, thick}
+]
+
+% Old masked K cache: K_{1:t-1} N_K.
+\node[font=\footnotesize\bfseries] at (-1.6,2.4) {Step $t-1$};
+\node[oldcell] (k1) at (0,2) {$\K_1\NK$};
+\node[oldcell, right=0mm of k1] (k2) {$\K_2\NK$};
+\node[oldcell, right=0mm of k2] (k3) {$\cdots$};
+\node[oldcell, right=0mm of k3] (kt) {$\K_{t-1}\NK$};
+\node[box, fill=blue!4, fit=(k1) (kt), inner sep=2pt] (oldcache) {};
+\node[font=\scriptsize] at ($(oldcache.south)+(0,-2mm)$) {existing masked cache $[\K_{1:t-1}]\NK$};
+
+% New token K_t.
+\node[font=\footnotesize\bfseries] at (-1.6,0.3) {Step $t$};
+\node[newcell] (kt2) at (0,-0.1) {$\K_t\NK$};
+\node[font=\scriptsize, right=2mm of kt2] {new masked row};
+
+% Append.
+\node[font=\footnotesize\bfseries] at (-1.6,-2.2) {After append};
+\node[oldcell] (a1) at (0,-2.6) {$\K_1\NK$};
+\node[oldcell, right=0mm of a1] (a2) {$\K_2\NK$};
+\node[oldcell, right=0mm of a2] (a3) {$\cdots$};
+\node[oldcell, right=0mm of a3] (at) {$\K_{t-1}\NK$};
+\node[newcell, right=0mm of at]  (an) {$\K_t\NK$};
+\node[box, fill=blue!4, fit=(a1) (an), inner sep=2pt] (newcache) {};
+\node[font=\scriptsize] at ($(newcache.south)+(0,-2mm)$) {$[\K_{1:t}]\NK = [\K_{1:t-1}\NK \mid \K_t\NK]$};
+
+% Vertical arrows.
+\draw[arrow] ($(oldcache.south east)+(2mm,0)$) .. controls +(8mm,-6mm) and +(8mm,6mm) .. ($(newcache.north east)+(2mm,0)$)
+  node[font=\scriptsize, right, midway, xshift=4mm] {concat};
+
+% Attention identity below.
+\node[font=\footnotesize, anchor=west] at (5.0,1.0) {$\NQ\NK^{\top} = \mathbf{I}$};
+\node[font=\footnotesize, anchor=west] at (5.0,0.4) {$\Rightarrow\ \Qt_t\Kt_{1:t}^{\top} = \Q_t\K_{1:t}^{\top}$};
+\node[font=\footnotesize, anchor=west] at (5.0,-0.2) {$\Rightarrow$ attention scores preserved};
+\node[font=\footnotesize, anchor=west] at (5.0,-0.8) {(no token-axis mixing)};
+
+\end{tikzpicture}
+\caption{Right-masked decode and KV cache append. The right mask $\NK$ commutes with token-axis concatenation, so the masked cache append is a no-op rewriter; the attention identity $\Qt\Kt^{\top} = \Q\K^{\top}$ is preserved by $\NQ\NK^{\top} = \mathbf{I}$.}
+\label{fig:right-masked-decode}
+\end{figure}

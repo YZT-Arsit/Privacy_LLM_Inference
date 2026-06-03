@@ -1,0 +1,53 @@
+% Figure 5: LoRA private training path (forward + backward + optimizer).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  trust/.style={draw, rounded corners=2pt, fill=blue!6, font=\scriptsize, align=center, inner sep=3pt, minimum width=26mm, minimum height=8mm},
+  gpu/.style={draw, rounded corners=2pt, fill=red!6, font=\scriptsize, align=center, inner sep=3pt, minimum width=30mm, minimum height=8mm},
+  pub/.style={draw, rounded corners=2pt, fill=gray!12, font=\scriptsize, align=center, inner sep=3pt, minimum width=22mm, minimum height=8mm},
+  opt/.style={draw, rounded corners=2pt, fill=green!10, font=\scriptsize, align=center, inner sep=3pt, minimum width=26mm, minimum height=8mm},
+  arrow/.style={->, thick}
+]
+
+% Top row: trusted-side artifacts.
+\node[trust] (X)    at (0,3.0) {$\X$ (prompt / batch)};
+\node[trust, right=8mm of X] (AB)   {LoRA $(\A,\B)$\\rank $\rtrue \to \rpad$};
+\node[pub,   right=8mm of AB] (W)   {public $\W$};
+\node[trust, right=8mm of W]  (U)    {trusted $\UU$};
+
+% Middle: masking arrows.
+\node[trust] (Xt)  at (0,1.4)  {$\Xt = (\X{-}\Tpad)\Nin$};
+\node[trust, right=8mm of Xt] (ABt) {$\At = \Nin^{-1}\A\UU$\\$\Bt = \UU^{-1}\B\Nout$};
+\node[pub, right=8mm of ABt] (Wt)  {$\Wt = \Nin^{-1}\W\Nout$};
+
+\draw[arrow] (X) -- (Xt);
+\draw[arrow] (AB) -- (ABt);
+\draw[arrow] (W) -- (Wt);
+\draw[arrow] (U) -- (ABt);
+
+% GPU row.
+\node[gpu] (fwd) at (1.6,-0.4) {GPU masked forward\\$\Yt = \Xt\Wt + (\alpha/\rtrue)\Xt\At\Bt + \Ct + \mathbf{b}\Nout$};
+\node[gpu, right=8mm of fwd] (bwd) {GPU masked backward\\$\widetilde{\partial\A}, \widetilde{\partial\B}$ from $\Gt = \G\Nout^{-\top}$};
+
+\draw[arrow] (Xt) -- (fwd);
+\draw[arrow] (ABt) -- (fwd);
+\draw[arrow] (Wt) -- (fwd);
+\draw[arrow] (fwd) -- (bwd) node[midway, above, font=\scriptsize] {loss closure trusted};
+
+% Bottom row: trusted optimizer.
+\node[opt] (rec) at (1.6,-2.2) {trusted recovery\\$\partial\A, \partial\B$};
+\node[opt, right=8mm of rec] (optimizer) {trusted optimizer\\(SGD / AdamW)\\state held trusted};
+
+\draw[arrow] (bwd) -- (rec);
+\draw[arrow] (rec) -- (optimizer);
+\draw[arrow] (optimizer.south) -- ++(0,-0.4) -| ($(AB.south)+(0,-0.2)$) node[midway, font=\scriptsize, above, xshift=10mm] {update $\A,\B$ trusted-side};
+
+% Annotation: adapter never merged.
+\node[font=\scriptsize, align=left, anchor=west] at (0,-3.4) {%
+adapter NEVER merged into $\W$;\\rank pad: $\Apad{=}[\A\mid\Adummy]$, $\Bpad{=}[\B;\Bdummy]$, $\Adummy\Bdummy{=}\mathbf{0}$};
+\end{tikzpicture}
+\caption{Private LoRA training path. The adapter factors $(\A, \B)$ are masked with a paired inner mask $\UU$; per-step gradients are masked in the same right-masked space; the optimizer state and loss closure remain trusted-side; the adapter is never merged into the public base weight $\W$. Rank padding extends $(\A, \B)$ to $(\Apad, \Bpad)$ with $\Apad\Bpad = \A\B$.}
+\label{fig:lora-training}
+\end{figure}

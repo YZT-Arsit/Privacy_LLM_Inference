@@ -1,0 +1,24 @@
+\section{Limitations}
+\label{sec:limitations}
+
+This section enumerates every limitation that the artifacts surface and that the claims audit pins. None of the items below are buried; each is a first-class result of the work.
+
+\begin{enumerate}[leftmargin=*, nosep]
+  \item \textbf{No formal/cryptographic/semantic security.} Every security number in this paper is a proxy under a specific, named attacker. We do not prove cryptographic indistinguishability, semantic security, or differential privacy of the masked transcript.
+  \item \textbf{Trusted runtime is emulated, not a real TEE.} The trusted-side controller is implemented as a local Python runtime. Real-TEE deployment, attestation, sealed storage, and remote-attestation flows are out of scope.
+  \item \textbf{Measured runtime is local emulation, not real TEE wall-time.} \texttt{time.perf\_counter} on a small CPU configuration; $\text{num\_warmup}=2$, $\text{num\_repeats}=5$. Workload tiles are small. The modern-decoder-model-wrapper benchmark is opt-in and skipped by default. Reports publish timing statistics only; raw tensors, adapters, gradients, dense masks, and pads are never emitted.
+  \item \textbf{Hardware side-channels are not evaluated.} Cache, power, EM, microarchitectural transient execution~\cite{kocher2019spectre, vanbulck2018foreshadow} are out of scope. Only a cost-model timing proxy is evaluated.
+  \item \textbf{Full Qwen/TinyLlama/LLaMA LoRA fine-tuning is not implemented.} Our LoRA evaluation uses synthetic single-linear tiles and a synthetic multi-layer ($2$-layer, $14$-module) decoder configuration.
+  \item \textbf{Loss and optimizer remain trusted-side.} Only forward/backward matmuls cross the boundary. Optimizer state (SGD momentum, AdamW moments) is held trusted-side and never exported.
+  \item \textbf{Padded LoRA rank $\rpad$ is visible to the GPU.} Rank padding hides the true rank from tensor shape, but $\rpad$ itself is the published shape and is visible.
+  \item \textbf{The output text/token is visible.} By the threat model, the user receives the decoded tokens and the GPU observes them on the output path. Sensitive applications must not assume the answer itself is private.
+  \item \textbf{Sequence length and tensor shapes may leak.} We do not currently pad the sequence-length dimension. Per-layer tensor shapes are public. Mitigation (length padding, batching, dummy traffic) is out of scope.
+  \item \textbf{Stronger dummy distributions reduce tested spectral risk but do not prove rank hiding.} The stronger-dummy ensemble keeps cross-layer linkage \texttt{low} but the worst-case spectral and gradient rank-inference risk remains \texttt{high} under our stronger detectors. The dummy-strategy classifier reaches $0.476$ accuracy (chance $0.143$), risk \texttt{medium}.
+  \item \textbf{PEFT/DeepSpeed/vLLM/FlashAttention are not integrated.} The LoRA primitives are a stand-alone functional API.
+  \item \textbf{Compromised TEE is out of scope.} We assume the controller is honest. A compromised controller breaks every guarantee we evaluate. Roll-back attacks, replay across sessions, and malicious-mask sampling are not part of the evaluated threat model.
+  \item \textbf{The base model weights are assumed public.} Our scheme protects the user-side runtime data (prompt, hidden states, KV cache, adapter, gradients) but does not hide the base-model weights from the GPU.
+  \item \textbf{Distributed training is not implemented.} Single-process trusted runtime only. Multi-GPU and multi-node configurations are out of scope.
+  \item \textbf{Adapter merging into $\W$ is intentionally not supported.} Merging would publish a derived weight that no longer admits the masked forward identity of \Cref{thm:lora-forward}.
+\end{enumerate}
+
+The full per-stage limitations index ($161$ rows aggregated by the artifact pipeline) is summarized in \Cref{app:claims}; recurring themes are exactly the items above.

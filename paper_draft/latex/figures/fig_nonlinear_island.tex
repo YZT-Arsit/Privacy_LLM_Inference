@@ -1,0 +1,43 @@
+% Figure 3: Operator-compatible nonlinear island (three sub-panels).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.0mm]},
+  block/.style={draw, rounded corners=2pt, minimum width=22mm, minimum height=7mm, font=\scriptsize, align=center, inner sep=2pt},
+  lin/.style={block, fill=gray!10},
+  isl/.style={block, fill=green!10},
+  rms/.style={block, fill=blue!8},
+  ln/.style={block, fill=orange!10},
+  arrow/.style={->, thick},
+  panel/.style={font=\footnotesize\bfseries}
+]
+
+% Panel (a): pointwise activation.
+\node[panel] at (0,1.6) {(a) pointwise $\phi$};
+\node[lin] (a1) at (0,0.8) {$\Wt_1 = \Nin^{-1}\W_1\PP$};
+\node[isl, below=2.0mm of a1] (a2) {$\phi(\Zt) = \phi(\Z)\PP$};
+\node[lin, below=2.0mm of a2] (a3) {$\Wt_2 = \PP^{-1}\W_2\Nout$};
+\draw[arrow] (a1) -- (a2);
+\draw[arrow] (a2) -- (a3);
+
+% Panel (b): SwiGLU paired.
+\node[panel] at (4.6,1.6) {(b) SwiGLU paired $\PP$};
+\node[lin] (b1) at (4.6,0.8) {$\X\W_a\PP$ and $\X\W_b\PP$};
+\node[isl, below=2.0mm of b1] (b2) {$(\X\W_a\PP)\circs\SiLU(\X\W_b\PP)$\\$= ((\X\W_a)\circs\SiLU(\X\W_b))\PP$};
+\node[lin, below=2.0mm of b2] (b3) {$\W_o\Nout$};
+\draw[arrow] (b1) -- (b2);
+\draw[arrow] (b2) -- (b3);
+
+% Panel (c): RMSNorm / LN.
+\node[panel] at (9.4,1.6) {(c) RMSNorm / LayerNorm};
+\node[lin] (c1) at (9.4,0.8) {$\X\N$, $\N$ orthogonal};
+\node[rms, below=2.0mm of c1] (c2) {$\RMSCore(\X\N) = \RMSCore(\X)\N$};
+\node[ln,  below=2.0mm of c2] (c3) {$\LNCore(\X\N) = \LNCore(\X)\N$\\(needs $\N\mathbf{e}=\mathbf{e}$)};
+\draw[arrow] (c1) -- (c2);
+\draw[arrow] (c2) -- (c3);
+
+\end{tikzpicture}
+\caption{Operator-compatible nonlinear islands. The mask family is restricted to the smallest invariance group of the inner operator: (a) permutation $\PP$ for elementwise activations; (b) the \emph{paired} permutation $\PP$ on both SwiGLU branches; (c) orthogonal $\N$ for RMSNorm and mean-preserving orthogonal $\N$ (with $\N\mathbf{e}=\mathbf{e}$) for LayerNorm.}
+\label{fig:nonlinear-island}
+\end{figure}

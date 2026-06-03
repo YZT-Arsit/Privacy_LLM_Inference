@@ -1,0 +1,103 @@
+\section{Correctness Analysis}
+\label{sec:correctness}
+
+This section gives algebraic proof sketches for the design's correctness identities and pairs each one with the artifact row that empirically verifies it. We do \emph{not} claim formal cryptographic security here; \emph{correctness} in this paper means: the GPU-visible masked computation, when un-masked by the trusted side, equals the plain reference output in our tested configurations (and, for the algebraic identities, on all inputs that satisfy the stated assumptions). Empirical verification is summarized in \Cref{tab:correctness-summary}.
+
+\begin{theorem}[Linear boundary with pad compensation]
+\label{thm:linear}
+Let $\Nin, \Nout$ be invertible and $\Tpad$ an arbitrary trusted-side translation. Then for every $\X$,
+\[
+\big((\X - \Tpad)\Nin\big)\big(\Nin^{-1}\W\Nout\big) + \Tpad\W\Nout + \mathbf{b}\Nout = (\X\W + \mathbf{b})\Nout.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Expand: $(\X - \Tpad)\Nin\Nin^{-1}\W\Nout + \Tpad\W\Nout + \mathbf{b}\Nout = (\X - \Tpad)\W\Nout + \Tpad\W\Nout + \mathbf{b}\Nout = \X\W\Nout + \mathbf{b}\Nout$.
+\end{proof}
+
+\begin{theorem}[Pointwise activation permutation island]
+\label{thm:pointwise}
+Let $\phi: \mathbb{R} \to \mathbb{R}$ be pointwise and $\PP$ a permutation matrix. Then for every $\Z$, $\phi(\Z\PP) = \phi(\Z)\PP$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The $j$-th column of $\Z\PP$ is the $\pi(j)$-th column of $\Z$ for some permutation $\pi$. Applying $\phi$ column-by-column commutes with column reordering.
+\end{proof}
+
+\begin{theorem}[SwiGLU paired permutation]
+\label{thm:swiglu}
+Let $\PP$ be a permutation matrix and SiLU pointwise. Then for every $\X, \W_a, \W_b$,
+\[
+(\X\W_a\PP)\circs\SiLU(\X\W_b\PP) = \big((\X\W_a)\circs\SiLU(\X\W_b)\big)\PP.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+By \Cref{thm:pointwise}, $\SiLU(\X\W_b\PP) = \SiLU(\X\W_b)\PP$. The elementwise product commutes with right multiplication by the same permutation: $(\mathbf{A}\PP)\circs(\mathbf{C}\PP) = (\mathbf{A}\circs\mathbf{C})\PP$. Apply with $\mathbf{A} = \X\W_a$ and $\mathbf{C} = \SiLU(\X\W_b)$.
+\end{proof}
+
+\begin{theorem}[RMSNorm orthogonal-mask invariance]
+\label{thm:rmsnorm}
+Let $\N$ be orthogonal ($\N\N^{\top} = \mathbf{I}$) and write $\mathrm{RMSNorm}(\X) = \mathrm{scale}\cdot \RMSCore(\X)$ with $\RMSCore(\X) = \X/\mathrm{RMS}(\X)$ row-wise. Then $\RMSCore(\X\N) = \RMSCore(\X)\N$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+For each row $\mathbf{x}$, $\mathrm{RMS}(\mathbf{x}\N)^2 = (\mathbf{x}\N)(\mathbf{x}\N)^{\top}/d = \mathbf{x}\mathbf{x}^{\top}/d = \mathrm{RMS}(\mathbf{x})^2$. Therefore $(\mathbf{x}\N)/\mathrm{RMS}(\mathbf{x}\N) = (\mathbf{x}/\mathrm{RMS}(\mathbf{x}))\N$.
+\end{proof}
+
+\begin{theorem}[LayerNorm mean-preserving orthogonal-mask invariance]
+\label{thm:layernorm}
+Let $\N$ be orthogonal and $\N\mathbf{e} = \mathbf{e}$, where $\mathbf{e}$ is the all-ones column. Define $\LNCore(\X) = (\X - \mathrm{rowMean}(\X)\mathbf{e}^{\top}) / \mathrm{RMS}(\mathrm{centered})$ row-wise. Then $\LNCore(\X\N) = \LNCore(\X)\N$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+$\mathrm{rowMean}(\X\N) = \X\N\mathbf{e}/d = \X\mathbf{e}/d = \mathrm{rowMean}(\X)$. The centered tensor satisfies $\mathrm{centered}(\X\N) = \mathrm{centered}(\X)\N$. \Cref{thm:rmsnorm} applied to $\mathrm{centered}(\X)$ gives the claim.
+\end{proof}
+
+\begin{theorem}[Attention and KV cache invariant]
+\label{thm:attention}
+Let $\NQ, \NK$ be invertible per-head feature masks with $\NQ\NK^{\top} = \mathbf{I}$. Then $\Qt\Kt^{\top} = \Q\K^{\top}$ and the masked KV cache satisfies $[\K_1\NK; \ldots; \K_t\NK] = [\K_1; \ldots; \K_t]\NK$ at every decode step $t$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Right multiplication by $\NK$ distributes over the token-axis concatenation operator without re-indexing. The attention identity follows by substitution.
+\end{proof}
+
+\begin{theorem}[LoRA masked forward]
+\label{thm:lora-forward}
+Let $\Nin, \Nout, \UU$ be invertible; $\A \in \mathbb{R}^{\dinX \times \rtrue}$, $\B \in \mathbb{R}^{\rtrue \times \doutX}$. With the masked forward of \Cref{sec:design:lora-forward},
+\[
+\Yt + (\alpha/\rtrue)\Tpad\A\B\Nout = \Y\Nout,
+\]
+where $\Y = \X\W + (\alpha/\rtrue)\X\A\B + \mathbf{b}$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+$(\Nin^{-1}\A\UU)(\UU^{-1}\B\Nout) = \Nin^{-1}\A\B\Nout$. Multiplying by $\Xt = (\X-\Tpad)\Nin$ yields $(\X-\Tpad)\A\B\Nout$. Adding the trusted compensation $(\alpha/\rtrue)\Tpad\A\B\Nout$ gives $(\alpha/\rtrue)\X\A\B\Nout$. Combining with \Cref{thm:linear} completes the proof.
+\end{proof}
+
+\begin{theorem}[LoRA masked backward gradient identity]
+\label{thm:lora-backward}
+Under the assumptions of \Cref{thm:lora-forward}, the masked backward of \Cref{sec:design:lora-backward} un-masks to $\partial\A = (\alpha/\rtrue)\X^{\top}\G\B^{\top}$ and $\partial\B = (\alpha/\rtrue)\A^{\top}\X^{\top}\G$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+$\Yt = \Y\Nout$ implies $\Gt = \G\Nout^{-\top}$. Substituting the boundary definitions into the GPU-side $\widetilde{\partial\A}, \widetilde{\partial\B}$ and collapsing $\UU\UU^{-1} = \mathbf{I}$ and $\Nout\Nout^{-1} = \mathbf{I}$ recovers the plain gradients up to absorbed trusted-side constants.
+\end{proof}
+
+\begin{theorem}[Rank padding factor-product equality]
+\label{thm:rank-pad}
+Let $\A \in \mathbb{R}^{\dinX \times \rtrue}$, $\B \in \mathbb{R}^{\rtrue \times \doutX}$, $\Apad = [\A \mid \Adummy]$, $\Bpad = [\B; \Bdummy]$ with $\Adummy\Bdummy = \mathbf{0}$. Then $\Apad\Bpad = \A\B$. If instead $\Adummy\Bdummy = \boldsymbol{\Delta}$ is a tracked trusted-side correction, equality holds after $\boldsymbol{\Delta}$ is folded back at recovery time.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Block multiplication: $[\A\mid\Adummy][\B;\Bdummy] = \A\B + \Adummy\Bdummy$. Cancellation gives $\A\B$.
+\end{proof}
+
+\subsection*{Empirical support}
+\Cref{tab:correctness-summary} lists $19$ per-component correctness rows aggregated from the artifact registry. The GPT-2 model-level wrapper reproduces the plain reference token-for-token; the modern decoder-only wrapper (RMSNorm + SwiGLU + RoPE + GQA) reproduces the plain reference in both block-level and model-level smoke tests; the cross-architecture compatible-island sweep matches its plain reference; and the LoRA paths match the plain rank-$\rtrue$ reference to float64 precision (e.g., $\max\text{-grad-}A\text{ error} \approx 1.3\times 10^{-15}$ on a single-linear tile and $\approx 1.8\times 10^{-15}$ across a $14$-module, $2$-layer synthetic decoder).
+
+\input{tables/correctness_summary.tex}
+
+\paragraph{What these theorems do not claim.}
+\Cref{thm:linear,thm:pointwise,thm:swiglu,thm:rmsnorm,thm:layernorm,thm:attention,thm:lora-forward,thm:lora-backward,thm:rank-pad} are algebraic identities under the stated assumptions; they do not claim cryptographic indistinguishability of the masked transcript, and they do not certify correctness on input regimes outside the tested architectures. Security claims are evaluated separately in \Cref{sec:security}.

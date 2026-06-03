@@ -1,0 +1,42 @@
+\section{Background and Motivation}
+\label{sec:background}
+
+\subsection{Decoder-only generation as the dominant LLM workload}
+Modern LLM serving is overwhelmingly decoder-only and autoregressive~\cite{vaswani2017attention, radford2019language, touvron2023llama}. A request consists of a prompt of length~$T_p$, processed in a single \emph{prefill} pass that populates the KV cache for every layer; subsequent tokens are produced one at a time by \emph{decode-step}, each reading the existing cache, appending one new $\K$ and $\V$ row per layer, and emitting a single output token. Two consequences shape any obfuscation design:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item The cache append is performed on the \emph{token axis} and must remain a no-op rewriter: the new row drops in at position~$t$ without re-indexing the existing rows.
+  \item Each decode step contains the same sequence of dense linear, attention, and nonlinear operations as a prefill row, so per-token work is dominated by Linear matmuls.
+\end{itemize}
+
+\subsection{Modern architecture components and their symmetries}
+Beyond the classical GPT-2 block (LayerNorm~\cite{ba2016layernorm} + GELU~\cite{hendrycks2016gelu} + multi-head attention), the modern decoder-only stack adds three components, each with its own structural symmetry that an obfuscation scheme must respect:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{RMSNorm}~\cite{zhang2019rmsnorm}. Computes $\mathrm{RMSNorm}(\X) = \mathrm{scale}\cdot\X / \mathrm{RMS}(\X)$. Separating the trainable scale from the orthogonally-invariant core $\RMSCore(\X) = \X / \mathrm{RMS}(\X)$ gives $\RMSCore(\X\N) = \RMSCore(\X)\N$ for any orthogonal $\N$. Arbitrary dense masks do \emph{not} commute.
+  \item \textbf{SwiGLU}~\cite{shazeer2020glu}. Implements $\SwiGLU(\X) = (\X\W_a) \circs \SiLU(\X\W_b)$. SiLU is pointwise, so for any permutation $\PP$, $(\A\PP) \circs \SiLU(\B\PP) = (\A \circs \SiLU(\B))\PP$. Permutation is the natural island mask family; dense masks break the elementwise gate-value product.
+  \item \textbf{RoPE + GQA}~\cite{su2021roformer, ainslie2023gqa}. Rotary position embedding rotates pairs of feature dimensions inside each attention head; grouped-query attention shares $\K$/$\V$ heads across multiple $\Q$ heads. Both are block-structured along the feature axis: masks that act \emph{within} a head block (or paired across the GQA group) preserve attention scores when the $\Q$-$\K$ masks compose to identity.
+\end{itemize}
+
+\subsection{LoRA personalization and its leakage profile}
+LoRA fine-tuning~\cite{hu2022lora, dettmers2023qlora} replaces a full weight update $\partial\W$ with a low-rank parameterization $\partial\W = (\alpha/\rtrue) \A\B$, with $\A \in \mathbb{R}^{\dinX \times \rtrue}$ and $\B \in \mathbb{R}^{\rtrue \times \doutX}$. This is dramatically cheaper than full fine-tuning and has become the dominant form of personal model adaptation. Three leakage channels are well-documented:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{Shape leakage.} The published $\A$ and $\B$ factors reveal the rank~$\rtrue$ from their tensor shape, often a hyperparameter that correlates with the fine-tuning task.
+  \item \textbf{Gradient leakage.} Per-step $\partial\A$ and $\partial\B$ reveal mini-batch identity and have been used for membership inference~\cite{shokri2017membership} and partial training-data reconstruction~\cite{zhu2019dlg, zhao2020idlg, yin2021gradinversion}.
+  \item \textbf{Adapter extraction.} When $(\A,\B)$ is published or queryable, downstream attackers can train classifiers that re-identify the fine-tuning corpus or recover prompt-style fingerprints from the merged effective weight.
+\end{itemize}
+
+\subsection{What boundary masking gives us, and what it does not}
+Boundary masking applies a trusted-side invertible transformation at the boundary of each Linear layer. With trusted $\Nin, \Nout$ and a per-call pad $\Tpad$:
+\begin{align}
+\Xt &= (\X - \Tpad)\Nin, \\
+\Wt &= \Nin^{-1} \W \Nout, \\
+\Yt &= \Xt\Wt + \Tpad\W\Nout + \mathbf{b}\Nout = (\X\W + \mathbf{b})\Nout = \Y\Nout.
+\end{align}
+The GPU only ever sees $(\Xt, \Wt, \Yt)$. With fresh $\Nin, \Nout, \Tpad$ per call, the transcript is randomized.
+
+This identity is the algebraic skeleton of our work, but it is \emph{not} sufficient by itself in three respects: it does not commute through nonlinear layers; it tends to assume a stable column structure that decoder-only generation perturbs; and it says nothing about LoRA factor masking, gradient masking, or rank hiding. Our design integrates the boundary skeleton with three new ingredients---operator-compatible nonlinear islands, generation-compatible right masking, and a private LoRA training path---and reports a proxy security evaluation rather than a formal one.
+
+\subsection{Trust assumptions}
+We assume the trusted-side controller (a TEE-like component in a real deployment; a local trusted runtime in this prototype) is honest, holds the user's data, samples masks, performs sampling and the loss and optimizer, and is never compromised. We assume the GPU is honest-but-curious in the canonical sense: it executes the kernels we send, observes everything it sees, can record full tensors, but does not insert malicious correctness errors that the trusted side could catch by re-computation. Hardware side-channels (cache, power, EM~\cite{kocher2019spectre, vanbulck2018foreshadow}), microarchitectural transient-execution attacks, and a compromised TEE are explicitly out of scope. \Cref{sec:limitations} enumerates each exclusion.

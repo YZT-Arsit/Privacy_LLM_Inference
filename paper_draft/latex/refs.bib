@@ -1,0 +1,281 @@
+% refs.bib --- bibliography for the paper draft.
+% Convention: entries with high confidence in venue/year/authors are filled in;
+% any field that I cannot independently verify is left as "TODO" and flagged
+% in compile_notes.md. DO NOT invent page numbers or venue acronyms.
+
+% ============================================================================
+% Transformer and LLM foundations
+% ============================================================================
+
+@inproceedings{vaswani2017attention,
+  author    = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin},
+  title     = {Attention Is All You Need},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2017}
+}
+
+@inproceedings{devlin2019bert,
+  author    = {Jacob Devlin and Ming-Wei Chang and Kenton Lee and Kristina Toutanova},
+  title     = {{BERT}: Pre-training of Deep Bidirectional Transformers for Language Understanding},
+  booktitle = {Proceedings of NAACL-HLT},
+  year      = {2019}
+}
+
+@techreport{radford2019language,
+  author      = {Alec Radford and Jeffrey Wu and Rewon Child and David Luan and Dario Amodei and Ilya Sutskever},
+  title       = {Language Models are Unsupervised Multitask Learners},
+  institution = {OpenAI},
+  year        = {2019},
+  note        = {OpenAI technical report; GPT-2.}
+}
+
+@article{touvron2023llama,
+  author  = {Hugo Touvron and Thibaut Lavril and Gautier Izacard and Xavier Martinet and Marie-Anne Lachaux and Timoth{\'e}e Lacroix and Baptiste Rozi{\`e}re and Naman Goyal and Eric Hambro and Faisal Azhar and Aur{\'e}lien Rodriguez and Armand Joulin and Edouard Grave and Guillaume Lample},
+  title   = {{LLaMA}: Open and Efficient Foundation Language Models},
+  journal = {arXiv preprint arXiv:2302.13971},
+  year    = {2023}
+}
+
+@article{su2021roformer,
+  author  = {Jianlin Su and Yu Lu and Shengfeng Pan and Bo Wen and Yunfeng Liu},
+  title   = {{RoFormer}: Enhanced Transformer with Rotary Position Embedding},
+  journal = {arXiv preprint arXiv:2104.09864},
+  year    = {2021}
+}
+
+@article{ainslie2023gqa,
+  author  = {Joshua Ainslie and James Lee-Thorp and Michiel de Jong and Yury Zemlyanskiy and Federico Lebr{\'o}n and Sumit Sanghai},
+  title   = {{GQA}: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints},
+  journal = {arXiv preprint arXiv:2305.13245},
+  year    = {2023}
+}
+
+@article{shazeer2020glu,
+  author  = {Noam Shazeer},
+  title   = {{GLU} Variants Improve Transformer},
+  journal = {arXiv preprint arXiv:2002.05202},
+  year    = {2020}
+}
+
+@article{ba2016layernorm,
+  author  = {Jimmy Lei Ba and Jamie Ryan Kiros and Geoffrey E. Hinton},
+  title   = {Layer Normalization},
+  journal = {arXiv preprint arXiv:1607.06450},
+  year    = {2016}
+}
+
+@article{zhang2019rmsnorm,
+  author  = {Biao Zhang and Rico Sennrich},
+  title   = {Root Mean Square Layer Normalization},
+  journal = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year    = {2019}
+}
+
+@article{hendrycks2016gelu,
+  author  = {Dan Hendrycks and Kevin Gimpel},
+  title   = {Gaussian Error Linear Units (GELUs)},
+  journal = {arXiv preprint arXiv:1606.08415},
+  year    = {2016}
+}
+
+% ============================================================================
+% LoRA and parameter-efficient personalization
+% ============================================================================
+
+@inproceedings{hu2022lora,
+  author    = {Edward J. Hu and Yelong Shen and Phillip Wallis and Zeyuan Allen-Zhu and Yuanzhi Li and Shean Wang and Lu Wang and Weizhu Chen},
+  title     = {{LoRA}: Low-Rank Adaptation of Large Language Models},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2022}
+}
+
+@inproceedings{dettmers2023qlora,
+  author    = {Tim Dettmers and Artidoro Pagnoni and Ari Holtzman and Luke Zettlemoyer},
+  title     = {{QLoRA}: Efficient Finetuning of Quantized {LLM}s},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2023}
+}
+
+@misc{peft2022,
+  author       = {Sourab Mangrulkar and Sylvain Gugger and Lysandre Debut and Younes Belrouchi and Sayak Paul and Benjamin Bossan},
+  title        = {{PEFT}: State-of-the-art Parameter-Efficient Fine-Tuning methods},
+  howpublished = {\url{https://github.com/huggingface/peft}},
+  year         = {2022},
+  note         = {Open-source library; cited as related ecosystem only.}
+}
+
+% ============================================================================
+% Inference / training infrastructure (cited only as related ecosystem;
+% explicitly NOT integrated by our prototype, per Limitations U5)
+% ============================================================================
+
+@inproceedings{kwon2023vllm,
+  author    = {Woosuk Kwon and Zhuohan Li and Siyuan Zhuang and Ying Sheng and Lianmin Zheng and Cody Hao Yu and Joseph E. Gonzalez and Hao Zhang and Ion Stoica},
+  title     = {Efficient Memory Management for Large Language Model Serving with {PagedAttention}},
+  booktitle = {Proceedings of the {ACM} Symposium on Operating Systems Principles (SOSP)},
+  year      = {2023}
+}
+
+@inproceedings{rasley2020deepspeed,
+  author    = {Jeff Rasley and Samyam Rajbhandari and Olatunji Ruwase and Yuxiong He},
+  title     = {{DeepSpeed}: System Optimizations Enable Training Deep Learning Models with Over 100 Billion Parameters},
+  booktitle = {Proceedings of the 26th {ACM} {SIGKDD} International Conference on Knowledge Discovery \& Data Mining (KDD)},
+  year      = {2020}
+}
+
+@inproceedings{dao2022flashattention,
+  author    = {Tri Dao and Daniel Y. Fu and Stefano Ermon and Atri Rudra and Christopher R{\'e}},
+  title     = {{FlashAttention}: Fast and Memory-Efficient Exact Attention with IO-Awareness},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2022}
+}
+
+% ============================================================================
+% TEE-assisted ML inference and hybrid TEE+GPU
+% ============================================================================
+
+@inproceedings{tramer2019slalom,
+  author    = {Florian Tram{\`e}r and Dan Boneh},
+  title     = {{Slalom}: Fast, Verifiable and Private Execution of Neural Networks in Trusted Hardware},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+@inproceedings{volos2018graviton,
+  author    = {Stavros Volos and Kapil Vaswani and Rodrigo Bruno},
+  title     = {{Graviton}: Trusted Execution Environments on {GPU}s},
+  booktitle = {Proceedings of the 13th {USENIX} Symposium on Operating Systems Design and Implementation (OSDI)},
+  year      = {2018}
+}
+
+@article{hunt2018chiron,
+  author  = {Tyler Hunt and Congzheng Song and Reza Shokri and Vitaly Shmatikov and Emmett Witchel},
+  title   = {{Chiron}: Privacy-preserving Machine Learning as a Service},
+  journal = {arXiv preprint arXiv:1803.05961},
+  year    = {2018}
+}
+
+@inproceedings{kunkel2019tensorscone,
+  author    = {Roland Kunkel and Do Le Quoc and Franz Gregor and Sergei Arnautov and Pramod Bhatotia and Christof Fetzer},
+  title     = {{TensorSCONE}: A Secure {TensorFlow} Framework Using {Intel} {SGX}},
+  booktitle = {arXiv preprint arXiv:1902.04413},
+  year      = {2019},
+  note      = {TODO: verify exact venue.}
+}
+
+% ============================================================================
+% Cryptographic private inference (FHE / MPC / hybrid)
+% ============================================================================
+
+@inproceedings{dowlin2016cryptonets,
+  author    = {Nathan Dowlin and Ran Gilad-Bachrach and Kim Laine and Kristin Lauter and Michael Naehrig and John Wernsing},
+  title     = {{CryptoNets}: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy},
+  booktitle = {Proceedings of the 33rd International Conference on Machine Learning (ICML)},
+  year      = {2016}
+}
+
+@inproceedings{gilad2016cryptonets,
+  author    = {Ran Gilad-Bachrach and Nathan Dowlin and Kim Laine and Kristin Lauter and Michael Naehrig and John Wernsing},
+  title     = {{CryptoNets}: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy},
+  booktitle = {Proceedings of the 33rd International Conference on Machine Learning (ICML)},
+  year      = {2016},
+  note      = {Duplicate of dowlin2016cryptonets; kept for legacy citation key.}
+}
+
+@inproceedings{juvekar2018gazelle,
+  author    = {Chiraag Juvekar and Vinod Vaikuntanathan and Anantha Chandrakasan},
+  title     = {{GAZELLE}: A Low Latency Framework for Secure Neural Network Inference},
+  booktitle = {27th {USENIX} Security Symposium ({USENIX} Security)},
+  year      = {2018}
+}
+
+@inproceedings{mishra2020delphi,
+  author    = {Pratyush Mishra and Ryan Lehmkuhl and Akshayaram Srinivasan and Wenting Zheng and Raluca Ada Popa},
+  title     = {{Delphi}: A Cryptographic Inference Service for Neural Networks},
+  booktitle = {29th {USENIX} Security Symposium ({USENIX} Security)},
+  year      = {2020}
+}
+
+@inproceedings{mohassel2017secureml,
+  author    = {Payman Mohassel and Yupeng Zhang},
+  title     = {{SecureML}: A System for Scalable Privacy-Preserving Machine Learning},
+  booktitle = {Proceedings of the 38th {IEEE} Symposium on Security and Privacy (S\&P)},
+  year      = {2017}
+}
+
+@inproceedings{liu2017minionn,
+  author    = {Jian Liu and Mika Juuti and Yao Lu and N. Asokan},
+  title     = {Oblivious Neural Network Predictions via {MiniONN} Transformations},
+  booktitle = {Proceedings of the 24th {ACM} Conference on Computer and Communications Security (CCS)},
+  year      = {2017}
+}
+
+% ============================================================================
+% Gradient leakage and membership inference
+% ============================================================================
+
+@inproceedings{zhu2019dlg,
+  author    = {Ligeng Zhu and Zhijian Liu and Song Han},
+  title     = {Deep Leakage from Gradients},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2019}
+}
+
+@article{zhao2020idlg,
+  author  = {Bo Zhao and Konda Reddy Mopuri and Hakan Bilen},
+  title   = {{iDLG}: Improved Deep Leakage from Gradients},
+  journal = {arXiv preprint arXiv:2001.02610},
+  year    = {2020}
+}
+
+@inproceedings{yin2021gradinversion,
+  author    = {Hongxu Yin and Arun Mallya and Arash Vahdat and Jose M. Alvarez and Jan Kautz and Pavlo Molchanov},
+  title     = {See Through Gradients: Image Batch Recovery via {GradInversion}},
+  booktitle = {Proceedings of the {IEEE/CVF} Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2021}
+}
+
+@inproceedings{shokri2017membership,
+  author    = {Reza Shokri and Marco Stronati and Congzheng Song and Vitaly Shmatikov},
+  title     = {Membership Inference Attacks Against Machine Learning Models},
+  booktitle = {Proceedings of the 38th {IEEE} Symposium on Security and Privacy (S\&P)},
+  year      = {2017}
+}
+
+@inproceedings{abadi2016dpsgd,
+  author    = {Mart{\'i}n Abadi and Andy Chu and Ian Goodfellow and H. Brendan McMahan and Ilya Mironov and Kunal Talwar and Li Zhang},
+  title     = {Deep Learning with Differential Privacy},
+  booktitle = {Proceedings of the 23rd {ACM} Conference on Computer and Communications Security (CCS)},
+  year      = {2016}
+}
+
+% ============================================================================
+% Side-channel and microarchitectural attacks
+% ============================================================================
+
+@inproceedings{kocher2019spectre,
+  author    = {Paul Kocher and Jann Horn and Anders Fogh and Daniel Genkin and Daniel Gruss and Werner Haas and Mike Hamburg and Moritz Lipp and Stefan Mangard and Thomas Prescher and Michael Schwarz and Yuval Yarom},
+  title     = {Spectre Attacks: Exploiting Speculative Execution},
+  booktitle = {Proceedings of the 40th {IEEE} Symposium on Security and Privacy (S\&P)},
+  year      = {2019}
+}
+
+@inproceedings{vanbulck2018foreshadow,
+  author    = {Jo Van Bulck and Marina Minkin and Ofir Weisse and Daniel Genkin and Baruch Kasikci and Frank Piessens and Mark Silberstein and Thomas F. Wenisch and Yuval Yarom and Raoul Strackx},
+  title     = {{Foreshadow}: Extracting the Keys to the {Intel} {SGX} Kingdom with Transient Out-of-Order Execution},
+  booktitle = {27th {USENIX} Security Symposium ({USENIX} Security)},
+  year      = {2018}
+}
+
+% ============================================================================
+% Amulet-style obfuscation (citation key kept as TODO until exact paper is
+% confirmed; do NOT fabricate metadata).
+% ============================================================================
+
+@misc{amulet2024todo,
+  author       = {{TODO: Amulet authors}},
+  title        = {{TODO: Amulet matrix-obfuscation paper title}},
+  howpublished = {TODO: verify venue and year},
+  year         = {2024},
+  note         = {Placeholder; replace once exact citation is confirmed. See compile\_notes.md.}
+}

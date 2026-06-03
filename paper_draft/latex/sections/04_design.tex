@@ -1,0 +1,150 @@
+\section{Design}
+\label{sec:design}
+
+\subsection{Overview}
+The trusted-side controller exposes an LLM forward, decode, generate, and training API that is, at the source level, indistinguishable from a plain reference. Under the hood, every Linear $\X\W + \mathbf{b}$ is intercepted, masked, dispatched to the GPU, and recovered. Nonlinear layers are wrapped as \emph{islands}: the inside of a nonlinear layer uses a mask family that the operator natively commutes with (\Cref{sec:design:islands}), while the outside is dense Linear masking. Islands are sandwiched by dense Linear masks (\Cref{sec:design:sandwich}) and protected by a boundary pad. Attention and KV cache are wrapped as feature-axis masks that compose to identity on the $\Q^{\top}\K$ dot product (\Cref{sec:design:attention}). LoRA is wrapped with a paired inner mask $\UU$ (\Cref{sec:design:lora-forward,sec:design:lora-backward}), and rank padding extends $(\A, \B)$ to $(\Apad, \Bpad)$ with $\Apad\Bpad = \A\B$ (\Cref{sec:design:rank-pad}). Loss and optimizer remain trusted-side throughout; the adapter is never merged into the public base weight.
+
+The system overview is illustrated in \Cref{fig:system-overview}; right-masked generation in \Cref{fig:right-masked-decode}; the nonlinear-island construction in \Cref{fig:nonlinear-island}; and the dense sandwich and pad compensation in \Cref{fig:dense-sandwich}.
+
+\input{figures/fig_system_overview.tex}
+
+\subsection{Generation-compatible right masking}
+\label{sec:design:right-mask}
+Let $\X \in \mathbb{R}^{T \times \dinX}$ be a feature-axis activation tensor. A \emph{right mask} $\N \in \mathbb{R}^{\dinX \times \dinX}$ is applied as $\X\N$. The key properties are:
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{Token-axis concatenation commutes with right masking:} $[\X_{1:t-1}; \X_t]\N = [\X_{1:t-1}\N; \X_t\N]$. The masked KV cache can be appended row-by-row without re-masking the prefix.
+  \item \textbf{Right masking is preserved by the trailing Linear:} $(\X\N)\W' = \X(\N\W')$. Setting $\W' = \N^{-1}\W$ recovers $\X\W$ on the GPU side.
+  \item \textbf{Head-block structure is preserved:} if $\N$ is block-diagonal aligned with the per-head feature block, multi-head and grouped-query attention compose without cross-head mixing.
+\end{itemize}
+
+Left masks along the token axis ($\mathbf{M}\X$ with $\mathbf{M} \in \mathbb{R}^{T \times T}$) do not commute with the token-axis cache append in general, so we use right masking throughout.
+
+\input{figures/fig_right_masked_decode.tex}
+
+\subsection{Linear boundary transformation and pad compensation}
+\label{sec:design:linear}
+Plain Linear: $\Y = \X\W + \mathbf{b}$. Masked Linear with boundary pad:
+\begin{align}
+\Xt &= (\X - \Tpad)\Nin, \\
+\Wt &= \Nin^{-1}\W\Nout, \\
+\Ct &= \Tpad\W\Nout, \\
+\Yt &= \Xt\Wt + \Ct + \mathbf{b}\Nout = \Y\Nout.
+\end{align}
+The boundary pad $\Tpad$ is a trusted-side per-call sample. It randomizes the centered activation seen on the GPU; the compensation $\Ct = \Tpad\W\Nout$ is publicly computable from the public $\W$ and the trusted $\Tpad, \Nout$.
+
+\input{figures/fig_dense_sandwich.tex}
+
+\subsection{Operator-compatible nonlinear islands}
+\label{sec:design:islands}
+The construction for a nonlinear layer is to choose a mask family that the operator commutes with, restricted to the island.
+
+\paragraph{Pointwise activation islands (GELU/ReLU/SiLU).} A permutation matrix $\PP$ is a special orthogonal mask. For any pointwise $\phi$, $\phi(\Z\PP) = \phi(\Z)\PP$, because permuting columns commutes with applying an elementwise function column-wise. The island is constructed as:
+\begin{align}
+\Wt_1 &= \Nin^{-1}\W_1\PP, \quad \Cone = \Tpad\W_1\PP, \\
+\Zt &= \Xt\Wt_1 + \Cone + \mathbf{b}_1\PP = (\X\W_1 + \mathbf{b}_1)\PP, \\
+\phi(\Zt) &= \phi(\X\W_1 + \mathbf{b}_1)\PP, \\
+\Wt_2 &= \PP^{-1}\W_2\Nout.
+\end{align}
+
+\paragraph{SwiGLU island.} Apply the same permutation to both branches:
+\begin{equation}
+(\X\W_a\PP)\circs\SiLU(\X\W_b\PP) = \big((\X\W_a)\circs\SiLU(\X\W_b)\big)\PP.
+\end{equation}
+The paired permutation is required; using independent $\PP_a, \PP_b$ breaks the elementwise gate.
+
+\paragraph{RMSNorm island.} For any orthogonal $\N$,
+\begin{equation}
+\RMSCore(\X\N) = \RMSCore(\X)\N.
+\end{equation}
+The mask family for an RMSNorm island is therefore the orthogonal group.
+
+\paragraph{LayerNorm island.} For orthogonal $\N$ with $\N\mathbf{e} = \mathbf{e}$ (the all-ones vector is a fixed point),
+\begin{equation}
+\LNCore(\X\N) = \LNCore(\X)\N.
+\end{equation}
+The mask family is the mean-preserving orthogonal group, a strict subgroup of the orthogonal group.
+
+\input{figures/fig_nonlinear_island.tex}
+
+\subsection{Attention, KV cache, RoPE, and GQA}
+\label{sec:design:attention}
+Per-head attention computes $\softmax((\Q\K^{\top})/\sqrt{d_h})\V$. We mask each head's $\Q, \K, \V$ with its own right mask:
+\begin{equation}
+\Qt = \Q\NQ, \quad \Kt = \K\NK, \quad \Vt = \V\NV.
+\end{equation}
+For attention scores to be preserved we require $\NQ\NK^{\top} = \mathbf{I}$; the simplest construction is $\NK = (\NQ^{-1})^{\top}$. Then
+\begin{equation}
+\Qt\Kt^{\top} = \Q\NQ(\K\NK)^{\top} = \Q(\NQ\NK^{\top})\K^{\top} = \Q\K^{\top}.
+\end{equation}
+The $\V$ mask is absorbed by the trailing output projection.
+
+\paragraph{KV cache invariant.} During decode at step~$t$, the trusted side appends $\K_t\NK$ and $\V_t\NV$ to the masked cache. Because right masking commutes with token-axis concatenation,
+\begin{equation}
+[\K_1\NK; \K_2\NK; \ldots; \K_t\NK] = [\K_1; \K_2; \ldots; \K_t]\NK.
+\end{equation}
+The cache append is therefore a no-op rewriter in masked space.
+
+\paragraph{RoPE and GQA.} RoPE rotates two-dimensional feature blocks by a position-dependent angle; right masks that commute with the 2D rotation in each block (paired diagonal rotations) preserve the rotation. For GQA, $\K, \V$ heads are shared across $g$ $\Q$ heads; we mask the shared $\K, \V$ heads once per group and mask the $\Q$ heads independently per head with the inverse paired to the corresponding shared $\K$.
+
+\subsection{Dense sandwich and inter-block masking}
+\label{sec:design:sandwich}
+A nonlinear island uses a restricted mask family (permutation, orthogonal, or mean-preserving orthogonal), which is weaker than a fully dense Linear mask. To prevent direct inversion of the island, every island is sandwiched between two dense-Linear-masked boundaries: the input $\X\Nin$ is transformed to $\X\PP$ inside the island and back to $\X\Nout$ on exit. The boundary pad $\Tpad$ is sampled fresh per call; its compensation $\Ct = \Tpad\W\Nout$ is publicly computable from $\Tpad, \W, \Nout$, all trusted-side.
+
+Inter-block masked boundary is an opt-in experimental mode that avoids recovering to plain space between blocks, instead chaining the right mask across the residual. We report it as an ablation only; it is not default-on.
+
+\subsection{Private LoRA forward}
+\label{sec:design:lora-forward}
+Plain LoRA forward at a single Linear layer:
+\begin{equation}
+\Y = \X\W + (\alpha/\rtrue)\X\A\B + \mathbf{b}.
+\end{equation}
+Masked LoRA forward with paired inner mask $\UU$:
+\begin{align}
+\At &= \Nin^{-1}\A\UU, \quad \Bt = \UU^{-1}\B\Nout, \\
+\Xt &= (\X - \Tpad)\Nin, \quad \Wt = \Nin^{-1}\W\Nout, \\
+\Yt &= \Xt\Wt + (\alpha/\rtrue)\Xt\At\Bt + \Ct + \mathbf{b}\Nout = \Y\Nout - (\alpha/\rtrue)\Tpad\A\B\Nout.
+\end{align}
+The last term is fully trusted-side computable from $\Tpad, \A, \B, \Nout$ and is absorbed into the trusted compensation. The recovered output equals $\Y\Nout$ exactly. The adapter is \emph{never} merged into $\W$. Both $\Wt$ and $(\At, \Bt)$ cross the boundary as separate tensors. The GPU-visible shapes are $[\dinX, \rpad]$ and $[\rpad, \doutX]$.
+
+\input{figures/fig_lora_training.tex}
+
+\subsection{Masked LoRA backward}
+\label{sec:design:lora-backward}
+Plain backward of $\Y = \X\W + (\alpha/\rtrue)\X\A\B$ with respect to the LoRA factors, given upstream gradient $\G = \partial L / \partial \Y$:
+\begin{equation}
+\partial\A = (\alpha/\rtrue)\X^{\top}\G\B^{\top}, \quad \partial\B = (\alpha/\rtrue)\A^{\top}\X^{\top}\G.
+\end{equation}
+Masked backward operates on $\Yt$ and the masked upstream gradient $\Gt$. Because $\Yt = \Y\Nout$,
+\begin{equation}
+\Gt = \G\Nout^{-\top}.
+\end{equation}
+Compute on the GPU
+\begin{equation}
+\widetilde{\partial\A} = (\alpha/\rtrue)\Xt^{\top}\Gt\Bt^{\top}, \quad \widetilde{\partial\B} = (\alpha/\rtrue)\At^{\top}\Xt^{\top}\Gt.
+\end{equation}
+Substituting the boundary definitions and using $\UU\UU^{-1} = \mathbf{I}$ and $\Nout\Nout^{-1} = \mathbf{I}$, one obtains $\widetilde{\partial\A} = \Nin^{-1}(\partial\A)\UU$ and $\widetilde{\partial\B} = \UU^{-1}(\partial\B)\Nout$ (up to absorbed trusted-side constants), which the trusted side un-masks. The optimizer step (SGD or AdamW) is performed entirely on the trusted side; the optimizer state never leaves the trusted runtime.
+
+\subsection{Rank padding and stronger dummy distributions}
+\label{sec:design:rank-pad}
+Let $\rtrue$ be the true LoRA rank and $\rpad \geq \rtrue$ the padded rank. Construct
+\begin{equation}
+\Apad = [\A \mid \Adummy], \quad \Bpad = [\B; \Bdummy],
+\end{equation}
+with $\Adummy\Bdummy = \mathbf{0}$ (the cancellation property). Then $\Apad\Bpad = \A\B + \Adummy\Bdummy = \A\B$. The GPU-visible shape is $[\dinX, \rpad]$ and $[\rpad, \doutX]$; the \emph{true} rank $\rtrue$ is no longer determined by tensor shape, but $\rpad$ itself remains visible.
+
+We evaluate five stronger dummy distributions: \texttt{zero\_dummy}, \texttt{paired\_cancellation\_dummy}, \texttt{gaussian\_matched\_dummy}, \texttt{spectrum\_matched\_dummy}, \texttt{mixed\_dummy\_ensemble}, plus \texttt{orthogonalized\_cancellation\_dummy} and \texttt{noise\_injected\_cancellation\_dummy} (the latter holds a tracked trusted-side correction folded back at recovery time). Correctness of all is empirically verified to float64 precision (\Cref{sec:correctness}). The spectral-inference proxy remains \texttt{needs\_more\_evaluation} or \texttt{high} (\Cref{sec:security}).
+
+\subsection{Runtime and control flow}
+\label{sec:design:runtime}
+The trusted controller exposes a top-level \texttt{generate(prompt, max\_new\_tokens)} API. The per-token schedule is:
+
+\begin{enumerate}[leftmargin=*, nosep]
+  \item \textbf{Mask sampling.} Sample fresh $\Nin, \Nout, \NQ, \NK, \NV, \PP, \UU$ from their respective families.
+  \item \textbf{Prefill (first call only).} For each layer, push $\Xt, \Wt, \At, \Bt$ and per-head $\NQ, \NK, \NV$; receive $\Yt$ and the masked KV entries; append to the masked KV cache.
+  \item \textbf{Decode step.} For each layer, push $\Xt_t$ (one row) and the existing masked KV cache; receive the masked logits.
+  \item \textbf{Recovery and sampling.} The trusted side un-masks the final logits and samples the next token.
+  \item \textbf{Optional constant-time emulation.} The \texttt{proxy\_equalized} mode pads per-step trusted compute to the upper-bucket latency. This is a cost-model proxy, not a real wall-time gate.
+\end{enumerate}
+
+For LoRA training, the schedule is analogous, with the additional backward and trusted-side optimizer step after each forward.

@@ -4,12 +4,12 @@ _This is local runtime emulation, not real TEE wall-time. No real sleep, no real
 
 | component | variant | num_warmup | num_repeats | mean_ms | median_ms | std_ms | min_ms | max_ms | device | dtype | wall_time_source | skipped_with_reason | notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| plain_synthetic_linear | X W | 2 | 5 | 0.0017586004105396569 | 0.0017089987522922456 | 0.00023257677432648142 | 0.0015420009731315076 | 0.0020420047803781927 | cpu | float64 | measured_local_emulation | None | Synthetic baseline; no obfuscation. |
-| plain_lora_forward | plain_rank_r | 2 | 5 | 0.008008399163372815 | 0.008208997314795852 | 0.00115310244100327 | 0.00654099858365953 | 0.00945899955695495 | cpu | float64 | measured_local_emulation | None | Plain rank-r LoRA forward; no masking. |
-| masked_lora_forward | fresh_masks_fresh_u_with_pad | 2 | 5 | 0.26265820051776245 | 0.2634999982547015 | 0.011309597121244989 | 0.247582996962592 | 0.27616599982138723 | cpu | float64 | measured_local_emulation | None | Stage 7.0 run_masked_lora_linear forward. |
-| masked_lora_backward | fresh_masks_fresh_u_with_pad | 2 | 5 | 0.11773320002248511 | 0.11699999595293775 | 0.0025399268505254067 | 0.11537499813130125 | 0.12187500396976247 | cpu | float64 | measured_local_emulation | None | Stage 7.1 run_masked_lora_backward. |
-| rank_padded_lora_forward | paired_cancellation_dummy | 2 | 5 | 0.26950839965138584 | 0.2671670008567162 | 0.00789179351680181 | 0.2630000017234124 | 0.2827499993145466 | cpu | float64 | measured_local_emulation | None | Stage 7.2 rank-padded masked forward. |
-| multi_layer_lora_training_step | synthetic_tile | 2 | 5 | 4.684007998730522 | 4.685125000833068 | 0.08384449228170614 | 4.578499996569008 | 4.810165999515448 | cpu | float64 | measured_local_emulation | None | Stage 7.3 run_multilayer_lora_training (one training step). |
+| plain_synthetic_linear | X W | 2 | 5 | 0.0017916012438945472 | 0.0017080019460991025 | 0.00025515530856451467 | 0.0015420009731315076 | 0.002082997525576502 | cpu | float64 | measured_local_emulation | None | Synthetic baseline; no obfuscation. |
+| plain_lora_forward | plain_rank_r | 2 | 5 | 0.007958199421409518 | 0.007791000825818628 | 0.0006766130077735035 | 0.007333001121878624 | 0.00904199987417087 | cpu | float64 | measured_local_emulation | None | Plain rank-r LoRA forward; no masking. |
+| masked_lora_forward | fresh_masks_fresh_u_with_pad | 2 | 5 | 0.2471915984642692 | 0.24466699687764049 | 0.015932198492687927 | 0.22724999871570617 | 0.27033299556933343 | cpu | float64 | measured_local_emulation | None | Stage 7.0 run_masked_lora_linear forward. |
+| masked_lora_backward | fresh_masks_fresh_u_with_pad | 2 | 5 | 0.11866640124935657 | 0.11804100358858705 | 0.0036911838356562545 | 0.11600000289035961 | 0.1249999986612238 | cpu | float64 | measured_local_emulation | None | Stage 7.1 run_masked_lora_backward. |
+| rank_padded_lora_forward | paired_cancellation_dummy | 2 | 5 | 0.27414139913162217 | 0.2795830005197786 | 0.01261367039715004 | 0.2536250030971132 | 0.28458299493649974 | cpu | float64 | measured_local_emulation | None | Stage 7.2 rank-padded masked forward. |
+| multi_layer_lora_training_step | synthetic_tile | 2 | 5 | 4.635358400992118 | 4.605207999702543 | 0.07070563046014282 | 4.554750004899688 | 4.732041998067871 | cpu | float64 | measured_local_emulation | None | Stage 7.3 run_multilayer_lora_training (one training step). |
 | modern_decoder_model_wrapper | opt_in_only | 2 | 5 | None | None | None | None | None | cpu | float64 | measured_local_emulation | modern_decoder_wrapper is opt-in (include_modern_decoder_wrapper=False) | Opt-in benchmark; pytest defaults stay synthetic. |
 
 ## Limitations

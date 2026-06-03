@@ -1,0 +1,131 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+Our evaluation is structured around seven research questions, each pinned to a specific subset of the artifact registry. We use the consolidated tables produced by the paper-artifact pipeline. We do not introduce new experiments here; we report the artifacts as they exist.
+
+\subsection{RQ1: Does masked execution preserve correctness across model components and architectures?}
+\label{sec:eval:rq1}
+\paragraph{Setup.}
+We run the masked wrapper against a plain reference on (i)~GPT-2 model-level wrapper (\texttt{sshleifer/tiny-gpt2}), including full forward, prefill, decode-step, and greedy generation; (ii)~modern decoder-only block wrapper (RMSNorm + SwiGLU + RoPE + GQA), synthetic and tiny-HF configurations; (iii)~modern decoder-only model wrapper, prefill + decode-step + greedy generation; and (iv)~compatible nonlinear islands across decoder-only, encoder-only, encoder-decoder, and modern-decoder architectures.
+
+\paragraph{Metric.} \texttt{allclose} against the plain reference; per-component $\max|\!\cdot\!|$ error.
+
+\paragraph{Result.}
+The GPT-2 and modern-decoder model wrappers reproduce the plain reference output token-for-token in the tested configurations. \Cref{tab:correctness-summary} lists $19$ component rows; \Cref{fig:correctness-error-summary} plots the per-component errors.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/correctness_error_summary.png}
+\caption{Per-component correctness error across the $19$ aggregated correctness rows of \Cref{tab:correctness-summary}. Empirical \texttt{allclose} equality on tested configurations only; we do not claim universal correctness.}
+\label{fig:correctness-error-summary}
+\end{figure}
+
+\paragraph{Limitation.} Empirical equality on tested configurations only; modern-decoder model wrappers use synthetic or tiny-HF configurations, not production-scale Qwen, TinyLlama, or LLaMA.
+
+\subsection{RQ2: Does the system support decoder-only generation with KV cache?}
+\label{sec:eval:rq2}
+\paragraph{Setup.} Greedy generation with KV cache append, per-step decode, RoPE rotation, and GQA. Evaluated for both GPT-2 (multi-head attention) and the modern decoder wrapper (GQA + RoPE).
+
+\paragraph{Metric.} Sequence-level exact match against plain reference; per-step KV cache invariant.
+
+\paragraph{Result.} Token-for-token exact match across the tested decode lengths; KV cache append invariant holds at every step.
+
+\paragraph{Limitation.} Decoder-only with greedy sampling only. Top-$k$, top-$p$, beam search are implemented at the controller level but are not exercised in the security artifacts.
+
+\subsection{RQ3: How much boundary-call and online-compute overhead does the method introduce?}
+\label{sec:eval:rq3}
+\paragraph{Setup.}
+We compare \texttt{plain\_hf\_gpu}, \texttt{tslp\_trusted\_nonlinear\_baseline}, \texttt{ours\_current}, \texttt{ours\_compatible\_nonlinear\_islands}, \texttt{ours\_ideal\_gpu\_nonlinear}, and an \texttt{amulet\_style\_reference} cost-model baseline on tiny-GPT-2.
+
+\paragraph{Metric.} Boundary-call count, trusted compute, GPU compute, preprocessing cost, projected wall-time, and (where measured) measured wall-time.
+
+\paragraph{Result.} Boundary calls drop from $36$ for \texttt{ours\_current} to $16$ for \texttt{ours\_compatible\_nonlinear\_islands} and to $4$ for \texttt{ours\_ideal\_gpu\_nonlinear}. \Cref{fig:boundary-call-reduction} visualizes the reduction.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/boundary_call_reduction.png}
+\caption{Boundary-call reduction across method profiles. Workload-profile rows from \Cref{tab:workload-summary} on tiny-GPT-2 only; \texttt{wall\_time\_source = projected\_from\_op\_counts} for all but one row.}
+\label{fig:boundary-call-reduction}
+\end{figure}
+
+\paragraph{Limitation.} Numbers are local-emulation projections on a tiny configuration ($n_\text{layer}=2$, $n_\text{embd}=2$, $n_\text{head}=2$); illustrative, not deployment numbers.
+
+\input{tables/workload_summary.tex}
+
+\subsection{RQ4: How effective are the mitigation bundles against proxy attacks?}
+\label{sec:eval:rq4}
+\paragraph{Setup.} Proxy attackers (\Cref{sec:security}) against three mitigation configurations: \texttt{fresh\_perm\_only}, \texttt{fresh\_perm\_plus\_sandwich}, \texttt{fresh\_perm\_plus\_sandwich\_plus\_pad}.
+
+\paragraph{Metric.} Per-attacker accuracy and linkability AUC; consolidated into a risk-level matrix (\Cref{fig:security-risk-matrix,tab:security-proxy-summary}).
+
+\paragraph{Result.} The full bundle reduces every adaptive-inverter accuracy to ``close to random chance'' status. Specific rows: black-box query attacker \texttt{low} distinguishability; ridge/MLP/signature/Sinkhorn attackers \texttt{needs\_more\_evaluation}; timing classifier under \texttt{proxy\_equalized} is \texttt{low}.
+
+\paragraph{Limitation.} Proxy attackers only; not a formal-security claim. \texttt{high}-risk rows (gradient rank inference, stronger-dummy spectral inference) are reported and not re-classified.
+
+\subsection{RQ5: Does the LoRA private training path preserve correctness?}
+\label{sec:eval:rq5}
+\paragraph{Setup.} Synthetic single-linear and synthetic multi-layer LoRA training: masked forward, masked backward, rank-padded forward $+$ backward, multi-layer training step across $2$ layers and $14$ modules, and five stronger dummy distributions.
+
+\paragraph{Metric.} $\max$-loss-diff, $\max$-grad-error, $\max$-update-error, \texttt{allclose}.
+
+\paragraph{Result.} Across all $11$ LoRA-side rows (\Cref{tab:lora-training-summary}), the masked path matches the plain reference to float64 precision ($\max$-grad-$A$ error $\in [10^{-15}, 2\times 10^{-15}]$, $\max$-update-error $\in [10^{-17}, 10^{-16}]$). \Cref{fig:lora-training-errors} plots the errors.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/lora_training_errors.png}
+\caption{LoRA training errors across Stages 7.0--7.4 (synthetic tiles). Empirical \texttt{allclose} matches to float64 precision; no production fine-tune of Qwen, TinyLlama, or LLaMA is run.}
+\label{fig:lora-training-errors}
+\end{figure}
+
+\paragraph{Limitation.} Synthetic tiles only. Loss and optimizer remain trusted-side. PEFT~\cite{peft2022}, DeepSpeed~\cite{rasley2020deepspeed}, vLLM~\cite{kwon2023vllm}, FlashAttention~\cite{dao2022flashattention} are not integrated.
+
+\input{tables/lora_training_summary.tex}
+
+\subsection{RQ6: How much leakage remains from rank, timing, and metadata?}
+\label{sec:eval:rq6}
+\paragraph{Setup.} Spectral-rank-inference, gradient-rank-inference, dummy-strategy classifier, cross-layer linkage, and cost-model training-timing classifier evaluated across Stages 7.2--7.4.
+
+\paragraph{Result.}
+Spectral rank inference under \texttt{paired\_cancellation\_dummy}: \texttt{needs\_more\_evaluation}. Gradient rank inference: \texttt{high}. Stronger-dummy spectral inference worst-case: \texttt{high}. Stronger-dummy gradient inference worst-case: \texttt{high}. Dummy-strategy classifier accuracy: $0.476$ vs chance $0.143$, risk \texttt{medium}. Cross-layer linkage with fresh masks per module $+$ paired cancellation: \texttt{low}. Training-step cost-model timing under \texttt{proxy\_equalized}: $0.5124$, risk \texttt{low}. \Cref{fig:rank-inference-risk,fig:timing-proxy-before-after} visualize these.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/rank_inference_risk.png}
+  \caption{Rank-inference risk across detectors and dummy strategies. \texttt{high} cells are reported faithfully and not re-classified.}
+  \label{fig:rank-inference-risk}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/timing_proxy_before_after.png}
+  \caption{Cost-model timing classifier before vs.\ after \texttt{proxy\_equalized}. Proxy only; not real wall-time and not a hardware side-channel evaluation.}
+  \label{fig:timing-proxy-before-after}
+\end{subfigure}
+\caption{Rank-inference and timing-proxy results across Stages 7.2--7.4.}
+\label{fig:rank-and-timing}
+\end{figure}
+
+\paragraph{Limitation.} Spectral- and gradient-inference \texttt{high}-risk rows are honest open problems; they motivate heterogeneous padded rank and stronger spectral hardening as future work.
+
+\subsection{RQ7: What is the measured local runtime overhead?}
+\label{sec:eval:rq7}
+\paragraph{Setup.} \texttt{time.perf\_counter} benchmarks of six primitives (synthetic baseline, plain LoRA forward, masked LoRA forward/backward, rank-padded forward, multi-layer training step) plus an opt-in modern-decoder-model-wrapper benchmark (skipped by default with reason \texttt{include\_modern\_decoder\_wrapper=False}). $\text{num\_warmup}=2$, $\text{num\_repeats}=5$, $\text{device}=\text{cpu}$, $\text{dtype}=\text{float64}$, $\text{wall\_time\_source}=\text{measured\_local\_emulation}$.
+
+\paragraph{Result.} Mean times (illustrative): \texttt{plain\_synthetic\_linear} $0.002$\,ms, \texttt{plain\_lora\_forward} $0.008$\,ms, \texttt{masked\_lora\_forward} $0.263$\,ms, \texttt{masked\_lora\_backward} $0.118$\,ms, \texttt{rank\_padded\_lora\_forward} $0.270$\,ms, \texttt{multi\_layer\_lora\_training\_step} $4.684$\,ms. \Cref{fig:measured-runtime-summary} plots the distribution.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/measured_runtime_summary.png}
+\caption{\textbf{Local-emulation runtime per primitive (this is \emph{not} real TEE wall-time).} $\text{num\_warmup}=2$, $\text{num\_repeats}=5$, $\text{device}=\text{cpu}$, $\text{dtype}=\text{float64}$, $\text{wall\_time\_source}=\text{measured\_local\_emulation}$.}
+\label{fig:measured-runtime-summary}
+\end{figure}
+
+\paragraph{Limitation. This is local runtime emulation, not real TEE wall-time.} No real sleep, no real runtime gating; \texttt{time.perf\_counter} only. Workload tiles are small for test stability; absolute numbers are illustrative.
+
+\input{tables/measured_runtime.tex}
+
+\subsection{Cross-cutting observations}
+\label{sec:eval:summary}
+The full mitigation bundle is \emph{required}; partial bundles leak more under the same attackers. Stronger dummy distributions improve cross-layer linkage to \texttt{low} but do not improve worst-case rank inference. Local-emulation runtime is a coarse signal whose primary use is to confirm that no trusted-side primitive is catastrophically slow at this scale; it is not a deployment latency claim.
