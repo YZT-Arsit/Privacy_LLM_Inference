@@ -933,6 +933,40 @@ def _compatible_island_integration_status(
                 effective_status.get("cpu_runtime_completion_artifact")
                 or method.get("cpu_runtime_completion_artifact")
             ),
+            # Stage 7.5c -- direct prior-work + runtime API validation.
+            "direct_prior_work_comparison_status": str(
+                effective_status.get("direct_prior_work_comparison_status")
+                or method.get("direct_prior_work_comparison_status")
+                or "not_yet"
+            ),
+            "direct_prior_work_comparison_artifact": (
+                effective_status.get("direct_prior_work_comparison_artifact")
+                or method.get("direct_prior_work_comparison_artifact")
+            ),
+            "ours_runtime_api_validation_status": str(
+                effective_status.get("ours_runtime_api_validation_status")
+                or method.get("ours_runtime_api_validation_status")
+                or "not_yet"
+            ),
+            "ours_runtime_api_validation_artifact": (
+                effective_status.get("ours_runtime_api_validation_artifact")
+                or method.get("ours_runtime_api_validation_artifact")
+            ),
+            "runtime_backend_in_use": (
+                effective_status.get("runtime_backend_in_use")
+                or method.get("runtime_backend_in_use")
+                or "local_cpu"
+            ),
+            "real_tee_backend_implemented": bool(
+                effective_status.get("real_tee_backend_implemented")
+                or method.get("real_tee_backend_implemented")
+                or False
+            ),
+            "real_gpu_backend_implemented": bool(
+                effective_status.get("real_gpu_backend_implemented")
+                or method.get("real_gpu_backend_implemented")
+                or False
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"

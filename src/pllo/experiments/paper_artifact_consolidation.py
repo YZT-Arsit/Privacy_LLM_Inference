@@ -107,6 +107,14 @@ _CPU_PAPER_ARTIFACTS: tuple[tuple[str, str], ...] = (
 )
 
 
+# Stage 7.5c additions -- direct prior-work primitive comparison +
+# deployable runtime API validation. Pure aggregation.
+_PRIOR_WORK_ARTIFACTS: tuple[tuple[str, str], ...] = (
+    ("direct_prior_work_comparison", "outputs/direct_prior_work_comparison.json"),
+    ("ours_runtime_api_validation", "outputs/ours_runtime_api_validation.json"),
+)
+
+
 @dataclass
 class PaperArtifactConsolidationConfig:
     outputs_dir: str = "outputs"
@@ -170,6 +178,7 @@ def _build_inventory(
         ("inference", _INFERENCE_ARTIFACTS),
         ("lora", _LORA_ARTIFACTS),
         ("cpu_paper", _CPU_PAPER_ARTIFACTS),
+        ("prior_work", _PRIOR_WORK_ARTIFACTS),
     ):
         for name, rel in group:
             path = outputs_dir.parent / rel if rel.startswith("outputs/") and outputs_dir.name == "outputs" else outputs_dir / Path(rel).name
@@ -968,6 +977,48 @@ _CPU_RUNTIME_COLS = [
 ]
 
 
+# Stage 7.5c summary table columns.
+_DIRECT_PRIOR_WORK_COLS = [
+    "protocol_name", "paper_name",
+    "exact_primitive_implemented", "full_system_reproduced",
+    "arithmetic_skeleton_only", "cost_model_only",
+    "static_forward_supported", "decoder_generation_supported",
+    "kv_cache_append_supported", "lora_training_supported",
+    "linear_correctness_error", "kv_append_result",
+    "boundary_calls", "local_runtime_ms",
+    "runtime_directly_comparable", "threat_model_match",
+    "unsupported_reason", "safe_paper_wording",
+]
+_OURS_RUNTIME_API_COLS = [
+    "component", "trusted_methods_used", "accelerator_methods_used",
+    "boundary_calls", "transcript_sanitized", "raw_secret_leaked",
+    "correctness_error", "allclose", "backend",
+    "tee_gpu_ready_interface", "remaining_backend_work",
+]
+
+
+def _build_direct_prior_work_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("direct_prior_work_comparison") or {}
+    rows = data.get("rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _DIRECT_PRIOR_WORK_COLS})
+    return out
+
+
+def _build_ours_runtime_api_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("ours_runtime_api_validation") or {}
+    rows = data.get("rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _OURS_RUNTIME_API_COLS})
+    return out
+
+
 def _build_toy_task_summary(
     artifacts: dict[str, dict[str, Any] | None],
 ) -> list[dict[str, Any]]:
@@ -1035,7 +1086,12 @@ def run_paper_artifact_consolidation(
 
     # Load all artifacts once.
     artifacts: dict[str, dict[str, Any] | None] = {}
-    for slot in (_INFERENCE_ARTIFACTS, _LORA_ARTIFACTS, _CPU_PAPER_ARTIFACTS):
+    for slot in (
+        _INFERENCE_ARTIFACTS,
+        _LORA_ARTIFACTS,
+        _CPU_PAPER_ARTIFACTS,
+        _PRIOR_WORK_ARTIFACTS,
+    ):
         for name, rel in slot:
             path = outputs_dir / Path(rel).name
             data, _, _ = _load_json(path, strict=False)
@@ -1051,6 +1107,8 @@ def run_paper_artifact_consolidation(
     ablation = _build_ablation_summary(artifacts)
     stability = _build_stability_summary(artifacts)
     cpu_runtime = _build_cpu_runtime_summary(artifacts)
+    prior_work = _build_direct_prior_work_summary(artifacts)
+    runtime_api = _build_ours_runtime_api_summary(artifacts)
 
     missing = [
         r for r in inventory if r["status"] != "present"
@@ -1085,6 +1143,13 @@ def run_paper_artifact_consolidation(
          "Robustness/Stability Summary (CPU only)", "tab:stability_summary"),
         ("cpu_runtime_completion", cpu_runtime, _CPU_RUNTIME_COLS,
          "CPU Runtime Completion (Local Emulation)", "tab:cpu_runtime_completion"),
+        # Stage 7.5c additions.
+        ("direct_prior_work_comparison", prior_work, _DIRECT_PRIOR_WORK_COLS,
+         "Direct Prior-Work Primitive Comparison",
+         "tab:direct_prior_work_comparison"),
+        ("ours_runtime_api_validation", runtime_api, _OURS_RUNTIME_API_COLS,
+         "Deployable Runtime API Validation",
+         "tab:ours_runtime_api_validation"),
     ]
     for slug, rows, cols, title, label in sections:
         csv_text = "".join(_csv_lines(rows, cols))
@@ -1111,6 +1176,8 @@ def run_paper_artifact_consolidation(
         "ablation_summary": ablation,
         "stability_summary": stability,
         "cpu_runtime_summary": cpu_runtime,
+        "direct_prior_work_comparison": prior_work,
+        "ours_runtime_api_validation": runtime_api,
         "missing_artifacts": missing,
         "paper_artifact_consolidation_status": "implemented",
         "security_profile": "proxy-evaluated, not formal",

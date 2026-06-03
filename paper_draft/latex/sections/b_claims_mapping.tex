@@ -42,4 +42,15 @@ This appendix pins every body claim to one of three audit buckets. \texttt{suppo
 \paragraph{Wording check.}
 If a candidate sentence contains any of: \texttt{secure}, \texttt{provably}, \texttt{cryptographic}, \texttt{semantic security}, \texttt{prevents all leakage}, \texttt{guarantees}, \texttt{real TEE wall-time}, \texttt{hides padded rank}, \texttt{Qwen fine-tune}, \texttt{LLaMA fine-tune}, \texttt{PEFT}, \texttt{DeepSpeed}, \texttt{vLLM}, \texttt{FlashAttention}, or \texttt{fully outsourced loss/optimizer}, that sentence requires a corresponding \texttt{unsupported} audit row; re-read U1--U8 and either re-word or move to Limitations. The complete audit lives in \texttt{paper\_results/markdown/paper\_claims\_audit.md} and is reproduced verbatim in \Cref{tab:paper-claims-audit}.
 
+\paragraph{Stage 7.5c safe wordings.}
+The direct prior-work comparison and the runtime API validation introduced in Stage 7.5c add the following \emph{safe} wordings (none of these change the bucketing of U1--U8):
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item ``We directly implement prior-work primitives where the paper formula is available (Slalom delegated linear with Freivalds verification, DarKnight $k=2$ additive sharing, Amulet static $PHQ$ identity, CryptoNets polynomial-activation arithmetic skeleton).''
+  \item ``We do not claim full system reproduction for Slalom, DarKnight, Amulet, CryptoNets, Gazelle, Delphi, SecureML, or MiniONN; each row's \texttt{full\_system\_reproduced} field is \texttt{False}.''
+  \item ``The Amulet KV-append counterexample is itself the experimental result; static left masks do not commute with token-axis concatenation unless they are block-compatible.''
+  \item ``Our runtime API is backend-ready, but this artifact uses \texttt{LocalCPUBackend}; the real TEE / GPU backend is future deployment work.''
+  \item ``Cost-model rows (Gazelle / Delphi / SecureML / MiniONN) report protocol-round and modulus-bit dimensions only; no measured runtime is produced.''
+\end{itemize}
+
 \input{tables/paper_claims_audit.tex}

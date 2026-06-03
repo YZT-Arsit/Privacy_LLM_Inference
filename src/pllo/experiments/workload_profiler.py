@@ -1091,6 +1091,20 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["cpu_runtime_completion_artifact"] = (
                 "outputs/cpu_runtime_completion.json"
             )
+            # Stage 7.5c — direct prior-work primitive comparison +
+            # deployable runtime API validation. No new ops; pure
+            # primitive-level baselines + a runtime-boundary abstraction.
+            record["direct_prior_work_comparison_status"] = "implemented"
+            record["direct_prior_work_comparison_artifact"] = (
+                "outputs/direct_prior_work_comparison.json"
+            )
+            record["ours_runtime_api_validation_status"] = "implemented"
+            record["ours_runtime_api_validation_artifact"] = (
+                "outputs/ours_runtime_api_validation.json"
+            )
+            record["runtime_backend_in_use"] = "local_cpu"
+            record["real_tee_backend_implemented"] = False
+            record["real_gpu_backend_implemented"] = False
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1457,6 +1471,17 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "cpu_runtime_completion_artifact": (
                     "outputs/cpu_runtime_completion.json"
                 ),
+                "direct_prior_work_comparison_status": "implemented",
+                "direct_prior_work_comparison_artifact": (
+                    "outputs/direct_prior_work_comparison.json"
+                ),
+                "ours_runtime_api_validation_status": "implemented",
+                "ours_runtime_api_validation_artifact": (
+                    "outputs/ours_runtime_api_validation.json"
+                ),
+                "runtime_backend_in_use": "local_cpu",
+                "real_tee_backend_implemented": False,
+                "real_gpu_backend_implemented": False,
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"
                     " into the GPT-2 single-block wrapper behind a"

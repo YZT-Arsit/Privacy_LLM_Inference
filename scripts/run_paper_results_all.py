@@ -472,7 +472,45 @@ def _summary_md(
     )
     lines.append("")
 
-    lines.append("## 14. Next Paper-Writing Plan\n")
+    lines.append("## 14. Direct Prior-Work Primitive Comparison (CPU only)\n")
+    dp = consolidation.get("direct_prior_work_comparison", [])
+    lines.append(f"- Rows: **{len(dp)}**")
+    by_impl = sum(1 for r in dp if r.get("exact_primitive_implemented") is True)
+    by_full = sum(1 for r in dp if r.get("full_system_reproduced") is True)
+    by_cost = sum(1 for r in dp if r.get("cost_model_only") is True)
+    by_skel = sum(1 for r in dp if r.get("arithmetic_skeleton_only") is True)
+    lines.append(
+        f"- exact_primitive_implemented=True: **{by_impl}**, "
+        f"full_system_reproduced=True: **{by_full}** "
+        f"(only the two ours rows), "
+        f"cost_model_only=True: **{by_cost}**, "
+        f"arithmetic_skeleton_only=True: **{by_skel}**."
+    )
+    lines.append(
+        "See `paper_results/markdown/direct_prior_work_comparison.md`."
+    )
+    lines.append("")
+
+    lines.append("## 15. Deployable Runtime API Validation (Local CPU only)\n")
+    rt = consolidation.get("ours_runtime_api_validation", [])
+    lines.append(f"- Rows: **{len(rt)}**")
+    if rt:
+        sanitized = sum(1 for r in rt if r.get("transcript_sanitized") is True)
+        leaked = sum(1 for r in rt if r.get("raw_secret_leaked") is True)
+        backend = rt[0].get("backend", "local_cpu")
+        lines.append(
+            f"- transcript_sanitized=True: **{sanitized}/{len(rt)}**, "
+            f"raw_secret_leaked=True: **{leaked}**, backend=`{backend}`."
+        )
+    lines.append(
+        "_Local CPU backend only; real TEE / GPU backend NOT implemented_."
+    )
+    lines.append(
+        "See `paper_results/markdown/ours_runtime_api_validation.md`."
+    )
+    lines.append("")
+
+    lines.append("## 16. Next Paper-Writing Plan\n")
     lines.append(
         "- Draft the system-model + threat-model sections using"
         " `paper_claims_audit.md` (unsupported claims must NOT appear"

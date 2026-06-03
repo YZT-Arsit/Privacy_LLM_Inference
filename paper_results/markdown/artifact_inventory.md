@@ -3,7 +3,7 @@
 | slot | artifact_name | artifact_path | status | json_error | size_bytes | top_level_keys |
 |---|---|---|---|---|---|---|
 | inference | workload_profile | outputs/workload_profile.json | present |  | 55668 | calibration\|config\|interaction_breakdown\|interpretation\|limitations\|methods\|module_breakdown\|paper_metrics\|wr... |
-| inference | cross_architecture_summary | outputs/cross_architecture_summary.json | present |  | 58979 | architectures\|compatible_island_integration_status\|compatible_island_projection\|config\|global_summary\|stage_note... |
+| inference | cross_architecture_summary | outputs/cross_architecture_summary.json | present |  | 59555 | architectures\|compatible_island_integration_status\|compatible_island_projection\|config\|global_summary\|stage_note... |
 | inference | nonlinear_island_experiments | outputs/nonlinear_island_experiments.json | present |  | 24024 | activation_island_cells\|config\|global_summary\|mask_family_assignments\|mlp_island_cells\|norm_island_cells\|pad_pl... |
 | inference | nonlinear_island_security | outputs/nonlinear_island_security.json | present |  | 14024 | config\|global_summary\|island_linkability\|limitations\|mask_family_accounting\|permutation_recovery\|threat_model |
 | inference | adaptive_island_attacks | outputs/adaptive_island_attacks.json | present |  | 20536 | comparison_with_naive_proxy\|config\|limitations\|linear_inverter\|mitigation_summary\|mlp_inverter\|permutation_reco... |
@@ -29,3 +29,5 @@
 | cpu_paper | paper_ablation_study | outputs/paper_ablation_study.json | present |  | 6881 | config\|is_gpu_throughput\|is_real_tee_wall_time\|limitations\|paper_ablation_study_status\|risk_level_derivation\|ro... |
 | cpu_paper | paper_stability_study | outputs/paper_stability_study.json | present |  | 1878987 | config\|is_gpu_throughput\|is_real_tee_wall_time\|limitations\|paper_stability_study_status\|security_profile\|stage\... |
 | cpu_paper | cpu_runtime_completion | outputs/cpu_runtime_completion.json | present |  | 45897 | config\|cpu_runtime_completion_status\|is_gpu_throughput\|is_real_tee_wall_time\|limitations\|rows\|security_profile\... |
+| prior_work | direct_prior_work_comparison | outputs/direct_prior_work_comparison.json | present |  | 16658 | config\|direct_prior_work_comparison_status\|is_gpu_throughput\|is_real_tee_wall_time\|limitations\|rows\|security_pr... |
+| prior_work | ours_runtime_api_validation | outputs/ours_runtime_api_validation.json | present |  | 6075 | backend\|config\|limitations\|ours_runtime_api_validation_status\|real_gpu_backend_implemented\|real_tee_implemented\... |

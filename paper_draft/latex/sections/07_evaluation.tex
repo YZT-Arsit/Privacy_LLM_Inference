@@ -180,6 +180,30 @@ Spectral rank inference under \texttt{paired\_cancellation\_dummy}: \texttt{need
 
 \input{tables/cpu_runtime_completion.tex}
 
+\subsection{RQ13: How do direct prior-work primitive implementations compare under the same local runtime API?}
+\label{sec:eval:rq13}
+\paragraph{Setup.} We implement the primitive(s) of each named prior work directly from its paper formula and execute them under the same CPU local runtime API as our scheme. Specifically: the Slalom delegated-linear primitive (with a Freivalds-style randomised verification check)~\cite{tramer2019slalom}; the DarKnight $k=2$ additive-sharing skeleton; the Amulet static $P H Q$ left+right masking primitive together with its autoregressive KV-append \emph{counterexample}; the CryptoNets~\cite{dowlin2016cryptonets} polynomial-activation \emph{arithmetic skeleton} (plaintext only, no homomorphic encryption library is invoked); and cost-model-only rows for Gazelle~\cite{juvekar2018gazelle}, Delphi~\cite{mishra2020delphi}, SecureML~\cite{mohassel2017secureml}, and MiniONN~\cite{liu2017minionn}, whose runtimes are not reproduced and are recorded as \texttt{runtime\_directly\_comparable=False}. The Arrow primitive is recorded as \texttt{missing\_paper\_formula=True} rather than substituted with a generic proxy.
+
+\paragraph{Metric.} Per-row \texttt{exact\_primitive\_implemented}, \texttt{full\_system\_reproduced}, support flags for static forward / decoder generation / KV cache append / LoRA training, primitive correctness error, KV-append result (including Amulet's counterexample gap), local CPU runtime where directly comparable, and a \texttt{safe\_paper\_wording} string for each row.
+
+\paragraph{Result.} The Slalom delegated-linear primitive and its Freivalds check pass on the shared tile to float64 round-off; the DarKnight $k=2$ skeleton recovers the plain product exactly; the Amulet static $P H Q$ identity passes on a single linear layer but the KV-append counterexample produces a non-trivial gap that vanishes only under the strict block-diagonal $P_t = \mathrm{block\text{-}diag}(P_{t-1}, p_{\mathrm{new}})$ condition; the CryptoNets skeleton runs end-to-end in plaintext but cannot evaluate softmax, RoPE, RMSNorm, or SwiGLU; the four cost-model rows publish their protocol-round / modulus-bit / threat-model dimensions and explicitly refuse to emit a fabricated runtime. See \Cref{tab:direct-prior-work-comparison}.
+
+\paragraph{Limitation.} Each baseline implements only the primitive(s) listed in its \texttt{BaselineSelfDeclaration}; the original papers' full systems are NOT reproduced. Cost-model rows do not produce measured runtimes. Threat models differ across baselines; the comparison is \emph{primitive-functional} and \emph{cost-model}, not a claim that all rows defend against the same adversary.
+
+\input{tables/direct_prior_work_comparison.tex}
+
+\subsection{RQ14: Is the implementation structured for future TEE/GPU deployment?}
+\label{sec:eval:rq14}
+\paragraph{Setup.} Every protocol step in our scheme is routed through the \texttt{TrustedController}~$+$~\texttt{LocalCPUBackend} runtime API introduced in \Cref{sec:design:runtime}. The validation runner exercises ten components -- linear with pad compensation, nonlinear island, modern decoder full forward / prefill / decode-step / greedy-generation, LoRA forward, LoRA backward, rank padding, and multi-layer LoRA training step -- and reports which trusted-side methods and which accelerator-side methods are invoked per component.
+
+\paragraph{Metric.} Per-component correctness error vs.\ a plain reference, \texttt{transcript\_sanitized}, \texttt{raw\_secret\_leaked}, the active backend name (always \texttt{local\_cpu} in this artifact), and \texttt{tee\_gpu\_ready\_interface} (which reports interface readiness only, not real-hardware deployment).
+
+\paragraph{Result.} All ten components match the plain reference to float64 round-off, every row publishes \texttt{transcript\_sanitized=True}, no row leaks raw secrets, and the active backend is \texttt{local\_cpu} throughout. See \Cref{tab:ours-runtime-api-validation}.
+
+\paragraph{Limitation. Local CPU backend only; real TEE and real GPU backends are NOT implemented in this artifact.} \texttt{tee\_gpu\_ready\_interface=True} means the protocol logic is backend-agnostic; it does NOT mean hardware isolation has been deployed.
+
+\input{tables/ours_runtime_api_validation.tex}
+
 \subsection{Cross-cutting observations}
 \label{sec:eval:summary}
-The full mitigation bundle is \emph{required}; partial bundles leak more under the same attackers. Stronger dummy distributions improve cross-layer linkage to \texttt{low} but do not improve worst-case rank inference. The toy-task and stability sweeps confirm the algebraic identities of Theorems~1--9 hold on task-like inputs and across the swept seed/shape space; the baseline comparison and ablation rows expose the structural trade-offs between mitigation knobs. Local-emulation runtime is a coarse signal whose primary use is to confirm that no trusted-side primitive is catastrophically slow at this scale; it is \emph{not} a deployment latency claim, not real TEE wall-time, and not GPU throughput.
+The full mitigation bundle is \emph{required}; partial bundles leak more under the same attackers. Stronger dummy distributions improve cross-layer linkage to \texttt{low} but do not improve worst-case rank inference. The toy-task and stability sweeps confirm the algebraic identities of Theorems~1--9 hold on task-like inputs and across the swept seed/shape space; the baseline comparison and ablation rows expose the structural trade-offs between mitigation knobs. The direct prior-work comparison highlights which primitives extend to generative LLMs (ours) and which do not (Slalom, DarKnight, Amulet static masking, CryptoNets arithmetic skeleton). The runtime API validation shows that the protocol logic is backend-agnostic, so a future TEE or GPU deployment only needs to swap the backend object. Local-emulation runtime is a coarse signal whose primary use is to confirm that no trusted-side primitive is catastrophically slow at this scale; it is \emph{not} a deployment latency claim, not real TEE wall-time, and not GPU throughput.

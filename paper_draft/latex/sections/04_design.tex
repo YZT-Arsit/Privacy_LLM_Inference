@@ -148,3 +148,9 @@ The trusted controller exposes a top-level \texttt{generate(prompt, max\_new\_to
 \end{enumerate}
 
 For LoRA training, the schedule is analogous, with the additional backward and trusted-side optimizer step after each forward.
+
+\subsection{Runtime boundary and backend interface}
+\label{sec:design:backend}
+The protocol above is implemented as an explicit boundary between a \texttt{TrustedController} object and an \texttt{AcceleratorBackend} object. The controller owns: the mask sampler, the pad sampler, the LoRA adapter, the optimiser state, the loss closure, the sampler, the linear and LoRA boundary transforms, the un-mask arithmetic, and a transcript-sanitisation step that strips any field that should not be published. The backend owns: dense linear matmul, generic matmul, attention dot product, softmax, pointwise activations, the orthogonally-invariant cores of RMSNorm and LayerNorm, KV-cache concatenation, LoRA forward, LoRA backward, runtime measurement (via \texttt{time.perf\_counter} only -- never \texttt{time.sleep}), and a \texttt{RuntimeTranscript} summary that by construction carries only operation names, tensor shapes, boundary-call counts, timing, and redacted mask-seed hashes.
+
+Each backend implementation registers itself in a tiny backend registry; the current artifact ships exactly one entry, \texttt{LocalCPUBackend}. A future TEE or GPU backend implements the same protocol surface and is registered via \texttt{register\_backend("tee", \ldots)} or \texttt{register\_backend("gpu", \ldots)} -- no protocol-side logic changes are required. \textbf{We do not claim a real TEE or real GPU runtime in this artifact}: the interface is backend-ready, not backend-deployed. The runtime-API conformance check is reported in \Cref{sec:eval:rq14} and the boundary contract in \texttt{docs/runtime\_boundary.md}.

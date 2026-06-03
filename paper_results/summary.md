@@ -4,10 +4,10 @@ _This is the consolidated paper-side summary of Stage 1 → 7.4. No new ops, no 
 
 ## 1. Artifact Inventory
 
-- Total artifacts surveyed: **27**
-- Present: **27**
+- Total artifacts surveyed: **29**
+- Present: **29**
 - Missing: **0**
-- By slot: cpu_paper=5, inference=11, lora=11
+- By slot: cpu_paper=5, inference=11, lora=11, prior_work=2
 
 See `paper_results/markdown/artifact_inventory.md`.
 
@@ -25,12 +25,12 @@ See `paper_results/markdown/security_proxy_summary.md` / `paper_results/latex/se
 ## 4. Runtime Summary (local emulation only)
 
 **This is local emulation, NOT real TEE wall-time.** No real sleep, no real runtime gating.
-- `plain_synthetic_linear` (X W): mean = **0.002 ms**, median = 0.001 ms, std = 0.000 ms, repeats=5.
-- `plain_lora_forward` (plain_rank_r): mean = **0.009 ms**, median = 0.009 ms, std = 0.001 ms, repeats=5.
-- `masked_lora_forward` (fresh_masks_fresh_u_with_pad): mean = **0.265 ms**, median = 0.252 ms, std = 0.022 ms, repeats=5.
-- `masked_lora_backward` (fresh_masks_fresh_u_with_pad): mean = **0.121 ms**, median = 0.119 ms, std = 0.004 ms, repeats=5.
-- `rank_padded_lora_forward` (paired_cancellation_dummy): mean = **0.283 ms**, median = 0.271 ms, std = 0.024 ms, repeats=5.
-- `multi_layer_lora_training_step` (synthetic_tile): mean = **4.622 ms**, median = 4.644 ms, std = 0.055 ms, repeats=5.
+- `plain_synthetic_linear` (X W): mean = **0.002 ms**, median = 0.002 ms, std = 0.000 ms, repeats=5.
+- `plain_lora_forward` (plain_rank_r): mean = **0.008 ms**, median = 0.009 ms, std = 0.001 ms, repeats=5.
+- `masked_lora_forward` (fresh_masks_fresh_u_with_pad): mean = **0.266 ms**, median = 0.249 ms, std = 0.028 ms, repeats=5.
+- `masked_lora_backward` (fresh_masks_fresh_u_with_pad): mean = **0.115 ms**, median = 0.116 ms, std = 0.005 ms, repeats=5.
+- `rank_padded_lora_forward` (paired_cancellation_dummy): mean = **0.288 ms**, median = 0.278 ms, std = 0.021 ms, repeats=5.
+- `multi_layer_lora_training_step` (synthetic_tile): mean = **4.566 ms**, median = 4.555 ms, std = 0.067 ms, repeats=5.
 - `modern_decoder_model_wrapper` — _skipped_: modern_decoder_wrapper is opt-in (include_modern_decoder_wrapper=False)
 See `paper_results/markdown/measured_runtime.md` / `paper_results/latex/measured_runtime.tex`.
 
@@ -41,7 +41,7 @@ See `paper_results/markdown/lora_training_summary.md`.
 
 ## 6. Limitations
 
-- Aggregated limitation rows: **197**
+- Aggregated limitation rows: **211**
 See `paper_results/markdown/limitations_summary.md`.
 Recurring themes: no formal / cryptographic / semantic security; no real TEE wall-time; padded_rank still visible; optimizer / loss remain trusted; no PEFT integration; no hardware side-channel evaluation; no full Qwen / TinyLlama LoRA fine-tuning.
 
@@ -92,7 +92,20 @@ See `paper_results/markdown/stability_summary.md`.
 _This is CPU local trusted-runtime emulation, NOT real TEE wall-time and NOT GPU throughput._
 See `paper_results/markdown/cpu_runtime_completion.md`.
 
-## 14. Next Paper-Writing Plan
+## 14. Direct Prior-Work Primitive Comparison (CPU only)
+
+- Rows: **11**
+- exact_primitive_implemented=True: **6**, full_system_reproduced=True: **2** (only the two ours rows), cost_model_only=True: **4**, arithmetic_skeleton_only=True: **1**.
+See `paper_results/markdown/direct_prior_work_comparison.md`.
+
+## 15. Deployable Runtime API Validation (Local CPU only)
+
+- Rows: **10**
+- transcript_sanitized=True: **10/10**, raw_secret_leaked=True: **0**, backend=`local_cpu`.
+_Local CPU backend only; real TEE / GPU backend NOT implemented_.
+See `paper_results/markdown/ours_runtime_api_validation.md`.
+
+## 16. Next Paper-Writing Plan
 
 - Draft the system-model + threat-model sections using `paper_claims_audit.md` (unsupported claims must NOT appear as guarantees).
 - Draft the correctness theorem section as empirical verification over the per-stage `correctness_summary` rows; do NOT make formal proof claims.
