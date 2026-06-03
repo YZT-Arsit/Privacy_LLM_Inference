@@ -1,0 +1,22 @@
+# Paper Robustness / Stability Study (CPU only)
+
+_Stability is measured by the spread of float64 round-off across seeds and shapes; it is NOT a security metric. CPU local emulation only -- NOT real TEE wall-time and NOT GPU throughput._
+
+| experiment | trials | allclose_rate | max_error_p95 | max_error_max | runtime_mean | runtime_std | failure_count |
+|---|---|---|---|---|---|---|---|
+| modern_decoder_synthetic_forward | 720 | 1.0 | 1.942890293094024e-16 | 3.0531133177191805e-16 | 0.09044245416968504 | 0.12069696616987177 | 0 |
+| kv_cache_append | 720 | 1.0 | 2.220446049250313e-15 | 2.6645352591003757e-15 | 0.02133661666271615 | 0.011569293885244582 | 0 |
+| nonlinear_island | 720 | 1.0 | 0.0 | 0.0 | 0.020318999992873107 | 0.01990172099099236 | 0 |
+| lora_forward | 720 | 1.0 | 4.055783486833775e-15 | 5.3013149425851225e-15 | 0.2250337722222816 | 0.11779534355212642 | 0 |
+| lora_backward | 720 | 1.0 | 4.529709940470639e-14 | 8.304468224196171e-14 | 0.35323947638580144 | 0.165506555278635 | 0 |
+| rank_padded_lora | 720 | 1.0 | 7.732703366514215e-14 | 1.5466794511809212e-13 | 0.22593616528562657 | 0.10856064283419462 | 0 |
+| multilayer_lora | 720 | 1.0 | 5.717648576819556e-15 | 6.147859998861804e-15 | 0.44706556666685376 | 0.22340250656771193 | 0 |
+
+## Limitations
+
+- All identities are exercised on synthetic tiles; no production fine-tune or external model.
+- Sweeps are restricted to CPU local emulation; no GPU, no real TEE, no network downloads.
+- Stability is measured by the spread of float64 round-off across seeds/shapes; it is NOT a security metric.
+- Adapter is NEVER merged into the public base weight W (Stage 7.0 contract).
+- Reports publish summary statistics only; raw tensors / masks / adapters / gradients are never emitted.
+- No formal / cryptographic / semantic security is claimed.

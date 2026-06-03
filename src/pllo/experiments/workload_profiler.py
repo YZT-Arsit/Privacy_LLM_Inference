@@ -1072,6 +1072,25 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["paper_claims_audit_artifact"] = (
                 "paper_results/markdown/paper_claims_audit.md"
             )
+            # Stage 7.5b — CPU-only paper experiment completion. Pure
+            # aggregation / new tables; no system primitives, no attackers,
+            # no default behavior change.
+            record["cpu_only_paper_experiments_status"] = "implemented"
+            record["paper_toy_tasks_artifact"] = (
+                "outputs/paper_toy_tasks.json"
+            )
+            record["paper_baseline_comparison_artifact"] = (
+                "outputs/paper_baseline_comparison.json"
+            )
+            record["paper_ablation_study_artifact"] = (
+                "outputs/paper_ablation_study.json"
+            )
+            record["paper_stability_study_artifact"] = (
+                "outputs/paper_stability_study.json"
+            )
+            record["cpu_runtime_completion_artifact"] = (
+                "outputs/cpu_runtime_completion.json"
+            )
             # Stage 5.3e — selectable mitigation bundles.
             record["mitigation_bundle_selectable"] = True
             record["default_mitigation_bundle"] = "fresh_perm_only"
@@ -1423,6 +1442,20 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "paper_claims_audit_status": "implemented",
                 "paper_claims_audit_artifact": (
                     "paper_results/markdown/paper_claims_audit.md"
+                ),
+                "cpu_only_paper_experiments_status": "implemented",
+                "paper_toy_tasks_artifact": "outputs/paper_toy_tasks.json",
+                "paper_baseline_comparison_artifact": (
+                    "outputs/paper_baseline_comparison.json"
+                ),
+                "paper_ablation_study_artifact": (
+                    "outputs/paper_ablation_study.json"
+                ),
+                "paper_stability_study_artifact": (
+                    "outputs/paper_stability_study.json"
+                ),
+                "cpu_runtime_completion_artifact": (
+                    "outputs/cpu_runtime_completion.json"
                 ),
                 "note": (
                     "Stage 5.3a integrates the compatible GELU MLP island"

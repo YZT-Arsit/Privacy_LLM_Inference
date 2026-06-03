@@ -1,0 +1,192 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "batch_size": 4,
+    "seq_len": 8,
+    "hidden_size": 32,
+    "num_layers": 2,
+    "num_trials": 32,
+    "true_rank": 4,
+    "padded_rank": 8,
+    "dtype": "float64",
+    "device": "cpu"
+  },
+  "rows": [
+    {
+      "component": "boundary_pad",
+      "setting": "off",
+      "correctness_preserved": true,
+      "max_abs_error": 9.43689570931383e-16,
+      "proxy_attack_metric": "activation_recovery_proxy",
+      "risk_level": "high",
+      "runtime_overhead_ms": 0.12207825000842831,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "boundary_pad",
+      "setting": "on",
+      "correctness_preserved": true,
+      "max_abs_error": 3.649858193455202e-15,
+      "proxy_attack_metric": "activation_recovery_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.1433515000073271,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "permutation_freshness",
+      "setting": "fixed",
+      "correctness_preserved": true,
+      "max_abs_error": 4.135580766728708e-15,
+      "proxy_attack_metric": "linkability_auc",
+      "risk_level": "high",
+      "runtime_overhead_ms": 0.05202350001098921,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "permutation_freshness",
+      "setting": "fresh",
+      "correctness_preserved": true,
+      "max_abs_error": 4.6074255521944e-15,
+      "proxy_attack_metric": "linkability_auc",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.1516848750071631,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "dense_sandwich",
+      "setting": "off",
+      "correctness_preserved": true,
+      "max_abs_error": 7.771561172376096e-16,
+      "proxy_attack_metric": "permutation_recovery_proxy",
+      "risk_level": "high",
+      "runtime_overhead_ms": 0.13928262501394784,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "dense_sandwich",
+      "setting": "on",
+      "correctness_preserved": true,
+      "max_abs_error": 4.433953204596719e-15,
+      "proxy_attack_metric": "permutation_recovery_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.1555664062635742,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "inter_block_boundary",
+      "setting": "plain_boundary",
+      "correctness_preserved": true,
+      "max_abs_error": 0.0,
+      "proxy_attack_metric": "inter_block_linkability_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.0,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "inter_block_boundary",
+      "setting": "masked_boundary_experimental",
+      "correctness_preserved": true,
+      "max_abs_error": 0.0,
+      "proxy_attack_metric": "inter_block_linkability_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.0,
+      "interpretation": "experimental_optin"
+    },
+    {
+      "component": "constant_time_decode_proxy",
+      "setting": "off",
+      "correctness_preserved": true,
+      "max_abs_error": 0.0,
+      "proxy_attack_metric": "cost_model_timing_classifier_accuracy",
+      "risk_level": "medium",
+      "runtime_overhead_ms": 0.0,
+      "interpretation": "metadata_timing"
+    },
+    {
+      "component": "constant_time_decode_proxy",
+      "setting": "proxy_equalized",
+      "correctness_preserved": true,
+      "max_abs_error": 0.0,
+      "proxy_attack_metric": "cost_model_timing_classifier_accuracy",
+      "risk_level": "low",
+      "runtime_overhead_ms": 0.0,
+      "interpretation": "metadata_timing"
+    },
+    {
+      "component": "rank_padding",
+      "setting": "off",
+      "correctness_preserved": true,
+      "max_abs_error": 3.941291737419306e-15,
+      "proxy_attack_metric": "spectral_rank_inference_proxy",
+      "risk_level": "high",
+      "runtime_overhead_ms": 0.15531509372834762,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "rank_padding",
+      "setting": "on",
+      "correctness_preserved": true,
+      "max_abs_error": 3.577693696854567e-14,
+      "proxy_attack_metric": "spectral_rank_inference_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.18661728127256083,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "dummy_strategy",
+      "setting": "zero_dummy",
+      "correctness_preserved": true,
+      "max_abs_error": 4.538036613155327e-15,
+      "proxy_attack_metric": "spectral_rank_inference_proxy",
+      "risk_level": "high",
+      "runtime_overhead_ms": 0.1703737500164948,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "dummy_strategy",
+      "setting": "paired_cancellation_dummy",
+      "correctness_preserved": true,
+      "max_abs_error": 4.230643613212237e-14,
+      "proxy_attack_metric": "spectral_rank_inference_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.18259381248242335,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "dummy_strategy",
+      "setting": "spectrum_matched_dummy",
+      "correctness_preserved": true,
+      "max_abs_error": 3.5110803153770576e-15,
+      "proxy_attack_metric": "spectral_rank_inference_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.24155587500729325,
+      "interpretation": "security_critical"
+    },
+    {
+      "component": "dummy_strategy",
+      "setting": "mixed_dummy_ensemble",
+      "correctness_preserved": true,
+      "max_abs_error": 3.2612801348363973e-14,
+      "proxy_attack_metric": "spectral_rank_inference_proxy",
+      "risk_level": "needs_more_evaluation",
+      "runtime_overhead_ms": 0.25806765623315187,
+      "interpretation": "security_critical"
+    }
+  ],
+  "paper_ablation_study_status": "implemented",
+  "stage": "7.5b",
+  "wall_time_source": "measured_local_emulation",
+  "is_real_tee_wall_time": false,
+  "is_gpu_throughput": false,
+  "security_profile": "proxy-evaluated, not formal",
+  "risk_level_derivation": "proxy-derived from Stage 5-7 security_proxy_summary; not formal",
+  "limitations": [
+    "All ablation rows reuse the algebraic identities of Theorem 1-9; correctness is preserved by construction across both settings of each axis.",
+    "Risk levels are proxy-derived from the existing Stage 5-7 security_proxy_summary, not formal security guarantees.",
+    "Runtime overhead is local CPU emulation only; not real TEE wall-time and not GPU throughput.",
+    "No formal / cryptographic / semantic security is claimed.",
+    "Adapter is NEVER merged into the public base weight W (Stage 7.0 contract).",
+    "Reports publish summary metrics only; raw tensors / masks / adapters are never emitted."
+  ]
+}

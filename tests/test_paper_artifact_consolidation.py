@@ -32,7 +32,28 @@ def test_consolidation_runs(tmp_path: Path) -> None:
     )
     report = run_paper_artifact_consolidation(cfg)
     assert report["paper_artifact_consolidation_status"] == "implemented"
-    assert len(report["artifact_inventory"]) >= 22
+    # Stage 7.5 had 22 artifacts; Stage 7.5b adds 5 (CPU-only paper experiments).
+    assert len(report["artifact_inventory"]) >= 27
+
+
+def test_cpu_paper_summary_tables_emitted(tmp_path: Path) -> None:
+    """Stage 7.5b -- the 5 CPU paper summary tables must be written."""
+    cfg = PaperArtifactConsolidationConfig(
+        outputs_dir=str(PROJECT_ROOT / "outputs"),
+        paper_results_dir=str(tmp_path / "paper_results"),
+    )
+    run_paper_artifact_consolidation(cfg)
+    base = tmp_path / "paper_results"
+    for slug in (
+        "toy_task_summary",
+        "baseline_comparison_summary",
+        "ablation_summary",
+        "stability_summary",
+        "cpu_runtime_completion",
+    ):
+        assert (base / "csv" / f"{slug}.csv").exists(), f"missing csv/{slug}"
+        assert (base / "markdown" / f"{slug}.md").exists(), f"missing markdown/{slug}"
+        assert (base / "latex" / f"{slug}.tex").exists(), f"missing latex/{slug}"
 
 
 # ---------------------------------------------------------------------------
@@ -47,7 +68,10 @@ def test_inventory_covers_both_slots(tmp_path: Path) -> None:
     )
     report = run_paper_artifact_consolidation(cfg)
     slots = {r["slot"] for r in report["artifact_inventory"]}
-    assert slots == {"inference", "lora"}
+    # Stage 7.5b added the ``cpu_paper`` slot alongside the original
+    # inference / lora slots.
+    assert {"inference", "lora"}.issubset(slots)
+    assert "cpu_paper" in slots
 
 
 # ---------------------------------------------------------------------------

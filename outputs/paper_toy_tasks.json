@@ -1,0 +1,518 @@
+{
+  "config": {
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "seed": 2026,
+    "num_samples": 128,
+    "seq_len": 8,
+    "vocab_size": 128,
+    "hidden_size": 32,
+    "num_classes": 2,
+    "num_layers": 2,
+    "true_rank": 4,
+    "padded_rank": 8,
+    "batch_size": 8,
+    "num_train_steps": 20,
+    "lr": 0.01,
+    "use_pad": true,
+    "mitigation_bundle": "fresh_perm_plus_sandwich_plus_pad",
+    "inter_block_mask_mode": "masked_boundary_experimental",
+    "constant_time_decode_mode": "proxy_equalized",
+    "dtype": "float64",
+    "device": "cpu",
+    "allclose_atol": 1e-09,
+    "allclose_rtol": 1e-09
+  },
+  "rows": [
+    {
+      "task_name": "token_parity_classification",
+      "num_samples": 128,
+      "num_train_steps": 20,
+      "train_loss_plain": 0.6901150550410321,
+      "train_loss_masked": 0.6901150550410321,
+      "loss_diff": 0.0,
+      "accuracy_plain": 0.5390625,
+      "accuracy_masked": 0.5390625,
+      "accuracy_diff": 0.0,
+      "logits_max_abs_error": 9.992007221626409e-16,
+      "token_match_rate": 1.0,
+      "allclose": true,
+      "runtime_ms": 23.32412500004466,
+      "per_step": [
+        {
+          "step": 0,
+          "plain_loss": 0.6663042815087759,
+          "masked_loss": 0.6663042815087759,
+          "logits_max_abs_error": 8.049116928532385e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 1,
+          "plain_loss": 0.651501455173666,
+          "masked_loss": 0.651501455173666,
+          "logits_max_abs_error": 4.85722573273506e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 2,
+          "plain_loss": 0.7173326033151569,
+          "masked_loss": 0.7173326033151568,
+          "logits_max_abs_error": 5.551115123125783e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 3,
+          "plain_loss": 0.6901611044287805,
+          "masked_loss": 0.6901611044287803,
+          "logits_max_abs_error": 4.718447854656915e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 4,
+          "plain_loss": 0.7046156099721432,
+          "masked_loss": 0.7046156099721432,
+          "logits_max_abs_error": 8.187894806610529e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 5,
+          "plain_loss": 0.7029225116845204,
+          "masked_loss": 0.7029225116845201,
+          "logits_max_abs_error": 8.604228440844963e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 6,
+          "plain_loss": 0.664204063945757,
+          "masked_loss": 0.664204063945757,
+          "logits_max_abs_error": 5.828670879282072e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 7,
+          "plain_loss": 0.6805024566398231,
+          "masked_loss": 0.6805024566398231,
+          "logits_max_abs_error": 5.551115123125783e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 8,
+          "plain_loss": 0.7102195749890363,
+          "masked_loss": 0.7102195749890363,
+          "logits_max_abs_error": 7.216449660063518e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 9,
+          "plain_loss": 0.7039669786799216,
+          "masked_loss": 0.7039669786799215,
+          "logits_max_abs_error": 5.898059818321144e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 10,
+          "plain_loss": 0.719864059321218,
+          "masked_loss": 0.719864059321218,
+          "logits_max_abs_error": 2.983724378680108e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 11,
+          "plain_loss": 0.7426644766259147,
+          "masked_loss": 0.7426644766259147,
+          "logits_max_abs_error": 4.440892098500626e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 12,
+          "plain_loss": 0.6725529537793136,
+          "masked_loss": 0.6725529537793137,
+          "logits_max_abs_error": 7.494005416219807e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 13,
+          "plain_loss": 0.7112810774380044,
+          "masked_loss": 0.7112810774380043,
+          "logits_max_abs_error": 7.216449660063518e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 14,
+          "plain_loss": 0.679943255887935,
+          "masked_loss": 0.6799432558879349,
+          "logits_max_abs_error": 6.938893903907228e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 15,
+          "plain_loss": 0.6362677638279176,
+          "masked_loss": 0.6362677638279175,
+          "logits_max_abs_error": 6.38378239159465e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 16,
+          "plain_loss": 0.6663575851590778,
+          "masked_loss": 0.666357585159078,
+          "logits_max_abs_error": 8.881784197001252e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 17,
+          "plain_loss": 0.6516345234334593,
+          "masked_loss": 0.6516345234334593,
+          "logits_max_abs_error": 8.326672684688674e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 18,
+          "plain_loss": 0.717180527265938,
+          "masked_loss": 0.717180527265938,
+          "logits_max_abs_error": 5.342948306008566e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 19,
+          "plain_loss": 0.6901150550410321,
+          "masked_loss": 0.6901150550410321,
+          "logits_max_abs_error": 5.898059818321144e-16,
+          "token_match_rate": 1.0
+        }
+      ],
+      "notes": "Deterministic synthetic task; plain analytic backward; masked forward exercises Theorem 7 (LoRA masked forward) on task-like inputs."
+    },
+    {
+      "task_name": "first_last_token_relation",
+      "num_samples": 128,
+      "num_train_steps": 20,
+      "train_loss_plain": 0.688203308355396,
+      "train_loss_masked": 0.6882033083553959,
+      "loss_diff": 1.1102230246251565e-16,
+      "accuracy_plain": 0.53125,
+      "accuracy_masked": 0.53125,
+      "accuracy_diff": 0.0,
+      "logits_max_abs_error": 7.042977312465837e-16,
+      "token_match_rate": 1.0,
+      "allclose": true,
+      "runtime_ms": 12.599417000046742,
+      "per_step": [
+        {
+          "step": 0,
+          "plain_loss": 0.6922090059031207,
+          "masked_loss": 0.6922090059031208,
+          "logits_max_abs_error": 5.204170427930421e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 1,
+          "plain_loss": 0.6921493776432487,
+          "masked_loss": 0.6921493776432486,
+          "logits_max_abs_error": 6.522560269672795e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 2,
+          "plain_loss": 0.686367915630909,
+          "masked_loss": 0.6863679156309089,
+          "logits_max_abs_error": 4.874572967494828e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 3,
+          "plain_loss": 0.688174460335924,
+          "masked_loss": 0.6881744603359241,
+          "logits_max_abs_error": 4.787836793695988e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 4,
+          "plain_loss": 0.6989891500208529,
+          "masked_loss": 0.6989891500208529,
+          "logits_max_abs_error": 6.435824095873954e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 5,
+          "plain_loss": 0.6944747332644213,
+          "masked_loss": 0.6944747332644214,
+          "logits_max_abs_error": 3.5041414214731503e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 6,
+          "plain_loss": 0.6955236141767395,
+          "masked_loss": 0.6955236141767396,
+          "logits_max_abs_error": 3.122502256758253e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 7,
+          "plain_loss": 0.6983211168985175,
+          "masked_loss": 0.6983211168985175,
+          "logits_max_abs_error": 3.0184188481996443e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 8,
+          "plain_loss": 0.6855329605868417,
+          "masked_loss": 0.6855329605868415,
+          "logits_max_abs_error": 6.245004513516506e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 9,
+          "plain_loss": 0.6966948173057161,
+          "masked_loss": 0.6966948173057161,
+          "logits_max_abs_error": 4.172009959724221e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 10,
+          "plain_loss": 0.6973849384899358,
+          "masked_loss": 0.6973849384899358,
+          "logits_max_abs_error": 4.111294638065033e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 11,
+          "plain_loss": 0.6889542097895283,
+          "masked_loss": 0.6889542097895285,
+          "logits_max_abs_error": 5.793976409762536e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 12,
+          "plain_loss": 0.693926248311479,
+          "masked_loss": 0.6939262483114789,
+          "logits_max_abs_error": 2.662800535624399e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 13,
+          "plain_loss": 0.6934411839699628,
+          "masked_loss": 0.6934411839699628,
+          "logits_max_abs_error": 5.585809592645319e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 14,
+          "plain_loss": 0.6982704278524935,
+          "masked_loss": 0.6982704278524935,
+          "logits_max_abs_error": 5.48172618408671e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 15,
+          "plain_loss": 0.7018758100540581,
+          "masked_loss": 0.7018758100540581,
+          "logits_max_abs_error": 4.475586568020162e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 16,
+          "plain_loss": 0.6921655991095774,
+          "masked_loss": 0.6921655991095773,
+          "logits_max_abs_error": 5.863365348801608e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 17,
+          "plain_loss": 0.6921730304859819,
+          "masked_loss": 0.6921730304859819,
+          "logits_max_abs_error": 3.885780586188048e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 18,
+          "plain_loss": 0.6863571249477356,
+          "masked_loss": 0.6863571249477356,
+          "logits_max_abs_error": 4.414871246360974e-16,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 19,
+          "plain_loss": 0.688203308355396,
+          "masked_loss": 0.6882033083553959,
+          "logits_max_abs_error": 2.983724378680108e-16,
+          "token_match_rate": 1.0
+        }
+      ],
+      "notes": "Deterministic synthetic task; plain analytic backward; masked forward exercises Theorem 7 (LoRA masked forward) on task-like inputs."
+    },
+    {
+      "task_name": "next_token_toy_lm",
+      "num_samples": 128,
+      "num_train_steps": 20,
+      "train_loss_plain": 4.8663778912838485,
+      "train_loss_masked": 4.866377891283849,
+      "loss_diff": 8.881784197001252e-16,
+      "accuracy_plain": 0.015625,
+      "accuracy_masked": 0.015625,
+      "accuracy_diff": 0.0,
+      "logits_max_abs_error": 3.3931191190106347e-15,
+      "token_match_rate": 1.0,
+      "allclose": true,
+      "runtime_ms": 13.031958000055965,
+      "per_step": [
+        {
+          "step": 0,
+          "plain_loss": 4.86617953200188,
+          "masked_loss": 4.86617953200188,
+          "logits_max_abs_error": 1.880440247958859e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 1,
+          "plain_loss": 4.766165899191481,
+          "masked_loss": 4.766165899191481,
+          "logits_max_abs_error": 2.7200464103316335e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 2,
+          "plain_loss": 4.819678462463709,
+          "masked_loss": 4.819678462463709,
+          "logits_max_abs_error": 3.913536161803677e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 3,
+          "plain_loss": 4.866840911566447,
+          "masked_loss": 4.866840911566447,
+          "logits_max_abs_error": 2.4711135915289617e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 4,
+          "plain_loss": 4.930547929726325,
+          "masked_loss": 4.930547929726324,
+          "logits_max_abs_error": 3.12944115066216e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 5,
+          "plain_loss": 4.840143419052348,
+          "masked_loss": 4.840143419052348,
+          "logits_max_abs_error": 2.4216739724636227e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 6,
+          "plain_loss": 4.898144387486669,
+          "masked_loss": 4.898144387486668,
+          "logits_max_abs_error": 2.192690473634684e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 7,
+          "plain_loss": 4.843332767895436,
+          "masked_loss": 4.843332767895436,
+          "logits_max_abs_error": 5.9396931817445875e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 8,
+          "plain_loss": 4.811202467258351,
+          "masked_loss": 4.81120246725835,
+          "logits_max_abs_error": 2.3037127760972e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 9,
+          "plain_loss": 4.86555313622499,
+          "masked_loss": 4.86555313622499,
+          "logits_max_abs_error": 2.4980018054066022e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 10,
+          "plain_loss": 4.7831702603495305,
+          "masked_loss": 4.783170260349531,
+          "logits_max_abs_error": 2.8033131371785203e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 11,
+          "plain_loss": 4.867447600078877,
+          "masked_loss": 4.867447600078878,
+          "logits_max_abs_error": 2.1094237467877974e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 12,
+          "plain_loss": 4.836355063440736,
+          "masked_loss": 4.836355063440736,
+          "logits_max_abs_error": 2.5326962749261384e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 13,
+          "plain_loss": 4.853967772093664,
+          "masked_loss": 4.853967772093664,
+          "logits_max_abs_error": 2.4424906541753444e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 14,
+          "plain_loss": 4.880863879847468,
+          "masked_loss": 4.880863879847468,
+          "logits_max_abs_error": 2.040034807748725e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 15,
+          "plain_loss": 4.874871590096308,
+          "masked_loss": 4.874871590096308,
+          "logits_max_abs_error": 2.1649348980190553e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 16,
+          "plain_loss": 4.865904017887988,
+          "masked_loss": 4.865904017887988,
+          "logits_max_abs_error": 3.4139358007223564e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 17,
+          "plain_loss": 4.765605582750542,
+          "masked_loss": 4.765605582750541,
+          "logits_max_abs_error": 2.0274580625478933e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 18,
+          "plain_loss": 4.819315888271097,
+          "masked_loss": 4.819315888271097,
+          "logits_max_abs_error": 2.5118795932144167e-15,
+          "token_match_rate": 1.0
+        },
+        {
+          "step": 19,
+          "plain_loss": 4.8663778912838485,
+          "masked_loss": 4.866377891283849,
+          "logits_max_abs_error": 2.8102520310824275e-15,
+          "token_match_rate": 1.0
+        }
+      ],
+      "notes": "Deterministic synthetic task; plain analytic backward; masked forward exercises Theorem 7 (LoRA masked forward) on task-like inputs."
+    }
+  ],
+  "paper_toy_tasks_status": "implemented",
+  "stage": "7.5b",
+  "wall_time_source": "measured_local_emulation",
+  "is_real_tee_wall_time": false,
+  "is_gpu_throughput": false,
+  "security_profile": "proxy-evaluated, not formal",
+  "limitations": [
+    "Task-like inputs are deterministic synthetic sequences; no external dataset, no tokenizer.",
+    "Targets are deterministic functions of input ids and do NOT reflect any real-world label distribution.",
+    "The toy model is a tiny LoRA-augmented decoder stack; not a full Qwen / TinyLlama / LLaMA fine-tune.",
+    "Loss, optimizer, and backward remain trusted-side (Stage 7.0 / 7.1 contract).",
+    "Local CPU runtime only; not real TEE wall-time and not GPU throughput.",
+    "No formal / cryptographic / semantic security is claimed.",
+    "No PEFT / DeepSpeed / vLLM / FlashAttention integration.",
+    "Adapter is NEVER merged into the public base weight W (Stage 7.0 contract).",
+    "Reports publish summary metrics only; raw tensors / masks / adapters / gradients / input ids are never emitted."
+  ]
+}

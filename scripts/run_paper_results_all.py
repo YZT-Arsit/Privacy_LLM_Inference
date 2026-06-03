@@ -393,7 +393,86 @@ def _summary_md(
             )
     lines.append("")
 
-    lines.append("## 9. Next Paper-Writing Plan\n")
+    # Stage 7.5b additions.
+    lines.append("## 9. Toy Task Results (CPU only)\n")
+    toy = consolidation.get("toy_task_summary", [])
+    lines.append(f"- Tasks: **{len(toy)}**")
+    for r in toy:
+        lines.append(
+            f"  - `{r.get('task_name')}` loss_diff={r.get('loss_diff')} "
+            f"accuracy_diff={r.get('accuracy_diff')} "
+            f"token_match_rate={r.get('token_match_rate')} "
+            f"allclose={r.get('allclose')}"
+        )
+    lines.append(
+        "See `paper_results/markdown/toy_task_summary.md` /"
+        " `paper_results/latex/toy_task_summary.tex`."
+    )
+    lines.append("")
+
+    lines.append("## 10. Baseline Comparison (CPU only)\n")
+    bl = consolidation.get("baseline_comparison_summary", [])
+    lines.append(f"- Variants: **{len(bl)}**")
+    risk_counts_bl: dict[str, int] = {}
+    for r in bl:
+        k = r.get("proxy_risk_level") or "n/a"
+        risk_counts_bl[k] = risk_counts_bl.get(k, 0) + 1
+    if risk_counts_bl:
+        lines.append(
+            "- Risk distribution (proxy-derived): "
+            + ", ".join(f"{k}={v}" for k, v in sorted(risk_counts_bl.items()))
+        )
+    lines.append(
+        "See `paper_results/markdown/baseline_comparison_summary.md`."
+    )
+    lines.append("")
+
+    lines.append("## 11. Mitigation Ablation (CPU only)\n")
+    ab = consolidation.get("ablation_summary", [])
+    lines.append(f"- Rows: **{len(ab)}**")
+    role_counts: dict[str, int] = {}
+    for r in ab:
+        k = r.get("interpretation") or "n/a"
+        role_counts[k] = role_counts.get(k, 0) + 1
+    if role_counts:
+        lines.append(
+            "- Role distribution: "
+            + ", ".join(f"{k}={v}" for k, v in sorted(role_counts.items()))
+        )
+    lines.append(
+        "See `paper_results/markdown/ablation_summary.md`."
+    )
+    lines.append("")
+
+    lines.append("## 12. Robustness and Stability (CPU only)\n")
+    st = consolidation.get("stability_summary", [])
+    lines.append(f"- Experiments: **{len(st)}**")
+    for r in st:
+        lines.append(
+            f"  - `{r.get('experiment')}` trials={r.get('trials')} "
+            f"allclose_rate={r.get('allclose_rate')} "
+            f"max_error_p95={r.get('max_error_p95')} "
+            f"failure_count={r.get('failure_count')}"
+        )
+    lines.append(
+        "See `paper_results/markdown/stability_summary.md`."
+    )
+    lines.append("")
+
+    lines.append("## 13. CPU Runtime Completion (local emulation only)\n")
+    rt = consolidation.get("cpu_runtime_summary", [])
+    components = sorted({r.get("component") for r in rt if r.get("component")})
+    lines.append(f"- Rows: **{len(rt)}** across **{len(components)}** components.")
+    lines.append(
+        "_This is CPU local trusted-runtime emulation, NOT real TEE wall-time"
+        " and NOT GPU throughput._"
+    )
+    lines.append(
+        "See `paper_results/markdown/cpu_runtime_completion.md`."
+    )
+    lines.append("")
+
+    lines.append("## 14. Next Paper-Writing Plan\n")
     lines.append(
         "- Draft the system-model + threat-model sections using"
         " `paper_claims_audit.md` (unsupported claims must NOT appear"

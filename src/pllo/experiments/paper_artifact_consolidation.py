@@ -96,6 +96,17 @@ _LORA_ARTIFACTS: tuple[tuple[str, str], ...] = (
 )
 
 
+# Stage 7.5b additions -- CPU-only paper experiments. Pure aggregation;
+# no new ops, no new attackers.
+_CPU_PAPER_ARTIFACTS: tuple[tuple[str, str], ...] = (
+    ("paper_toy_tasks", "outputs/paper_toy_tasks.json"),
+    ("paper_baseline_comparison", "outputs/paper_baseline_comparison.json"),
+    ("paper_ablation_study", "outputs/paper_ablation_study.json"),
+    ("paper_stability_study", "outputs/paper_stability_study.json"),
+    ("cpu_runtime_completion", "outputs/cpu_runtime_completion.json"),
+)
+
+
 @dataclass
 class PaperArtifactConsolidationConfig:
     outputs_dir: str = "outputs"
@@ -155,8 +166,11 @@ def _build_inventory(
     outputs_dir: Path, strict: bool,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for slot, group in (("inference", _INFERENCE_ARTIFACTS),
-                        ("lora", _LORA_ARTIFACTS)):
+    for slot, group in (
+        ("inference", _INFERENCE_ARTIFACTS),
+        ("lora", _LORA_ARTIFACTS),
+        ("cpu_paper", _CPU_PAPER_ARTIFACTS),
+    ):
         for name, rel in group:
             path = outputs_dir.parent / rel if rel.startswith("outputs/") and outputs_dir.name == "outputs" else outputs_dir / Path(rel).name
             # Always resolve to <repo>/outputs/<basename>
@@ -920,6 +934,95 @@ _INVENTORY_COLS = [
 ]
 
 
+# Stage 7.5b summary table columns.
+_TOY_TASK_COLS = [
+    "task_name", "num_samples", "num_train_steps",
+    "train_loss_plain", "train_loss_masked", "loss_diff",
+    "accuracy_plain", "accuracy_masked", "accuracy_diff",
+    "logits_max_abs_error", "token_match_rate", "allclose",
+    "runtime_ms",
+]
+_BASELINE_COMPARISON_COLS = [
+    "variant", "kind",
+    "correctness_error", "token_match_rate", "loss_diff",
+    "boundary_calls", "online_extra_matmul_count",
+    "local_runtime_ms",
+    "proxy_risk_level", "supported_claim_type",
+]
+_ABLATION_COLS = [
+    "component", "setting",
+    "correctness_preserved", "max_abs_error",
+    "proxy_attack_metric", "risk_level",
+    "runtime_overhead_ms", "interpretation",
+]
+_STABILITY_COLS = [
+    "experiment", "trials",
+    "allclose_rate", "max_error_p95", "max_error_max",
+    "runtime_mean", "runtime_std", "failure_count",
+]
+_CPU_RUNTIME_COLS = [
+    "component", "variant",
+    "batch_size", "seq_len", "hidden_size",
+    "num_warmup", "num_repeats",
+    "mean_ms", "median_ms", "std_ms", "min_ms", "max_ms",
+]
+
+
+def _build_toy_task_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("paper_toy_tasks") or {}
+    rows = data.get("rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _TOY_TASK_COLS})
+    return out
+
+
+def _build_baseline_comparison_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("paper_baseline_comparison") or {}
+    rows = data.get("rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _BASELINE_COMPARISON_COLS})
+    return out
+
+
+def _build_ablation_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("paper_ablation_study") or {}
+    rows = data.get("rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _ABLATION_COLS})
+    return out
+
+
+def _build_stability_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("paper_stability_study") or {}
+    rows = data.get("summary_rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _STABILITY_COLS})
+    return out
+
+
+def _build_cpu_runtime_summary(
+    artifacts: dict[str, dict[str, Any] | None],
+) -> list[dict[str, Any]]:
+    data = artifacts.get("cpu_runtime_completion") or {}
+    rows = data.get("rows") or []
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        out.append({c: r.get(c, "") for c in _CPU_RUNTIME_COLS})
+    return out
+
+
 def run_paper_artifact_consolidation(
     config: PaperArtifactConsolidationConfig,
 ) -> dict[str, Any]:
@@ -932,7 +1035,7 @@ def run_paper_artifact_consolidation(
 
     # Load all artifacts once.
     artifacts: dict[str, dict[str, Any] | None] = {}
-    for slot in (_INFERENCE_ARTIFACTS, _LORA_ARTIFACTS):
+    for slot in (_INFERENCE_ARTIFACTS, _LORA_ARTIFACTS, _CPU_PAPER_ARTIFACTS):
         for name, rel in slot:
             path = outputs_dir / Path(rel).name
             data, _, _ = _load_json(path, strict=False)
@@ -943,6 +1046,11 @@ def run_paper_artifact_consolidation(
     workload_table = _build_workload_summary(artifacts)
     lora_train = _build_lora_training_summary(artifacts)
     limitations = _build_limitations_summary(artifacts)
+    toy_task = _build_toy_task_summary(artifacts)
+    baseline_cmp = _build_baseline_comparison_summary(artifacts)
+    ablation = _build_ablation_summary(artifacts)
+    stability = _build_stability_summary(artifacts)
+    cpu_runtime = _build_cpu_runtime_summary(artifacts)
 
     missing = [
         r for r in inventory if r["status"] != "present"
@@ -966,6 +1074,17 @@ def run_paper_artifact_consolidation(
          "LoRA Training Summary", "tab:lora_training_summary"),
         ("limitations_summary", limitations, _LIMITATIONS_COLS,
          "Limitations Summary", "tab:limitations_summary"),
+        # Stage 7.5b additions.
+        ("toy_task_summary", toy_task, _TOY_TASK_COLS,
+         "Toy Task Summary (CPU only)", "tab:toy_task_summary"),
+        ("baseline_comparison_summary", baseline_cmp, _BASELINE_COMPARISON_COLS,
+         "Baseline Comparison Summary (CPU only)", "tab:baseline_comparison_summary"),
+        ("ablation_summary", ablation, _ABLATION_COLS,
+         "Mitigation Ablation Summary (CPU only)", "tab:ablation_summary"),
+        ("stability_summary", stability, _STABILITY_COLS,
+         "Robustness/Stability Summary (CPU only)", "tab:stability_summary"),
+        ("cpu_runtime_completion", cpu_runtime, _CPU_RUNTIME_COLS,
+         "CPU Runtime Completion (Local Emulation)", "tab:cpu_runtime_completion"),
     ]
     for slug, rows, cols, title, label in sections:
         csv_text = "".join(_csv_lines(rows, cols))
@@ -987,6 +1106,11 @@ def run_paper_artifact_consolidation(
         "workload_summary": workload_table,
         "lora_training_summary": lora_train,
         "limitations_summary": limitations,
+        "toy_task_summary": toy_task,
+        "baseline_comparison_summary": baseline_cmp,
+        "ablation_summary": ablation,
+        "stability_summary": stability,
+        "cpu_runtime_summary": cpu_runtime,
         "missing_artifacts": missing,
         "paper_artifact_consolidation_status": "implemented",
         "security_profile": "proxy-evaluated, not formal",

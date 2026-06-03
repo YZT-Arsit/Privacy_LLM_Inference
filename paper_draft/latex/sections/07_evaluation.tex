@@ -126,6 +126,60 @@ Spectral rank inference under \texttt{paired\_cancellation\_dummy}: \texttt{need
 
 \input{tables/measured_runtime.tex}
 
+\subsection{RQ8: Does the method remain correct on task-like toy workloads?}
+\label{sec:eval:rq8}
+\paragraph{Setup.} Three deterministic synthetic toy tasks exercise plain vs. masked execution on task-like inputs rather than random tensors: \texttt{token\_parity\_classification} (label = $\sum \text{input\_ids} \bmod 2$), \texttt{first\_last\_token\_relation} (label = $\mathbb{1}[\text{first\_token} < \text{last\_token}]$), and \texttt{next\_token\_toy\_lm} (target = a deterministic function of the previous tokens). The tiny LoRA-augmented decoder stack is shared across paths; we run a short SGD loop (analytic backward on the plain reference, trusted-side update) and compare per-step plain vs.\ masked loss, accuracy, logits, and token-match.
+
+\paragraph{Metric.} \texttt{loss\_diff}, \texttt{accuracy\_diff}, \texttt{logits\_max\_abs\_error}, \texttt{token\_match\_rate}, \texttt{allclose}.
+
+\paragraph{Result.} Across all three tasks, the masked path reproduces the plain reference to float64 round-off (\texttt{loss\_diff} $\leq 10^{-15}$, \texttt{accuracy\_diff} $= 0$, \texttt{token\_match\_rate} $= 1$, \texttt{allclose} $= \text{True}$). See \Cref{tab:toy-task-summary}.
+
+\paragraph{Limitation.} Deterministic synthetic tasks; no external dataset, no tokenizer, not a real Qwen / TinyLlama / LLaMA fine-tune.
+
+\input{tables/toy_task_summary.tex}
+
+\subsection{RQ9: How do baselines compare under the same CPU local-emulation setting?}
+\label{sec:eval:rq9}
+\paragraph{Setup.} Ten variants on a single CPU synthetic tile: \texttt{plain\_cpu}, \texttt{trusted\_nonlinear\_partition}, \texttt{fixed\_permutation\_only}, \texttt{fresh\_perm\_only}, \texttt{full\_mitigation\_bundle}, \texttt{full\_bundle\_masked\_boundary}, \texttt{full\_bundle\_masked\_boundary\_constant\_time\_proxy}, \texttt{lora\_plain}, \texttt{lora\_masked\_forward\_backward}, and \texttt{lora\_rank\_padded}.
+
+\paragraph{Metric.} \texttt{correctness\_error}, \texttt{token\_match\_rate}, \texttt{loss\_diff}, structurally-derived \texttt{boundary\_calls}, local CPU \texttt{local\_runtime\_ms}, proxy-derived \texttt{proxy\_risk\_level}.
+
+\paragraph{Result.} Each masked variant matches the plain reference to float64 round-off; risk levels span \texttt{high} (\texttt{plain\_cpu}, \texttt{fixed\_permutation\_only}, \texttt{lora\_plain}), \texttt{medium} (\texttt{fresh\_perm\_only}), \texttt{needs\_more\_evaluation} (full bundle and masked variants), and \texttt{low} (full bundle + \texttt{proxy\_equalized}). See \Cref{tab:baseline-comparison-summary}.
+
+\paragraph{Limitation.} Risk levels are proxy-derived from the existing Stage~5--7 security proxy summary, not formal security guarantees; boundary-call counts are structurally derived from the mitigation configuration, not measured kernel launches.
+
+\input{tables/baseline_comparison_summary.tex}
+
+\subsection{RQ10: Which mitigation components are necessary?}
+\label{sec:eval:rq10}
+\paragraph{Setup.} For each mitigation axis (boundary pad, permutation freshness, dense sandwich, inter-block boundary, constant-time decode proxy, rank padding, dummy strategy) we toggle settings and record correctness, proxy risk level, runtime overhead, and an \texttt{interpretation} tag.
+
+\paragraph{Result.} Correctness is preserved by construction across both settings of every axis -- each axis is an algebraic identity (Theorems~1--9). The boundary pad, fresh permutation, dense sandwich, rank padding, and stronger dummy strategy are tagged \texttt{security\_critical}; the cost-model constant-time decode proxy is \texttt{metadata\_timing}; the inter-block masked boundary is \texttt{experimental\_optin}. See \Cref{tab:ablation-summary}.
+
+\paragraph{Limitation.} No axis is \emph{correctness}-critical, so the ablation matrix does not change \texttt{allclose}; the table is informative about \emph{proxy} security and \emph{runtime} only.
+
+\input{tables/ablation_summary.tex}
+
+\subsection{RQ11: Are correctness and proxy trends stable across seeds and shapes?}
+\label{sec:eval:rq11}
+\paragraph{Setup.} Sweep \texttt{seeds} $\in \{2021, 2022, 2023, 2024, 2025\}$, \texttt{batch\_sizes} $\in \{1, 2, 4, 8\}$, \texttt{seq\_lens} $\in \{4, 8, 16\}$, \texttt{hidden\_sizes} $\in \{16, 32, 64\}$, \texttt{true\_ranks} $\in \{2, 4\}$, \texttt{padded\_ranks} $\in \{8, 16\}$ across seven experiments: modern decoder synthetic forward, KV cache append, nonlinear island, LoRA forward, LoRA backward, rank-padded LoRA, multi-layer LoRA.
+
+\paragraph{Result.} \texttt{allclose\_rate} = 1.0 for every experiment in the swept space; \texttt{max\_error\_p95} stays at the float64 round-off level ($10^{-16}$ to $10^{-14}$); \texttt{failure\_count} = 0 except for explicitly-skipped configurations (e.g., \texttt{rank > hidden}). See \Cref{tab:stability-summary}.
+
+\paragraph{Limitation.} Stability is measured by the spread of float64 round-off across seeds and shapes; it is \emph{not} a security metric.
+
+\input{tables/stability_summary.tex}
+
+\subsection{RQ12: What CPU-only runtime overhead is observed across components?}
+\label{sec:eval:rq12}
+\paragraph{Setup.} Twelve components (\texttt{linear\_masked\_forward}, \texttt{nonlinear\_island\_forward}, \texttt{modern\_decoder\_full\_forward}, \texttt{modern\_decoder\_prefill}, \texttt{modern\_decoder\_decode\_step}, \texttt{modern\_decoder\_greedy\_generation}, \texttt{lora\_forward}, \texttt{lora\_backward}, \texttt{lora\_rank\_padding}, \texttt{multilayer\_lora\_training\_step}, \texttt{stronger\_dummy\_generation}, \texttt{paper\_toy\_task\_train\_step}) swept over \texttt{(batch\_size, seq\_len, hidden\_size)} $\in \{1,4\} \times \{8, 16\} \times \{32, 64\}$. $\text{num\_warmup}=3$, $\text{num\_repeats}=20$, $\text{dtype}=\text{float64}$, $\text{device}=\text{cpu}$.
+
+\paragraph{Result.} Each row records \texttt{mean\_ms}, \texttt{median\_ms}, \texttt{std\_ms}, \texttt{min\_ms}, \texttt{max\_ms}. See \Cref{tab:cpu-runtime-completion}.
+
+\paragraph{Limitation.} \textbf{This is CPU local trusted-runtime emulation, NOT real TEE wall-time and NOT GPU throughput.} No \texttt{time.sleep}; modern-decoder rows use synthetic stand-ins; no PEFT / DeepSpeed / vLLM / FlashAttention integration.
+
+\input{tables/cpu_runtime_completion.tex}
+
 \subsection{Cross-cutting observations}
 \label{sec:eval:summary}
-The full mitigation bundle is \emph{required}; partial bundles leak more under the same attackers. Stronger dummy distributions improve cross-layer linkage to \texttt{low} but do not improve worst-case rank inference. Local-emulation runtime is a coarse signal whose primary use is to confirm that no trusted-side primitive is catastrophically slow at this scale; it is not a deployment latency claim.
+The full mitigation bundle is \emph{required}; partial bundles leak more under the same attackers. Stronger dummy distributions improve cross-layer linkage to \texttt{low} but do not improve worst-case rank inference. The toy-task and stability sweeps confirm the algebraic identities of Theorems~1--9 hold on task-like inputs and across the swept seed/shape space; the baseline comparison and ablation rows expose the structural trade-offs between mitigation knobs. Local-emulation runtime is a coarse signal whose primary use is to confirm that no trusted-side primitive is catastrophically slow at this scale; it is \emph{not} a deployment latency claim, not real TEE wall-time, and not GPU throughput.

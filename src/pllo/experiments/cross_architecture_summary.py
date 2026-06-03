@@ -907,6 +907,32 @@ def _compatible_island_integration_status(
                 effective_status.get("paper_claims_audit_artifact")
                 or method.get("paper_claims_audit_artifact")
             ),
+            # Stage 7.5b - CPU-only paper experiment completion.
+            "cpu_only_paper_experiments_status": str(
+                effective_status.get("cpu_only_paper_experiments_status")
+                or method.get("cpu_only_paper_experiments_status")
+                or "not_yet"
+            ),
+            "paper_toy_tasks_artifact": (
+                effective_status.get("paper_toy_tasks_artifact")
+                or method.get("paper_toy_tasks_artifact")
+            ),
+            "paper_baseline_comparison_artifact": (
+                effective_status.get("paper_baseline_comparison_artifact")
+                or method.get("paper_baseline_comparison_artifact")
+            ),
+            "paper_ablation_study_artifact": (
+                effective_status.get("paper_ablation_study_artifact")
+                or method.get("paper_ablation_study_artifact")
+            ),
+            "paper_stability_study_artifact": (
+                effective_status.get("paper_stability_study_artifact")
+                or method.get("paper_stability_study_artifact")
+            ),
+            "cpu_runtime_completion_artifact": (
+                effective_status.get("cpu_runtime_completion_artifact")
+                or method.get("cpu_runtime_completion_artifact")
+            ),
             "limitations": (
                 [
                     "Model-level wrapper smoke is allclose vs plain reference;"
