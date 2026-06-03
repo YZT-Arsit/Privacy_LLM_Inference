@@ -8,12 +8,12 @@
 \toprule
 component & variant & num\_warmup & num\_repeats & mean\_ms & median\_ms & std\_ms & min\_ms & max\_ms & device & dtype & wall\_time\_source & skipped\_with\_reason & notes \\
 \midrule
-plain\_synthetic\_linear & X W & 2 & 5 & 0.0017500000467407517 & 0.0016670001059537753 & 0.00020221028231866072 & 0.0015830000847927295 & 0.002042000232904684 & cpu & float64 & measured\_local\_emulation & None & Synthetic baseline; no obfuscation. \\
-plain\_lora\_forward & plain\_rank\_r & 2 & 5 & 0.008091800009424333 & 0.00850000014906982 & 0.0010792697773214094 & 0.006625000423809979 & 0.00933399951463798 & cpu & float64 & measured\_local\_emulation & None & Plain rank-r LoRA forward; no masking. \\
-masked\_lora\_forward & fresh\_masks\_fresh\_u\_with\_pad & 2 & 5 & 0.2661831998921116 & 0.24912499975471292 & 0.027567784878164227 & 0.24391599981754553 & 0.3059999999095453 & cpu & float64 & measured\_local\_emulation & None & Stage 7.0 run\_masked\_lora\_linear forward. \\
-masked\_lora\_backward & fresh\_masks\_fresh\_u\_with\_pad & 2 & 5 & 0.11529980001796503 & 0.11645799986581551 & 0.004716875755695537 & 0.10791599925141782 & 0.12087499999324791 & cpu & float64 & measured\_local\_emulation & None & Stage 7.1 run\_masked\_lora\_backward. \\
-rank\_padded\_lora\_forward & paired\_cancellation\_dummy & 2 & 5 & 0.2883584000301198 & 0.2778750003926689 & 0.021098030677090315 & 0.27266699999017874 & 0.32204200033447705 & cpu & float64 & measured\_local\_emulation & None & Stage 7.2 rank-padded masked forward. \\
-multi\_layer\_lora\_training\_step & synthetic\_tile & 2 & 5 & 4.566008199799398 & 4.554750000352215 & 0.06655873262763815 & 4.474790999665856 & 4.658291999476205 & cpu & float64 & measured\_local\_emulation & None & Stage 7.3 run\_multilayer\_lora\_training (one training step). \\
+plain\_synthetic\_linear & X W & 2 & 5 & 0.0017251997633138672 & 0.0016659996617818251 & 0.0002695399288702258 & 0.0014590004866477102 & 0.002083999788737856 & cpu & float64 & measured\_local\_emulation & None & Synthetic baseline; no obfuscation. \\
+plain\_lora\_forward & plain\_rank\_r & 2 & 5 & 0.007475200254702941 & 0.007291999281733297 & 0.0005795524707511799 & 0.00687500141793862 & 0.008292001439258456 & cpu & float64 & measured\_local\_emulation & None & Plain rank-r LoRA forward; no masking. \\
+masked\_lora\_forward & fresh\_masks\_fresh\_u\_with\_pad & 2 & 5 & 0.25955840028473176 & 0.2615829998831032 & 0.01744167814322452 & 0.23908399998617824 & 0.2819580004143063 & cpu & float64 & measured\_local\_emulation & None & Stage 7.0 run\_masked\_lora\_linear forward. \\
+masked\_lora\_backward & fresh\_masks\_fresh\_u\_with\_pad & 2 & 5 & 0.11559179984033108 & 0.11362499935785308 & 0.0045397911917741075 & 0.11224999980186112 & 0.12333400081843138 & cpu & float64 & measured\_local\_emulation & None & Stage 7.1 run\_masked\_lora\_backward. \\
+rank\_padded\_lora\_forward & paired\_cancellation\_dummy & 2 & 5 & 0.28225819987710565 & 0.2700000004551839 & 0.026039970354444386 & 0.26000000070780516 & 0.31799999851500615 & cpu & float64 & measured\_local\_emulation & None & Stage 7.2 rank-padded masked forward. \\
+multi\_layer\_lora\_training\_step & synthetic\_tile & 2 & 5 & 4.60598360041331 & 4.603749999660067 & 0.07025609484163411 & 4.515000000537839 & 4.675584001233801 & cpu & float64 & measured\_local\_emulation & None & Stage 7.3 run\_multilayer\_lora\_training (one training step). \\
 modern\_decoder\_model\_wrapper & opt\_in\_only & 2 & 5 & None & None & None & None & None & cpu & float64 & measured\_local\_emulation & modern\_decoder\_wrapper is opt-in (include\_modern\_decoder\_... & Opt-in benchmark; pytest defaults stay synthetic. \\
 \bottomrule
 \end{tabular}

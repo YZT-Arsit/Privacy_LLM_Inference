@@ -26,11 +26,11 @@ See `paper_results/markdown/security_proxy_summary.md` / `paper_results/latex/se
 
 **This is local emulation, NOT real TEE wall-time.** No real sleep, no real runtime gating.
 - `plain_synthetic_linear` (X W): mean = **0.002 ms**, median = 0.002 ms, std = 0.000 ms, repeats=5.
-- `plain_lora_forward` (plain_rank_r): mean = **0.008 ms**, median = 0.009 ms, std = 0.001 ms, repeats=5.
-- `masked_lora_forward` (fresh_masks_fresh_u_with_pad): mean = **0.266 ms**, median = 0.249 ms, std = 0.028 ms, repeats=5.
-- `masked_lora_backward` (fresh_masks_fresh_u_with_pad): mean = **0.115 ms**, median = 0.116 ms, std = 0.005 ms, repeats=5.
-- `rank_padded_lora_forward` (paired_cancellation_dummy): mean = **0.288 ms**, median = 0.278 ms, std = 0.021 ms, repeats=5.
-- `multi_layer_lora_training_step` (synthetic_tile): mean = **4.566 ms**, median = 4.555 ms, std = 0.067 ms, repeats=5.
+- `plain_lora_forward` (plain_rank_r): mean = **0.007 ms**, median = 0.007 ms, std = 0.001 ms, repeats=5.
+- `masked_lora_forward` (fresh_masks_fresh_u_with_pad): mean = **0.260 ms**, median = 0.262 ms, std = 0.017 ms, repeats=5.
+- `masked_lora_backward` (fresh_masks_fresh_u_with_pad): mean = **0.116 ms**, median = 0.114 ms, std = 0.005 ms, repeats=5.
+- `rank_padded_lora_forward` (paired_cancellation_dummy): mean = **0.282 ms**, median = 0.270 ms, std = 0.026 ms, repeats=5.
+- `multi_layer_lora_training_step` (synthetic_tile): mean = **4.606 ms**, median = 4.604 ms, std = 0.070 ms, repeats=5.
 - `modern_decoder_model_wrapper` — _skipped_: modern_decoder_wrapper is opt-in (include_modern_decoder_wrapper=False)
 See `paper_results/markdown/measured_runtime.md` / `paper_results/latex/measured_runtime.tex`.
 

@@ -3,7 +3,7 @@
 | slot | artifact_name | artifact_path | status | json_error | size_bytes | top_level_keys |
 |---|---|---|---|---|---|---|
 | inference | workload_profile | outputs/workload_profile.json | present |  | 55668 | calibration\|config\|interaction_breakdown\|interpretation\|limitations\|methods\|module_breakdown\|paper_metrics\|wr... |
-| inference | cross_architecture_summary | outputs/cross_architecture_summary.json | present |  | 59555 | architectures\|compatible_island_integration_status\|compatible_island_projection\|config\|global_summary\|stage_note... |
+| inference | cross_architecture_summary | outputs/cross_architecture_summary.json | present |  | 60271 | architectures\|compatible_island_integration_status\|compatible_island_projection\|config\|global_summary\|stage_note... |
 | inference | nonlinear_island_experiments | outputs/nonlinear_island_experiments.json | present |  | 24024 | activation_island_cells\|config\|global_summary\|mask_family_assignments\|mlp_island_cells\|norm_island_cells\|pad_pl... |
 | inference | nonlinear_island_security | outputs/nonlinear_island_security.json | present |  | 14024 | config\|global_summary\|island_linkability\|limitations\|mask_family_accounting\|permutation_recovery\|threat_model |
 | inference | adaptive_island_attacks | outputs/adaptive_island_attacks.json | present |  | 20536 | comparison_with_naive_proxy\|config\|limitations\|linear_inverter\|mitigation_summary\|mlp_inverter\|permutation_reco... |

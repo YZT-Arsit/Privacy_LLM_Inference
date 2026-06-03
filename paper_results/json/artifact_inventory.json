@@ -21,7 +21,7 @@
       "artifact_path": "outputs/cross_architecture_summary.json",
       "status": "present",
       "json_error": "",
-      "size_bytes": 59555,
+      "size_bytes": 60271,
       "top_level_keys": "architectures|compatible_island_integration_status|compatible_island_projection|config|global_summary|stage_note|workload"
     },
     {
