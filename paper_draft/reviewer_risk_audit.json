@@ -1,0 +1,1215 @@
+{
+  "items": [
+    {
+      "dimension": "novelty_risk",
+      "location": "sec:introduction (Our approach) + sec:related (Amulet-style and matrix obfuscation methods)",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Add a one-paragraph 'What is new vs. Amulet' explicit contrast in sec:related enumerating: (i) generation-compatible right-masking (Amulet KV-append counterexample, RQ13); (ii) operator-compatible nonlinear islands with proved invariance groups (Theorems 2-5); (iii) private LoRA backward + rank padding (Theorems 7-9); (iv) deployable trusted-controller / accelerator-backend split (sec:design:backend, RQ14). Cross-reference each item to its theorem and RQ.",
+      "risk_id": "NOV-01",
+      "risky_wording_or_missing": "The four ingredients in 'Our approach' read close to 'Amulet right-mask + LoRA'. Related work distinguishes Amulet but the contrast is one paragraph and uses 'Amulet-style' phrasing that may be skimmed as 'we are an Amulet variant'.",
+      "severity": "high",
+      "why_reviewer_may_object": "A security reviewer who reads only the intro and related work may conclude the system is Amulet + LoRA + island wrappers, i.e. an engineering extension rather than a separate point on the design space.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "novelty_risk",
+      "location": "sec:introduction (Why prior obfuscation does not cover generative LLMs)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add one sentence to the introduction: 'Our threat model assumes the base-model weights are public; we protect the *user's* runtime data (prompt, hidden states, KV cache, LoRA adapter, gradients). Model weight extraction is out of scope.' Cross-reference sec:threat 'Allowed leakage'.",
+      "risk_id": "NOV-02",
+      "risky_wording_or_missing": "Cites 'Amulet-style matrix obfuscation' and 'secret-shared offload' together. The LoRA / KV-append / RoPE / GQA novelty list is good but the public-base-model vs. user-data distinction is implicit, not stated.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewers from the cryptographic privacy community routinely ask 'why are you protecting the activations instead of the model?' If the public-base-model assumption is not stated up-front, the contribution looks confused.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "novelty_risk",
+      "location": "sec:design:backend + sec:eval:rq14",
+      "new_experiment_needed": false,
+      "priority": "P2",
+      "recommended_revision": "Add one paragraph at the end of sec:design:backend explaining that this boundary makes the protocol logic and the hardware substrate orthogonal -- the same TrustedController is reused across LocalCPUBackend and any future TEE / GPU backend without touching the masking code. Keep the 'not deployed' caveat.",
+      "risk_id": "NOV-03",
+      "risky_wording_or_missing": "RQ14 introduces the runtime API but does not explicitly position it as a *deployment-readiness primitive*, separate from the masking primitives. Reviewers may read it as plumbing rather than contribution.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Systems reviewers may say 'the backend split is engineering, not novelty'. The argument that the split makes future TEE/GPU swap possible without protocol changes should be made explicit, not implicit.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "threat_model_risk",
+      "location": "sec:threat (Allowed leakage) + sec:limitations item 9",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Promote the seq-length leak into its own bullet in 'Allowed leakage' and reference sec:limitations item 9 explicitly. State that batch shape, per-layer tensor shape, and seq-len are visible by default.",
+      "risk_id": "THR-01",
+      "risky_wording_or_missing": "Sequence-length leakage is mentioned once ('unless a separate sequence-length pad is engaged (not implemented)'). Reviewer may underweight this and miss that we do not currently pad seq-length.",
+      "severity": "high",
+      "why_reviewer_may_object": "Sequence-length is a classical side-channel for prompt-content recovery in LLM serving. A reviewer who sees no explicit treatment will demand it.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "threat_model_risk",
+      "location": "sec:threat (Trusted-side controller) + sec:abstract + figures/captions",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Audit every figure caption (fig:system-overview, fig:right-masked-decode, fig:dense-sandwich, fig:nonlinear-island, fig:lora-training, fig:measured-runtime-summary, fig:security-risk-matrix) to confirm each occurrence of 'trusted controller' is co-located with 'locally emulated' or an equivalent disclaimer.",
+      "risk_id": "THR-02",
+      "risky_wording_or_missing": "Trusted-side controller is correctly described as 'TEE-like, locally emulated' in sec:threat, but the qualifier is not always co-located with 'trusted controller' in figures and captions.",
+      "severity": "high",
+      "why_reviewer_may_object": "A skim reviewer who only reads a figure caption may not notice the 'locally emulated' qualifier and conclude that a real TEE was deployed.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "threat_model_risk",
+      "location": "sec:threat (Adversary capabilities exercised in evaluation)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add one sentence to 'Adversary capabilities' enumerating attackers we do not evaluate: large-scale learning-based inverters trained on millions of (masked, plain) pairs; white-box-weight inverters; hardware-side-channel attackers; multi-tenant trace correlation attackers.",
+      "risk_id": "THR-03",
+      "risky_wording_or_missing": "Lists ridge / MLP / signature / Sinkhorn / linkability / DLG / spectral / ensemble / cost-model attackers. Does not say what *stronger* attacker is out of scope (e.g. learning-based inverters with substantially more data, white-box weight access).",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewer will ask 'have you tried a stronger attacker?' We should pre-empt by naming the explicit stronger-attacker categories that we do not evaluate.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "threat_model_risk",
+      "location": "sec:threat (Out of scope) + sec:design:backend",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add one out-of-scope bullet: 'Real-hardware deployment of the trusted controller / accelerator backend split. The runtime API is interface-ready (see sec:design:backend); only the LocalCPUBackend is implemented.'",
+      "risk_id": "THR-04",
+      "risky_wording_or_missing": "Out-of-scope correctly lists compromised TEE, HW side-channels, formal security, real-TEE wall-time, full fine-tune, framework integration, padded-rank hiding, outsourced loss/optimizer. The deployable-runtime boundary contract (Stage 7.5c) is not enumerated here.",
+      "severity": "medium",
+      "why_reviewer_may_object": "A reviewer scanning the threat model only will not realise that the runtime boundary is interface-only; the qualifier currently lives only in sec:design:backend and sec:eval:rq14.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "prior_work_comparison_risk",
+      "location": "sec:eval:rq13 (Cross-cutting observations final paragraph)",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Re-word as: 'The direct prior-work primitives we implement target different problems and threat models. Their primitive surface does not cover decoder-only generation, KV-cache append, or LoRA personalization, which is the surface our scheme targets; conversely, our scheme does not provide the formal cryptographic guarantees that CryptoNets / Gazelle / Delphi / SecureML / MiniONN provide.' Drop the implicit 'ours wins' framing.",
+      "risk_id": "PWR-01",
+      "risky_wording_or_missing": "'... highlights which primitives extend to generative LLMs (ours) and which do not (Slalom, DarKnight, Amulet static masking, CryptoNets arithmetic skeleton).' Reads as 'ours is better than them'.",
+      "severity": "high",
+      "why_reviewer_may_object": "Each baseline solves a different problem under a different threat model. Saying 'they do not extend to generative LLMs' invites the rebuttal 'because they were not designed for generative LLMs, and you do not provide their formal-security property in return.'",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "prior_work_comparison_risk",
+      "location": "sec:eval:rq13 (Setup paragraph)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add the disclaimer in the *same* sentence: 'We implement the named primitive of each prior work (NOT the full system) directly from its paper formula and execute that single primitive under the same CPU local runtime API as our scheme.' Then list which papers and which primitive.",
+      "risk_id": "PWR-02",
+      "risky_wording_or_missing": "'We implement the primitive(s) of each named prior work directly from its paper formula and execute them under the same CPU local runtime API as our scheme.' Good. But the sentence is dense and could be misread as 'we reproduced these papers.'",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewer may quote this sentence in isolation and claim we are overstating reproduction.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "prior_work_comparison_risk",
+      "location": "sec:eval:rq13 + sec:related (Privacy-preserving ML inference)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add an explicit sentence to the RQ13 setup: 'Runtime numbers in the cost-model rows are deliberately left blank (NaN). Any ratio computed against an imputed runtime would be meaningless because the cryptographic protocols are not executed.' Mirror this in sec:related.",
+      "risk_id": "PWR-03",
+      "risky_wording_or_missing": "Related work says 'They give formal-security guarantees but pay one to several orders of magnitude in overhead.' RQ13 reports local CPU runtime for ours and explicitly refuses runtime for cost-model rows. A reviewer may still try to compute an unfair ratio.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewers can mis-attribute a comparison if both 'we are faster' and 'they are formal' appear within a few pages of each other.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "prior_work_comparison_risk",
+      "location": "sec:eval:rq13 (Result) + tables/direct_prior_work_comparison.tex",
+      "new_experiment_needed": false,
+      "priority": "P2",
+      "recommended_revision": "Re-word as 'a Freivalds-style randomised integrity check (not a privacy primitive)'.",
+      "risk_id": "PWR-04",
+      "risky_wording_or_missing": "Result paragraph mentions Slalom's 'Freivalds-style randomised verification check' which sounds like a security claim; we should anchor it to integrity, not confidentiality.",
+      "severity": "low",
+      "why_reviewer_may_object": "A cryptographic reviewer who reads only the Result paragraph may flag this as confusing the integrity property with a privacy property.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "runtime_deployment_risk",
+      "location": "sec:design:backend (last sentence) + sec:eval:rq14 (Result + Limitation)",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Rename in *prose* to 'backend-agnostic interface flag' or 'interface-ready flag' in every sentence referencing it; keep the raw artifact key in the table caption with an explicit gloss: 'tee_gpu_ready_interface = True means the protocol logic is backend-agnostic; no TEE or GPU has been deployed in this artifact.' Optionally rename the column in the rendered table as a P1 follow-up.",
+      "risk_id": "RUN-01",
+      "risky_wording_or_missing": "'the interface is backend-ready, not backend-deployed' / 'tee_gpu_ready_interface=True means the protocol logic is backend-agnostic; it does NOT mean hardware isolation has been deployed.' Wording is correct, but the *name* 'tee_gpu_ready_interface' invites confusion.",
+      "severity": "high",
+      "why_reviewer_may_object": "A skim reviewer who reads only a table cell labelled 'tee_gpu_ready_interface = True' may conclude TEE / GPU deployment has happened.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "runtime_deployment_risk",
+      "location": "sec:eval:rq7 (Result) + tables/measured_runtime.tex + figures/measured_runtime_summary.png caption",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Prepend every ms number with 'local-emulation ' in prose; ensure each runtime table / figure caption begins with 'Local-emulation runtime on tiny tiles; not real TEE wall-time, not GPU throughput.' Already partly present; audit for consistency.",
+      "risk_id": "RUN-02",
+      "risky_wording_or_missing": "RQ7 reports 'Mean times: plain_synthetic_linear 0.002 ms, ..., multi_layer_lora_training_step 4.684 ms.' Numbers in ms invite the reading 'these are real-system latencies'.",
+      "severity": "high",
+      "why_reviewer_may_object": "A reviewer pulled to the runtime table first may assume the numbers are comparable to production deployments.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "runtime_deployment_risk",
+      "location": "sec:eval:summary (Cross-cutting observations)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Soften to 'so the protocol logic does not block a future TEE or GPU deployment; we do not claim that the remaining engineering (attestation, sealed memory, side-channel hardening, multi-tenant isolation) is trivial.'",
+      "risk_id": "RUN-03",
+      "risky_wording_or_missing": "'so a future TEE or GPU deployment only needs to swap the backend object.' Reads as 'deployment is one engineering step away.'",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewer may say 'this trivialises confidential-computing deployment; attestation, sealed memory, page-table side-channels are not just plumbing.'",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "runtime_deployment_risk",
+      "location": "docs/runtime_boundary.md sections 4-5",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Prefix the section header with '(future work)' and add a banner sentence at the top: 'No TEE backend exists in this artifact; the snippet below is the contract a future deployment must satisfy.'",
+      "risk_id": "RUN-04",
+      "risky_wording_or_missing": "The 'How to plug in a TEE backend' section reads like a how-to. Reviewers may read it as 'they shipped a TEE backend.'",
+      "severity": "medium",
+      "why_reviewer_may_object": "Same skim risk as RUN-01.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "security_claim_risk",
+      "location": "sec:security (Transcript obfuscation, Activation recovery and linkability)",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Replace 'bounded' with 'the measured attacker accuracy stayed close to random chance' or 'did not deviate significantly from random chance in our tests' throughout sec:security.",
+      "risk_id": "SEC-01",
+      "risky_wording_or_missing": "Repeated phrase 'Bounded near random chance in our evaluated setting.' / 'keeps the worst-case attacker close to random chance'. The italicised wording 'Bounded' may be read as 'we prove a bound.'",
+      "severity": "high",
+      "why_reviewer_may_object": "Cryptographic reviewer will say 'bounded' implies a proof; you only show empirical accuracy near 0.5.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "security_claim_risk",
+      "location": "sec:security:adapter, sec:security:gradient",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add 'AUC reduced from 0.963 to 0.500 (\\Delta\\text{AUC} = +0.463 vs the fixed_masks_fixed_u baseline)' style absolute numbers, or reference the specific table cell in lora_training_summary.",
+      "risk_id": "SEC-02",
+      "risky_wording_or_missing": "Reports '\\Delta\\text{AUC} = +0.463' and '+0.478' but the baseline (fixed_masks_fixed_u) is mentioned only once. Reviewer may compute the post-mitigation AUC themselves and dispute the +0.463 phrasing if they cannot quickly find the baseline.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Numbers without their baseline are easy to challenge.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "security_claim_risk",
+      "location": "sec:security:rank + sec:security:boundary",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Be uniform: 'Rank padding removes the *true* rank r_true from tensor shape but leaves the *padded* rank r_pad visible.' Use 'removes from shape' rather than 'hides'.",
+      "risk_id": "SEC-03",
+      "risky_wording_or_missing": "Claims boundary correctly says 'we do *not* claim ... padded LoRA rank is hidden'. But sec:security:rank uses 'hides the true rank' which is ambiguous: it could be read 'hides rank in general'.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Two adjacent sentences using 'hides' / 'is not hidden' with different subjects can confuse a reviewer in a hurry.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "security_claim_risk",
+      "location": "sec:security:timing",
+      "new_experiment_needed": false,
+      "priority": "P2",
+      "recommended_revision": "Append 'under our cost-model proxy only; hardware timing side-channels are out of scope' explicitly at the end of sec:security:timing.",
+      "risk_id": "SEC-04",
+      "risky_wording_or_missing": "'Risk level: low.' for cost-model timing classifier. 'low' is the safe label, but a reviewer may still read this as 'timing is solved.'",
+      "severity": "low",
+      "why_reviewer_may_object": "The cost-model proxy is not a side-channel evaluation; saying 'low' invites misreading.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "correctness_proof_risk",
+      "location": "sec:correctness (Theorem 7 LoRA masked forward, Theorem 8 LoRA backward)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add a one-paragraph row-vector convention statement at the top of sec:correctness. Expand Theorem 8 proof to spell out the U^{-1} and N_out^{-1} substitutions explicitly. Cross-reference the artifact row lora_backward_experiments with max-grad-error ~ 1.3e-15.",
+      "risk_id": "COR-01",
+      "risky_wording_or_missing": "Theorem 7 statement omits the row-vector convention 'X in R^{T x d_in} acts from the left'. Theorem 8 proof sketch is terse and may not convince a reviewer that the U^{-1} cancellation is total.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Backward-pass identities in masked space are a classical place for sign / transpose errors. Reviewer will want a full derivation.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "correctness_proof_risk",
+      "location": "sec:correctness (Theorem 2 pointwise activation permutation island)",
+      "new_experiment_needed": false,
+      "priority": "P2",
+      "recommended_revision": "Add a 'Remark (non-commutation under dense masks)' after Theorem 2: for generic dense invertible N and pointwise phi, phi(XN) != phi(X) N. Cite an explicit two-line counterexample (phi = ReLU, N a 2x2 rotation).",
+      "risk_id": "COR-02",
+      "risky_wording_or_missing": "Theorem 2 covers GELU/ReLU/SiLU pointwise. The 'dense mask does not commute' *counterexample* is mentioned in sec:design but not proved in sec:correctness.",
+      "severity": "medium",
+      "why_reviewer_may_object": "A reviewer may ask 'why a permutation island and not a dense one?' The counterexample is the answer and should appear as a remark or lemma.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "correctness_proof_risk",
+      "location": "sec:correctness (Theorem 6 attention and KV cache invariant)",
+      "new_experiment_needed": false,
+      "priority": "P2",
+      "recommended_revision": "Promote 'and the V mask N_V is absorbed into the trailing output projection' into Theorem 6's statement.",
+      "risk_id": "COR-03",
+      "risky_wording_or_missing": "Theorem 6 covers Q K^T = Q\\tilde K\\tilde^T. The V mask absorption claim ('absorbed by the trailing output projection') is in the design section but not in the theorem.",
+      "severity": "low",
+      "why_reviewer_may_object": "Reviewer who only reads the theorems may miss the V mask story.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "correctness_proof_risk",
+      "location": "sec:correctness (Theorem 9 rank padding factor-product equality)",
+      "new_experiment_needed": false,
+      "priority": "P3",
+      "recommended_revision": "Add a one-line proof sketch for the tracked-correction case: when A_dummy B_dummy = Delta, A_pad B_pad = A B + Delta; the trusted side subtracts Delta at recovery time, restoring A B.",
+      "risk_id": "COR-04",
+      "risky_wording_or_missing": "States two cases (A_dummy B_dummy = 0 vs tracked delta) but the proof sketch covers only case 1.",
+      "severity": "low",
+      "why_reviewer_may_object": "Reviewer may say 'where is the delta-folding proof?'",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "evaluation_sufficiency_risk",
+      "location": "sec:eval:rq1 / rq5 / rq8 / rq11 + sec:limitations item 5",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Append 'on synthetic / tiny-HF configurations only' to the Result line of RQ1, RQ5, RQ8, RQ11 so a reviewer skimming Result paragraphs sees the scope immediately, not only in the Limitation paragraph.",
+      "risk_id": "EVA-01",
+      "risky_wording_or_missing": "Every correctness / LoRA / toy-task / stability RQ uses 'synthetic' or 'tiny-HF' configurations. The paper does name this as a limitation, but the evaluation section reads as 'we evaluated' rather than 'we evaluated on synthetic tiles only'.",
+      "severity": "high",
+      "why_reviewer_may_object": "Reviewer will say 'this is not a real LLM evaluation.' We cannot add new experiments under Stage 7.6c; we must surface the limitation in every RQ result paragraph rather than only in sec:limitations.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "evaluation_sufficiency_risk",
+      "location": "sec:eval:rq3 (Workload profile)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Rename 'amulet_style_reference' to 'amulet_static_phq_cost_model' in the narrative paragraph (the artifact key may stay for backward compatibility, but the prose should be precise).",
+      "risk_id": "EVA-02",
+      "risky_wording_or_missing": "RQ3 names 'tslp_trusted_nonlinear_baseline' and 'amulet_style_reference' as cost-model baselines but uses the word 'amulet_style' which is exactly the vague label the Stage 7.5c spec ruled out.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Stage 7.5c spec forbids 'Amulet-style' phrasing. The RQ3 cost-model table still uses the legacy label.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "evaluation_sufficiency_risk",
+      "location": "sec:eval:rq6 (Rank-inference and timing)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "After each 'high' or 'medium' status add a sentence: 'This is reported as open; heterogeneous padded rank (sec:conclusion item c) is the proposed follow-up.'",
+      "risk_id": "EVA-03",
+      "risky_wording_or_missing": "Reports four 'high' risk rows (gradient rank inference, stronger-dummy spectral, stronger-dummy gradient) and one 'medium' (dummy-strategy classifier). The Result paragraph states the numbers but does not tie each 'high' to a future-work item.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewer who sees 'high' without a next-step plan may ask 'so why is this a contribution?'",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "evaluation_sufficiency_risk",
+      "location": "sec:eval:rq2 + sec:limitations item 9 (sequence length leak)",
+      "new_experiment_needed": false,
+      "priority": "P2",
+      "recommended_revision": "Append 'we do not measure prompt-length or seq-length recovery; this is explicit in sec:limitations item 9' to RQ2 Limitation paragraph.",
+      "risk_id": "EVA-04",
+      "risky_wording_or_missing": "RQ2 covers KV cache append invariant but does not measure prompt-length leakage in the decode trace.",
+      "severity": "low",
+      "why_reviewer_may_object": "Reviewer may ask 'what about prompt-length recovery?' We must point to sec:limitations not promise an experiment we did not run.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "baseline_fairness_risk",
+      "location": "sec:eval:rq13 + sec:related",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "Add an upfront paragraph to sec:eval:rq13: 'We compare *primitives*. For our scheme the primitive *is* the full generation path; for the prior-work rows the primitive is one of: delegated linear (Slalom), additive sharing (DarKnight), static PHQ (Amulet), polynomial activation skeleton (CryptoNets), or a cost-model row (Gazelle / Delphi / SecureML / MiniONN). Direct runtime / threat-model comparison across rows is not valid; the table reports each row in its own scope.'",
+      "risk_id": "BAS-01",
+      "risky_wording_or_missing": "Ours rows have full_system_reproduced=True; prior-work rows have False. Comparing 'we, full system' to 'prior work, primitive only' is unfair if not framed.",
+      "severity": "high",
+      "why_reviewer_may_object": "This is the single most likely reject reason from a systems reviewer: 'unfair comparison.'",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "baseline_fairness_risk",
+      "location": "sec:eval:rq13 (Result) + sec:related (FHE and MPC for private inference)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Add one sentence at the end of RQ13 Result: 'Cryptographic baselines provide formal-security guarantees that our scheme does not provide; the comparison is *not* a security ranking.'",
+      "risk_id": "BAS-02",
+      "risky_wording_or_missing": "Related work says 'Our approach is complementary, not a replacement.' Good. RQ13 result paragraph could echo this more loudly, especially next to the CryptoNets / Gazelle / Delphi / SecureML / MiniONN rows.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewer may otherwise read the table as 'we beat HE/MPC.'",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "baseline_fairness_risk",
+      "location": "sec:eval:rq9 (Baseline comparison)",
+      "new_experiment_needed": false,
+      "priority": "P1",
+      "recommended_revision": "Rename RQ9 prose 'mitigation-configuration comparison' or 'internal ablation baseline comparison' and add a one-line forward reference: 'External prior-work primitives are compared in RQ13.'",
+      "risk_id": "BAS-03",
+      "risky_wording_or_missing": "RQ9 compares ten *internal* variants. The word 'baseline' may be misread as 'external system' if the reader is in a hurry.",
+      "severity": "medium",
+      "why_reviewer_may_object": "Reviewer who jumps to RQ9 first may expect Slalom / Amulet rows and not find them; the external comparison is in RQ13.",
+      "wording_fix_enough": true
+    },
+    {
+      "dimension": "wording_risk",
+      "location": "all sections (automated wording scan, see unsafe_wording_review.md)",
+      "new_experiment_needed": false,
+      "priority": "P0",
+      "recommended_revision": "See unsafe_wording_review.md for per-occurrence classification (safe / risky / unsafe) and per-occurrence revision suggestion.",
+      "risk_id": "WRD-01",
+      "risky_wording_or_missing": "Automated scan of the LaTeX body for dangerous words (secure, guarantee, private, protect, hide, outperform, SOTA, TEE-ready, GPU-ready, real-time, production, full system, reproduced).",
+      "severity": "high",
+      "why_reviewer_may_object": "Any single occurrence outside a 'we do not claim' clause is a quotable overclaim.",
+      "wording_fix_enough": true
+    }
+  ],
+  "outputs_modified": false,
+  "paper_results_modified": false,
+  "reviewer_qas": [
+    {
+      "answer_status": "answered",
+      "answer_summary": "Three new ingredients: generation-compatible right masking (RQ13 KV-append counterexample shows Amulet's static left mask breaks), operator-compatible nonlinear islands with proved invariance groups (Theorems 2-5), and a private LoRA training path with masked backward (Theorems 7-9). The new deployable runtime API (sec:design:backend, RQ14) is a fourth ingredient.",
+      "qid": "Q1",
+      "question": "Why is this not just Amulet with LoRA?",
+      "where_answered": "sec:introduction (Why prior obfuscation does not cover generative LLMs); sec:related (Amulet-style and matrix obfuscation methods); sec:eval:rq13 (Amulet static PHQ + KV-append counterexample)"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "Slalom's delegated linear is implemented directly under our runtime API (RQ13) and is correctness-equivalent on the linear primitive but does not cover generation, KV append, nonlinear islands, or LoRA. DarKnight's k=2 additive sharing also covers only the linear primitive.",
+      "qid": "Q2",
+      "question": "Why not use Slalom / DarKnight?",
+      "where_answered": "sec:related (TEE-assisted ML inference); sec:eval:rq13 (Slalom delegated linear primitive, DarKnight k=2 sharing skeleton)"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "HE/MPC give formal-security guarantees but pay one to several orders of magnitude in overhead and restrict the operator set; ours sits at a different point on the spectrum (proxy-evaluated, near-GPU-native dense matmul). RQ13 records the cryptographic baselines as cost-model rows that deliberately do not produce a measured runtime.",
+      "qid": "Q3",
+      "question": "Why not use HE/MPC?",
+      "where_answered": "sec:related (FHE and MPC for private inference); sec:eval:rq13 (CryptoNets / Gazelle / Delphi / SecureML / MiniONN rows)"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "X-tilde, W-tilde, A-tilde, B-tilde, K-tilde, V-tilde, Y-tilde; shapes; dtypes; per-call timing; the public base-model weight W; padded LoRA rank r_pad; output tokens (by design).",
+      "qid": "Q4",
+      "question": "What exactly does the GPU see?",
+      "where_answered": "sec:threat (Untrusted GPU paragraph + Allowed leakage); sec:design:linear, sec:design:right-mask"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "Holds user prompt and private context; the LoRA adapter (A, B); optimizer state; loss closure; sampler; the mask sampler and pad sampler; performs mask transform and recovery; runs the LoRA backward / optimizer step; publishes a sanitised RuntimeTranscript.",
+      "qid": "Q5",
+      "question": "What does the TEE do?",
+      "where_answered": "sec:threat (Trusted-side controller); sec:design:runtime; sec:design:backend"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "No. The trusted controller is locally emulated. The deployable runtime API (TrustedController + AcceleratorBackend) ships exactly one backend, LocalCPUBackend. No real TEE, no real GPU, no attestation.",
+      "qid": "Q6",
+      "question": "Is the TEE implemented?",
+      "where_answered": "sec:threat (Trusted-side controller -- 'emulated as a local trusted runtime; it is not a real TEE'); sec:design:backend; sec:eval:rq14; sec:limitations item 2 and item 18-19; docs/runtime_boundary.md"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "No. Each prior-work row implements only the named primitive (delegated linear, k=2 additive sharing, static PHQ, polynomial-activation skeleton) or is cost-model-only (Gazelle, Delphi, SecureML, MiniONN). full_system_reproduced is False for every non-ours row. Arrow is recorded as missing_paper_formula.",
+      "qid": "Q7",
+      "question": "Are the prior systems fully reproduced?",
+      "where_answered": "sec:eval:rq13 (Setup + Limitation); tables/direct_prior_work_comparison.tex; sec:limitations items 16-17; appendix B (Stage 7.5c safe wordings)"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "No. Local-emulation latencies via time.perf_counter on small CPU tiles; wall_time_source is either projected_from_op_counts or measured_local_emulation. Not real TEE wall-time, not GPU throughput.",
+      "qid": "Q8",
+      "question": "Are runtime numbers real GPU/TEE numbers?",
+      "where_answered": "sec:eval:rq3, sec:eval:rq7, sec:eval:rq12, sec:eval:rq14, sec:limitations item 3; figures/measured_runtime_summary.png caption; paper_results/summary.md sections 4 and 13"
+    },
+    {
+      "answer_status": "partial",
+      "answer_summary": "Per-layer tensor shapes are public; padded LoRA rank r_pad is visible; sequence length is not currently padded; cost-model timing is reported near random chance under proxy_equalized but real hardware-side-channel timing is out of scope.",
+      "qid": "Q9",
+      "question": "What leaks through shape, length, rank, timing?",
+      "where_answered": "sec:threat (Allowed leakage); sec:design:rank-pad; sec:security:rank, sec:security:timing; sec:limitations items 7, 9, 10"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "Explicitly no in the formal sense: no cryptographic or semantic-security claim is made anywhere. The proxy results are reported with 'in our tested configurations' hedge and labelled needs_more_evaluation when a stronger attacker may succeed.",
+      "qid": "Q10",
+      "question": "Are proxy attacks enough?",
+      "where_answered": "sec:security (every subsection labels itself proxy_supported); sec:security:boundary; sec:limitations items 1, 10; appendix B (unsupported claims U1)"
+    },
+    {
+      "answer_status": "partial",
+      "answer_summary": "GPT-2 (tiny) reproduces token-for-token; the modern decoder wrapper (RMSNorm + SwiGLU + RoPE + GQA) reproduces token-for-token in synthetic or tiny-HF configurations. Full Qwen / TinyLlama / LLaMA fine-tune is explicitly out of scope.",
+      "qid": "Q11",
+      "question": "Does this work on real LLMs?",
+      "where_answered": "sec:eval:rq1 (GPT-2 model wrapper + modern decoder wrapper); sec:limitations items 5, 8; sec:conclusion (next-step a, b)"
+    },
+    {
+      "answer_status": "answered",
+      "answer_summary": "The paper makes only correctness claims (S1-S8) and proxy-supported claims (P1-P5). The contribution is: a generation-compatible masked-execution boundary that *reproduces* the plain reference for the tested decoder-only LLMs and the synthetic LoRA training path, together with a deployable runtime API and an artifact-backed claim audit. No security theorem is claimed.",
+      "qid": "Q12",
+      "question": "What claim remains if no formal security is provided?",
+      "where_answered": "sec:introduction (What this paper is not); sec:security:boundary; sec:conclusion; appendix B (claims mapping)"
+    }
+  ],
+  "stage": "7.6c",
+  "wording_hits": [
+    {
+      "classification": "risky",
+      "context": "e, while pure GPU offload exposes precisely what we wish to protect.",
+      "file": "paper_draft/latex/sections/00_abstract.tex",
+      "line": 2,
+      "matched": "protect",
+      "word_kind": "protect"
+    },
+    {
+      "classification": "risky",
+      "context": "GPUs observe the full activation transcript: prompt-derived hidden states, key-value (KV) cache entries, LoRA adapter factors,",
+      "file": "paper_draft/latex/sections/00_abstract.tex",
+      "line": 2,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "orm~\\cite{ba2016layernorm}. The same machinery extends to a private LoRA training path---masked LoRA forward, masked LoRA backw",
+      "file": "paper_draft/latex/sections/00_abstract.tex",
+      "line": 4,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "right masking, operator-compatible nonlinear islands, and a private LoRA training path produce a transcript on which the strong",
+      "file": "paper_draft/latex/sections/00_abstract.tex",
+      "line": 8,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "safe",
+      "context": "ntion}; we do not claim that the padded LoRA rank itself is hidden; loss and optimizer remain trusted-side. Within these expli",
+      "file": "paper_draft/latex/sections/00_abstract.tex",
+      "line": 8,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "evaluate are kept close to random chance, while the wrapper reproduces the plain reference output token-for-token in the tested co",
+      "file": "paper_draft/latex/sections/00_abstract.tex",
+      "line": 8,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "risky",
+      "context": "\\item \\textbf{Prompt and hidden-state privacy.} The token embedding of the user's prompt is",
+      "file": "paper_draft/latex/sections/01_introduction.tex",
+      "line": 8,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "r fine-tunes a LoRA adapter $(\\A, \\B)$~\\cite{hu2022lora} on private data, the adapter factors and their per-step gradients are",
+      "file": "paper_draft/latex/sections/01_introduction.tex",
+      "line": 10,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "\\item \\textbf{Private LoRA training path.} The LoRA factors $(\\A, \\B)$ are masked",
+      "file": "paper_draft/latex/sections/01_introduction.tex",
+      "line": 42,
+      "matched": "Private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "ked space, and a rank pad with stronger dummy distributions hides the true rank from the tensor shape (the padded rank itself",
+      "file": "paper_draft/latex/sections/01_introduction.tex",
+      "line": 42,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "\\item \\textbf{C3: A private LoRA personalization path.} Masked LoRA forward, masked LoR",
+      "file": "paper_draft/latex/sections/01_introduction.tex",
+      "line": 51,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "safe",
+      "context": "bility; we do not claim that the padded LoRA rank itself is hidden. The Limitations (\\Cref{sec:limitations}) and the claims ma",
+      "file": "paper_draft/latex/sections/01_introduction.tex",
+      "line": 56,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "nlinear islands, generation-compatible right masking, and a private LoRA training path---and reports a proxy security evaluatio",
+      "file": "paper_draft/latex/sections/02_background.tex",
+      "line": 39,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "othing about LoRA factor masking, gradient masking, or rank hiding. Our design integrates the boundary skeleton with three new",
+      "file": "paper_draft/latex/sections/02_background.tex",
+      "line": 39,
+      "matched": "hiding",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "Holds the user prompt and any retrieved private context; the user's LoRA adapter $(\\A, \\B)$; the optimizer",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 8,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "output tensor, every kernel argument shape, and the elapsed real time it spends per call.",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 11,
+      "matched": "real time",
+      "word_kind": "real_time"
+    },
+    {
+      "classification": "risky",
+      "context": "\\paragraph{Protected assets.}",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 18,
+      "matched": "Protected",
+      "word_kind": "protect"
+    },
+    {
+      "classification": "risky",
+      "context": "Prompt and private input tensors; hidden states and residual stream between Li",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 19,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "$\\A, \\B$; per-step LoRA gradients $\\partial\\A, \\partial\\B$; private training data inside the LoRA training loop; and the optimi",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 19,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "Prompt and private input tensors; hidden states and residual stream between Linear layers; KV cache",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 19,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "he problem statement); tensor shapes, unless a separate pad hides a particular dimension; the padded LoRA rank $\\rpad$ (see \\",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 22,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "ken, which the user receives and the system does not try to hide from the GPU; sequence length, unless a separate sequence-l",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 22,
+      "matched": "hide",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "controller is honest; a compromised controller breaks every guarantee we evaluate.",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 28,
+      "matched": "guarantee",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "risky",
+      "context": "\\item \\textbf{Full production Qwen/TinyLlama/LLaMA LoRA fine-tuning.} Our LoRA evaluation",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 32,
+      "matched": "production",
+      "word_kind": "production"
+    },
+    {
+      "classification": "risky",
+      "context": "\\item \\textbf{Padded-rank hiding.} Rank padding hides the \\emph{true} rank from the tensor s",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 34,
+      "matched": "hiding",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "\\item \\textbf{Padded-rank hiding.} Rank padding hides the \\emph{true} rank from the tensor shape, but $\\rpad$ its",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 34,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "timizer state, masks, pads, sampler, loss closure & nothing private \\\\",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 52,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "Protected & all hidden states, KV cache in plain space, logits, gradi",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 54,
+      "matched": "Protected",
+      "word_kind": "protect"
+    },
+    {
+      "classification": "risky",
+      "context": "Protected & all hidden states, KV cache in plain space, logits, gradients, trainin",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 54,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "fine-tune; PEFT/vLLM/DeepSpeed/FlashAttention; padded-rank hiding; outsourced loss/optimizer & --- \\\\",
+      "file": "paper_draft/latex/sections/03_system_and_threat_model.tex",
+      "line": 56,
+      "matched": "hiding",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "ched by dense Linear masks (\\Cref{sec:design:sandwich}) and protected by a boundary pad. Attention and KV cache are wrapped as fe",
+      "file": "paper_draft/latex/sections/04_design.tex",
+      "line": 5,
+      "matched": "protected",
+      "word_kind": "protect"
+    },
+    {
+      "classification": "risky",
+      "context": "\\subsection{Private LoRA forward}",
+      "file": "paper_draft/latex/sections/04_design.tex",
+      "line": 96,
+      "matched": "Private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "d from the artifact registry. The GPT-2 model-level wrapper reproduces the plain reference token-for-token; the modern decoder-onl",
+      "file": "paper_draft/latex/sections/05_correctness.tex",
+      "line": 98,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "risky",
+      "context": "modern decoder-only wrapper (RMSNorm + SwiGLU + RoPE + GQA) reproduces the plain reference in both block-level and model-level smo",
+      "file": "paper_draft/latex/sections/05_correctness.tex",
+      "line": 98,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "e ``is bounded under tested proxy attackers'' replaces ``is secure'' throughout. The mapping between proxy attackers and claim",
+      "file": "paper_draft/latex/sections/06_security_analysis.tex",
+      "line": 4,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "risky",
+      "context": "Rank padding (\\Cref{sec:design:rank-pad}) hides the true rank $\\rtrue$ from tensor shape; $\\rpad$ itself re",
+      "file": "paper_draft/latex/sections/06_security_analysis.tex",
+      "line": 39,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "es. Specifically, \\textbf{we do not claim that rank padding hides the LoRA rank cryptographically, and we do not claim $\\rpad",
+      "file": "paper_draft/latex/sections/06_security_analysis.tex",
+      "line": 41,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "LoRA rank cryptographically, and we do not claim $\\rpad$ is hidden}.",
+      "file": "paper_draft/latex/sections/06_security_analysis.tex",
+      "line": 41,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": ". To be explicit, we do \\emph{not} claim that the system is secure; we do \\emph{not} claim semantic, cryptographic, or formal",
+      "file": "paper_draft/latex/sections/06_security_analysis.tex",
+      "line": 53,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "safe",
+      "context": "de-channels; we do \\emph{not} claim the padded LoRA rank is hidden; we do \\emph{not} claim real TEE wall-time. We \\emph{do} cl",
+      "file": "paper_draft/latex/sections/06_security_analysis.tex",
+      "line": 53,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "The GPT-2 and modern-decoder model wrappers reproduce the plain reference output token-for-token in the tested co",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 14,
+      "matched": "reproduce",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "risky",
+      "context": "model wrappers use synthetic or tiny-HF configurations, not production-scale Qwen, TinyLlama, or LLaMA.",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 23,
+      "matched": "production-scale",
+      "word_kind": "production"
+    },
+    {
+      "classification": "risky",
+      "context": "\\subsection{RQ5: Does the LoRA private training path preserve correctness?}",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 65,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "mpirical \\texttt{allclose} matches to float64 precision; no production fine-tune of Qwen, TinyLlama, or LLaMA is run.}",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 76,
+      "matched": "production",
+      "word_kind": "production"
+    },
+    {
+      "classification": "risky",
+      "context": "\\paragraph{Result.} Across all three tasks, the masked path reproduces the plain reference to float64 round-off (\\texttt{loss\\_dif",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 135,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "ting Stage~5--7 security proxy summary, not formal security guarantees; boundary-call counts are structurally derived from the mit",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 149,
+      "matched": "guarantees",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "risky",
+      "context": "2, 4, 8\\}$, \\texttt{seq\\_lens} $\\in \\{4, 8, 16\\}$, \\texttt{hidden\\_sizes} $\\in \\{16, 32, 64\\}$, \\texttt{true\\_ranks} $\\in \\{2",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 165,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "for explicitly-skipped configurations (e.g., \\texttt{rank > hidden}). See \\Cref{tab:stability-summary}.",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 167,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "k\\_train\\_step}) swept over \\texttt{(batch\\_size, seq\\_len, hidden\\_size)} $\\in \\{1,4\\} \\times \\{8, 16\\} \\times \\{32, 64\\}$. $",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 175,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": ", and MiniONN~\\cite{liu2017minionn}, whose runtimes are not reproduced and are recorded as \\texttt{runtime\\_directly\\_comparable=F",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 185,
+      "matched": "reproduced",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "risky",
+      "context": "uding Amulet's counterexample gap), local CPU runtime where directly comparable, and a \\texttt{safe\\_paper\\_wording} string for each row.",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 187,
+      "matched": "directly comparable",
+      "word_kind": "direct_comparison"
+    },
+    {
+      "classification": "safe",
+      "context": "SelfDeclaration}; the original papers' full systems are NOT reproduced. Cost-model rows do not produce measured runtimes. Threat m",
+      "file": "paper_draft/latex/sections/07_evaluation.tex",
+      "line": 191,
+      "matched": "reproduced",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "risky",
+      "context": "dded LoRA rank $\\rpad$ is visible to the GPU.} Rank padding hides the true rank from tensor shape, but $\\rpad$ itself is the",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 13,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "Sensitive applications must not assume the answer itself is private.",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 14,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "ributions reduce tested spectral risk but do not prove rank hiding.} The stronger-dummy ensemble keeps cross-layer linkage \\te",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 16,
+      "matched": "hiding",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "controller is honest. A compromised controller breaks every guarantee we evaluate. Roll-back attacks, replay across sessions, and",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 18,
+      "matched": "guarantee",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "risky",
+      "context": "xtbf{The base model weights are assumed public.} Our scheme protects the user-side runtime data (prompt, hidden states, KV cache",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 19,
+      "matched": "protects",
+      "word_kind": "protect"
+    },
+    {
+      "classification": "risky",
+      "context": "c.} Our scheme protects the user-side runtime data (prompt, hidden states, KV cache, adapter, gradients) but does not hide the",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 19,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": ", hidden states, KV cache, adapter, gradients) but does not hide the base-model weights from the GPU.",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 19,
+      "matched": "hide",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "hmetic skeleton). The original papers' full systems are NOT reproduced.",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 22,
+      "matched": "reproduced",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item \\textbf{Cryptographic systems are NOT fully reproduced.} Gazelle, Delphi, SecureML, and MiniONN appear as cost-mod",
+      "file": "paper_draft/latex/sections/08_limitations.tex",
+      "line": 23,
+      "matched": "reproduced",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "risky",
+      "context": "sel2017secureml, liu2017minionn}. They give formal-security guarantees but pay one to several orders of magnitude in overhead and",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 8,
+      "matched": "guarantees",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "risky",
+      "context": "the boundary skeleton to a full decoder-only stack and to a private LoRA training path.",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 11,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "\\paragraph{Secure GPU offloading.}",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 13,
+      "matched": "Secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "safe",
+      "context": "mer2019slalom, volos2018graviton}. We trade formal-security guarantees for proxy-evaluated security under named attackers in excha",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 14,
+      "matched": "guarantees",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "risky",
+      "context": "se cryptographic or obfuscation techniques to keep operands hidden~\\cite{tramer2019slalom, volos2018graviton}. We trade formal",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 14,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "\\paragraph{FHE and MPC for private inference.}",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 16,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "Fully homomorphic encryption and secure multi-party computation~\\cite{gilad2016cryptonets, juvekar2",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 17,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "risky",
+      "context": "azelle, mishra2020delphi, mohassel2017secureml} give formal guarantees of input privacy at the cost of large overheads. Recent FHE",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 17,
+      "matched": "guarantees",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "safe",
+      "context": "ort this as \\texttt{proxy\\_supported}, not \\texttt{provably private}.",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 26,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "ble right masking, operator-compatible nonlinear islands, a private LoRA training path, and an artifact-backed claim-audited pr",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 32,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "safe",
+      "context": "al/semantic security claim; no real-TEE deployment; no full production fine-tune; no PEFT/vLLM/DeepSpeed/FlashAttention integratio",
+      "file": "paper_draft/latex/sections/09_related_work.tex",
+      "line": 32,
+      "matched": "production",
+      "word_kind": "production"
+    },
+    {
+      "classification": "risky",
+      "context": "the centered hidden state seen at island boundaries; and a private LoRA training path that masks the adapter factors with a pa",
+      "file": "paper_draft/latex/sections/10_conclusion.tex",
+      "line": 4,
+      "matched": "private",
+      "word_kind": "private"
+    },
+    {
+      "classification": "risky",
+      "context": "sandwiches with a boundary pad that randomize the centered hidden state seen at island boundaries; and a private LoRA trainin",
+      "file": "paper_draft/latex/sections/10_conclusion.tex",
+      "line": 4,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "The wrapper reproduces the plain reference token-for-token in the tested configura",
+      "file": "paper_draft/latex/sections/10_conclusion.tex",
+      "line": 6,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "shAttention integration; the padded LoRA rank itself is not hidden; loss and optimizer remain trusted-side; hardware side-chan",
+      "file": "paper_draft/latex/sections/10_conclusion.tex",
+      "line": 8,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "risky",
+      "context": "easurements; (b)~extending the LoRA training path to a full production fine-tune of Qwen, TinyLlama, or LLaMA, integrated with a r",
+      "file": "paper_draft/latex/sections/10_conclusion.tex",
+      "line": 10,
+      "matched": "production",
+      "word_kind": "production"
+    },
+    {
+      "classification": "safe",
+      "context": "``provably'', ``guaranteed'', ``cryptographically secure'', ``semantically secure'', ``TEE-level secure'', ``prevent",
+      "file": "paper_draft/latex/sections/a_notation.tex",
+      "line": 22,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "safe",
+      "context": "`guaranteed'', ``cryptographically secure'', ``semantically secure'', ``TEE-level secure'', ``prevents all leakage'', ``hides",
+      "file": "paper_draft/latex/sections/a_notation.tex",
+      "line": 22,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "safe",
+      "context": "ographically secure'', ``semantically secure'', ``TEE-level secure'', ``prevents all leakage'', ``hides padded rank'', ``produ",
+      "file": "paper_draft/latex/sections/a_notation.tex",
+      "line": 22,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "safe",
+      "context": "``provably'', ``guaranteed'', ``cryptographically secure'', ``semantically secure'', `",
+      "file": "paper_draft/latex/sections/a_notation.tex",
+      "line": 22,
+      "matched": "guaranteed",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "safe",
+      "context": "secure'', ``TEE-level secure'', ``prevents all leakage'', ``hides padded rank'', ``production wall-time on TEE'', ``full Qwen",
+      "file": "paper_draft/latex/sections/a_notation.tex",
+      "line": 22,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "ecure'', ``prevents all leakage'', ``hides padded rank'', ``production wall-time on TEE'', ``full Qwen/TinyLlama/LLaMA fine-tuning",
+      "file": "paper_draft/latex/sections/a_notation.tex",
+      "line": 22,
+      "matched": "production",
+      "word_kind": "production"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item[S1] GPT-2 model-level masked execution reproduces the plain reference output token-for-token in our tested co",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 8,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item[S2] Modern decoder-only model-level masked execution reproduces the plain reference output token-for-token in our tested co",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 9,
+      "matched": "reproduces",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item[P4] Rank padding hides $\\rtrue$ from tensor shape; under our spectral-cliff, energ",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 23,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item[U6] $\\rpad$ is hidden from the GPU.",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 34,
+      "matched": "hidden",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item[U8] Protection against a compromised TEE.",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 36,
+      "matched": "Protection",
+      "word_kind": "protect"
+    },
+    {
+      "classification": "safe",
+      "context": "If a candidate sentence contains any of: \\texttt{secure}, \\texttt{provably}, \\texttt{cryptographic}, \\texttt{semant",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 43,
+      "matched": "secure",
+      "word_kind": "secure"
+    },
+    {
+      "classification": "safe",
+      "context": "{semantic security}, \\texttt{prevents all leakage}, \\texttt{guarantees}, \\texttt{real TEE wall-time}, \\texttt{hides padded rank},",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 43,
+      "matched": "guarantees",
+      "word_kind": "guarantee"
+    },
+    {
+      "classification": "safe",
+      "context": ", \\texttt{guarantees}, \\texttt{real TEE wall-time}, \\texttt{hides padded rank}, \\texttt{Qwen fine-tune}, \\texttt{LLaMA fine-t",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 43,
+      "matched": "hides",
+      "word_kind": "hide"
+    },
+    {
+      "classification": "safe",
+      "context": "ttt{paper\\_results/markdown/paper\\_claims\\_audit.md} and is reproduced verbatim in \\Cref{tab:paper-claims-audit}.",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 43,
+      "matched": "reproduced",
+      "word_kind": "reproduced"
+    },
+    {
+      "classification": "safe",
+      "context": "\\item ``We do not claim full system reproduction for Slalom, DarKnight, Amulet, CryptoNets, Gaz",
+      "file": "paper_draft/latex/sections/b_claims_mapping.tex",
+      "line": 50,
+      "matched": "full system",
+      "word_kind": "full_system"
+    }
+  ],
+  "wording_summary": {
+    "risky": 58,
+    "safe": 35
+  }
+}
