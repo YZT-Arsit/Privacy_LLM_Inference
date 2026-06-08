@@ -1,4 +1,25 @@
-"""Stage 7.6f -- low-interaction operator-compatible generation wrapper.
+"""Stage 7.6f / 7.6g -- low-interaction operator-compatible generation wrapper.
+
+Stage 7.6g extends the wrapper with a ``rope_mask_mode`` parameter:
+
+* ``"post_rope_masking"`` (Stage 7.6f) -- preferred path for the
+  baseline; the qkv-projection output is plain Q / K / V transiently on
+  the accelerator, RoPE is applied on plain Q / K, and per-head right
+  masks ``N_Q`` / ``N_K`` are applied immediately afterwards. This is
+  the explicit RoPE blocker.
+
+* ``"pre_rope_block_diagonal_rotation"`` (Stage 7.6g) -- the main paper
+  path. The qkv-projection output is masked DIRECTLY by per-head
+  block-diagonal rotation masks ``B_Q`` / ``B_K`` that act as 2D
+  rotations in each RoPE pair (channel ``j`` paired with channel
+  ``j + head_dim/2``). Because the RoPE block rotation and the mask
+  block rotation operate in the same 2D plane, they commute:
+  ``RoPE(Q @ B_Q) = RoPE(Q) @ B_Q``. No plain Q / K / V tensor is ever
+  visible on the accelerator. With ``B_Q[i] = B_K[i // group_size]`` the
+  attention score invariant
+  ``Q_rope_tilde K_rope_tilde^T = Q_rope K_rope^T`` holds by
+  construction.
+
 
 This wrapper demonstrates the paper *main* invariant:
 
@@ -84,6 +105,88 @@ from pllo.models.tiny_modern_decoder import (
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+import math
+
+
+def generate_rope_plane_rotation_mask(
+    head_dim: int,
+    *,
+    dtype: torch.dtype = torch.float64,
+    device: torch.device | str = "cpu",
+    generator: Optional[torch.Generator] = None,
+) -> torch.Tensor:
+    """Sample a block-diagonal mask that commutes with the repo's RoPE.
+
+    LLaMA / Qwen ``rotate_half`` convention pairs channel ``j`` with
+    channel ``j + head_dim/2``. Any 2D rotation in that same plane
+    commutes with RoPE's rotation. We sample one fresh angle ``phi_j``
+    per pair (``head_dim/2`` angles total) and assemble the
+    corresponding ``head_dim x head_dim`` orthogonal mask.
+
+    The convention mirrors :func:`pllo.experiments.rope_probe._generate_block_diagonal_rotation_mask`
+    so that ``apply_rope(Q @ mask) == apply_rope(Q) @ mask`` under the
+    same ``apply_rope`` used by the model.
+    """
+    if head_dim % 2 != 0:
+        raise ValueError(f"head_dim must be even, got {head_dim}")
+    half = head_dim // 2
+    device_t = torch.device(device)
+    if generator is None:
+        angles = (
+            torch.empty(half, dtype=torch.float64, device=device_t)
+            .uniform_(-math.pi, math.pi)
+        )
+    else:
+        angles = torch.empty(half, dtype=torch.float64, device=device_t).uniform_(
+            -math.pi, math.pi, generator=generator
+        )
+    c = angles.cos().to(dtype)
+    s = angles.sin().to(dtype)
+    n = torch.zeros(head_dim, head_dim, dtype=dtype, device=device_t)
+    for j in range(half):
+        n[j, j] = c[j]
+        n[j + half, j + half] = c[j]
+        n[j, j + half] = -s[j]
+        n[j + half, j] = s[j]
+    return n
+
+
+def verify_rope_commutation(
+    q: torch.Tensor,
+    b: torch.Tensor,
+    positions: torch.Tensor,
+    base: float,
+) -> float:
+    """Return ``max | apply_rope(Q @ B) - apply_rope(Q) @ B |``.
+
+    Used by tests + the experiment to confirm the sampled ``B`` actually
+    commutes with the repo's ``apply_rope``.
+    """
+    lhs = apply_rope(q @ b, positions, base)
+    rhs = apply_rope(q, positions, base) @ b
+    return float((lhs - rhs).abs().max().item())
+
+
+def _apply_per_head_right_mask(
+    w: torch.Tensor,
+    masks_per_head: List[torch.Tensor],
+    num_heads: int,
+    head_dim: int,
+) -> torch.Tensor:
+    """Right-multiply a [in_dim, num_heads * head_dim] weight by a
+    block-diagonal mask whose ``h``-th block is ``masks_per_head[h]``.
+
+    Equivalent to constructing the full ``[num_heads*head_dim,
+    num_heads*head_dim]`` block-diagonal matrix and right-multiplying,
+    but avoids materialising it.
+    """
+    in_dim = w.shape[0]
+    w_per_head = w.view(in_dim, num_heads, head_dim)
+    masks_stack = torch.stack(masks_per_head, dim=0)
+    out = torch.einsum("ihd,hde->ihe", w_per_head, masks_stack)
+    return out.reshape(in_dim, num_heads * head_dim)
 
 
 def _sample_orthogonal(
@@ -202,6 +305,7 @@ class LowInteractionDiagnostics:
     main_layer_invariant: str = "H_hat_l = H_l Q_l"
     rmsnorm_mode: str = "operator_compatible_orthogonal"
     rope_mode: str = "post_rope_masking_with_transient_plain_qk_blocker"
+    rope_mask_mode: str = "post_rope_masking"
     swiglu_mode: str = "paired_permutation_with_boundary_pad"
     attention_score_mode: str = "plaintext_scores_due_to_qk_invariant"
     lm_head_mode: str = "padded_masked_logits_with_trusted_recovery"
@@ -216,6 +320,14 @@ class LowInteractionDiagnostics:
     use_pad: bool = True
     fresh_pad_used_at_linear_boundaries: bool = True
     rope_blocker_transient_plain_qk_on_accelerator: bool = True
+    # Stage 7.6g rope-safe path fields (False / 0.0 outside rope-safe mode).
+    rope_transient_plain_qk_visible: bool = True
+    rope_transient_plain_v_visible: bool = True
+    qkv_projection_outputs_masked_directly: bool = False
+    trusted_rope_recovery_used: bool = False
+    generic_pre_rope_dense_commutation_used: bool = False
+    rope_commutation_max_abs_error: float = 0.0
+    qk_score_invariant_max_abs_error: float = 0.0
     # Per-layer / aggregate correctness errors (filled at runtime).
     h_hat_layer_entry_invariant_max_abs_error: float = 0.0
     rmsnorm_core_orthogonal_commutation_max_abs_error: float = 0.0
@@ -261,6 +373,7 @@ class LowInteractionTinyModernDecoderWrapper:
         fresh_pad: bool = True,
         fresh_mask: bool = True,
         pad_scale: float = 0.5,
+        rope_mask_mode: str = "post_rope_masking",
     ) -> None:
         self.model = model
         self.cfg = model.cfg
@@ -268,6 +381,16 @@ class LowInteractionTinyModernDecoderWrapper:
         self.fresh_pad = bool(fresh_pad)
         self.fresh_mask = bool(fresh_mask)
         self.pad_scale = float(pad_scale)
+        if rope_mask_mode not in (
+            "post_rope_masking",
+            "pre_rope_block_diagonal_rotation",
+        ):
+            raise ValueError(
+                f"unknown rope_mask_mode={rope_mask_mode!r}; "
+                "expected 'post_rope_masking' or "
+                "'pre_rope_block_diagonal_rotation'"
+            )
+        self.rope_mask_mode = rope_mask_mode
 
     # ------------------------------------------------------------------
     # Session compile
@@ -295,10 +418,20 @@ class LowInteractionTinyModernDecoderWrapper:
         for _ in range(cfg.num_layers):
             layer_nk, layer_nk_inv, layer_nv, layer_nv_inv = [], [], [], []
             for _ in range(cfg.num_kv_heads):
-                k_mask, k_inv = _sample_orthogonal(
-                    cfg.head_dim,
-                    dtype=cfg.dtype, device=cfg.device, generator=generator,
-                )
+                if self.rope_mask_mode == "pre_rope_block_diagonal_rotation":
+                    # B_K is a block-diagonal 2D rotation in each RoPE
+                    # pair so it commutes with RoPE. Inverse = transpose
+                    # (orthogonal mask).
+                    k_mask = generate_rope_plane_rotation_mask(
+                        cfg.head_dim,
+                        dtype=cfg.dtype, device=cfg.device, generator=generator,
+                    )
+                    k_inv = k_mask.transpose(-2, -1)
+                else:
+                    k_mask, k_inv = _sample_orthogonal(
+                        cfg.head_dim,
+                        dtype=cfg.dtype, device=cfg.device, generator=generator,
+                    )
                 v_mask, v_inv = _sample_orthogonal(
                     cfg.head_dim,
                     dtype=cfg.dtype, device=cfg.device, generator=generator,
@@ -375,16 +508,48 @@ class LowInteractionTinyModernDecoderWrapper:
         wk = (gamma1.unsqueeze(-1) * layer.attn.k_proj.weight.T)
         wv = (gamma1.unsqueeze(-1) * layer.attn.v_proj.weight.T)
 
-        # qkv outputs are deliberately *plain* (N_out = I) -- the
-        # RoPE blocker requires plain Q / K transiently on the
-        # accelerator for RoPE application; per-head masks N_K / N_V
-        # are applied immediately afterwards.
-        w_q_tilde = m_qkv_inv @ wq
-        w_k_tilde = m_qkv_inv @ wk
-        w_v_tilde = m_qkv_inv @ wv
-        c_linear_q = t_qkv @ wq
-        c_linear_k = t_qkv @ wk
-        c_linear_v = t_qkv @ wv
+        if self.rope_mask_mode == "pre_rope_block_diagonal_rotation":
+            # Fold per-head right masks B_Q / B_K / N_V directly into
+            # the qkv projection so the accelerator-visible output is
+            # Q B_Q / K B_K / V N_V -- no plain Q / K / V transient.
+            b_q_per_head = [
+                session.n_q[layer_idx][q_head]
+                for q_head in range(cfg.num_query_heads)
+            ]
+            b_k_per_head = [
+                session.n_k[layer_idx][kv_head]
+                for kv_head in range(cfg.num_kv_heads)
+            ]
+            n_v_per_head = [
+                session.n_v[layer_idx][kv_head]
+                for kv_head in range(cfg.num_kv_heads)
+            ]
+            wq_masked = _apply_per_head_right_mask(
+                wq, b_q_per_head, cfg.num_query_heads, cfg.head_dim
+            )
+            wk_masked = _apply_per_head_right_mask(
+                wk, b_k_per_head, cfg.num_kv_heads, cfg.head_dim
+            )
+            wv_masked = _apply_per_head_right_mask(
+                wv, n_v_per_head, cfg.num_kv_heads, cfg.head_dim
+            )
+            w_q_tilde = m_qkv_inv @ wq_masked
+            w_k_tilde = m_qkv_inv @ wk_masked
+            w_v_tilde = m_qkv_inv @ wv_masked
+            c_linear_q = t_qkv @ wq_masked
+            c_linear_k = t_qkv @ wk_masked
+            c_linear_v = t_qkv @ wv_masked
+        else:
+            # 7.6f path: qkv outputs are plain (N_out = I); the RoPE
+            # blocker requires plain Q / K transiently on the
+            # accelerator for RoPE application; per-head masks N_K /
+            # N_V are applied immediately afterwards.
+            w_q_tilde = m_qkv_inv @ wq
+            w_k_tilde = m_qkv_inv @ wk
+            w_v_tilde = m_qkv_inv @ wv
+            c_linear_q = t_qkv @ wq
+            c_linear_k = t_qkv @ wk
+            c_linear_v = t_qkv @ wv
 
         # ------------------ o_proj padded boundary ------------------
         # Input state: attn_out_block_masked = attn_out @ N_V_block.
@@ -625,55 +790,177 @@ class LowInteractionTinyModernDecoderWrapper:
             # Skipping reconstruction of T from c_t since we only need
             # the boundary error already captured below in q_plain.
 
-            # Apply the stacked QKV weights individually.
-            # w_tilde shape: [3, hidden, hidden] for {q, k, v}.
-            q_plain = x_pad_qkv @ qkv_tbl.w_tilde[0] + qkv_tbl.c_linear[0]
-            k_plain = x_pad_qkv @ qkv_tbl.w_tilde[1] + qkv_tbl.c_linear[1]
-            v_plain = x_pad_qkv @ qkv_tbl.w_tilde[2] + qkv_tbl.c_linear[2]
-            # Cross-check vs plain reference.
-            q_plain_ref = plain_x @ (
-                self.model.layers[layer_idx].input_norm_weight.unsqueeze(-1)
-                * self.model.layers[layer_idx].attn.q_proj.weight.T
-            )
-            transition_err = float((q_plain - q_plain_ref).abs().max().item())
-            diag.transition_trick_max_abs_error = max(
-                diag.transition_trick_max_abs_error, transition_err
-            )
-
-            # Per-head reshape, RoPE, per-head right mask (post-RoPE).
-            b, s, _ = q_plain.shape
-            q_heads = q_plain.view(b, s, cfg.num_query_heads, cfg.head_dim).transpose(1, 2)
-            k_heads = k_plain.view(b, s, cfg.num_kv_heads, cfg.head_dim).transpose(1, 2)
-            v_heads = v_plain.view(b, s, cfg.num_kv_heads, cfg.head_dim).transpose(1, 2)
-            q_rope = apply_rope(q_heads, positions, cfg.rope_base)
-            k_rope = apply_rope(k_heads, positions, cfg.rope_base)
-
-            identity = torch.eye(cfg.head_dim, dtype=cfg.dtype, device=cfg.device)
-            q_tilde_per_head = []
-            for q_head in range(cfg.num_query_heads):
-                kv_head = q_head // cfg.group_size
-                n_q = session.n_q[layer_idx][q_head]
-                n_k = session.n_k[layer_idx][kv_head]
-                constraint = (
-                    n_q @ n_k.transpose(-2, -1) - identity
-                ).abs().max().item()
-                diag.qk_constraint_max_error = max(
-                    diag.qk_constraint_max_error, float(constraint)
+            # Apply the QKV weights individually.
+            if self.rope_mask_mode == "pre_rope_block_diagonal_rotation":
+                # Accelerator output is masked directly: Q B_Q, K B_K,
+                # V N_V. No plain Q / K / V tensor exists on the
+                # accelerator side.
+                q_pre_tilde_flat = (
+                    x_pad_qkv @ qkv_tbl.w_tilde[0] + qkv_tbl.c_linear[0]
                 )
-                q_tilde_per_head.append(q_rope[:, q_head, :, :] @ n_q)
-            q_tilde = torch.stack(q_tilde_per_head, dim=1)
+                k_pre_tilde_flat = (
+                    x_pad_qkv @ qkv_tbl.w_tilde[1] + qkv_tbl.c_linear[1]
+                )
+                v_tilde_flat = (
+                    x_pad_qkv @ qkv_tbl.w_tilde[2] + qkv_tbl.c_linear[2]
+                )
+                b, s, _ = q_pre_tilde_flat.shape
+                q_pre_tilde = q_pre_tilde_flat.view(
+                    b, s, cfg.num_query_heads, cfg.head_dim
+                ).transpose(1, 2)
+                k_pre_tilde = k_pre_tilde_flat.view(
+                    b, s, cfg.num_kv_heads, cfg.head_dim
+                ).transpose(1, 2)
+                v_tilde = v_tilde_flat.view(
+                    b, s, cfg.num_kv_heads, cfg.head_dim
+                ).transpose(1, 2)
+                # Apply RoPE DIRECTLY to the masked tensors. Because
+                # B_Q / B_K are block-diagonal 2D rotations in each
+                # RoPE pair, ``apply_rope(Q @ B_Q) = apply_rope(Q) @ B_Q``.
+                q_tilde = apply_rope(q_pre_tilde, positions, cfg.rope_base)
+                k_tilde = apply_rope(k_pre_tilde, positions, cfg.rope_base)
 
-            k_tilde_per_head = []
-            v_tilde_per_head = []
-            for kv_head in range(cfg.num_kv_heads):
-                k_tilde_per_head.append(
-                    k_rope[:, kv_head, :, :] @ session.n_k[layer_idx][kv_head]
+                # --- Trusted-side diagnostics (not on accelerator path) ---
+                identity = torch.eye(
+                    cfg.head_dim, dtype=cfg.dtype, device=cfg.device
                 )
-                v_tilde_per_head.append(
-                    v_heads[:, kv_head, :, :] @ session.n_v[layer_idx][kv_head]
+                # 1. QK constraint: B_Q[i] @ B_K[i//group]^T = I.
+                for q_head in range(cfg.num_query_heads):
+                    kv_head = q_head // cfg.group_size
+                    b_q = session.n_q[layer_idx][q_head]
+                    b_k = session.n_k[layer_idx][kv_head]
+                    diag.qk_constraint_max_error = max(
+                        diag.qk_constraint_max_error,
+                        float(
+                            (b_q @ b_k.transpose(-2, -1) - identity)
+                            .abs().max().item()
+                        ),
+                    )
+                # 2. Plain reference Q/K/V (trusted-side only, NEVER on
+                #    the accelerator path) for cross-check.
+                ref_wq = (
+                    self.model.layers[layer_idx].input_norm_weight.unsqueeze(-1)
+                    * self.model.layers[layer_idx].attn.q_proj.weight.T
                 )
-            k_tilde = torch.stack(k_tilde_per_head, dim=1)
-            v_tilde = torch.stack(v_tilde_per_head, dim=1)
+                ref_wk = (
+                    self.model.layers[layer_idx].input_norm_weight.unsqueeze(-1)
+                    * self.model.layers[layer_idx].attn.k_proj.weight.T
+                )
+                ref_wv = (
+                    self.model.layers[layer_idx].input_norm_weight.unsqueeze(-1)
+                    * self.model.layers[layer_idx].attn.v_proj.weight.T
+                )
+                plain_q_flat = plain_x @ ref_wq
+                plain_k_flat = plain_x @ ref_wk
+                plain_v_flat = plain_x @ ref_wv
+                plain_q = plain_q_flat.view(
+                    b, s, cfg.num_query_heads, cfg.head_dim
+                ).transpose(1, 2)
+                plain_k = plain_k_flat.view(
+                    b, s, cfg.num_kv_heads, cfg.head_dim
+                ).transpose(1, 2)
+                plain_v = plain_v_flat.view(
+                    b, s, cfg.num_kv_heads, cfg.head_dim
+                ).transpose(1, 2)
+                plain_q_rope = apply_rope(plain_q, positions, cfg.rope_base)
+                plain_k_rope = apply_rope(plain_k, positions, cfg.rope_base)
+
+                # 3. Transition-trick check: q_pre_tilde[h] == plain_q[h] @ B_Q[h].
+                for q_head in range(cfg.num_query_heads):
+                    b_q = session.n_q[layer_idx][q_head]
+                    expected = plain_q[:, q_head, :, :] @ b_q
+                    diag.transition_trick_max_abs_error = max(
+                        diag.transition_trick_max_abs_error,
+                        float(
+                            (q_pre_tilde[:, q_head, :, :] - expected)
+                            .abs().max().item()
+                        ),
+                    )
+                # 4. RoPE commutation cross-check: q_tilde[h] = q_rope_plain[h] @ B_Q[h].
+                for q_head in range(cfg.num_query_heads):
+                    b_q = session.n_q[layer_idx][q_head]
+                    expected = plain_q_rope[:, q_head, :, :] @ b_q
+                    diag.rope_commutation_max_abs_error = max(
+                        diag.rope_commutation_max_abs_error,
+                        float(
+                            (q_tilde[:, q_head, :, :] - expected)
+                            .abs().max().item()
+                        ),
+                    )
+                for kv_head in range(cfg.num_kv_heads):
+                    b_k = session.n_k[layer_idx][kv_head]
+                    expected = plain_k_rope[:, kv_head, :, :] @ b_k
+                    diag.rope_commutation_max_abs_error = max(
+                        diag.rope_commutation_max_abs_error,
+                        float(
+                            (k_tilde[:, kv_head, :, :] - expected)
+                            .abs().max().item()
+                        ),
+                    )
+                # 5. QK score invariant: scores_tilde == scores_plain (per Q head).
+                for q_head in range(cfg.num_query_heads):
+                    kv_head = q_head // cfg.group_size
+                    scores_tilde = (
+                        q_tilde[:, q_head, :, :]
+                        @ k_tilde[:, kv_head, :, :].transpose(-2, -1)
+                    )
+                    scores_plain = (
+                        plain_q_rope[:, q_head, :, :]
+                        @ plain_k_rope[:, kv_head, :, :].transpose(-2, -1)
+                    )
+                    diag.qk_score_invariant_max_abs_error = max(
+                        diag.qk_score_invariant_max_abs_error,
+                        float((scores_tilde - scores_plain).abs().max().item()),
+                    )
+            else:
+                # Stage 7.6f path: plain Q / K / V transient on accelerator.
+                q_plain = x_pad_qkv @ qkv_tbl.w_tilde[0] + qkv_tbl.c_linear[0]
+                k_plain = x_pad_qkv @ qkv_tbl.w_tilde[1] + qkv_tbl.c_linear[1]
+                v_plain = x_pad_qkv @ qkv_tbl.w_tilde[2] + qkv_tbl.c_linear[2]
+                q_plain_ref = plain_x @ (
+                    self.model.layers[layer_idx].input_norm_weight.unsqueeze(-1)
+                    * self.model.layers[layer_idx].attn.q_proj.weight.T
+                )
+                transition_err = float(
+                    (q_plain - q_plain_ref).abs().max().item()
+                )
+                diag.transition_trick_max_abs_error = max(
+                    diag.transition_trick_max_abs_error, transition_err
+                )
+
+                b, s, _ = q_plain.shape
+                q_heads = q_plain.view(b, s, cfg.num_query_heads, cfg.head_dim).transpose(1, 2)
+                k_heads = k_plain.view(b, s, cfg.num_kv_heads, cfg.head_dim).transpose(1, 2)
+                v_heads = v_plain.view(b, s, cfg.num_kv_heads, cfg.head_dim).transpose(1, 2)
+                q_rope = apply_rope(q_heads, positions, cfg.rope_base)
+                k_rope = apply_rope(k_heads, positions, cfg.rope_base)
+
+                identity = torch.eye(cfg.head_dim, dtype=cfg.dtype, device=cfg.device)
+                q_tilde_per_head = []
+                for q_head in range(cfg.num_query_heads):
+                    kv_head = q_head // cfg.group_size
+                    n_q = session.n_q[layer_idx][q_head]
+                    n_k = session.n_k[layer_idx][kv_head]
+                    constraint = (
+                        n_q @ n_k.transpose(-2, -1) - identity
+                    ).abs().max().item()
+                    diag.qk_constraint_max_error = max(
+                        diag.qk_constraint_max_error, float(constraint)
+                    )
+                    q_tilde_per_head.append(q_rope[:, q_head, :, :] @ n_q)
+                q_tilde = torch.stack(q_tilde_per_head, dim=1)
+
+                k_tilde_per_head = []
+                v_tilde_per_head = []
+                for kv_head in range(cfg.num_kv_heads):
+                    k_tilde_per_head.append(
+                        k_rope[:, kv_head, :, :] @ session.n_k[layer_idx][kv_head]
+                    )
+                    v_tilde_per_head.append(
+                        v_heads[:, kv_head, :, :] @ session.n_v[layer_idx][kv_head]
+                    )
+                k_tilde = torch.stack(k_tilde_per_head, dim=1)
+                v_tilde = torch.stack(v_tilde_per_head, dim=1)
 
             # KV cache append + invariant check.
             if past_kv_tilde is not None and past_kv_tilde[layer_idx] is not None:
@@ -900,6 +1187,23 @@ class LowInteractionTinyModernDecoderWrapper:
             diagnostics = LowInteractionDiagnostics()
         diagnostics.use_pad = bool(self.use_pad)
         diagnostics.fresh_pad_used_at_linear_boundaries = bool(self.fresh_pad)
+        diagnostics.rope_mask_mode = self.rope_mask_mode
+        if self.rope_mask_mode == "pre_rope_block_diagonal_rotation":
+            diagnostics.rope_mode = "pre_rope_block_diagonal_rotation"
+            diagnostics.rope_blocker_transient_plain_qk_on_accelerator = False
+            diagnostics.rope_transient_plain_qk_visible = False
+            diagnostics.rope_transient_plain_v_visible = False
+            diagnostics.qkv_projection_outputs_masked_directly = True
+            diagnostics.trusted_rope_recovery_used = False
+            diagnostics.generic_pre_rope_dense_commutation_used = False
+        else:
+            diagnostics.rope_mode = "post_rope_masking_with_transient_plain_qk_blocker"
+            diagnostics.rope_blocker_transient_plain_qk_on_accelerator = True
+            diagnostics.rope_transient_plain_qk_visible = True
+            diagnostics.rope_transient_plain_v_visible = True
+            diagnostics.qkv_projection_outputs_masked_directly = False
+            diagnostics.trusted_rope_recovery_used = False
+            diagnostics.generic_pre_rope_dense_commutation_used = False
 
         b, s = input_ids.shape
 
