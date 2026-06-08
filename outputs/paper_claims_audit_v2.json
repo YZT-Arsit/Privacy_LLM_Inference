@@ -147,7 +147,7 @@
       "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/paper_claims_audit_v2.json",
       "claim": "No full Qwen / LLaMA deployment unless a real wrapper exists; only synthetic tiny modern decoder is exercised.",
       "evidence_artifact": "outputs/paper_claims_audit_v2.json",
-      "evidence_artifact_exists": false,
+      "evidence_artifact_exists": true,
       "id": "no_full_qwen_or_llama_deployment_unless_real_wrapper",
       "remaining_blocker": "Real model loader + real GPU.",
       "safe_wording": "Tiny modern decoder used as paper-ready surrogate; scaling to LLaMA / Qwen requires the corresponding tokenizer + model loader + GPU kernels.",
@@ -164,6 +164,127 @@
       "safe_wording": "Side-channel evaluation out of scope; would require real hardware platform and counter-measure design.",
       "status": "unsupported",
       "unsafe_wording": "Side channels evaluated."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/sliding_window_attention.json",
+      "claim": "Sliding window attention is supported under the Stage 7.6g/h/i masked invariants in a CPU synthetic abstraction.",
+      "evidence_artifact": "outputs/sliding_window_attention.json",
+      "evidence_artifact_exists": true,
+      "id": "sliding_window_attention_supported_in_cpu_synthetic_abstraction",
+      "remaining_blocker": "Real GPU kernel.",
+      "safe_wording": "Within the active window, the QK invariant and rolling KV invariant hold at float64 precision; eviction policy is the public window size.",
+      "status": "supported",
+      "unsafe_wording": "Real FlashAttention sliding-window kernel supported."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/sliding_window_attention.json",
+      "claim": "The rolling-window KV cache obeys K_tilde_window = K_plain_window @ N_K per (layer, head).",
+      "evidence_artifact": "outputs/sliding_window_attention.json",
+      "evidence_artifact_exists": true,
+      "id": "rolling_kv_window_invariant_supported",
+      "remaining_blocker": "Real serving runtime.",
+      "safe_wording": "Per-(layer, head) masked invariant preserved over the rolling window; old tokens evicted by the public window policy.",
+      "status": "supported",
+      "unsafe_wording": "Rolling cache is cryptographically isolated."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/precision_quantization_stability.json",
+      "claim": "fp16 / bf16 / int8 / int4 are SIMULATED on CPU; no real GPU kernels or quantized models are measured.",
+      "evidence_artifact": "outputs/precision_quantization_stability.json",
+      "evidence_artifact_exists": true,
+      "id": "fp16_bf16_int8_int4_simulated_only_not_real_kernels",
+      "remaining_blocker": "Real GPU quantized kernels.",
+      "safe_wording": "CPU-simulated precision sweep; provides error bounds for the protocol's algebraic recovery, not real hardware performance.",
+      "status": "unsupported",
+      "unsafe_wording": "Real GPU fp16 / bf16 / int8 / int4 performance."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/precision_quantization_stability.json",
+      "claim": "Well-conditioned mask families (orthogonal, permutation, RoPE-plane block rotation, block-diagonal) are recommended for low-precision deployment; ill-conditioned dense masks amplify error proportionally to the condition number.",
+      "evidence_artifact": "outputs/precision_quantization_stability.json",
+      "evidence_artifact_exists": true,
+      "id": "well_conditioned_masks_recommended_for_low_precision",
+      "remaining_blocker": "n/a for algebraic claim.",
+      "safe_wording": "Condition-number sweep shows error scales with cond(M); orthogonal masks remain at machine epsilon, dense ill-conditioned masks amplify error.",
+      "status": "supported",
+      "unsafe_wording": "Any mask family is fine for fp16."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/generation_processor_coverage.json",
+      "claim": "Generation processors (temperature, top-k, top-p, repetition penalty, stop tokens, bad words, forced tokens) are safe ONLY when executed inside the trusted side, AFTER logits recovery.",
+      "evidence_artifact": "outputs/generation_processor_coverage.json",
+      "evidence_artifact_exists": true,
+      "id": "generation_processors_safe_only_inside_trusted_side",
+      "remaining_blocker": "Output-length side-channel hiding.",
+      "safe_wording": "Main theorem: if recovered logits equal plain logits, every standard logit processor produces identical output under the same trusted randomness.",
+      "status": "supported",
+      "unsafe_wording": "Bad word list cryptographically hidden from accelerator."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/generation_processor_coverage.json",
+      "claim": "Output length / stop timing is observable unless the trusted side separately pads or batches to hide it.",
+      "evidence_artifact": "outputs/generation_processor_coverage.json",
+      "evidence_artifact_exists": true,
+      "id": "output_length_side_channel_not_hidden_unless_separately_padded",
+      "remaining_blocker": "Explicit length-hiding policy with padded generation.",
+      "safe_wording": "Output length is a side-channel that is NOT addressed by the current protocol; it must be hidden by additional padding or batching policy.",
+      "status": "unsupported",
+      "unsafe_wording": "Output length hidden."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_rope_safe_low_interaction.json",
+      "claim": "Standard 1D RoPE (and RoPE scaling) is covered ONLY when the rotation planes are unchanged; M-RoPE and multi-axis positional encodings are NOT covered.",
+      "evidence_artifact": "outputs/modern_decoder_rope_safe_low_interaction.json",
+      "evidence_artifact_exists": true,
+      "id": "standard_1d_rope_scaling_covered_only_under_same_plane_rotation",
+      "remaining_blocker": "Multi-axis RoPE-plane analysis for M-RoPE.",
+      "safe_wording": "RoPE-plane block-diagonal mask commutes with apply_rope iff B_K is the same 2D rotation in each RoPE pair.",
+      "status": "supported",
+      "unsafe_wording": "M-RoPE supported."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/decoder_component_coverage_audit.json",
+      "claim": "M-RoPE / multimodal positional encoding is NOT covered.",
+      "evidence_artifact": "outputs/decoder_component_coverage_audit.json",
+      "evidence_artifact_exists": true,
+      "id": "m_rope_multimodal_unsupported",
+      "remaining_blocker": "Multi-axis RoPE-plane invariant derivation.",
+      "safe_wording": "Future work.",
+      "status": "unsupported",
+      "unsafe_wording": "M-RoPE supported."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/decoder_component_coverage_audit.json",
+      "claim": "MoE router / expert dispatch is NOT covered.",
+      "evidence_artifact": "outputs/decoder_component_coverage_audit.json",
+      "evidence_artifact_exists": true,
+      "id": "moe_unsupported",
+      "remaining_blocker": "Trusted routing or masked expert dispatch.",
+      "safe_wording": "Future work.",
+      "status": "unsupported",
+      "unsafe_wording": "MoE supported."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/decoder_component_coverage_audit.json",
+      "claim": "Speculative decoding (draft / target verification) is NOT covered.",
+      "evidence_artifact": "outputs/decoder_component_coverage_audit.json",
+      "evidence_artifact_exists": true,
+      "id": "speculative_decoding_unsupported",
+      "remaining_blocker": "Speculative-decode threat model + masked draft model.",
+      "safe_wording": "Future work.",
+      "status": "unsupported",
+      "unsafe_wording": "Speculative decoding supported."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/precision_quantization_stability.json",
+      "claim": "Quantized real-model deployment is NOT supported unless a real GPU quantized backend exists.",
+      "evidence_artifact": "outputs/precision_quantization_stability.json",
+      "evidence_artifact_exists": true,
+      "id": "quantized_real_model_deployment_unsupported_without_real_backend",
+      "remaining_blocker": "Real GPU quantization backend.",
+      "safe_wording": "CPU-simulated quantization only; real deployment requires GPU int8 / int4 kernels and weight loaders.",
+      "status": "unsupported",
+      "unsafe_wording": "Real quantized model deployment."
     }
   ],
   "device": "cpu",
@@ -180,8 +301,8 @@
   "summary": {
     "cost_model_only": 0,
     "proxy_supported": 1,
-    "supported": 10,
-    "unsupported": 4
+    "supported": 15,
+    "unsupported": 10
   },
   "unsafe_wording_to_avoid": [
     "Treating unsupported claims as supported.",

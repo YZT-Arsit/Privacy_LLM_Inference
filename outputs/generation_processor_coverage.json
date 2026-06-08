@@ -1,0 +1,161 @@
+{
+  "accelerator_sees_processed_logits": false,
+  "accelerator_sees_sampling_candidates": false,
+  "config": {
+    "bad_word_ids": [
+      3,
+      5
+    ],
+    "batch_size": 4,
+    "forced_token_id": 11,
+    "n_trials": 8,
+    "repetition_penalty": 1.2,
+    "seq_history_len": 4,
+    "stop_token_id": 7,
+    "temperature": 0.7,
+    "top_k": 8,
+    "top_p": 0.9,
+    "vocab_size": 64
+  },
+  "device": "cpu",
+  "dtype": "float64",
+  "limitations": [
+    "CPU local emulation only.",
+    "Beam search and grammar-constrained decoding are audit-only here; the main theorem says they apply, but they are not exercised end-to-end in this module.",
+    "Output length / stop timing may still leak via observable generation length unless padded or hidden by batching policy -- THIS IS NOT IMPLEMENTED HERE.",
+    "Trusted-side processor implementation MUST keep bad-word / forced-token / stop-token IDs trusted-side; exposing them in the accelerator transcript would leak the corresponding policies.",
+    "Not formal cryptographic / semantic / differential-privacy security.",
+    "No full Qwen / LLaMA deployment unless a real wrapper exists."
+  ],
+  "logit_recovery_max_abs_error": 3.1086244689504383e-15,
+  "main_mode": "generation_processor_coverage",
+  "main_theorem": "If z_recovered == z_plain at machine precision then any logit processor D that depends only on (z, generated history, processor params, trusted randomness rho) produces the same deterministic output / same sampling distribution as plaintext execution under the same rho.",
+  "paper_safe_wording": "Logit processors execute in the trusted side after logits recovery; since the recovery is exact at float64, every standard processor (greedy / temperature / top-k / top-p / repetition penalty / stop / bad words / forced token) produces an identical output under recovered and plain logits. Beam search and grammar-constrained decoding follow the same theorem and are listed as audit-only in this module.",
+  "per_processor_detail": {
+    "bad_words": {
+      "accelerator_sees_bad_word_list": false,
+      "argmax_match_rate": 1.0,
+      "bad_words_masked_to_neg_inf": true,
+      "discrete_equal": null,
+      "max_abs_error_distribution": 2.7755575615628914e-16,
+      "max_abs_error_logits": NaN,
+      "status": "tested"
+    },
+    "beam_search": {
+      "implementation_status": "not_implemented_here",
+      "reason": "Beam-search is a deterministic per-step argmax over the expanded set of (prefix, candidate) pairs; if recovered logits equal plain logits, beam expansion is identical.",
+      "status": "audit_only",
+      "theorem_applies": true
+    },
+    "forced_token": {
+      "argmax_match_rate": 1.0,
+      "discrete_equal": null,
+      "forced_id_visible_to_accelerator": false,
+      "max_abs_error_distribution": 0.0,
+      "max_abs_error_logits": NaN,
+      "status": "tested"
+    },
+    "grammar_constrained": {
+      "implementation_status": "not_implemented_here",
+      "reason": "Grammar / JSON constrained decoding applies a per-step logits mask determined by the current parser state. If the parser state is kept inside the trusted side, the mask is computed there and the constrained logits are not exposed.",
+      "status": "audit_only",
+      "theorem_applies": true
+    },
+    "greedy": {
+      "argmax_match_rate": 1.0,
+      "discrete_equal": true,
+      "max_abs_error_distribution": null,
+      "max_abs_error_logits": 0.0,
+      "status": "tested"
+    },
+    "repetition_penalty": {
+      "argmax_match_rate": 1.0,
+      "discrete_equal": null,
+      "history_used_inside_trusted_side": true,
+      "max_abs_error_distribution": 2.7755575615628914e-16,
+      "max_abs_error_logits": 3.1086244689504383e-15,
+      "status": "tested"
+    },
+    "stop_token": {
+      "done_flags_equal": true,
+      "recovered_equals_plain_emit": true,
+      "rows_pinned_to_eos_after_done": true,
+      "status": "tested"
+    },
+    "temperature": {
+      "argmax_match_rate": 1.0,
+      "discrete_equal": null,
+      "max_abs_error_distribution": 6.661338147750939e-16,
+      "max_abs_error_logits": 4.440892098500626e-15,
+      "status": "tested"
+    },
+    "temperature_sampling_reproducible": {
+      "reproducible_under_same_trusted_seed": true,
+      "samp_plain": [
+        [
+          35
+        ],
+        [
+          54
+        ],
+        [
+          10
+        ],
+        [
+          62
+        ]
+      ],
+      "samp_rec": [
+        [
+          35
+        ],
+        [
+          54
+        ],
+        [
+          10
+        ],
+        [
+          62
+        ]
+      ],
+      "status": "tested"
+    },
+    "top_k": {
+      "argmax_match_rate": 1.0,
+      "discrete_equal": null,
+      "max_abs_error_distribution": 2.220446049250313e-16,
+      "max_abs_error_logits": NaN,
+      "status": "tested"
+    },
+    "top_p": {
+      "argmax_match_rate": 1.0,
+      "discrete_equal": null,
+      "max_abs_error_distribution": 2.220446049250313e-16,
+      "max_abs_error_logits": NaN,
+      "status": "tested"
+    }
+  },
+  "processors": {
+    "bad_words": "tested",
+    "beam_search": "audit_only",
+    "forced_token": "tested",
+    "grammar_constrained": "audit_only",
+    "greedy": "tested",
+    "repetition_penalty": "tested",
+    "stop_token": "tested",
+    "temperature": "tested",
+    "top_k": "tested",
+    "top_p": "tested"
+  },
+  "processors_run_inside_trusted_side": true,
+  "stage": "7.8c",
+  "status": "ok",
+  "unsafe_wording_to_avoid": [
+    "Output length hidden.",
+    "Stop timing side channel evaluated.",
+    "Bad word list cryptographically hidden.",
+    "Beam search fully implemented inside TEE.",
+    "Real Qwen / LLaMA processors deployed."
+  ]
+}

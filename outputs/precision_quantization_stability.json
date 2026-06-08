@@ -1,0 +1,479 @@
+{
+  "condition_sweep": [
+    {
+      "condition_number": 1.0,
+      "mask_family": "dense_condition_1",
+      "per_precision": [
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 3.375077994860476e-14,
+          "logits_relative_error": 1.1915120294824563e-15,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float64_reference",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 1.761705267888658e-06,
+          "logits_relative_error": 6.21939114381481e-08,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float32_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.07983494744021868,
+          "logits_relative_error": 0.0028184326523112715,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "bfloat16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.012839571863676902,
+          "logits_relative_error": 0.0004532785420743422,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.2732489511877363,
+          "logits_relative_error": 0.009646574475595537,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int8_weight_only_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 0.875,
+          "logits_max_abs_error_vs_float64_plain": 4.9721329850266,
+          "logits_relative_error": 0.17553242540964206,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int4_weight_only_symbolic",
+          "sequence_exact_match": false
+        }
+      ]
+    },
+    {
+      "condition_number": 2.0,
+      "mask_family": "dense_condition_2",
+      "per_precision": [
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 3.2862601528904634e-14,
+          "logits_relative_error": 1.3253970555179913e-15,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float64_reference",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 1.7129241580704502e-06,
+          "logits_relative_error": 6.90847507442568e-08,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float32_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.09337261956873544,
+          "logits_relative_error": 0.0037658550840399185,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "bfloat16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.013605152243771457,
+          "logits_relative_error": 0.0005487158010880012,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.3200366696893404,
+          "logits_relative_error": 0.012907549613530984,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int8_weight_only_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 0.875,
+          "logits_max_abs_error_vs_float64_plain": 6.183723180271535,
+          "logits_relative_error": 0.24939865117073778,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int4_weight_only_symbolic",
+          "sequence_exact_match": false
+        }
+      ]
+    },
+    {
+      "condition_number": 10.0,
+      "mask_family": "dense_condition_10",
+      "per_precision": [
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 6.661338147750939e-14,
+          "logits_relative_error": 2.505358061934092e-15,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float64_reference",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 2.725370877421085e-06,
+          "logits_relative_error": 1.0250237637031903e-07,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float32_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.1956824707788094,
+          "logits_relative_error": 0.00735970228309753,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "bfloat16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.026326372941138487,
+          "logits_relative_error": 0.0009901462623066785,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 0.875,
+          "logits_max_abs_error_vs_float64_plain": 0.6249330094605607,
+          "logits_relative_error": 0.023504000528022578,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int8_weight_only_simulated",
+          "sequence_exact_match": false
+        },
+        {
+          "greedy_token_match_rate": 0.375,
+          "logits_max_abs_error_vs_float64_plain": 10.396484182379169,
+          "logits_relative_error": 0.3910162625641233,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int4_weight_only_symbolic",
+          "sequence_exact_match": false
+        }
+      ]
+    },
+    {
+      "condition_number": 100.0,
+      "mask_family": "dense_condition_100",
+      "per_precision": [
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 3.33510996597397e-13,
+          "logits_relative_error": 1.2622360727867875e-14,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float64_reference",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 1.2137189020933192e-05,
+          "logits_relative_error": 4.593551025529572e-07,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float32_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.8560898391037313,
+          "logits_relative_error": 0.03240035523528523,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "bfloat16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.11750445376514218,
+          "logits_relative_error": 0.004447180505850442,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 2.906443313554535,
+          "logits_relative_error": 0.10999989899304947,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int8_weight_only_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 0.125,
+          "logits_max_abs_error_vs_float64_plain": 54.16113036922248,
+          "logits_relative_error": 2.049831435617321,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int4_weight_only_symbolic",
+          "sequence_exact_match": false
+        }
+      ]
+    },
+    {
+      "condition_number": 1000.0,
+      "mask_family": "dense_condition_1000",
+      "per_precision": [
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 2.3776536295372352e-12,
+          "logits_relative_error": 1.0336683129815459e-13,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float64_reference",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 7.981492952469083e-05,
+          "logits_relative_error": 3.469898328655449e-06,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float32_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 0.625,
+          "logits_max_abs_error_vs_float64_plain": 4.871129441570641,
+          "logits_relative_error": 0.21176895110508828,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "bfloat16_simulated",
+          "sequence_exact_match": false
+        },
+        {
+          "greedy_token_match_rate": 1.0,
+          "logits_max_abs_error_vs_float64_plain": 0.748346479288748,
+          "logits_relative_error": 0.03253384063862299,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "float16_simulated",
+          "sequence_exact_match": true
+        },
+        {
+          "greedy_token_match_rate": 0.25,
+          "logits_max_abs_error_vs_float64_plain": 16.056956868806243,
+          "logits_relative_error": 0.6980649877680792,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int8_weight_only_simulated",
+          "sequence_exact_match": false
+        },
+        {
+          "greedy_token_match_rate": 0.0,
+          "logits_max_abs_error_vs_float64_plain": 374.31614380207907,
+          "logits_relative_error": 16.27313297778193,
+          "nan_detected": false,
+          "overflow_detected": false,
+          "precision_mode": "int4_weight_only_symbolic",
+          "sequence_exact_match": false
+        }
+      ]
+    }
+  ],
+  "config": {
+    "batch_size": 2,
+    "condition_numbers": [
+      1.0,
+      2.0,
+      10.0,
+      100.0,
+      1000.0
+    ],
+    "in_dim": 64,
+    "out_dim": 64,
+    "pad_scale": 0.5,
+    "seq_len": 4,
+    "vocab_size": 97
+  },
+  "device": "cpu",
+  "dtype_reference": "float64",
+  "limitations": [
+    "CPU local emulation only; no real GPU fp16 / bf16 / int8 / int4 kernels are measured.",
+    "bf16 / fp16 / int8 are SIMULATED via round-trip casts on float64 storage. Real GPU tensor-core behaviour may differ in accumulator type and rounding.",
+    "int4 is SYMBOLIC ONLY -- no real int4 path.",
+    "float64 reference is for protocol correctness, NOT real inference precision; real LLM inference uses bf16 or fp16 plus mixed-precision accumulation.",
+    "Condition-number sweep uses synthetic dense masks; real-world quantized weights have their own conditioning.",
+    "No formal cryptographic / semantic / differential-privacy security.",
+    "No full Qwen / LLaMA deployment."
+  ],
+  "main_mode": "precision_quantization_stability",
+  "not_recommended_for_low_precision": [
+    "ill-conditioned dense masks (condition number >> 1)"
+  ],
+  "orthogonal_mask": {
+    "condition_number": 1.0,
+    "mask_family": "orthogonal_mask",
+    "per_precision": [
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 2.842170943040401e-14,
+        "logits_relative_error": 9.370522604196116e-16,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "float64_reference",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 1.4750590615619785e-06,
+        "logits_relative_error": 4.8632100446796917e-08,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "float32_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 0.08812112051983956,
+        "logits_relative_error": 0.002905317689494474,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "bfloat16_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 0.010571784919133576,
+        "logits_relative_error": 0.00034854747141095026,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "float16_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 0.313668729932723,
+        "logits_relative_error": 0.010341531114662045,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "int8_weight_only_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 0.75,
+        "logits_max_abs_error_vs_float64_plain": 5.350359750051399,
+        "logits_relative_error": 0.17639919618911198,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "int4_weight_only_symbolic",
+        "sequence_exact_match": false
+      }
+    ]
+  },
+  "paper_safe_wording": "Mask transformations are stable for orthogonal / permutation / RoPE-plane block-diagonal masks under every simulated precision mode; ill-conditioned dense masks amplify error proportionally to the condition number. We recommend well-conditioned mask families (orthogonal, permutation, block) for low-precision deployment. We do NOT measure real GPU fp16 / bf16 / int8 / int4 wall-clock or hardware-specific rounding.",
+  "permutation_mask": {
+    "condition_number": 1.0,
+    "mask_family": "permutation_mask",
+    "per_precision": [
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 2.1316282072803006e-14,
+        "logits_relative_error": 8.749968168821798e-16,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "float64_reference",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 9.897766859445767e-07,
+        "logits_relative_error": 4.062863526893718e-08,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "float32_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 0.08586952264453274,
+        "logits_relative_error": 0.0035247966190606133,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "bfloat16_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 0.008406322205404493,
+        "logits_relative_error": 0.00034506510780318725,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "float16_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 1.0,
+        "logits_max_abs_error_vs_float64_plain": 0.18222954116164658,
+        "logits_relative_error": 0.007480210100136559,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "int8_weight_only_simulated",
+        "sequence_exact_match": true
+      },
+      {
+        "greedy_token_match_rate": 0.875,
+        "logits_max_abs_error_vs_float64_plain": 3.035216843571721,
+        "logits_relative_error": 0.12459044535073584,
+        "nan_detected": false,
+        "overflow_detected": false,
+        "precision_mode": "int4_weight_only_symbolic",
+        "sequence_exact_match": false
+      }
+    ]
+  },
+  "precision_modes_tested": [
+    "float64_reference",
+    "float32_simulated",
+    "bfloat16_simulated",
+    "float16_simulated",
+    "int8_weight_only_simulated",
+    "int4_weight_only_symbolic"
+  ],
+  "real_gpu_kernel_measured": false,
+  "real_quantized_model_loaded": false,
+  "recommended_mask_families": [
+    "orthogonal",
+    "permutation",
+    "RoPE-plane block rotation",
+    "block-diagonal well-conditioned"
+  ],
+  "stage": "7.8b",
+  "status": "ok",
+  "unsafe_wording_to_avoid": [
+    "Real GPU fp16 / bf16 / int8 / int4 performance.",
+    "Real quantized model deployment.",
+    "GPU tensor-core matmul measured.",
+    "This is formal cryptographic security."
+  ]
+}

@@ -32,6 +32,10 @@ We prepare a CPU local-emulation experiment suite that validates padded masked g
 | 7.7e | `integrity_spotcheck` | active_adversary_proxy | True |
 | 7.7f | `paper_cost_model` | cost_model | True |
 | 7.7g | `paper_claims_audit_v2` | audit | True |
+| 7.8a | `sliding_window_attention` | attention_extension | True |
+| 7.8b | `precision_quantization_stability` | precision_sweep | True |
+| 7.8c | `generation_processor_coverage` | decoding_processors | True |
+| 7.8d | `decoder_component_coverage_audit` | coverage_audit | True |
 
 ## Stage Status
 
@@ -49,15 +53,19 @@ We prepare a CPU local-emulation experiment suite that validates padded masked g
 | `7.7e_integrity_spotcheck` | ok | 7.7e | We prototype a probabilistic spot-check defence against an active adversary that returns corrupted masked tensors. Th... |
 | `7.7f_complexity_model` | ok | 7.7f | We provide symbolic and tiny / real-config FLOP and storage estimates for every protocol mode. These are complexity-m... |
 | `7.7g_paper_claims_audit_v2` | ok | 7.7g | All paper claims are classified into supported, proxy_supported, cost_model_only, or unsupported, with the correspond... |
+| `7.8a_sliding_window_attention` | ok | 7.8a | Stage 7.6g/h/i masked invariants carry over to sliding window attention: within the active window the QK invariant ho... |
+| `7.8b_precision_quantization_stability` | ok | 7.8b | Mask transformations are stable for orthogonal / permutation / RoPE-plane block-diagonal masks under every simulated ... |
+| `7.8c_generation_processor_coverage` | ok | 7.8c | Logit processors execute in the trusted side after logits recovery; since the recovery is exact at float64, every sta... |
+| `7.8d_decoder_component_coverage_audit` | ok | 7.8d | We provide a coverage table for common decoder-only components. Supported components carry algebraic evidence under C... |
 
 ## Paper Claims Summary
 
 | Status | Count |
 |---|---|
-| supported | 10 |
+| supported | 15 |
 | proxy_supported | 1 |
 | cost_model_only | 0 |
-| unsupported | 4 |
+| unsupported | 10 |
 
 ## Supported Claims
 
@@ -71,6 +79,11 @@ We prepare a CPU local-emulation experiment suite that validates padded masked g
 - `lora_integration_supported_for_specified_sites` — evidence: `outputs/lora_protocol_integration.json`
 - `paged_kv_invariant_supported_in_synthetic_abstraction` — evidence: `outputs/paged_kv_abstraction.json`
 - `multi_session_mask_isolation_supported_in_cpu_simulation` — evidence: `outputs/multi_session_batching.json`
+- `sliding_window_attention_supported_in_cpu_synthetic_abstraction` — evidence: `outputs/sliding_window_attention.json`
+- `rolling_kv_window_invariant_supported` — evidence: `outputs/sliding_window_attention.json`
+- `well_conditioned_masks_recommended_for_low_precision` — evidence: `outputs/precision_quantization_stability.json`
+- `generation_processors_safe_only_inside_trusted_side` — evidence: `outputs/generation_processor_coverage.json`
+- `standard_1d_rope_scaling_covered_only_under_same_plane_rotation` — evidence: `outputs/modern_decoder_rope_safe_low_interaction.json`
 
 ## Proxy-Supported Claims
 
@@ -82,6 +95,12 @@ We prepare a CPU local-emulation experiment suite that validates padded masked g
 - `no_formal_cryptographic_security` — blocker: Cryptographic protocol design or formal proof out of scope for this project.
 - `no_full_qwen_or_llama_deployment_unless_real_wrapper` — blocker: Real model loader + real GPU.
 - `no_hardware_side_channel_evaluation` — blocker: Real hardware + side-channel platform.
+- `fp16_bf16_int8_int4_simulated_only_not_real_kernels` — blocker: Real GPU quantized kernels.
+- `output_length_side_channel_not_hidden_unless_separately_padded` — blocker: Explicit length-hiding policy with padded generation.
+- `m_rope_multimodal_unsupported` — blocker: Multi-axis RoPE-plane invariant derivation.
+- `moe_unsupported` — blocker: Trusted routing or masked expert dispatch.
+- `speculative_decoding_unsupported` — blocker: Speculative-decode threat model + masked draft model.
+- `quantized_real_model_deployment_unsupported_without_real_backend` — blocker: Real GPU quantization backend.
 
 ## Mode Comparison (from 7.6i and 7.7f)
 
@@ -94,6 +113,44 @@ We prepare a CPU local-emulation experiment suite that validates padded masked g
 ## Cost / Complexity (from 7.7f)
 
 See [outputs/paper_cost_model.md](paper_cost_model.md) for the symbolic formulas, tiny-config counts, and LLaMA-7B-ish real-config estimates per protocol mode.
+
+## Decoder-only Component Coverage
+
+### Covered Components
+
+- `RMSNorm`
+- `SwiGLU`
+- `standard 1D RoPE`
+- `GQA / MQA`
+- `causal attention`
+- `KV cache`
+- `paged KV abstraction`
+- `LM head`
+- `LoRA inference`
+- `generation processors inside TEE`
+
+### Partially Covered Components
+
+- `sliding window attention`
+- `LayerNorm (non-LLaMA path)`
+- `GELU MLP (non-SwiGLU path)`
+- `prefix cache (cross-session sharing)`
+- `beam search`
+- `quantization (fp16 / bf16 / int8 / int4)`
+
+### Unsupported Components / Future Work
+
+- `M-RoPE / multimodal positional encoding`
+- `MoE router / expert dispatch`
+- `Multi-Head Latent Attention`
+- `speculative decoding`
+- `real vLLM / FlashAttention backend`
+- `real GPU / TEE hardware side channels`
+- `full active malicious security`
+- `LoRA training (backward)`
+- `full Qwen / LLaMA deployment`
+
+> Supported components carry algebraic evidence under CPU local emulation; partially supported components have audit-only or simulation-only evidence; unsupported components are listed as future work with explicit remaining blockers.
 
 ## Scalability Warnings
 

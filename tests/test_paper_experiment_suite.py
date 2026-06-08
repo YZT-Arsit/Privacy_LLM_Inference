@@ -46,14 +46,36 @@ def test_all_stages_present(report: dict) -> None:
         "7.7e_integrity_spotcheck",
         "7.7f_complexity_model",
         "7.7g_paper_claims_audit_v2",
+        "7.8a_sliding_window_attention",
+        "7.8b_precision_quantization_stability",
+        "7.8c_generation_processor_coverage",
+        "7.8d_decoder_component_coverage_audit",
     }
     assert set(report["stages"].keys()) == expected
 
 
+def test_decoder_component_coverage_section(report: dict) -> None:
+    dc = report["decoder_component_coverage"]
+    assert "RMSNorm" in dc["covered_components"]
+    assert "SwiGLU" in dc["covered_components"]
+    assert "GQA / MQA" in dc["covered_components"]
+    assert "M-RoPE / multimodal positional encoding" in dc["unsupported_components"]
+    assert "MoE router / expert dispatch" in dc["unsupported_components"]
+    assert "speculative decoding" in dc["unsupported_components"]
+
+
+def test_render_includes_decoder_coverage_section(report: dict) -> None:
+    md = render_markdown(report)
+    assert "Decoder-only Component Coverage" in md
+    assert "Covered Components" in md
+    assert "Unsupported Components" in md
+
+
 def test_paper_claims_table_populated(report: dict) -> None:
-    assert len(report["paper_claims_table"]) == 15
-    assert len(report["supported_claims"]) >= 9
-    assert len(report["unsupported_claims"]) >= 3
+    # 15 baseline + 11 Stage 7.8 addendum = 26.
+    assert len(report["paper_claims_table"]) == 26
+    assert len(report["supported_claims"]) >= 14
+    assert len(report["unsupported_claims"]) >= 9
 
 
 def test_unsupported_claims_listed(report: dict) -> None:

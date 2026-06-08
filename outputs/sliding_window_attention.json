@@ -1,0 +1,129 @@
+{
+  "config": {
+    "batch_size": 2,
+    "head_dim": 16,
+    "max_new_tokens": 4,
+    "num_kv_heads": 2,
+    "num_q_heads": 2,
+    "prompt_len": 6,
+    "window_sizes": [
+      2,
+      4,
+      999
+    ]
+  },
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "greedy_token_match_rate": 1.0,
+  "limitations": [
+    "CPU local emulation only.",
+    "No real FlashAttention / sliding-window CUDA kernel.",
+    "Window size policy is PUBLIC; cuts off attention beyond the window in a way that is observable by the accelerator.",
+    "Timing / memory-access side channel from windowed KV access is NOT evaluated.",
+    "Sliding window does not change the QK invariant; exact_visible_attention still exposes the windowed score matrix on the accelerator.",
+    "Not formal cryptographic / semantic / differential-privacy security.",
+    "No full Qwen / LLaMA deployment unless a real wrapper exists."
+  ],
+  "main_mode": "sliding_window_attention",
+  "pad_enters_rmsnorm_core": false,
+  "pad_enters_rope_core": false,
+  "pad_enters_softmax": false,
+  "pad_enters_swiglu_core": false,
+  "paper_safe_wording": "Stage 7.6g/h/i masked invariants carry over to sliding window attention: within the active window the QK invariant holds, the rolling KV buffer obeys K_tilde = K @ N_K and V_tilde = V @ N_V per (layer, head), and the eviction policy is the public window size. Trusted-softmax mode hides the windowed attention map from the accelerator transcript at the cost of extra TEE round trips.",
+  "per_window_results": [
+    {
+      "attention_extra_tee_round_trips_per_layer": 0,
+      "attention_privacy_mode": "exact_visible_attention",
+      "attention_scores_visible": true,
+      "attn_out_recovered_max_abs_error_vs_plain": 1.7763568394002505e-15,
+      "full_vs_sliding_match_when_window_ge_seqlen": null,
+      "kv_window_invariant_max_abs_error": 8.881784197001252e-16,
+      "qkv_projection_outputs_masked_directly": true,
+      "rope_transient_plain_qk_visible": false,
+      "score_invariant_max_abs_error": 4.440892098500626e-16,
+      "window_eviction_correct": true,
+      "window_size": 2
+    },
+    {
+      "attention_extra_tee_round_trips_per_layer": 1,
+      "attention_privacy_mode": "trusted_softmax_attention",
+      "attention_scores_visible": false,
+      "attn_out_recovered_max_abs_error_vs_plain": 1.3322676295501878e-15,
+      "full_vs_sliding_match_when_window_ge_seqlen": null,
+      "kv_window_invariant_max_abs_error": 8.881784197001252e-16,
+      "qkv_projection_outputs_masked_directly": true,
+      "rope_transient_plain_qk_visible": false,
+      "score_invariant_max_abs_error": 6.106226635438361e-16,
+      "window_eviction_correct": true,
+      "window_size": 2
+    },
+    {
+      "attention_extra_tee_round_trips_per_layer": 0,
+      "attention_privacy_mode": "exact_visible_attention",
+      "attention_scores_visible": true,
+      "attn_out_recovered_max_abs_error_vs_plain": 1.429412144204889e-15,
+      "full_vs_sliding_match_when_window_ge_seqlen": null,
+      "kv_window_invariant_max_abs_error": 8.881784197001252e-16,
+      "qkv_projection_outputs_masked_directly": true,
+      "rope_transient_plain_qk_visible": false,
+      "score_invariant_max_abs_error": 8.881784197001252e-16,
+      "window_eviction_correct": true,
+      "window_size": 4
+    },
+    {
+      "attention_extra_tee_round_trips_per_layer": 1,
+      "attention_privacy_mode": "trusted_softmax_attention",
+      "attention_scores_visible": false,
+      "attn_out_recovered_max_abs_error_vs_plain": 8.881784197001252e-16,
+      "full_vs_sliding_match_when_window_ge_seqlen": null,
+      "kv_window_invariant_max_abs_error": 8.881784197001252e-16,
+      "qkv_projection_outputs_masked_directly": true,
+      "rope_transient_plain_qk_visible": false,
+      "score_invariant_max_abs_error": 6.661338147750939e-16,
+      "window_eviction_correct": true,
+      "window_size": 4
+    },
+    {
+      "attention_extra_tee_round_trips_per_layer": 0,
+      "attention_privacy_mode": "exact_visible_attention",
+      "attention_scores_visible": true,
+      "attn_out_recovered_max_abs_error_vs_plain": 9.992007221626409e-16,
+      "full_vs_sliding_match_when_window_ge_seqlen": 6.661338147750939e-16,
+      "kv_window_invariant_max_abs_error": 1.1102230246251565e-15,
+      "qkv_projection_outputs_masked_directly": true,
+      "rope_transient_plain_qk_visible": false,
+      "score_invariant_max_abs_error": 8.881784197001252e-16,
+      "window_eviction_correct": true,
+      "window_size": "full"
+    },
+    {
+      "attention_extra_tee_round_trips_per_layer": 1,
+      "attention_privacy_mode": "trusted_softmax_attention",
+      "attention_scores_visible": false,
+      "attn_out_recovered_max_abs_error_vs_plain": 8.881784197001252e-16,
+      "full_vs_sliding_match_when_window_ge_seqlen": 4.440892098500626e-16,
+      "kv_window_invariant_max_abs_error": 8.881784197001252e-16,
+      "qkv_projection_outputs_masked_directly": true,
+      "rope_transient_plain_qk_visible": false,
+      "score_invariant_max_abs_error": 8.881784197001252e-16,
+      "window_eviction_correct": true,
+      "window_size": "full"
+    }
+  ],
+  "qkv_projection_outputs_masked_directly": true,
+  "rolling_kv_cache": true,
+  "rope_mask_mode": "pre_rope_block_diagonal_rotation",
+  "rope_transient_plain_qk_visible": false,
+  "sequence_exact_match": true,
+  "sliding_window_supported": true,
+  "stage": "7.8a",
+  "status": "ok",
+  "unsafe_wording_to_avoid": [
+    "Real FlashAttention support.",
+    "Real sliding-window CUDA kernel.",
+    "Window policy is cryptographically hidden.",
+    "Timing side channel evaluated.",
+    "This is formal cryptographic security."
+  ],
+  "use_pad": true
+}

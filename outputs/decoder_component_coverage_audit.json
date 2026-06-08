@@ -1,0 +1,284 @@
+{
+  "covered_in_main_protocol": [
+    {
+      "artifact_evidence": "outputs/modern_decoder_low_interaction_correctness.json",
+      "artifact_exists": true,
+      "component": "RMSNorm",
+      "leakage_surface": "per-row L2 norms preserved (RMSNorm correctness)",
+      "reason": "operator-compatible orthogonal: RMSNormCore(H Q) = RMSNormCore(H) Q",
+      "remaining_blocker": "none for algebraic claim",
+      "required_invariant": "Q orthogonal; gamma folded into next linear",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/modern_decoder_low_interaction_correctness.json",
+      "artifact_exists": true,
+      "component": "SwiGLU",
+      "leakage_surface": "permutation seed observable but uniform across batch",
+      "reason": "paired permutation P shared by gate / up branches",
+      "remaining_blocker": "none for algebraic claim",
+      "required_invariant": "down_proj_compat = P^{-1} W_down @ Q_l",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/modern_decoder_rope_safe_low_interaction.json",
+      "artifact_exists": true,
+      "component": "standard 1D RoPE",
+      "leakage_surface": "RoPE-pair 2D norms preserved",
+      "reason": "rotate-half RoPE commutes with RoPE-plane block-diagonal mask",
+      "remaining_blocker": "none for algebraic claim",
+      "required_invariant": "B_K is block-diagonal 2D rotation in each RoPE pair",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/modern_decoder_rope_safe_low_interaction.json",
+      "artifact_exists": true,
+      "component": "GQA / MQA",
+      "leakage_surface": "score matrix visible in exact_visible_attention",
+      "reason": "N_Q[h] = N_K[h//group_size]^{-T} -> Q_tilde K_tilde^T = Q K^T",
+      "remaining_blocker": "none for algebraic claim",
+      "required_invariant": "B_Q B_K^T = I per Q head",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/attention_privacy_modes.json",
+      "artifact_exists": true,
+      "component": "causal attention",
+      "leakage_surface": "attention map in exact mode; hidden in trusted softmax",
+      "reason": "QK score invariant + causal mask in softmax",
+      "remaining_blocker": "n/a",
+      "required_invariant": "see attention privacy modes",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/modern_decoder_low_interaction_correctness.json",
+      "artifact_exists": true,
+      "component": "KV cache",
+      "leakage_surface": "cache length visible",
+      "reason": "K_tilde = K @ N_K, V_tilde = V @ N_V per session",
+      "remaining_blocker": "real serving runtime",
+      "required_invariant": "per-session N_K, N_V orthogonal",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/paged_kv_abstraction.json",
+      "artifact_exists": true,
+      "component": "paged KV abstraction",
+      "leakage_surface": "block-table observable; timing not evaluated",
+      "reason": "block-table indexing preserves the masked KV invariant",
+      "remaining_blocker": "real GPU paged-attention kernel",
+      "required_invariant": "per-(layer, head) mask shared across blocks of a session",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/lm_head_scalability.json",
+      "artifact_exists": true,
+      "component": "LM head",
+      "leakage_surface": "dense N_vocab not scalable; see scalable LM head",
+      "reason": "padded masked logits with trusted recovery",
+      "remaining_blocker": "n/a (see LM-head scalability)",
+      "required_invariant": "z_recovered = z_tilde @ N_vocab^{-1}",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/lora_protocol_integration.json",
+      "artifact_exists": true,
+      "component": "LoRA inference",
+      "leakage_surface": "padded rank visible; true rank hidden by zero pad",
+      "reason": "padded LoRA boundary identity (Stage 7.7b)",
+      "remaining_blocker": "LoRA training (backward)",
+      "required_invariant": "A_tilde = M^{-1} A R, B_tilde = R^{-1} B N_out",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "outputs/generation_processor_coverage.json",
+      "artifact_exists": true,
+      "component": "generation processors inside TEE",
+      "leakage_surface": "output length / stop timing observable unless padded",
+      "reason": "main theorem (Stage 7.8c): logit processors are exact on recovered logits",
+      "remaining_blocker": "output-length side-channel hiding",
+      "required_invariant": "z_recovered = z_plain at machine precision",
+      "status": "supported"
+    }
+  ],
+  "device": "cpu",
+  "limitations": [
+    "CPU local emulation only.",
+    "No real TEE / GPU deployment.",
+    "No hardware side-channel evaluation.",
+    "No formal cryptographic / semantic / differential-privacy security.",
+    "No full Qwen / LLaMA deployment unless a real wrapper exists."
+  ],
+  "main_mode": "decoder_component_coverage_audit",
+  "not_covered_future_work": [
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "M-RoPE / multimodal positional encoding",
+      "leakage_surface": "n/a",
+      "reason": "M-RoPE mixes multiple position axes; one block-diagonal rotation may not commute across all axes",
+      "remaining_blocker": "extend RoPE-plane analysis to multiple position dimensions",
+      "required_invariant": "future work",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "MoE router / expert dispatch",
+      "leakage_surface": "n/a",
+      "reason": "router output reveals expert selection; routing decisions cross the masked invariant",
+      "remaining_blocker": "trusted routing or masked expert dispatch",
+      "required_invariant": "future work",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "Multi-Head Latent Attention",
+      "leakage_surface": "n/a",
+      "reason": "latent compression changes the (Q, K, V) algebra; not covered by current QK invariant",
+      "remaining_blocker": "MLA-specific invariant derivation",
+      "required_invariant": "future work",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "speculative decoding",
+      "leakage_surface": "n/a",
+      "reason": "draft / target verification protocol crosses TEE boundary; not analysed",
+      "remaining_blocker": "speculative-decode threat model + masked draft model",
+      "required_invariant": "future work",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "real vLLM / FlashAttention backend",
+      "leakage_surface": "n/a",
+      "reason": "CPU local emulation only; no real GPU kernel",
+      "remaining_blocker": "real GPU + serving runtime",
+      "required_invariant": "n/a",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "real GPU / TEE hardware side channels",
+      "leakage_surface": "n/a",
+      "reason": "no real hardware platform available",
+      "remaining_blocker": "real hardware + side-channel platform",
+      "required_invariant": "n/a",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "outputs/integrity_spotcheck.json",
+      "artifact_exists": true,
+      "component": "full active malicious security",
+      "leakage_surface": "n/a",
+      "reason": "Stage 7.7e is probabilistic spot-check only; no verifiable computation",
+      "remaining_blocker": "cryptographic verifiable computation",
+      "required_invariant": "n/a",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "LoRA training (backward)",
+      "leakage_surface": "n/a",
+      "reason": "Stage 7.7b is forward only",
+      "remaining_blocker": "backward path through padded boundary; gradient masks",
+      "required_invariant": "n/a",
+      "status": "unsupported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "full Qwen / LLaMA deployment",
+      "leakage_surface": "n/a",
+      "reason": "synthetic tiny modern decoder only; no real model loader",
+      "remaining_blocker": "real HF / safetensors loader + GPU",
+      "required_invariant": "n/a",
+      "status": "unsupported"
+    }
+  ],
+  "outputs_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+  "paper_safe_wording": "We provide a coverage table for common decoder-only components. Supported components carry algebraic evidence under CPU local emulation; partially supported components have audit-only or simulation-only evidence; unsupported components are listed as future work with explicit remaining blockers.",
+  "partially_covered_or_extension": [
+    {
+      "artifact_evidence": "outputs/sliding_window_attention.json",
+      "artifact_exists": true,
+      "component": "sliding window attention",
+      "leakage_surface": "window-size policy is public; timing not evaluated",
+      "reason": "Stage 7.8a: KV window invariant + score invariant under window cut-off",
+      "remaining_blocker": "real FlashAttention / sliding-window CUDA kernel",
+      "required_invariant": "K_tilde_window = K_plain_window @ N_K",
+      "status": "supported"
+    },
+    {
+      "artifact_evidence": "n/a",
+      "artifact_exists": true,
+      "component": "LayerNorm (non-LLaMA path)",
+      "leakage_surface": "row mean preserved",
+      "reason": "theory mirrors RMSNorm-compatible orthogonal mask but is not the main Llama/Qwen path",
+      "remaining_blocker": "extra constraint that Q preserves mean direction; not exercised here",
+      "required_invariant": "mean and variance both invariant under orthogonal right-action only if mask is orthogonal AND row-mean-preserving",
+      "status": "audit_only"
+    },
+    {
+      "artifact_evidence": "outputs/nonlinear_island_experiments.json",
+      "artifact_exists": true,
+      "component": "GELU MLP (non-SwiGLU path)",
+      "leakage_surface": "permutation seed observable",
+      "reason": "permutation island theory exists from earlier stages but not the main SwiGLU path",
+      "remaining_blocker": "not exercised under the latest low-interaction wrapper",
+      "required_invariant": "GELU is element-wise -> permutation-equivariant",
+      "status": "audit_only"
+    },
+    {
+      "artifact_evidence": "outputs/paged_kv_abstraction.json",
+      "artifact_exists": true,
+      "component": "prefix cache (cross-session sharing)",
+      "leakage_surface": "if enabled, shared prefix K_tilde / V_tilde leaks across sessions",
+      "reason": "private mode only; cross-session sharing flagged as leakage surface",
+      "remaining_blocker": "explicit public-prefix flag + threat-model declaration",
+      "required_invariant": "n/a (off by default)",
+      "status": "audit_only"
+    },
+    {
+      "artifact_evidence": "outputs/generation_processor_coverage.json",
+      "artifact_exists": true,
+      "component": "beam search",
+      "leakage_surface": "beam width / state observable on output channel",
+      "reason": "main theorem applies; not implemented end-to-end here",
+      "remaining_blocker": "TEE-resident beam manager",
+      "required_invariant": "z_recovered = z_plain",
+      "status": "audit_only"
+    },
+    {
+      "artifact_evidence": "outputs/precision_quantization_stability.json",
+      "artifact_exists": true,
+      "component": "quantization (fp16 / bf16 / int8 / int4)",
+      "leakage_surface": "quantization scale per channel observable",
+      "reason": "Stage 7.8b: simulated only; well-conditioned masks recommended for low precision",
+      "remaining_blocker": "real GPU fp16 / bf16 / int8 / int4 kernels",
+      "required_invariant": "mask family well-conditioned (orthogonal / permutation)",
+      "status": "partially_supported"
+    }
+  ],
+  "stage": "7.8d",
+  "status": "ok",
+  "summary": {
+    "covered": 10,
+    "partial": 6,
+    "unsupported": 9
+  },
+  "unsafe_wording_to_avoid": [
+    "M-RoPE supported.",
+    "MoE supported.",
+    "Speculative decoding supported.",
+    "Real quantized model deployment.",
+    "Real vLLM serving support.",
+    "Hardware side channels evaluated."
+  ]
+}

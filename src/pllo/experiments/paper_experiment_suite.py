@@ -23,6 +23,13 @@ from pllo.experiments.attention_privacy_modes import (
     AttentionPrivacyModesConfig,
     run_attention_privacy_modes,
 )
+from pllo.experiments.decoder_component_coverage_audit import (
+    run_decoder_component_coverage_audit,
+)
+from pllo.experiments.generation_processor_coverage import (
+    GenerationProcessorCoverageConfig,
+    run_generation_processor_coverage,
+)
 from pllo.experiments.integrity_spotcheck import (
     IntegritySpotCheckConfig,
     run_integrity_spotcheck,
@@ -53,6 +60,14 @@ from pllo.experiments.paper_claims_audit_v2 import (
 from pllo.experiments.paper_cost_model import (
     PaperCostModelConfig,
     run_paper_cost_model,
+)
+from pllo.experiments.precision_quantization_stability import (
+    PrecisionStabilityConfig,
+    run_precision_quantization_stability,
+)
+from pllo.experiments.sliding_window_attention import (
+    SlidingWindowConfig,
+    run_sliding_window_attention,
 )
 
 
@@ -130,6 +145,15 @@ def run_paper_experiment_suite(
     s_7_7e = run_integrity_spotcheck(cfg=IntegritySpotCheckConfig())
     s_7_7f = run_paper_cost_model(cfg=PaperCostModelConfig())
     s_7_7g = run_paper_claims_audit_v2(outputs_dir=outputs_dir)
+    # Stage 7.8 addendum.
+    s_7_8a = run_sliding_window_attention(cfg=SlidingWindowConfig())
+    s_7_8b = run_precision_quantization_stability(
+        cfg=PrecisionStabilityConfig()
+    )
+    s_7_8c = run_generation_processor_coverage(
+        cfg=GenerationProcessorCoverageConfig()
+    )
+    s_7_8d = run_decoder_component_coverage_audit(outputs_dir=outputs_dir)
 
     stages: Dict[str, Any] = {
         **pre,
@@ -142,6 +166,29 @@ def run_paper_experiment_suite(
         "7.7e_integrity_spotcheck": _stage_summary(s_7_7e),
         "7.7f_complexity_model": _stage_summary(s_7_7f),
         "7.7g_paper_claims_audit_v2": _stage_summary(s_7_7g),
+        "7.8a_sliding_window_attention": _stage_summary(s_7_8a),
+        "7.8b_precision_quantization_stability": _stage_summary(s_7_8b),
+        "7.8c_generation_processor_coverage": _stage_summary(s_7_8c),
+        "7.8d_decoder_component_coverage_audit": _stage_summary(s_7_8d),
+    }
+
+    # Decoder-only component coverage section (from 7.8d).
+    decoder_component_coverage = {
+        "covered_components":
+            [e["component"] for e in s_7_8d["covered_in_main_protocol"]],
+        "partially_covered_components":
+            [e["component"] for e in s_7_8d["partially_covered_or_extension"]],
+        "unsupported_components":
+            [e["component"] for e in s_7_8d["not_covered_future_work"]],
+        "future_work":
+            [e["component"] for e in s_7_8d["not_covered_future_work"]],
+        "paper_safe_wording": (
+            "Supported components carry algebraic evidence under CPU "
+            "local emulation; partially supported components have "
+            "audit-only or simulation-only evidence; unsupported "
+            "components are listed as future work with explicit "
+            "remaining blockers."
+        ),
     }
 
     # Paper claims table (from 7.7g).
@@ -186,6 +233,14 @@ def run_paper_experiment_suite(
          "kind": "cost_model", "loaded": True},
         {"stage": "7.7g", "experiment": "paper_claims_audit_v2",
          "kind": "audit", "loaded": True},
+        {"stage": "7.8a", "experiment": "sliding_window_attention",
+         "kind": "attention_extension", "loaded": True},
+        {"stage": "7.8b", "experiment": "precision_quantization_stability",
+         "kind": "precision_sweep", "loaded": True},
+        {"stage": "7.8c", "experiment": "generation_processor_coverage",
+         "kind": "decoding_processors", "loaded": True},
+        {"stage": "7.8d", "experiment": "decoder_component_coverage_audit",
+         "kind": "coverage_audit", "loaded": True},
     ]
 
     report: Dict[str, Any] = {
@@ -200,6 +255,7 @@ def run_paper_experiment_suite(
         },
         "stages": stages,
         "experiment_matrix": experiment_matrix,
+        "decoder_component_coverage": decoder_component_coverage,
         "paper_claims_table": paper_claims_table,
         "paper_claims_summary": s_7_7g["summary"],
         "supported_claims": [
@@ -376,6 +432,27 @@ def render_markdown(report: Dict[str, Any]) -> str:
         "symbolic formulas, tiny-config counts, and LLaMA-7B-ish "
         "real-config estimates per protocol mode."
     )
+    w()
+
+    w("## Decoder-only Component Coverage")
+    w()
+    dc = report["decoder_component_coverage"]
+    w("### Covered Components")
+    w()
+    for c in dc["covered_components"]:
+        w(f"- `{c}`")
+    w()
+    w("### Partially Covered Components")
+    w()
+    for c in dc["partially_covered_components"]:
+        w(f"- `{c}`")
+    w()
+    w("### Unsupported Components / Future Work")
+    w()
+    for c in dc["unsupported_components"]:
+        w(f"- `{c}`")
+    w()
+    w(f"> {dc['paper_safe_wording']}")
     w()
 
     w("## Scalability Warnings")

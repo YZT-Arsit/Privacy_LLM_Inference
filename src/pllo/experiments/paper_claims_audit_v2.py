@@ -309,6 +309,215 @@ CLAIMS: List[Dict[str, str]] = [
         ),
         "remaining_blocker": "Real hardware + side-channel platform.",
     },
+    # ----- Stage 7.8 addendum claims -----
+    {
+        "id": "sliding_window_attention_supported_in_cpu_synthetic_abstraction",
+        "claim": (
+            "Sliding window attention is supported under the Stage "
+            "7.6g/h/i masked invariants in a CPU synthetic abstraction."
+        ),
+        "status": "supported",
+        "evidence_artifact": "outputs/sliding_window_attention.json",
+        "safe_wording": (
+            "Within the active window, the QK invariant and rolling "
+            "KV invariant hold at float64 precision; eviction "
+            "policy is the public window size."
+        ),
+        "unsafe_wording": (
+            "Real FlashAttention sliding-window kernel supported."
+        ),
+        "remaining_blocker": "Real GPU kernel.",
+    },
+    {
+        "id": "rolling_kv_window_invariant_supported",
+        "claim": (
+            "The rolling-window KV cache obeys "
+            "K_tilde_window = K_plain_window @ N_K per (layer, head)."
+        ),
+        "status": "supported",
+        "evidence_artifact": "outputs/sliding_window_attention.json",
+        "safe_wording": (
+            "Per-(layer, head) masked invariant preserved over the "
+            "rolling window; old tokens evicted by the public window "
+            "policy."
+        ),
+        "unsafe_wording": (
+            "Rolling cache is cryptographically isolated."
+        ),
+        "remaining_blocker": "Real serving runtime.",
+    },
+    {
+        "id": "fp16_bf16_int8_int4_simulated_only_not_real_kernels",
+        "claim": (
+            "fp16 / bf16 / int8 / int4 are SIMULATED on CPU; no real "
+            "GPU kernels or quantized models are measured."
+        ),
+        "status": "unsupported",
+        "evidence_artifact":
+            "outputs/precision_quantization_stability.json",
+        "safe_wording": (
+            "CPU-simulated precision sweep; provides error bounds for "
+            "the protocol's algebraic recovery, not real hardware "
+            "performance."
+        ),
+        "unsafe_wording": (
+            "Real GPU fp16 / bf16 / int8 / int4 performance."
+        ),
+        "remaining_blocker": "Real GPU quantized kernels.",
+    },
+    {
+        "id": "well_conditioned_masks_recommended_for_low_precision",
+        "claim": (
+            "Well-conditioned mask families (orthogonal, permutation, "
+            "RoPE-plane block rotation, block-diagonal) are "
+            "recommended for low-precision deployment; "
+            "ill-conditioned dense masks amplify error proportionally "
+            "to the condition number."
+        ),
+        "status": "supported",
+        "evidence_artifact":
+            "outputs/precision_quantization_stability.json",
+        "safe_wording": (
+            "Condition-number sweep shows error scales with cond(M); "
+            "orthogonal masks remain at machine epsilon, dense "
+            "ill-conditioned masks amplify error."
+        ),
+        "unsafe_wording": (
+            "Any mask family is fine for fp16."
+        ),
+        "remaining_blocker": "n/a for algebraic claim.",
+    },
+    {
+        "id": "generation_processors_safe_only_inside_trusted_side",
+        "claim": (
+            "Generation processors (temperature, top-k, top-p, "
+            "repetition penalty, stop tokens, bad words, forced "
+            "tokens) are safe ONLY when executed inside the trusted "
+            "side, AFTER logits recovery."
+        ),
+        "status": "supported",
+        "evidence_artifact": "outputs/generation_processor_coverage.json",
+        "safe_wording": (
+            "Main theorem: if recovered logits equal plain logits, "
+            "every standard logit processor produces identical output "
+            "under the same trusted randomness."
+        ),
+        "unsafe_wording": (
+            "Bad word list cryptographically hidden from accelerator."
+        ),
+        "remaining_blocker": "Output-length side-channel hiding.",
+    },
+    {
+        "id": "output_length_side_channel_not_hidden_unless_separately_padded",
+        "claim": (
+            "Output length / stop timing is observable unless the "
+            "trusted side separately pads or batches to hide it."
+        ),
+        "status": "unsupported",
+        "evidence_artifact": "outputs/generation_processor_coverage.json",
+        "safe_wording": (
+            "Output length is a side-channel that is NOT addressed by "
+            "the current protocol; it must be hidden by additional "
+            "padding or batching policy."
+        ),
+        "unsafe_wording": (
+            "Output length hidden."
+        ),
+        "remaining_blocker": (
+            "Explicit length-hiding policy with padded generation."
+        ),
+    },
+    {
+        "id": "standard_1d_rope_scaling_covered_only_under_same_plane_rotation",
+        "claim": (
+            "Standard 1D RoPE (and RoPE scaling) is covered ONLY when "
+            "the rotation planes are unchanged; M-RoPE and multi-axis "
+            "positional encodings are NOT covered."
+        ),
+        "status": "supported",
+        "evidence_artifact":
+            "outputs/modern_decoder_rope_safe_low_interaction.json",
+        "safe_wording": (
+            "RoPE-plane block-diagonal mask commutes with apply_rope "
+            "iff B_K is the same 2D rotation in each RoPE pair."
+        ),
+        "unsafe_wording": (
+            "M-RoPE supported."
+        ),
+        "remaining_blocker":
+            "Multi-axis RoPE-plane analysis for M-RoPE.",
+    },
+    {
+        "id": "m_rope_multimodal_unsupported",
+        "claim": (
+            "M-RoPE / multimodal positional encoding is NOT covered."
+        ),
+        "status": "unsupported",
+        "evidence_artifact":
+            "outputs/decoder_component_coverage_audit.json",
+        "safe_wording": (
+            "Future work."
+        ),
+        "unsafe_wording": (
+            "M-RoPE supported."
+        ),
+        "remaining_blocker":
+            "Multi-axis RoPE-plane invariant derivation.",
+    },
+    {
+        "id": "moe_unsupported",
+        "claim": (
+            "MoE router / expert dispatch is NOT covered."
+        ),
+        "status": "unsupported",
+        "evidence_artifact":
+            "outputs/decoder_component_coverage_audit.json",
+        "safe_wording": (
+            "Future work."
+        ),
+        "unsafe_wording": (
+            "MoE supported."
+        ),
+        "remaining_blocker":
+            "Trusted routing or masked expert dispatch.",
+    },
+    {
+        "id": "speculative_decoding_unsupported",
+        "claim": (
+            "Speculative decoding (draft / target verification) is "
+            "NOT covered."
+        ),
+        "status": "unsupported",
+        "evidence_artifact":
+            "outputs/decoder_component_coverage_audit.json",
+        "safe_wording": (
+            "Future work."
+        ),
+        "unsafe_wording": (
+            "Speculative decoding supported."
+        ),
+        "remaining_blocker":
+            "Speculative-decode threat model + masked draft model.",
+    },
+    {
+        "id": "quantized_real_model_deployment_unsupported_without_real_backend",
+        "claim": (
+            "Quantized real-model deployment is NOT supported unless a "
+            "real GPU quantized backend exists."
+        ),
+        "status": "unsupported",
+        "evidence_artifact":
+            "outputs/precision_quantization_stability.json",
+        "safe_wording": (
+            "CPU-simulated quantization only; real deployment "
+            "requires GPU int8 / int4 kernels and weight loaders."
+        ),
+        "unsafe_wording": (
+            "Real quantized model deployment."
+        ),
+        "remaining_blocker":
+            "Real GPU quantization backend.",
+    },
 ]
 
 

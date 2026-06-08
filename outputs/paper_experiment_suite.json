@@ -1,4 +1,49 @@
 {
+  "decoder_component_coverage": {
+    "covered_components": [
+      "RMSNorm",
+      "SwiGLU",
+      "standard 1D RoPE",
+      "GQA / MQA",
+      "causal attention",
+      "KV cache",
+      "paged KV abstraction",
+      "LM head",
+      "LoRA inference",
+      "generation processors inside TEE"
+    ],
+    "future_work": [
+      "M-RoPE / multimodal positional encoding",
+      "MoE router / expert dispatch",
+      "Multi-Head Latent Attention",
+      "speculative decoding",
+      "real vLLM / FlashAttention backend",
+      "real GPU / TEE hardware side channels",
+      "full active malicious security",
+      "LoRA training (backward)",
+      "full Qwen / LLaMA deployment"
+    ],
+    "paper_safe_wording": "Supported components carry algebraic evidence under CPU local emulation; partially supported components have audit-only or simulation-only evidence; unsupported components are listed as future work with explicit remaining blockers.",
+    "partially_covered_components": [
+      "sliding window attention",
+      "LayerNorm (non-LLaMA path)",
+      "GELU MLP (non-SwiGLU path)",
+      "prefix cache (cross-session sharing)",
+      "beam search",
+      "quantization (fp16 / bf16 / int8 / int4)"
+    ],
+    "unsupported_components": [
+      "M-RoPE / multimodal positional encoding",
+      "MoE router / expert dispatch",
+      "Multi-Head Latent Attention",
+      "speculative decoding",
+      "real vLLM / FlashAttention backend",
+      "real GPU / TEE hardware side channels",
+      "full active malicious security",
+      "LoRA training (backward)",
+      "full Qwen / LLaMA deployment"
+    ]
+  },
   "environment": {
     "device": "cpu",
     "dtype": "float64",
@@ -78,6 +123,30 @@
       "kind": "audit",
       "loaded": true,
       "stage": "7.7g"
+    },
+    {
+      "experiment": "sliding_window_attention",
+      "kind": "attention_extension",
+      "loaded": true,
+      "stage": "7.8a"
+    },
+    {
+      "experiment": "precision_quantization_stability",
+      "kind": "precision_sweep",
+      "loaded": true,
+      "stage": "7.8b"
+    },
+    {
+      "experiment": "generation_processor_coverage",
+      "kind": "decoding_processors",
+      "loaded": true,
+      "stage": "7.8c"
+    },
+    {
+      "experiment": "decoder_component_coverage_audit",
+      "kind": "coverage_audit",
+      "loaded": true,
+      "stage": "7.8d"
     }
   ],
   "limitations": [
@@ -90,8 +159,8 @@
   "paper_claims_summary": {
     "cost_model_only": 0,
     "proxy_supported": 1,
-    "supported": 10,
-    "unsupported": 4
+    "supported": 15,
+    "unsupported": 10
   },
   "paper_claims_table": {
     "attention_maps_hidden_only_in_trusted_softmax_mode": {
@@ -104,6 +173,16 @@
       "remaining_blocker": "None for algebraic claim.",
       "status": "supported"
     },
+    "fp16_bf16_int8_int4_simulated_only_not_real_kernels": {
+      "evidence_artifact": "outputs/precision_quantization_stability.json",
+      "remaining_blocker": "Real GPU quantized kernels.",
+      "status": "unsupported"
+    },
+    "generation_processors_safe_only_inside_trusted_side": {
+      "evidence_artifact": "outputs/generation_processor_coverage.json",
+      "remaining_blocker": "Output-length side-channel hiding.",
+      "status": "supported"
+    },
     "integrity_only_probabilistic_spot_check": {
       "evidence_artifact": "outputs/integrity_spotcheck.json",
       "remaining_blocker": "Cryptographic verifiable computation / authenticated dataflow.",
@@ -113,6 +192,16 @@
       "evidence_artifact": "outputs/lora_protocol_integration.json",
       "remaining_blocker": "LoRA backward / training not implemented.",
       "status": "supported"
+    },
+    "m_rope_multimodal_unsupported": {
+      "evidence_artifact": "outputs/decoder_component_coverage_audit.json",
+      "remaining_blocker": "Multi-axis RoPE-plane invariant derivation.",
+      "status": "unsupported"
+    },
+    "moe_unsupported": {
+      "evidence_artifact": "outputs/decoder_component_coverage_audit.json",
+      "remaining_blocker": "Trusted routing or masked expert dispatch.",
+      "status": "unsupported"
     },
     "multi_session_mask_isolation_supported_in_cpu_simulation": {
       "evidence_artifact": "outputs/multi_session_batching.json",
@@ -149,6 +238,11 @@
       "remaining_blocker": "Real TEE/GPU deployment.",
       "status": "supported"
     },
+    "output_length_side_channel_not_hidden_unless_separately_padded": {
+      "evidence_artifact": "outputs/generation_processor_coverage.json",
+      "remaining_blocker": "Explicit length-hiding policy with padded generation.",
+      "status": "unsupported"
+    },
     "padded_full_generation_correctness": {
       "evidence_artifact": "outputs/modern_decoder_generation_correctness.json",
       "remaining_blocker": "Real TEE/GPU deployment.",
@@ -159,6 +253,16 @@
       "remaining_blocker": "Real GPU paged-attention kernel.",
       "status": "supported"
     },
+    "quantized_real_model_deployment_unsupported_without_real_backend": {
+      "evidence_artifact": "outputs/precision_quantization_stability.json",
+      "remaining_blocker": "Real GPU quantization backend.",
+      "status": "unsupported"
+    },
+    "rolling_kv_window_invariant_supported": {
+      "evidence_artifact": "outputs/sliding_window_attention.json",
+      "remaining_blocker": "Real serving runtime.",
+      "status": "supported"
+    },
     "rope_transient_plain_qk_eliminated": {
       "evidence_artifact": "outputs/modern_decoder_rope_safe_low_interaction.json",
       "remaining_blocker": "Real GPU fused-kernel implementation.",
@@ -167,6 +271,26 @@
     "scalable_lm_head_dense_mask_not_feasible": {
       "evidence_artifact": "outputs/lm_head_scalability.json",
       "remaining_blocker": "Real serving runtime sample-loop integration.",
+      "status": "supported"
+    },
+    "sliding_window_attention_supported_in_cpu_synthetic_abstraction": {
+      "evidence_artifact": "outputs/sliding_window_attention.json",
+      "remaining_blocker": "Real GPU kernel.",
+      "status": "supported"
+    },
+    "speculative_decoding_unsupported": {
+      "evidence_artifact": "outputs/decoder_component_coverage_audit.json",
+      "remaining_blocker": "Speculative-decode threat model + masked draft model.",
+      "status": "unsupported"
+    },
+    "standard_1d_rope_scaling_covered_only_under_same_plane_rotation": {
+      "evidence_artifact": "outputs/modern_decoder_rope_safe_low_interaction.json",
+      "remaining_blocker": "Multi-axis RoPE-plane analysis for M-RoPE.",
+      "status": "supported"
+    },
+    "well_conditioned_masks_recommended_for_low_precision": {
+      "evidence_artifact": "outputs/precision_quantization_stability.json",
+      "remaining_blocker": "n/a for algebraic claim.",
       "status": "supported"
     }
   },
@@ -398,6 +522,54 @@
       "paper_safe_wording": "All paper claims are classified into supported, proxy_supported, cost_model_only, or unsupported, with the corresponding safe and unsafe wording per claim.",
       "stage": "7.7g",
       "status": "ok"
+    },
+    "7.8a_sliding_window_attention": {
+      "limitations_excerpt": [
+        "CPU local emulation only.",
+        "No real FlashAttention / sliding-window CUDA kernel.",
+        "Window size policy is PUBLIC; cuts off attention beyond the window in a way that is observable by the accelerator."
+      ],
+      "main_mode": "sliding_window_attention",
+      "modes_evaluated": null,
+      "paper_safe_wording": "Stage 7.6g/h/i masked invariants carry over to sliding window attention: within the active window the QK invariant holds, the rolling KV buffer obeys K_tilde = K @ N_K and V_tilde = V @ N_V per (layer, head), and the eviction policy is the public window size. Trusted-softmax mode hides the windowed attention map from the accelerator transcript at the cost of extra TEE round trips.",
+      "stage": "7.8a",
+      "status": "ok"
+    },
+    "7.8b_precision_quantization_stability": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real GPU fp16 / bf16 / int8 / int4 kernels are measured.",
+        "bf16 / fp16 / int8 are SIMULATED via round-trip casts on float64 storage. Real GPU tensor-core behaviour may differ in accumulator type and rounding.",
+        "int4 is SYMBOLIC ONLY -- no real int4 path."
+      ],
+      "main_mode": "precision_quantization_stability",
+      "modes_evaluated": null,
+      "paper_safe_wording": "Mask transformations are stable for orthogonal / permutation / RoPE-plane block-diagonal masks under every simulated precision mode; ill-conditioned dense masks amplify error proportionally to the condition number. We recommend well-conditioned mask families (orthogonal, permutation, block) for low-precision deployment. We do NOT measure real GPU fp16 / bf16 / int8 / int4 wall-clock or hardware-specific rounding.",
+      "stage": "7.8b",
+      "status": "ok"
+    },
+    "7.8c_generation_processor_coverage": {
+      "limitations_excerpt": [
+        "CPU local emulation only.",
+        "Beam search and grammar-constrained decoding are audit-only here; the main theorem says they apply, but they are not exercised end-to-end in this module.",
+        "Output length / stop timing may still leak via observable generation length unless padded or hidden by batching policy -- THIS IS NOT IMPLEMENTED HERE."
+      ],
+      "main_mode": "generation_processor_coverage",
+      "modes_evaluated": null,
+      "paper_safe_wording": "Logit processors execute in the trusted side after logits recovery; since the recovery is exact at float64, every standard processor (greedy / temperature / top-k / top-p / repetition penalty / stop / bad words / forced token) produces an identical output under recovered and plain logits. Beam search and grammar-constrained decoding follow the same theorem and are listed as audit-only in this module.",
+      "stage": "7.8c",
+      "status": "ok"
+    },
+    "7.8d_decoder_component_coverage_audit": {
+      "limitations_excerpt": [
+        "CPU local emulation only.",
+        "No real TEE / GPU deployment.",
+        "No hardware side-channel evaluation."
+      ],
+      "main_mode": "decoder_component_coverage_audit",
+      "modes_evaluated": null,
+      "paper_safe_wording": "We provide a coverage table for common decoder-only components. Supported components carry algebraic evidence under CPU local emulation; partially supported components have audit-only or simulation-only evidence; unsupported components are listed as future work with explicit remaining blockers.",
+      "stage": "7.8d",
+      "status": "ok"
     }
   },
   "status": "ok",
@@ -411,7 +583,12 @@
     "scalable_lm_head_dense_mask_not_feasible",
     "lora_integration_supported_for_specified_sites",
     "paged_kv_invariant_supported_in_synthetic_abstraction",
-    "multi_session_mask_isolation_supported_in_cpu_simulation"
+    "multi_session_mask_isolation_supported_in_cpu_simulation",
+    "sliding_window_attention_supported_in_cpu_synthetic_abstraction",
+    "rolling_kv_window_invariant_supported",
+    "well_conditioned_masks_recommended_for_low_precision",
+    "generation_processors_safe_only_inside_trusted_side",
+    "standard_1d_rope_scaling_covered_only_under_same_plane_rotation"
   ],
   "unsafe_wording_to_avoid": [
     "real TEE/GPU performance",
@@ -427,6 +604,12 @@
     "no_real_gpu_or_tee_wall_clock",
     "no_formal_cryptographic_security",
     "no_full_qwen_or_llama_deployment_unless_real_wrapper",
-    "no_hardware_side_channel_evaluation"
+    "no_hardware_side_channel_evaluation",
+    "fp16_bf16_int8_int4_simulated_only_not_real_kernels",
+    "output_length_side_channel_not_hidden_unless_separately_padded",
+    "m_rope_multimodal_unsupported",
+    "moe_unsupported",
+    "speculative_decoding_unsupported",
+    "quantized_real_model_deployment_unsupported_without_real_backend"
   ]
 }

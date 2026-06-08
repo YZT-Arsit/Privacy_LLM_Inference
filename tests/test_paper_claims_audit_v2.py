@@ -22,10 +22,11 @@ def report() -> dict:
     return run_paper_claims_audit_v2(outputs_dir=REPO_ROOT / "outputs")
 
 
-def test_all_15_claims_present(report: dict) -> None:
-    assert len(report["claims"]) == 15
+def test_all_claims_present(report: dict) -> None:
+    # 15 baseline + 11 Stage 7.8 addendum = 26 claims.
+    assert len(report["claims"]) == 26
     ids = {c["id"] for c in report["claims"]}
-    expected = {
+    baseline = {
         "padded_full_generation_correctness",
         "one_round_low_interaction_exact_mode",
         "rope_transient_plain_qk_eliminated",
@@ -42,7 +43,20 @@ def test_all_15_claims_present(report: dict) -> None:
         "no_full_qwen_or_llama_deployment_unless_real_wrapper",
         "no_hardware_side_channel_evaluation",
     }
-    assert ids == expected
+    stage_7_8_addendum = {
+        "sliding_window_attention_supported_in_cpu_synthetic_abstraction",
+        "rolling_kv_window_invariant_supported",
+        "fp16_bf16_int8_int4_simulated_only_not_real_kernels",
+        "well_conditioned_masks_recommended_for_low_precision",
+        "generation_processors_safe_only_inside_trusted_side",
+        "output_length_side_channel_not_hidden_unless_separately_padded",
+        "standard_1d_rope_scaling_covered_only_under_same_plane_rotation",
+        "m_rope_multimodal_unsupported",
+        "moe_unsupported",
+        "speculative_decoding_unsupported",
+        "quantized_real_model_deployment_unsupported_without_real_backend",
+    }
+    assert ids == baseline | stage_7_8_addendum
 
 
 def test_unsupported_marked_unsupported(report: dict) -> None:
@@ -51,10 +65,30 @@ def test_unsupported_marked_unsupported(report: dict) -> None:
         "no_formal_cryptographic_security",
         "no_full_qwen_or_llama_deployment_unless_real_wrapper",
         "no_hardware_side_channel_evaluation",
+        # Stage 7.8 addendum unsupported claims:
+        "fp16_bf16_int8_int4_simulated_only_not_real_kernels",
+        "output_length_side_channel_not_hidden_unless_separately_padded",
+        "m_rope_multimodal_unsupported",
+        "moe_unsupported",
+        "speculative_decoding_unsupported",
+        "quantized_real_model_deployment_unsupported_without_real_backend",
     }
     for c in report["claims"]:
         if c["id"] in must_be_unsupported:
             assert c["status"] == "unsupported", c["id"]
+
+
+def test_stage_7_8_addendum_supported_claims(report: dict) -> None:
+    must_be_supported = {
+        "sliding_window_attention_supported_in_cpu_synthetic_abstraction",
+        "rolling_kv_window_invariant_supported",
+        "well_conditioned_masks_recommended_for_low_precision",
+        "generation_processors_safe_only_inside_trusted_side",
+        "standard_1d_rope_scaling_covered_only_under_same_plane_rotation",
+    }
+    for c in report["claims"]:
+        if c["id"] in must_be_supported:
+            assert c["status"] == "supported", c["id"]
 
 
 def test_integrity_marked_proxy(report: dict) -> None:
