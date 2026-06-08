@@ -153,6 +153,23 @@ def generate_rope_plane_rotation_mask(
     return n
 
 
+def _matmul_uniform_or_per_row(x: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
+    """Right-multiply ``x`` by ``m``, supporting per-row ``m``.
+
+    * ``x`` shape: ``[..., S, in_dim]``.
+    * ``m`` shape: ``[in_dim, out_dim]`` for uniform-across-S masks
+      (sequence-granularity Q_l) or ``[S, in_dim, out_dim]`` for per-row
+      masks (chunk- / token-granularity Q_l[i]).
+
+    Returns ``[..., S, out_dim]``.
+    """
+    if m.dim() == 2:
+        return x @ m
+    if m.dim() == 3:
+        return torch.einsum("...si,sij->...sj", x, m)
+    raise ValueError(f"mask must be 2-D or 3-D, got shape {tuple(m.shape)}")
+
+
 def verify_rope_commutation(
     q: torch.Tensor,
     b: torch.Tensor,
@@ -344,6 +361,10 @@ class LowInteractionDiagnostics:
     # Norm leakage audit (populated by experiment runner).
     row_norm_error: float = 0.0
     gram_matrix_error: float = 0.0
+    # Stage 7.6h norm-mask granularity diagnostics.
+    norm_mask_granularity: str = "sequence"
+    norm_chunk_size: int = 1
+    norm_q_is_per_row: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -374,6 +395,8 @@ class LowInteractionTinyModernDecoderWrapper:
         fresh_mask: bool = True,
         pad_scale: float = 0.5,
         rope_mask_mode: str = "post_rope_masking",
+        norm_mask_granularity: str = "sequence",
+        norm_chunk_size: int = 1,
     ) -> None:
         self.model = model
         self.cfg = model.cfg
@@ -391,6 +414,17 @@ class LowInteractionTinyModernDecoderWrapper:
                 "'pre_rope_block_diagonal_rotation'"
             )
         self.rope_mask_mode = rope_mask_mode
+        if norm_mask_granularity not in ("sequence", "chunk", "token"):
+            raise ValueError(
+                f"unknown norm_mask_granularity={norm_mask_granularity!r}; "
+                "expected 'sequence', 'chunk', or 'token'"
+            )
+        if norm_chunk_size <= 0:
+            raise ValueError(
+                f"norm_chunk_size must be positive, got {norm_chunk_size}"
+            )
+        self.norm_mask_granularity = norm_mask_granularity
+        self.norm_chunk_size = int(norm_chunk_size)
 
     # ------------------------------------------------------------------
     # Session compile
@@ -466,6 +500,65 @@ class LowInteractionTinyModernDecoderWrapper:
             n_vocab_inv=n_vocab_inv,
         )
 
+    def _effective_q_layer_for_call(
+        self,
+        s_new: int,
+        session: _SessionState,
+        generator: Optional[torch.Generator],
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+        """Resolve the per-call residual-stream orthogonal masks.
+
+        For ``norm_mask_granularity == "sequence"``, returns
+        ``(session.q_layer, session.q_layer_inv)`` unchanged -- a single
+        per-layer ``[hidden, hidden]`` matrix shared by every token row.
+
+        For ``"chunk"`` / ``"token"`` modes, samples a fresh
+        ``[s_new, hidden, hidden]`` per-row tensor per layer. In
+        ``"chunk"`` mode tokens are partitioned into chunks of size
+        ``norm_chunk_size``; each chunk shares one orthogonal Q. In
+        ``"token"`` mode every token row gets its own Q.
+
+        Returns lists of ``num_layers`` tensors that are 2-D in sequence
+        mode and 3-D in chunk / token modes. Downstream callers must
+        therefore use ``_matmul_uniform_or_per_row`` for any matmul
+        involving these masks.
+        """
+        cfg = self.cfg
+        if self.norm_mask_granularity == "sequence":
+            return list(session.q_layer), list(session.q_layer_inv)
+
+        chunk_size = (
+            1
+            if self.norm_mask_granularity == "token"
+            else self.norm_chunk_size
+        )
+        num_chunks = (s_new + chunk_size - 1) // chunk_size
+
+        out_q: List[torch.Tensor] = []
+        out_q_inv: List[torch.Tensor] = []
+        for _ in range(cfg.num_layers):
+            chunk_q: List[torch.Tensor] = []
+            chunk_q_inv: List[torch.Tensor] = []
+            for _ in range(num_chunks):
+                q, q_inv = _sample_orthogonal(
+                    cfg.hidden_size,
+                    dtype=cfg.dtype,
+                    device=cfg.device,
+                    generator=generator,
+                )
+                chunk_q.append(q)
+                chunk_q_inv.append(q_inv)
+            # Broadcast chunk-shared Q to per-row tensor of length s_new.
+            per_row_q = torch.stack(
+                [chunk_q[i // chunk_size] for i in range(s_new)], dim=0
+            )
+            per_row_q_inv = torch.stack(
+                [chunk_q_inv[i // chunk_size] for i in range(s_new)], dim=0
+            )
+            out_q.append(per_row_q)
+            out_q_inv.append(per_row_q_inv)
+        return out_q, out_q_inv
+
     # ------------------------------------------------------------------
     # Per-call padded-boundary table compile (trusted side)
     # ------------------------------------------------------------------
@@ -476,6 +569,8 @@ class LowInteractionTinyModernDecoderWrapper:
         h_hat_shape: Tuple[int, int, int],
         session: _SessionState,
         generator: Optional[torch.Generator],
+        effective_q_layer: Optional[List[torch.Tensor]] = None,
+        effective_q_layer_inv: Optional[List[torch.Tensor]] = None,
     ) -> Dict[str, _BoundaryTable | torch.Tensor]:
         """Trusted-side: precompute all accelerator-visible tables for one
         layer at one forward call.
@@ -484,6 +579,14 @@ class LowInteractionTinyModernDecoderWrapper:
         ``down``) plus the SwiGLU paired permutation ``P``. Tables are
         sized for the actual ``[B, S, hidden]`` batch shape so pad
         compensation tensors broadcast correctly.
+
+        ``effective_q_layer`` / ``effective_q_layer_inv`` override the
+        session-fixed ``Q_l`` when supplied. They may be 2-D (uniform
+        across token rows -- the sequence granularity default) or 3-D
+        with leading ``S`` dimension (per-row Q_l[i] for chunk / token
+        granularity). When 3-D, the produced ``A_qkv``, ``A_mlp``,
+        ``W_o_tilde``, ``C_linear_o``, ``W_down_tilde``, ``C_linear_down``
+        tables are also per-row.
         """
         cfg = self.cfg
         layer = self.model.layers[layer_idx]
@@ -495,12 +598,23 @@ class LowInteractionTinyModernDecoderWrapper:
         # ------------------ QKV padded boundary ------------------
         # Input state: X = RMSNormCore(H) @ Q_l (operator-compatible).
         # Target padded form: (RMSNormCore(H) - T_qkv) @ M_qkv.
-        q_l = session.q_layer[layer_idx]
-        q_l_inv = session.q_layer_inv[layer_idx]
+        if effective_q_layer is not None:
+            q_l = effective_q_layer[layer_idx]
+            q_l_inv = effective_q_layer_inv[layer_idx]
+        else:
+            q_l = session.q_layer[layer_idx]
+            q_l_inv = session.q_layer_inv[layer_idx]
 
         m_qkv, m_qkv_inv = self._sample_mask(cfg.hidden_size, generator)
         t_qkv = self._sample_pad((b, s, cfg.hidden_size), generator)
-        a_qkv = q_l_inv @ m_qkv               # [hidden, hidden]
+        # In sequence mode q_l_inv is [hidden, hidden] and a_qkv is
+        # [hidden, hidden]; in chunk/token mode q_l_inv is
+        # [s, hidden, hidden] and a_qkv is [s, hidden, hidden] (per-row
+        # transition).
+        if q_l_inv.dim() == 2:
+            a_qkv = q_l_inv @ m_qkv               # [hidden, hidden]
+        else:
+            a_qkv = q_l_inv @ m_qkv               # [s, hidden, hidden]
         c_t_qkv = t_qkv @ m_qkv                # [B, S, hidden]
 
         # Per-projection gamma-folded weight: diag(gamma1) @ W.
@@ -578,16 +692,29 @@ class LowInteractionTinyModernDecoderWrapper:
         c_t_o = t_o @ m_o
 
         # o_proj output mask = Q_l (so the residual addition stays
-        # compatible with the layer-entry orthogonal mask).
+        # compatible with the layer-entry orthogonal mask). In per-row
+        # modes, W_o_tilde is per-row.
         w_o = layer.attn.o_proj.weight.T
-        w_o_tilde = m_o_inv @ w_o @ q_l
-        c_linear_o = t_o @ w_o @ q_l
+        m_o_inv_w_o = m_o_inv @ w_o
+        if q_l.dim() == 2:
+            w_o_tilde = m_o_inv_w_o @ q_l
+            c_linear_o = t_o @ w_o @ q_l
+        else:
+            # m_o_inv_w_o: [in_dim_o, hidden] ; q_l: [s, hidden, hidden]
+            # -> w_o_tilde: [s, in_dim_o, hidden] (per-row).
+            w_o_tilde = torch.einsum("ih,shk->sik", m_o_inv_w_o, q_l)
+            # t_o @ w_o is [B, S, hidden]; per-row Q_l[s] gives
+            # c_linear_o[b, s, :] = (t_o @ w_o)[b, s, :] @ q_l[s].
+            c_linear_o = _matmul_uniform_or_per_row(t_o @ w_o, q_l)
 
         # ------------------ MLP-in padded boundary ------------------
         # Input state: RMSNormCore(H_after_attn) @ Q_l (compatible).
         m_mlp, m_mlp_inv = self._sample_mask(cfg.hidden_size, generator)
         t_mlp = self._sample_pad((b, s, cfg.hidden_size), generator)
-        a_mlp = q_l_inv @ m_mlp
+        if q_l_inv.dim() == 2:
+            a_mlp = q_l_inv @ m_mlp
+        else:
+            a_mlp = q_l_inv @ m_mlp
         c_t_mlp = t_mlp @ m_mlp
 
         # Up / gate output mask = P (shared paired permutation).
@@ -625,8 +752,15 @@ class LowInteractionTinyModernDecoderWrapper:
         a_down = m_down.index_select(dim=0, index=perm)
         c_t_down = t_down @ m_down
 
-        w_down_tilde = m_down_inv @ w_down @ q_l
-        c_linear_down = t_down @ w_down @ q_l
+        m_down_inv_w_down = m_down_inv @ w_down
+        if q_l.dim() == 2:
+            w_down_tilde = m_down_inv_w_down @ q_l
+            c_linear_down = t_down @ w_down @ q_l
+        else:
+            w_down_tilde = torch.einsum(
+                "ih,shk->sik", m_down_inv_w_down, q_l
+            )
+            c_linear_down = _matmul_uniform_or_per_row(t_down @ w_down, q_l)
 
         return {
             "qkv": _BoundaryTable(
@@ -658,17 +792,27 @@ class LowInteractionTinyModernDecoderWrapper:
         h_hat_shape: Tuple[int, int, int],
         session: _SessionState,
         generator: Optional[torch.Generator],
+        effective_q_layer: Optional[List[torch.Tensor]] = None,
+        effective_q_layer_inv: Optional[List[torch.Tensor]] = None,
     ) -> _BoundaryTable:
         cfg = self.cfg
         b, s, hidden = h_hat_shape
         gamma_final = self.model.final_norm_weight
         w_lm = (gamma_final.unsqueeze(-1) * self.model.lm_head.weight.T)
-        q_L = session.q_layer[-1]
-        q_L_inv = session.q_layer_inv[-1]
+        if effective_q_layer is not None:
+            q_L = effective_q_layer[-1]
+            q_L_inv = effective_q_layer_inv[-1]
+        else:
+            q_L = session.q_layer[-1]
+            q_L_inv = session.q_layer_inv[-1]
 
         m_lm, m_lm_inv = self._sample_mask(cfg.hidden_size, generator)
         t_lm = self._sample_pad((b, s, cfg.hidden_size), generator)
-        a_lm = q_L_inv @ m_lm
+        # Per-row transition when q_L_inv is 3-D: a_lm has leading S.
+        if q_L_inv.dim() == 2:
+            a_lm = q_L_inv @ m_lm
+        else:
+            a_lm = q_L_inv @ m_lm
         c_t_lm = t_lm @ m_lm
 
         w_lm_tilde = m_lm_inv @ w_lm @ session.n_vocab
@@ -733,6 +877,8 @@ class LowInteractionTinyModernDecoderWrapper:
         plain_layer_h_out: List[torch.Tensor],  # plain reference H after layer
         plain_attn_out: List[torch.Tensor],  # plain attn_out merged per layer
         fingerprint_keys: Optional[Dict[str, str]] = None,
+        effective_q_layer: Optional[List[torch.Tensor]] = None,
+        effective_q_layer_inv: Optional[List[torch.Tensor]] = None,
     ) -> Tuple[
         torch.Tensor,
         List[Tuple[torch.Tensor, torch.Tensor]],
@@ -749,9 +895,19 @@ class LowInteractionTinyModernDecoderWrapper:
         """
         cfg = self.cfg
 
+        eff_q_layer = (
+            effective_q_layer if effective_q_layer is not None else session.q_layer
+        )
+        eff_q_layer_inv = (
+            effective_q_layer_inv
+            if effective_q_layer_inv is not None
+            else session.q_layer_inv
+        )
+
         # H_hat at entry: H_0 @ Q_1.
         invariant_err = float(
-            (h_hat - plain_layer_h[0] @ session.q_layer[0]).abs().max().item()
+            (h_hat - _matmul_uniform_or_per_row(plain_layer_h[0], eff_q_layer[0]))
+            .abs().max().item()
         )
         diag.h_hat_layer_entry_invariant_max_abs_error = max(
             diag.h_hat_layer_entry_invariant_max_abs_error, invariant_err
@@ -763,7 +919,7 @@ class LowInteractionTinyModernDecoderWrapper:
 
         new_past_tilde: List[Tuple[torch.Tensor, torch.Tensor]] = []
         for layer_idx, tbl in enumerate(layer_tables):
-            q_l = session.q_layer[layer_idx]
+            q_l = eff_q_layer[layer_idx]
 
             # ---------- Attention block ----------
             # Operator-compatible RMSNorm: core only (gamma folded).
@@ -774,7 +930,8 @@ class LowInteractionTinyModernDecoderWrapper:
             plain_mean_sq = plain_h.pow(2).mean(dim=-1, keepdim=True)
             plain_x = plain_h * torch.rsqrt(plain_mean_sq + cfg.rms_norm_eps)
             rmsnorm_err = float(
-                (x_hat - plain_x @ q_l).abs().max().item()
+                (x_hat - _matmul_uniform_or_per_row(plain_x, q_l))
+                .abs().max().item()
             )
             diag.rmsnorm_core_orthogonal_commutation_max_abs_error = max(
                 diag.rmsnorm_core_orthogonal_commutation_max_abs_error,
@@ -783,7 +940,7 @@ class LowInteractionTinyModernDecoderWrapper:
 
             # QKV padded-boundary transition + linear.
             qkv_tbl = tbl["qkv"]
-            x_pad_qkv = x_hat @ qkv_tbl.a - qkv_tbl.c_t
+            x_pad_qkv = _matmul_uniform_or_per_row(x_hat, qkv_tbl.a) - qkv_tbl.c_t
             # Cross-check the transition trick: x_pad_qkv == (plain_x - T) @ M.
             # (T M and Q_l^{-1} M are baked into c_t and a; we recompute
             # the expected form using plain reference.)
@@ -1008,12 +1165,18 @@ class LowInteractionTinyModernDecoderWrapper:
             # o_proj padded-boundary transition + linear with output Q_l.
             o_tbl = tbl["o"]
             x_pad_o = attn_out_block_masked @ o_tbl.a - o_tbl.c_t
-            attn_o_tilde = x_pad_o @ o_tbl.w_tilde + o_tbl.c_linear
+            attn_o_tilde = (
+                _matmul_uniform_or_per_row(x_pad_o, o_tbl.w_tilde)
+                + o_tbl.c_linear
+            )
 
             # Cross-check vs plain o_proj.
             attn_out_plain_merged = plain_attn_out[layer_idx]
             o_plain = attn_out_plain_merged @ self.model.layers[layer_idx].attn.o_proj.weight.T
-            o_proj_err = float((attn_o_tilde - o_plain @ q_l).abs().max().item())
+            o_proj_err = float(
+                (attn_o_tilde - _matmul_uniform_or_per_row(o_plain, q_l))
+                .abs().max().item()
+            )
             diag.o_proj_recovery_max_abs_error = max(
                 diag.o_proj_recovery_max_abs_error, o_proj_err
             )
@@ -1021,7 +1184,8 @@ class LowInteractionTinyModernDecoderWrapper:
             # Residual: H_post_attn_hat = H_hat + attn_o_tilde = (H + o_plain) Q_l.
             h_hat = h_hat + attn_o_tilde
             invariant_err = float(
-                (h_hat - plain_post_attn_h[layer_idx] @ q_l).abs().max().item()
+                (h_hat - _matmul_uniform_or_per_row(plain_post_attn_h[layer_idx], q_l))
+                .abs().max().item()
             )
             diag.h_hat_layer_entry_invariant_max_abs_error = max(
                 diag.h_hat_layer_entry_invariant_max_abs_error, invariant_err
@@ -1034,7 +1198,8 @@ class LowInteractionTinyModernDecoderWrapper:
             plain_mean_sq = plain_h_post_attn.pow(2).mean(dim=-1, keepdim=True)
             plain_x_post = plain_h_post_attn * torch.rsqrt(plain_mean_sq + cfg.rms_norm_eps)
             rmsnorm_err = float(
-                (x_hat - plain_x_post @ q_l).abs().max().item()
+                (x_hat - _matmul_uniform_or_per_row(plain_x_post, q_l))
+                .abs().max().item()
             )
             diag.rmsnorm_core_orthogonal_commutation_max_abs_error = max(
                 diag.rmsnorm_core_orthogonal_commutation_max_abs_error,
@@ -1042,7 +1207,7 @@ class LowInteractionTinyModernDecoderWrapper:
             )
 
             mlp_tbl = tbl["mlp_in"]
-            x_pad_mlp = x_hat @ mlp_tbl.a - mlp_tbl.c_t
+            x_pad_mlp = _matmul_uniform_or_per_row(x_hat, mlp_tbl.a) - mlp_tbl.c_t
             a_tilde = x_pad_mlp @ mlp_tbl.w_tilde[0] + mlp_tbl.c_linear[0]
             b_tilde = x_pad_mlp @ mlp_tbl.w_tilde[1] + mlp_tbl.c_linear[1]
 
@@ -1069,13 +1234,17 @@ class LowInteractionTinyModernDecoderWrapper:
             # Down padded-boundary transition + linear with output Q_l.
             down_tbl = tbl["down"]
             x_pad_down = g_tilde @ down_tbl.a - down_tbl.c_t
-            mlp_out_tilde = x_pad_down @ down_tbl.w_tilde + down_tbl.c_linear
+            mlp_out_tilde = (
+                _matmul_uniform_or_per_row(x_pad_down, down_tbl.w_tilde)
+                + down_tbl.c_linear
+            )
 
             # Cross-check vs plain down_proj.
             g_plain_ref = a_plain_ref * silu(b_plain_ref)
             mlp_out_plain = g_plain_ref @ self.model.layers[layer_idx].mlp.down_proj.weight.T
             down_err = float(
-                (mlp_out_tilde - mlp_out_plain @ q_l).abs().max().item()
+                (mlp_out_tilde - _matmul_uniform_or_per_row(mlp_out_plain, q_l))
+                .abs().max().item()
             )
             diag.down_proj_recovery_max_abs_error = max(
                 diag.down_proj_recovery_max_abs_error, down_err
@@ -1084,33 +1253,33 @@ class LowInteractionTinyModernDecoderWrapper:
             # Residual: H_layer_out_hat = H_post_attn_hat + mlp_out_tilde.
             h_hat = h_hat + mlp_out_tilde
             invariant_err = float(
-                (h_hat - plain_layer_h_out[layer_idx] @ q_l).abs().max().item()
+                (h_hat - _matmul_uniform_or_per_row(plain_layer_h_out[layer_idx], q_l))
+                .abs().max().item()
             )
             diag.h_hat_layer_entry_invariant_max_abs_error = max(
                 diag.h_hat_layer_entry_invariant_max_abs_error, invariant_err
             )
 
-            # If there is a next layer, transition Q_l -> Q_{l+1}. This
-            # is folded into the next layer's qkv ``A_qkv_next`` so the
-            # accelerator does not need a separate matmul; we therefore
-            # leave h_hat in the Q_l basis here, and the next layer's
-            # tables (precomputed using Q_{l+1}^{-1} on the layer-entry
-            # transition) will absorb the basis change implicitly.
-            #
-            # We do this by reusing q_l = Q_{l+1} for the *next* tables;
-            # see how _compile_layer_step_tables uses session.q_layer[l].
+            # If there is a next layer, transition Q_l -> Q_{l+1}. With
+            # sequence-granularity Q, this is a uniform basis-change
+            # matmul; with per-row Q, per-row R[s] = Q_l_inv[s] Q_next[s]
+            # via the same helper.
             if layer_idx + 1 < cfg.num_layers:
-                q_next = session.q_layer[layer_idx + 1]
-                # Change of basis: H_hat (in Q_l basis) -> H_hat' (in
-                # Q_{l+1} basis) via accelerator-side R = q_l^T @ q_next.
-                r = session.q_layer_inv[layer_idx] @ q_next
-                h_hat = h_hat @ r
+                q_next = eff_q_layer[layer_idx + 1]
+                q_l_inv_for_trans = eff_q_layer_inv[layer_idx]
+                if q_l_inv_for_trans.dim() == 2:
+                    r = q_l_inv_for_trans @ q_next
+                else:
+                    r = q_l_inv_for_trans @ q_next  # per-row 3-D matmul
+                h_hat = _matmul_uniform_or_per_row(h_hat, r)
 
         # ---------- Final RMSNorm + LM head ----------
         mean_sq = h_hat.pow(2).mean(dim=-1, keepdim=True)
         x_hat = h_hat * torch.rsqrt(mean_sq + cfg.rms_norm_eps)
 
-        x_pad_lm = x_hat @ lm_head_table.a - lm_head_table.c_t
+        x_pad_lm = (
+            _matmul_uniform_or_per_row(x_hat, lm_head_table.a) - lm_head_table.c_t
+        )
         logits_tilde = x_pad_lm @ lm_head_table.w_tilde + lm_head_table.c_linear
 
         if fingerprint_keys is not None:
@@ -1207,9 +1376,19 @@ class LowInteractionTinyModernDecoderWrapper:
 
         b, s = input_ids.shape
 
-        # Trusted-side embedding lookup + apply Q_1 to ship masked H_0.
+        # Resolve the per-call effective Q (per-row in chunk/token modes).
+        eff_q_layer, eff_q_layer_inv = self._effective_q_layer_for_call(
+            s, session, generator
+        )
+        diagnostics.norm_mask_granularity = self.norm_mask_granularity
+        diagnostics.norm_chunk_size = (
+            1 if self.norm_mask_granularity == "token" else self.norm_chunk_size
+        )
+        diagnostics.norm_q_is_per_row = bool(eff_q_layer[0].dim() == 3)
+
+        # Trusted-side embedding lookup + apply Q_1 (per-row if applicable).
         plain_h0 = self.model.embed_tokens(input_ids)
-        h_hat = plain_h0 @ session.q_layer[0]
+        h_hat = _matmul_uniform_or_per_row(plain_h0, eff_q_layer[0])
 
         past_len = 0
         if past_key_values_tilde is not None and past_key_values_tilde[0] is not None:
@@ -1249,12 +1428,16 @@ class LowInteractionTinyModernDecoderWrapper:
         # Compile padded-boundary tables for every layer + LM head.
         layer_tables = [
             self._compile_layer_step_tables(
-                layer_idx, (b, s, cfg.hidden_size), session, generator
+                layer_idx, (b, s, cfg.hidden_size), session, generator,
+                effective_q_layer=eff_q_layer,
+                effective_q_layer_inv=eff_q_layer_inv,
             )
             for layer_idx in range(cfg.num_layers)
         ]
         lm_head_table = self._compile_lm_head_table(
-            (b, s, cfg.hidden_size), session, generator
+            (b, s, cfg.hidden_size), session, generator,
+            effective_q_layer=eff_q_layer,
+            effective_q_layer_inv=eff_q_layer_inv,
         )
 
         if fingerprint_keys is None:
@@ -1272,6 +1455,8 @@ class LowInteractionTinyModernDecoderWrapper:
             plain_layer_h_out=plain_layer_h_out,
             plain_attn_out=plain_attn_out,
             fingerprint_keys=fingerprint_keys,
+            effective_q_layer=eff_q_layer,
+            effective_q_layer_inv=eff_q_layer_inv,
         )
 
         # Trusted-side recovery (the single accelerator -> TEE transfer

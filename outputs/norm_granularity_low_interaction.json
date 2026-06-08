@@ -1,0 +1,388 @@
+{
+  "config": {
+    "batch_size": 2,
+    "chunk_size": 2,
+    "head_dim": 16,
+    "hidden_size": 64,
+    "intermediate_size": 176,
+    "mask_seed_a": 2028,
+    "mask_seed_b": 2029,
+    "max_new_tokens": 3,
+    "num_kv_heads": 2,
+    "num_layers": 1,
+    "num_query_heads": 4,
+    "prompt_len": 6,
+    "prompt_seed": 2027,
+    "vocab_size": 97,
+    "weights_seed": 2026
+  },
+  "device": "cpu",
+  "dtype": "float64",
+  "limitations": [
+    "Token-wise orthogonal masking does not hide row norms, because exact RMSNorm requires row-norm preservation. Row L2 norms remain observable on every boundary.",
+    "Token / chunk modes reduce full Gram leakage by avoiding a sequence-shared orthogonal basis; off-diagonal Gram terms become per-row Q_i Q_j^T mixtures rather than identity.",
+    "Per-token / per-chunk Q sampling and transition tables introduce per-row matmuls (einsum over the token axis); this is a security-efficiency knob, not formal cryptographic security.",
+    "Sequence mode (chunk size = full sequence) is the Stage 7.6g baseline; full Gram is preserved (carried-over leakage surface).",
+    "CPU local emulation only; no real TEE / GPU deployment.",
+    "Synthetic tiny modern decoder; num_layers default = 1.",
+    "Attention scores / probs are plain by construction of the QK invariant (carried over from Stage 7.6g).",
+    "RoPE-pair 2D norms are still preserved (Stage 7.6g RoPE-safe leakage surface, carried over).",
+    "This is NOT formal cryptographic / semantic / differential-privacy security."
+  ],
+  "main_mode": "norm_mask_granularity_low_interaction",
+  "model_type": "synthetic_tiny_modern_decoder",
+  "modes_evaluated": [
+    "sequence",
+    "chunk",
+    "token"
+  ],
+  "norm_and_gram_leakage_audit": {
+    "chunk": {
+      "cross_chunk_gram_error": 55.985005675318675,
+      "full_gram_error": 55.985005675318675,
+      "off_diagonal_gram_error": 55.985005675318675,
+      "row_norm_error": 8.881784197001252e-16,
+      "same_prompt_fresh_Q_gram_distance": 23.63560749646627,
+      "same_prompt_fresh_Q_offdiag_distance": 23.63560749646627,
+      "within_chunk_gram_error": 2.842170943040401e-14
+    },
+    "chunk_size": 2,
+    "different_prompt_gram_distance": 47.604301873654116,
+    "explanation": "Sequence mode: full Gram preserved exactly (the leakage Stage 7.6g already reports). Chunk mode: within-chunk Gram preserved, cross-chunk Gram disrupted by independent Q_chunk. Token mode: only row L2 norms preserved (required by exact RMSNorm correctness); the full Gram off-diagonal is disrupted by independent Q_i.",
+    "sequence": {
+      "cross_chunk_gram_error": 1.1102230246251565e-14,
+      "full_gram_error": 2.1316282072803006e-14,
+      "off_diagonal_gram_error": 1.1102230246251565e-14,
+      "row_norm_error": 1.7763568394002505e-15,
+      "same_prompt_fresh_Q_gram_distance": 2.842170943040401e-14,
+      "same_prompt_fresh_Q_offdiag_distance": 1.7763568394002505e-14,
+      "within_chunk_gram_error": 2.1316282072803006e-14
+    },
+    "token": {
+      "cross_chunk_gram_error": 44.249343722329314,
+      "full_gram_error": 44.249343722329314,
+      "off_diagonal_gram_error": 44.249343722329314,
+      "row_norm_error": 1.7763568394002505e-15,
+      "same_prompt_fresh_Q_gram_distance": 26.28859918535917,
+      "same_prompt_fresh_Q_offdiag_distance": 26.28859918535917,
+      "within_chunk_gram_error": 24.42003280661661
+    }
+  },
+  "paper_safe_wording": "We add a granularity knob to the orthogonal RMSNorm-compatible mask. Token-wise and chunk-wise modes preserve per-row L2 norms (required by exact RMSNorm correctness) but disrupt the full-sequence Gram-matrix leakage that sequence-shared Q exhibits. Per-decode-step token-wise masking trades fresh per-row transition cost for reduced Gram leakage on the accelerator boundary; we present this as a security-efficiency knob, not a formal security guarantee.",
+  "per_mode_results": {
+    "chunk": {
+      "chunk_size": 2,
+      "diagnostics": {
+        "decode_step_logits_max_abs_error_max": 9.43689570931383e-16,
+        "down_proj_recovery_max_abs_error": 1.4849232954361469e-15,
+        "fresh_pad_used_at_linear_boundaries": true,
+        "h_hat_layer_entry_invariant_max_abs_error": 2.886579864025407e-15,
+        "intermediate_tee_reentry": false,
+        "kv_cache_invariant_max_abs_error": 8.881784197001252e-16,
+        "lm_head_recovery_max_abs_error": 9.43689570931383e-16,
+        "main_layer_invariant": "H_hat_l = H_l Q_l",
+        "masked_boundary_fingerprints": {
+          "chunk_layer_entry_h_hat": "2e56a57f2e732ec2cd03e683be8e564833bef1e0aa5ff957cef7a0a4d81d1890",
+          "chunk_lm_head_logits_tilde": "25489d7fab4d07ff61f7faa66e740dbf580eba702b9b3bffb5fd2ca4a405880b",
+          "decode_step_0_layer_entry_h_hat": "dbcc6a9d16a759d6f1cc2f34a40249aef60c28d206b70fef5537770c502d8679",
+          "decode_step_0_lm_head_logits_tilde": "1473e00f8c46b4d069007a39bac85873804a091260b99e3eb87d5f2e09da5501",
+          "decode_step_1_layer_entry_h_hat": "bacd5b56814e40415d0898638bd958be6ecd8f77407963313bfe3848c07b3f08",
+          "decode_step_1_lm_head_logits_tilde": "d87b6fcc256c122a5532dc916c5115d716ae2ddb84aa76384acd90269f0ab657"
+        },
+        "norm_chunk_size": 2,
+        "norm_mask_granularity": "chunk",
+        "norm_q_is_per_row": true,
+        "o_proj_recovery_max_abs_error": 9.575673587391975e-16,
+        "online_boundary_round_trips_per_decode_step": 1,
+        "pad_enters_rmsnorm_core": false,
+        "pad_enters_rope_core": false,
+        "pad_enters_softmax": false,
+        "pad_enters_swiglu_core": false,
+        "prefill_logits_max_abs_error": 9.43689570931383e-16,
+        "qk_constraint_max_error": 2.220446049250313e-16,
+        "qk_score_invariant_max_abs_error": 3.1086244689504383e-15,
+        "qkv_projection_outputs_masked_directly": true,
+        "rmsnorm_core_orthogonal_commutation_max_abs_error": 3.1086244689504383e-15,
+        "rmsnorm_mode": "operator_compatible_orthogonal",
+        "rope_commutation_max_abs_error": 1.887379141862766e-15,
+        "rope_mask_mode": "pre_rope_block_diagonal_rotation",
+        "rope_transient_plain_qk_visible": false,
+        "rope_transient_plain_v_visible": false,
+        "swiglu_paired_permutation_max_abs_error": 1.887379141862766e-15,
+        "transition_trick_max_abs_error": 1.887379141862766e-15,
+        "trusted_fallback_used_in_main_path": false,
+        "use_pad": true
+      },
+      "granularity": "chunk",
+      "greedy_token_match_rate": 1.0,
+      "masked_token_sequence": [
+        [
+          76,
+          86,
+          53,
+          12,
+          27,
+          76,
+          83,
+          74,
+          36
+        ],
+        [
+          71,
+          26,
+          91,
+          10,
+          66,
+          84,
+          72,
+          24,
+          29
+        ]
+      ],
+      "plain_token_sequence": [
+        [
+          76,
+          86,
+          53,
+          12,
+          27,
+          76,
+          83,
+          74,
+          36
+        ],
+        [
+          71,
+          26,
+          91,
+          10,
+          66,
+          84,
+          72,
+          24,
+          29
+        ]
+      ],
+      "same_input_two_runs_different_masked_fingerprints": true,
+      "same_input_two_runs_same_output": true,
+      "sequence_exact_match": true
+    },
+    "sequence": {
+      "chunk_size": 1,
+      "diagnostics": {
+        "decode_step_logits_max_abs_error_max": 1.2351231148954867e-15,
+        "down_proj_recovery_max_abs_error": 1.9359513991901167e-15,
+        "fresh_pad_used_at_linear_boundaries": true,
+        "h_hat_layer_entry_invariant_max_abs_error": 2.6645352591003757e-15,
+        "intermediate_tee_reentry": false,
+        "kv_cache_invariant_max_abs_error": 8.881784197001252e-16,
+        "lm_head_recovery_max_abs_error": 1.2351231148954867e-15,
+        "main_layer_invariant": "H_hat_l = H_l Q_l",
+        "masked_boundary_fingerprints": {
+          "decode_step_0_layer_entry_h_hat": "a751d3421d28c63d3848d1f86adafe641f4c6824fdd1dace1b29fc2079c8c433",
+          "decode_step_0_lm_head_logits_tilde": "855d05331edfd1237b27673ceabee6bfeafeaab20031c273b6b0bd7789f5dc43",
+          "decode_step_1_layer_entry_h_hat": "fcd87ba3fb5c85e4944bf5e71f5939133784ae0b001d1518724ecfb9a48a56fc",
+          "decode_step_1_lm_head_logits_tilde": "c7021b9798325d9230c8c9e04d4ab2cc5339661e2ed868c26350937a176a85b5",
+          "sequence_layer_entry_h_hat": "fae539ee3579d026ac49bebc4f367f921723470c849496e8c31a7f0f9ada2107",
+          "sequence_lm_head_logits_tilde": "2fe04842b8df483fe8d8eb51a4e19ca69ed9591516aae48d0f3744b0f8c8f9ec"
+        },
+        "norm_chunk_size": 1,
+        "norm_mask_granularity": "sequence",
+        "norm_q_is_per_row": false,
+        "o_proj_recovery_max_abs_error": 8.604228440844963e-16,
+        "online_boundary_round_trips_per_decode_step": 1,
+        "pad_enters_rmsnorm_core": false,
+        "pad_enters_rope_core": false,
+        "pad_enters_softmax": false,
+        "pad_enters_swiglu_core": false,
+        "prefill_logits_max_abs_error": 9.471590178833367e-16,
+        "qk_constraint_max_error": 2.220446049250313e-16,
+        "qk_score_invariant_max_abs_error": 3.9968028886505635e-15,
+        "qkv_projection_outputs_masked_directly": true,
+        "rmsnorm_core_orthogonal_commutation_max_abs_error": 1.7763568394002505e-15,
+        "rmsnorm_mode": "operator_compatible_orthogonal",
+        "rope_commutation_max_abs_error": 1.820592288037659e-15,
+        "rope_mask_mode": "pre_rope_block_diagonal_rotation",
+        "rope_transient_plain_qk_visible": false,
+        "rope_transient_plain_v_visible": false,
+        "swiglu_paired_permutation_max_abs_error": 1.887379141862766e-15,
+        "transition_trick_max_abs_error": 1.5057399771478686e-15,
+        "trusted_fallback_used_in_main_path": false,
+        "use_pad": true
+      },
+      "granularity": "sequence",
+      "greedy_token_match_rate": 1.0,
+      "masked_token_sequence": [
+        [
+          76,
+          86,
+          53,
+          12,
+          27,
+          76,
+          83,
+          74,
+          36
+        ],
+        [
+          71,
+          26,
+          91,
+          10,
+          66,
+          84,
+          72,
+          24,
+          29
+        ]
+      ],
+      "plain_token_sequence": [
+        [
+          76,
+          86,
+          53,
+          12,
+          27,
+          76,
+          83,
+          74,
+          36
+        ],
+        [
+          71,
+          26,
+          91,
+          10,
+          66,
+          84,
+          72,
+          24,
+          29
+        ]
+      ],
+      "same_input_two_runs_different_masked_fingerprints": true,
+      "same_input_two_runs_same_output": true,
+      "sequence_exact_match": true
+    },
+    "token": {
+      "chunk_size": 1,
+      "diagnostics": {
+        "decode_step_logits_max_abs_error_max": 8.187894806610529e-16,
+        "down_proj_recovery_max_abs_error": 1.781561009828181e-15,
+        "fresh_pad_used_at_linear_boundaries": true,
+        "h_hat_layer_entry_invariant_max_abs_error": 2.6645352591003757e-15,
+        "intermediate_tee_reentry": false,
+        "kv_cache_invariant_max_abs_error": 7.771561172376096e-16,
+        "lm_head_recovery_max_abs_error": 8.187894806610529e-16,
+        "main_layer_invariant": "H_hat_l = H_l Q_l",
+        "masked_boundary_fingerprints": {
+          "decode_step_0_layer_entry_h_hat": "f0df1f0ae087cd9a8b6a304ebf08015569c5e07b233f28151f496ebd0b253f2b",
+          "decode_step_0_lm_head_logits_tilde": "f2cfddbd1674fd85fd45c837d5d63baea87295e1f67e2a8a7d35accd5539db55",
+          "decode_step_1_layer_entry_h_hat": "25b818c1c917780f1d9a3be7825e4d0c05c26257f5b85d35d3ef8ae92c2a9f7b",
+          "decode_step_1_lm_head_logits_tilde": "fea325599aa081428c856350e4092f350c92c853c56b504faec3dfbb98e9a0b4",
+          "token_layer_entry_h_hat": "5cc7df6fca7fe191b71725057824a7b5671ed2c4fa5908c608aee460d7d87d3c",
+          "token_lm_head_logits_tilde": "7c7d6b7f45cfd0d55fba9a782340ee05a64dfe6b54f2c58b92e84c2c3e861101"
+        },
+        "norm_chunk_size": 1,
+        "norm_mask_granularity": "token",
+        "norm_q_is_per_row": true,
+        "o_proj_recovery_max_abs_error": 7.494005416219807e-16,
+        "online_boundary_round_trips_per_decode_step": 1,
+        "pad_enters_rmsnorm_core": false,
+        "pad_enters_rope_core": false,
+        "pad_enters_softmax": false,
+        "pad_enters_swiglu_core": false,
+        "prefill_logits_max_abs_error": 8.187894806610529e-16,
+        "qk_constraint_max_error": 2.220446049250313e-16,
+        "qk_score_invariant_max_abs_error": 3.219646771412954e-15,
+        "qkv_projection_outputs_masked_directly": true,
+        "rmsnorm_core_orthogonal_commutation_max_abs_error": 2.6645352591003757e-15,
+        "rmsnorm_mode": "operator_compatible_orthogonal",
+        "rope_commutation_max_abs_error": 1.887379141862766e-15,
+        "rope_mask_mode": "pre_rope_block_diagonal_rotation",
+        "rope_transient_plain_qk_visible": false,
+        "rope_transient_plain_v_visible": false,
+        "swiglu_paired_permutation_max_abs_error": 2.0261570199409107e-15,
+        "transition_trick_max_abs_error": 1.887379141862766e-15,
+        "trusted_fallback_used_in_main_path": false,
+        "use_pad": true
+      },
+      "granularity": "token",
+      "greedy_token_match_rate": 1.0,
+      "masked_token_sequence": [
+        [
+          76,
+          86,
+          53,
+          12,
+          27,
+          76,
+          83,
+          74,
+          36
+        ],
+        [
+          71,
+          26,
+          91,
+          10,
+          66,
+          84,
+          72,
+          24,
+          29
+        ]
+      ],
+      "plain_token_sequence": [
+        [
+          76,
+          86,
+          53,
+          12,
+          27,
+          76,
+          83,
+          74,
+          36
+        ],
+        [
+          71,
+          26,
+          91,
+          10,
+          66,
+          84,
+          72,
+          24,
+          29
+        ]
+      ],
+      "same_input_two_runs_different_masked_fingerprints": true,
+      "same_input_two_runs_same_output": true,
+      "sequence_exact_match": true
+    }
+  },
+  "stage": "7.6h",
+  "stage_7_6g_inherited": {
+    "intermediate_tee_reentry": false,
+    "online_boundary_round_trips_per_decode_step": 1,
+    "qkv_projection_outputs_masked_directly": true,
+    "rope_mask_mode": "pre_rope_block_diagonal_rotation",
+    "rope_transient_plain_qk_visible": false,
+    "trusted_fallback_used_in_main_path": false,
+    "use_pad": true
+  },
+  "status": "ok",
+  "tolerances": {
+    "invariant_tolerance": 1e-10,
+    "kv_cache_invariant_tolerance": 1e-11,
+    "logits_tolerance": 1e-09
+  },
+  "unsafe_wording_to_avoid": [
+    "Token-wise masking hides row norms.",
+    "Token-wise masking cryptographically hides hidden states.",
+    "Per-token Q eliminates all RMSNorm-compatible leakage.",
+    "Gram leakage is zero.",
+    "This is formal cryptographic security."
+  ]
+}
