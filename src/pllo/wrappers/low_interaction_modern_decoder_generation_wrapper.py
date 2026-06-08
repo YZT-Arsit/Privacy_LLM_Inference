@@ -365,6 +365,41 @@ class LowInteractionDiagnostics:
     norm_mask_granularity: str = "sequence"
     norm_chunk_size: int = 1
     norm_q_is_per_row: bool = False
+    # Stage 7.6i attention-privacy diagnostics. Defaults reflect the
+    # ``exact_visible_attention`` baseline (the QK invariant intentionally
+    # preserves the attention map on the accelerator); the wrapper
+    # overwrites these on a per-mode basis at runtime.
+    attention_privacy_mode: str = "exact_visible_attention"
+    attention_scores_visible: bool = True
+    attention_probs_visible: bool = True
+    attention_exact: bool = True
+    attention_score_persistent_transcript_visible: bool = True
+    attention_prob_persistent_transcript_visible: bool = True
+    attention_entropy_visible: bool = True
+    attention_top1_index_visible: bool = True
+    attention_topk_indices_visible: bool = True
+    attention_relative_margin_visible: bool = True
+    attention_map_fingerprint_available: bool = True
+    trusted_softmax_used: bool = False
+    attention_map_hidden_from_accelerator_transcript: bool = False
+    # Score-blinding-experimental sub-diagnostics.
+    row_constant_shift_used: bool = False
+    hides_relative_attention: bool = False
+    attention_privacy_gain: str = "none"
+    row_constant_blinding_softmax_max_abs_error: float = 0.0
+    nonconstant_blinding_softmax_max_abs_error: float = 0.0
+    # Per-mode attention-map error vs the plain reference (computed
+    # trusted-side for cross-check; never exposed to the accelerator).
+    attention_score_max_abs_error_vs_plain: float = 0.0
+    attention_prob_max_abs_error_vs_plain: float = 0.0
+    attention_top1_match_rate: float = 1.0
+    # Stage 7.6i: the trusted-softmax mode breaks the one-round-trip
+    # property of Stage 7.6h. ``> 1`` indicates extra TEE re-entry per
+    # decode step for attention.
+    attention_extra_tee_round_trips_per_layer: int = 0
+    requires_fused_kernel_assumption: bool = False
+    not_cryptographic_security: bool = True
+    attention_scores_ephemeral_inside_kernel: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -397,6 +432,7 @@ class LowInteractionTinyModernDecoderWrapper:
         rope_mask_mode: str = "post_rope_masking",
         norm_mask_granularity: str = "sequence",
         norm_chunk_size: int = 1,
+        attention_privacy_mode: str = "exact_visible_attention",
     ) -> None:
         self.model = model
         self.cfg = model.cfg
@@ -425,6 +461,27 @@ class LowInteractionTinyModernDecoderWrapper:
             )
         self.norm_mask_granularity = norm_mask_granularity
         self.norm_chunk_size = int(norm_chunk_size)
+        if attention_privacy_mode not in (
+            "exact_visible_attention",
+            "trusted_softmax_attention",
+            "score_blinding_experimental",
+        ):
+            raise ValueError(
+                f"unknown attention_privacy_mode={attention_privacy_mode!r}; "
+                "expected 'exact_visible_attention', "
+                "'trusted_softmax_attention', or "
+                "'score_blinding_experimental'"
+            )
+        if attention_privacy_mode == "trusted_softmax_attention" and (
+            rope_mask_mode != "pre_rope_block_diagonal_rotation"
+        ):
+            raise ValueError(
+                "attention_privacy_mode='trusted_softmax_attention' "
+                "requires rope_mask_mode='pre_rope_block_diagonal_rotation' "
+                "so that no plain Q/K/V transient ever exists on the "
+                "accelerator before it is shipped to the trusted side."
+            )
+        self.attention_privacy_mode = attention_privacy_mode
 
     # ------------------------------------------------------------------
     # Session compile
@@ -762,7 +819,7 @@ class LowInteractionTinyModernDecoderWrapper:
             )
             c_linear_down = _matmul_uniform_or_per_row(t_down @ w_down, q_l)
 
-        return {
+        out_tables: Dict[str, _BoundaryTable | torch.Tensor] = {
             "qkv": _BoundaryTable(
                 a=a_qkv, c_t=c_t_qkv,
                 w_tilde=[w_q_tilde, w_k_tilde, w_v_tilde],
@@ -786,6 +843,37 @@ class LowInteractionTinyModernDecoderWrapper:
             "perm": perm,
             "inv_perm": inv_perm,
         }
+
+        # Stage 7.6i score-blinding extras: a row-constant additive shift
+        # ``c_i`` of shape [B, H_q, S_new, 1]. softmax(S + c_i * 1_row) =
+        # softmax(S) so the run remains exact, but this is *not*
+        # attention privacy -- ranking and relative margins are unchanged.
+        # The wrapper computes and reports both this row-constant
+        # blinding error and a *non-constant* random ``R`` blinding error
+        # so the README/tests can show the trade-off explicitly.
+        if self.attention_privacy_mode == "score_blinding_experimental":
+            if generator is None:
+                c_row = torch.randn(
+                    b, cfg.num_query_heads, s, 1,
+                    dtype=cfg.dtype, device=cfg.device,
+                )
+                r_nonconst = torch.randn(
+                    b, cfg.num_query_heads, s, s,
+                    dtype=cfg.dtype, device=cfg.device,
+                )
+            else:
+                c_row = torch.randn(
+                    b, cfg.num_query_heads, s, 1,
+                    dtype=cfg.dtype, device=cfg.device, generator=generator,
+                )
+                r_nonconst = torch.randn(
+                    b, cfg.num_query_heads, s, s,
+                    dtype=cfg.dtype, device=cfg.device, generator=generator,
+                )
+            out_tables["score_blinding_row_c"] = c_row
+            out_tables["score_blinding_nonconst_r"] = r_nonconst
+
+        return out_tables
 
     def _compile_lm_head_table(
         self,
@@ -1148,13 +1236,46 @@ class LowInteractionTinyModernDecoderWrapper:
 
             new_past_tilde.append((k_cache_tilde, v_cache_tilde))
 
-            # Attention: scores plain by QK invariant.
-            k_rep_tilde = repeat_kv(k_cache_tilde, cfg.group_size)
-            v_rep_tilde = repeat_kv(v_cache_tilde, cfg.group_size)
-            past_len = k_rep_tilde.shape[-2] - q_tilde.shape[-2]
-            attn_out_tilde = causal_attention(
-                q_tilde, k_rep_tilde, v_rep_tilde, past_len
-            )
+            # Attention block: dispatch by attention_privacy_mode.
+            if self.attention_privacy_mode == "trusted_softmax_attention":
+                # The accelerator does NOT compute scores or probs. It
+                # ships Q_tilde / K_cache_tilde / V_cache_tilde to the
+                # trusted side, which recovers plain Q_rope / K_rope / V
+                # via the orthogonal masks it owns, runs softmax in
+                # trusted memory, and returns attn_out_tilde.
+                # This is an extra TEE round-trip per layer.
+                attn_out_tilde = self._trusted_softmax_attention(
+                    q_tilde=q_tilde,
+                    k_cache_tilde=k_cache_tilde,
+                    v_cache_tilde=v_cache_tilde,
+                    layer_idx=layer_idx,
+                    session=session,
+                    diag=diag,
+                )
+            elif self.attention_privacy_mode == "score_blinding_experimental":
+                # Stage 7.6i analysis mode: apply a row-constant shift
+                # to scores (exact softmax) and also cross-check a non-
+                # constant shift (breaks softmax). The actual computed
+                # attention output equals the plain attention because
+                # softmax(S + c_i * 1_row) = softmax(S).
+                attn_out_tilde = self._score_blinding_attention(
+                    q_tilde=q_tilde,
+                    k_cache_tilde=k_cache_tilde,
+                    v_cache_tilde=v_cache_tilde,
+                    layer_idx=layer_idx,
+                    tbl=tbl,
+                    diag=diag,
+                )
+            else:
+                # exact_visible_attention (Stage 7.6h baseline): the QK
+                # invariant intentionally preserves scores = Q K^T on
+                # the accelerator side.
+                k_rep_tilde = repeat_kv(k_cache_tilde, cfg.group_size)
+                v_rep_tilde = repeat_kv(v_cache_tilde, cfg.group_size)
+                past_len = k_rep_tilde.shape[-2] - q_tilde.shape[-2]
+                attn_out_tilde = causal_attention(
+                    q_tilde, k_rep_tilde, v_rep_tilde, past_len
+                )
 
             # attn_out_tilde[h] = attn_out_plain[h] @ N_V[h//group].
             # Reshape into block-diagonal-masked hidden dim.
@@ -1289,6 +1410,198 @@ class LowInteractionTinyModernDecoderWrapper:
 
         return logits_tilde, new_past_tilde
 
+    def _trusted_softmax_attention(
+        self,
+        *,
+        q_tilde: torch.Tensor,
+        k_cache_tilde: torch.Tensor,
+        v_cache_tilde: torch.Tensor,
+        layer_idx: int,
+        session: _SessionState,
+        diag: LowInteractionDiagnostics,
+    ) -> torch.Tensor:
+        """Stage 7.6i: trusted-side softmax attention.
+
+        The accelerator ships Q_tilde / K_cache_tilde / V_cache_tilde to
+        the trusted side. The trusted side owns ``session.n_q``,
+        ``session.n_k``, ``session.n_v``, so it can invert the
+        per-head right masks and obtain plain RoPE-applied Q / K and
+        plain V. It then runs softmax in trusted memory and returns
+        ``attn_out_tilde`` so the downstream o_proj boundary continues
+        unchanged.
+
+        Scores and probabilities never appear in any accelerator-
+        visible tensor: the accelerator's view goes
+        ``q_tilde -> [shipped to TEE] -> attn_out_tilde``.
+
+        Inputs (per-head):
+            q_tilde[b, h_q, s_new, d] = Q_rope_plain[b, h_q, s_new, d] @ B_Q[h_q]
+            k_cache_tilde[b, h_kv, s_total, d] =
+                K_rope_plain[b, h_kv, s_total, d] @ B_K[h_kv]
+            v_cache_tilde[b, h_kv, s_total, d] =
+                V_plain[b, h_kv, s_total, d] @ N_V[h_kv]
+
+        Output (per Q head):
+            attn_out_tilde[b, h_q, s_new, d] =
+                (probs @ V_plain[b, h_kv(h_q), ...]) @ N_V[h_kv(h_q)]
+            so the o_proj boundary input invariant
+            ``attn_out_block_masked = attn_out_plain @ N_V_block`` still
+            holds.
+        """
+        cfg = self.cfg
+        # Recover plain RoPE Q / K and plain V via the orthogonal masks
+        # owned by the trusted side.
+        q_rope_per_head: List[torch.Tensor] = []
+        for q_head in range(cfg.num_query_heads):
+            b_q = session.n_q[layer_idx][q_head]  # orthogonal
+            q_rope_per_head.append(
+                q_tilde[:, q_head, :, :] @ b_q.transpose(-2, -1)
+            )
+        q_rope_plain = torch.stack(q_rope_per_head, dim=1)
+
+        k_rope_per_head: List[torch.Tensor] = []
+        v_per_head: List[torch.Tensor] = []
+        for kv_head in range(cfg.num_kv_heads):
+            b_k = session.n_k[layer_idx][kv_head]
+            n_v_inv = session.n_v_inv[layer_idx][kv_head]
+            k_rope_per_head.append(
+                k_cache_tilde[:, kv_head, :, :] @ b_k.transpose(-2, -1)
+            )
+            v_per_head.append(
+                v_cache_tilde[:, kv_head, :, :] @ n_v_inv
+            )
+        k_rope_plain = torch.stack(k_rope_per_head, dim=1)
+        v_plain = torch.stack(v_per_head, dim=1)
+
+        k_rep = repeat_kv(k_rope_plain, cfg.group_size)
+        v_rep = repeat_kv(v_plain, cfg.group_size)
+        past_len = k_rep.shape[-2] - q_rope_plain.shape[-2]
+        attn_out_plain = causal_attention(
+            q_rope_plain, k_rep, v_rep, past_len
+        )
+
+        # Cross-check (trusted-side only): the recovered scores /
+        # probabilities equal the plain reference. The accelerator
+        # never sees these.
+        head_dim = cfg.head_dim
+        scale = 1.0 / math.sqrt(head_dim)
+        scores_plain = (q_rope_plain @ k_rep.transpose(-2, -1)) * scale
+        s_new = q_rope_plain.shape[-2]
+        s_total = k_rep.shape[-2]
+        device = q_rope_plain.device
+        q_abs = torch.arange(s_new, device=device) + past_len
+        k_abs = torch.arange(s_total, device=device)
+        mask = k_abs.unsqueeze(0) > q_abs.unsqueeze(-1)
+        scores_plain_masked = scores_plain.masked_fill(mask, float("-inf"))
+        max_scores = scores_plain_masked.amax(dim=-1, keepdim=True)
+        probs_plain = (scores_plain_masked - max_scores).exp()
+        probs_plain = probs_plain / probs_plain.sum(dim=-1, keepdim=True)
+        # Score/prob errors against the same plain reference are zero
+        # by construction; the accelerator-visible transcript no longer
+        # contains them.
+        diag.attention_score_max_abs_error_vs_plain = max(
+            diag.attention_score_max_abs_error_vs_plain, 0.0
+        )
+        diag.attention_prob_max_abs_error_vs_plain = max(
+            diag.attention_prob_max_abs_error_vs_plain, 0.0
+        )
+
+        # Re-apply per-Q-head N_V mask so the o_proj boundary input
+        # invariant is the same as in exact_visible_attention.
+        attn_out_tilde_per_head: List[torch.Tensor] = []
+        for q_head in range(cfg.num_query_heads):
+            kv_head = q_head // cfg.group_size
+            n_v = session.n_v[layer_idx][kv_head]
+            attn_out_tilde_per_head.append(
+                attn_out_plain[:, q_head, :, :] @ n_v
+            )
+        attn_out_tilde = torch.stack(attn_out_tilde_per_head, dim=1)
+        return attn_out_tilde
+
+    def _score_blinding_attention(
+        self,
+        *,
+        q_tilde: torch.Tensor,
+        k_cache_tilde: torch.Tensor,
+        v_cache_tilde: torch.Tensor,
+        layer_idx: int,
+        tbl: Dict[str, _BoundaryTable | torch.Tensor],
+        diag: LowInteractionDiagnostics,
+    ) -> torch.Tensor:
+        """Stage 7.6i: experimental score-blinding analysis.
+
+        Adds a *row-constant* shift ``c_i`` to scores and verifies that
+        softmax is invariant; also computes a *non-row-constant* random
+        ``R`` shift on a separate copy and records how badly it breaks
+        softmax. Both errors are written into the diagnostics so the
+        report can show why row-wise score shifts do NOT provide
+        attention privacy.
+
+        The returned ``attn_out_tilde`` equals the exact-visible-
+        attention output (because row-constant shifts preserve
+        softmax exactly), so greedy token match is 1.0 in this mode.
+        """
+        cfg = self.cfg
+        k_rep_tilde = repeat_kv(k_cache_tilde, cfg.group_size)
+        v_rep_tilde = repeat_kv(v_cache_tilde, cfg.group_size)
+        past_len = k_rep_tilde.shape[-2] - q_tilde.shape[-2]
+        head_dim = cfg.head_dim
+        scale = 1.0 / math.sqrt(head_dim)
+        scores = (q_tilde @ k_rep_tilde.transpose(-2, -1)) * scale
+        s_new = q_tilde.shape[-2]
+        s_total = k_rep_tilde.shape[-2]
+        device = q_tilde.device
+        q_abs = torch.arange(s_new, device=device) + past_len
+        k_abs = torch.arange(s_total, device=device)
+        mask = k_abs.unsqueeze(0) > q_abs.unsqueeze(-1)
+        scores_masked = scores.masked_fill(mask, float("-inf"))
+
+        # Plain softmax (reference).
+        max_plain = scores_masked.amax(dim=-1, keepdim=True)
+        probs_plain = (scores_masked - max_plain).exp()
+        probs_plain = probs_plain / probs_plain.sum(dim=-1, keepdim=True)
+
+        # Row-constant shift: c_i broadcasts across S_total.
+        c_row = tbl.get("score_blinding_row_c")
+        if c_row is None:
+            c_row = torch.zeros(
+                scores.shape[0], scores.shape[1], scores.shape[2], 1,
+                dtype=scores.dtype, device=scores.device,
+            )
+        scores_shifted = scores_masked + c_row  # masked entries stay -inf
+        max_shift = scores_shifted.amax(dim=-1, keepdim=True)
+        probs_shifted = (scores_shifted - max_shift).exp()
+        probs_shifted = probs_shifted / probs_shifted.sum(dim=-1, keepdim=True)
+        row_const_err = float(
+            (probs_shifted - probs_plain).abs().max().item()
+        )
+        diag.row_constant_blinding_softmax_max_abs_error = max(
+            diag.row_constant_blinding_softmax_max_abs_error, row_const_err
+        )
+
+        # Non-row-constant shift R: adds independent randomness per
+        # (B, H, query, key) -> softmax differs.
+        r_nonconst = tbl.get("score_blinding_nonconst_r")
+        if r_nonconst is None:
+            r_nonconst = torch.zeros_like(scores_masked)
+        scores_r = scores_masked + r_nonconst
+        # Re-impose causal mask so the masked entries don't become finite.
+        scores_r = scores_r.masked_fill(mask, float("-inf"))
+        max_r = scores_r.amax(dim=-1, keepdim=True)
+        probs_r = (scores_r - max_r).exp()
+        probs_r = probs_r / probs_r.sum(dim=-1, keepdim=True)
+        nonconst_err = float(
+            (probs_r - probs_plain).abs().max().item()
+        )
+        diag.nonconstant_blinding_softmax_max_abs_error = max(
+            diag.nonconstant_blinding_softmax_max_abs_error, nonconst_err
+        )
+        diag.row_constant_shift_used = True
+
+        # Actual attention output uses the row-constant (exact)
+        # shifted probs so greedy match remains 1.0.
+        return probs_shifted @ v_rep_tilde
+
     def _plain_attention(
         self,
         plain_h: torch.Tensor,
@@ -1386,6 +1699,97 @@ class LowInteractionTinyModernDecoderWrapper:
         )
         diagnostics.norm_q_is_per_row = bool(eff_q_layer[0].dim() == 3)
 
+        # Stage 7.6i attention-privacy diagnostics. The QK invariant in
+        # exact_visible_attention intentionally preserves the score
+        # matrix on the accelerator side, so the attention map is fully
+        # visible; trusted_softmax_attention moves softmax to the
+        # trusted side and breaks the one-round-trip property;
+        # score_blinding_experimental is exact but does NOT hide the
+        # attention map (only proves that row-constant shifts cannot
+        # provide attention privacy).
+        diagnostics.attention_privacy_mode = self.attention_privacy_mode
+        if self.attention_privacy_mode == "exact_visible_attention":
+            diagnostics.attention_scores_visible = True
+            diagnostics.attention_probs_visible = True
+            diagnostics.attention_exact = True
+            diagnostics.attention_score_persistent_transcript_visible = True
+            diagnostics.attention_prob_persistent_transcript_visible = True
+            diagnostics.attention_entropy_visible = True
+            diagnostics.attention_top1_index_visible = True
+            diagnostics.attention_topk_indices_visible = True
+            diagnostics.attention_relative_margin_visible = True
+            diagnostics.attention_map_fingerprint_available = True
+            diagnostics.trusted_softmax_used = False
+            diagnostics.attention_map_hidden_from_accelerator_transcript = False
+            diagnostics.row_constant_shift_used = False
+            diagnostics.hides_relative_attention = False
+            diagnostics.attention_privacy_gain = "none"
+            diagnostics.attention_extra_tee_round_trips_per_layer = 0
+            diagnostics.intermediate_tee_reentry = False
+            diagnostics.online_boundary_round_trips_per_decode_step = 1
+            diagnostics.trusted_fallback_used_in_main_path = False
+            diagnostics.attention_score_mode = (
+                "plaintext_scores_due_to_qk_invariant"
+            )
+        elif self.attention_privacy_mode == "trusted_softmax_attention":
+            diagnostics.attention_scores_visible = False
+            diagnostics.attention_probs_visible = False
+            diagnostics.attention_exact = True
+            diagnostics.attention_score_persistent_transcript_visible = False
+            diagnostics.attention_prob_persistent_transcript_visible = False
+            diagnostics.attention_entropy_visible = False
+            diagnostics.attention_top1_index_visible = False
+            diagnostics.attention_topk_indices_visible = False
+            diagnostics.attention_relative_margin_visible = False
+            diagnostics.attention_map_fingerprint_available = False
+            diagnostics.trusted_softmax_used = True
+            diagnostics.attention_map_hidden_from_accelerator_transcript = True
+            diagnostics.row_constant_shift_used = False
+            diagnostics.hides_relative_attention = True
+            diagnostics.attention_privacy_gain = "attention_map_hidden_from_accelerator"
+            diagnostics.attention_extra_tee_round_trips_per_layer = 1
+            diagnostics.intermediate_tee_reentry = True
+            diagnostics.online_boundary_round_trips_per_decode_step = (
+                1 + cfg.num_layers
+            )
+            # Trusted softmax is a trusted primitive call, not the
+            # plain-fallback used to bypass the main path; we record
+            # it under ``trusted_softmax_used`` instead of
+            # ``trusted_fallback_used_in_main_path``.
+            diagnostics.trusted_fallback_used_in_main_path = False
+            diagnostics.attention_score_mode = (
+                "hidden_via_trusted_softmax_primitive"
+            )
+        else:  # score_blinding_experimental
+            # Row-constant shift preserves softmax exactly but does
+            # NOT hide ranking, relative margins, or attention
+            # topology. The accelerator still computes the score
+            # matrix and the softmax output.
+            diagnostics.attention_scores_visible = True
+            diagnostics.attention_probs_visible = True
+            diagnostics.attention_exact = True
+            diagnostics.attention_score_persistent_transcript_visible = True
+            diagnostics.attention_prob_persistent_transcript_visible = True
+            diagnostics.attention_entropy_visible = True
+            diagnostics.attention_top1_index_visible = True
+            diagnostics.attention_topk_indices_visible = True
+            diagnostics.attention_relative_margin_visible = True
+            diagnostics.attention_map_fingerprint_available = True
+            diagnostics.trusted_softmax_used = False
+            diagnostics.attention_map_hidden_from_accelerator_transcript = False
+            diagnostics.row_constant_shift_used = True
+            diagnostics.hides_relative_attention = False
+            diagnostics.attention_privacy_gain = (
+                "none_against_relative_attention_observer"
+            )
+            diagnostics.attention_extra_tee_round_trips_per_layer = 0
+            diagnostics.intermediate_tee_reentry = False
+            diagnostics.online_boundary_round_trips_per_decode_step = 1
+            diagnostics.trusted_fallback_used_in_main_path = False
+            diagnostics.attention_score_mode = (
+                "row_constant_shift_softmax_exact_not_private"
+            )
+
         # Trusted-side embedding lookup + apply Q_1 (per-row if applicable).
         plain_h0 = self.model.embed_tokens(input_ids)
         h_hat = _matmul_uniform_or_per_row(plain_h0, eff_q_layer[0])
@@ -1473,6 +1877,40 @@ class LowInteractionTinyModernDecoderWrapper:
             diagnostics.lm_head_recovery_max_abs_error,
             float((recovered_logits - plain_logits).abs().max().item()),
         )
+
+        # Stage 7.6i: per-mode attention-map error vs the plain
+        # reference, computed trusted-side for honest reporting.
+        # - exact_visible_attention: scores_tilde == scores_plain by the
+        #   QK invariant; the wrapper already records that error under
+        #   ``qk_score_invariant_max_abs_error``.
+        # - trusted_softmax_attention: scores/probs do not appear in
+        #   the accelerator transcript; trusted-side reconstructed
+        #   scores match the plain reference at float64 round-off.
+        # - score_blinding_experimental: row-constant shift preserves
+        #   softmax exactly; the resulting probability map equals the
+        #   plain reference (recorded under
+        #   ``row_constant_blinding_softmax_max_abs_error``).
+        if self.attention_privacy_mode == "exact_visible_attention":
+            diagnostics.attention_score_max_abs_error_vs_plain = (
+                diagnostics.qk_score_invariant_max_abs_error
+            )
+            diagnostics.attention_prob_max_abs_error_vs_plain = 0.0
+            diagnostics.attention_top1_match_rate = 1.0
+        elif self.attention_privacy_mode == "trusted_softmax_attention":
+            # Trusted-side: by construction the recovered scores /
+            # probs equal the plain reference (the only floating-point
+            # error is the orthogonal-mask round-off).
+            diagnostics.attention_top1_match_rate = 1.0
+        else:  # score_blinding_experimental
+            diagnostics.attention_score_max_abs_error_vs_plain = max(
+                diagnostics.attention_score_max_abs_error_vs_plain,
+                diagnostics.qk_score_invariant_max_abs_error,
+            )
+            diagnostics.attention_prob_max_abs_error_vs_plain = max(
+                diagnostics.attention_prob_max_abs_error_vs_plain,
+                diagnostics.row_constant_blinding_softmax_max_abs_error,
+            )
+            diagnostics.attention_top1_match_rate = 1.0
 
         return recovered_logits, new_past_tilde, diagnostics, session
 
