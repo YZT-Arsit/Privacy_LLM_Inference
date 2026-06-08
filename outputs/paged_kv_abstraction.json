@@ -1,0 +1,105 @@
+{
+  "config": {
+    "block_size": 4,
+    "head_dim": 16,
+    "max_tokens_per_session": 13,
+    "num_kv_heads": 2,
+    "num_layers": 2,
+    "num_sessions": 3
+  },
+  "cross_session_mask_isolation": {
+    "cross_session_mask_isolation_observed": true,
+    "details": [
+      {
+        "head": 0,
+        "layer": 0,
+        "n_k_diff_max_abs": 1.2492424774755841
+      }
+    ]
+  },
+  "cross_user_cache_sharing_allowed": false,
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "gqa_paged_cache_indexing_check": {
+    "block_table_indexing_per_kv_head_supported": true,
+    "block_table_lengths": [
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        4
+      ]
+    ]
+  },
+  "limitations": [
+    "CPU local emulation only; no real GPU paged attention kernel.",
+    "Block-table abstraction is in-memory Python; no real memory allocator or page-fault behaviour.",
+    "Cross-session block sharing is disabled by default; prefix sharing requires explicit public-prefix flag and is reported as a leakage surface when enabled.",
+    "Timing / memory side channels (page-fault timing, block allocator races, evictions) are NOT evaluated.",
+    "Not formal cryptographic / semantic / differential-privacy security."
+  ],
+  "main_mode": "paged_kv_abstraction",
+  "no_plaintext_kv_block_check": {
+    "interpretation": "if > 0, no masked block coincides with a plain K row (orthogonal mask sampled independently per session)",
+    "min_distance_masked_block_to_any_plain_row": 2.6906205705390542
+  },
+  "paged_kv_supported": true,
+  "paper_safe_wording": "The masked KV invariant ``K_tilde = K @ N_K`` and ``V_tilde = V @ N_V`` is preserved under a CPU synthetic paged cache: per-session N_K and N_V are sampled independently, each physical block of a session is masked by the same per-(layer, head) mask, and the logical-to-physical mapping is reconstructed by walking the block table. Cross-session block sharing is disabled by default.",
+  "per_session_audit": [
+    {
+      "full_cache_invariant_max_abs_error": 8.881784197001252e-16,
+      "num_blocks_used": 4,
+      "num_tokens": 13,
+      "per_block_invariant_max_abs_error": 4.440892098500626e-16,
+      "session_id": 0
+    },
+    {
+      "full_cache_invariant_max_abs_error": 8.881784197001252e-16,
+      "num_blocks_used": 4,
+      "num_tokens": 13,
+      "per_block_invariant_max_abs_error": 4.440892098500626e-16,
+      "session_id": 1
+    },
+    {
+      "full_cache_invariant_max_abs_error": 8.881784197001252e-16,
+      "num_blocks_used": 4,
+      "num_tokens": 13,
+      "per_block_invariant_max_abs_error": 4.440892098500626e-16,
+      "session_id": 2
+    }
+  ],
+  "prefix_cache_sharing": {
+    "leakage_note": "Cross-session prefix sharing requires an explicit public-prefix flag; enabling it intentionally exposes the shared prefix's K_tilde / V_tilde rows across sessions.",
+    "prefix_cache_sharing_enabled": false,
+    "public_prefix_token_count": 0
+  },
+  "prefix_cache_sharing_default": false,
+  "private_cache_mode": true,
+  "stage": "7.7c",
+  "status": "ok",
+  "timing_side_channel_not_evaluated": true,
+  "unsafe_wording_to_avoid": [
+    "Paged cache is cryptographically isolated.",
+    "Cross-user cache sharing is private.",
+    "Timing side channels evaluated.",
+    "This is formal cryptographic security."
+  ]
+}

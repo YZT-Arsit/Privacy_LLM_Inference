@@ -1,0 +1,432 @@
+{
+  "environment": {
+    "device": "cpu",
+    "dtype": "float64",
+    "network_required": false,
+    "real_gpu": false,
+    "real_tee": false
+  },
+  "experiment_matrix": [
+    {
+      "experiment": "modern_decoder_generation_correctness",
+      "kind": "correctness",
+      "loaded": true,
+      "stage": "7.6e"
+    },
+    {
+      "experiment": "modern_decoder_low_interaction_correctness",
+      "kind": "correctness",
+      "loaded": true,
+      "stage": "7.6f"
+    },
+    {
+      "experiment": "modern_decoder_rope_safe_low_interaction",
+      "kind": "privacy_leakage",
+      "loaded": true,
+      "stage": "7.6g"
+    },
+    {
+      "experiment": "norm_granularity_low_interaction",
+      "kind": "privacy_leakage",
+      "loaded": true,
+      "stage": "7.6h"
+    },
+    {
+      "experiment": "attention_privacy_modes",
+      "kind": "privacy_leakage",
+      "loaded": true,
+      "stage": "7.6i"
+    },
+    {
+      "experiment": "lm_head_scalability",
+      "kind": "scalability",
+      "loaded": true,
+      "stage": "7.7a"
+    },
+    {
+      "experiment": "lora_protocol_integration",
+      "kind": "integration",
+      "loaded": true,
+      "stage": "7.7b"
+    },
+    {
+      "experiment": "paged_kv_abstraction",
+      "kind": "infrastructure",
+      "loaded": true,
+      "stage": "7.7c"
+    },
+    {
+      "experiment": "multi_session_batching",
+      "kind": "isolation",
+      "loaded": true,
+      "stage": "7.7d"
+    },
+    {
+      "experiment": "integrity_spotcheck",
+      "kind": "active_adversary_proxy",
+      "loaded": true,
+      "stage": "7.7e"
+    },
+    {
+      "experiment": "paper_cost_model",
+      "kind": "cost_model",
+      "loaded": true,
+      "stage": "7.7f"
+    },
+    {
+      "experiment": "paper_claims_audit_v2",
+      "kind": "audit",
+      "loaded": true,
+      "stage": "7.7g"
+    }
+  ],
+  "limitations": [
+    "CPU local emulation only.",
+    "No real TEE / GPU deployment.",
+    "No hardware side-channel evaluation.",
+    "No formal cryptographic / semantic / differential-privacy security.",
+    "Validates algebraic correctness, leakage accounting, and cost-model evidence only."
+  ],
+  "paper_claims_summary": {
+    "cost_model_only": 0,
+    "proxy_supported": 1,
+    "supported": 10,
+    "unsupported": 4
+  },
+  "paper_claims_table": {
+    "attention_maps_hidden_only_in_trusted_softmax_mode": {
+      "evidence_artifact": "outputs/attention_privacy_modes.json",
+      "remaining_blocker": "Real TEE with low boundary latency.",
+      "status": "supported"
+    },
+    "attention_maps_visible_in_exact_low_interaction_mode": {
+      "evidence_artifact": "outputs/attention_privacy_modes.json",
+      "remaining_blocker": "None for algebraic claim.",
+      "status": "supported"
+    },
+    "integrity_only_probabilistic_spot_check": {
+      "evidence_artifact": "outputs/integrity_spotcheck.json",
+      "remaining_blocker": "Cryptographic verifiable computation / authenticated dataflow.",
+      "status": "proxy_supported"
+    },
+    "lora_integration_supported_for_specified_sites": {
+      "evidence_artifact": "outputs/lora_protocol_integration.json",
+      "remaining_blocker": "LoRA backward / training not implemented.",
+      "status": "supported"
+    },
+    "multi_session_mask_isolation_supported_in_cpu_simulation": {
+      "evidence_artifact": "outputs/multi_session_batching.json",
+      "remaining_blocker": "Real serving scheduler integration.",
+      "status": "supported"
+    },
+    "no_formal_cryptographic_security": {
+      "evidence_artifact": "every-report-limitations-section",
+      "remaining_blocker": "Cryptographic protocol design or formal proof out of scope for this project.",
+      "status": "unsupported"
+    },
+    "no_full_qwen_or_llama_deployment_unless_real_wrapper": {
+      "evidence_artifact": "outputs/paper_claims_audit_v2.json",
+      "remaining_blocker": "Real model loader + real GPU.",
+      "status": "unsupported"
+    },
+    "no_hardware_side_channel_evaluation": {
+      "evidence_artifact": "every-report-limitations-section",
+      "remaining_blocker": "Real hardware + side-channel platform.",
+      "status": "unsupported"
+    },
+    "no_real_gpu_or_tee_wall_clock": {
+      "evidence_artifact": "outputs/paper_cost_model.json",
+      "remaining_blocker": "Actual hardware access (H100 CC / SGX).",
+      "status": "unsupported"
+    },
+    "norm_full_gram_reduced_by_token_chunk_masks": {
+      "evidence_artifact": "outputs/norm_granularity_low_interaction.json",
+      "remaining_blocker": "None for algebraic claim.",
+      "status": "supported"
+    },
+    "one_round_low_interaction_exact_mode": {
+      "evidence_artifact": "outputs/modern_decoder_low_interaction_correctness.json",
+      "remaining_blocker": "Real TEE/GPU deployment.",
+      "status": "supported"
+    },
+    "padded_full_generation_correctness": {
+      "evidence_artifact": "outputs/modern_decoder_generation_correctness.json",
+      "remaining_blocker": "Real TEE/GPU deployment.",
+      "status": "supported"
+    },
+    "paged_kv_invariant_supported_in_synthetic_abstraction": {
+      "evidence_artifact": "outputs/paged_kv_abstraction.json",
+      "remaining_blocker": "Real GPU paged-attention kernel.",
+      "status": "supported"
+    },
+    "rope_transient_plain_qk_eliminated": {
+      "evidence_artifact": "outputs/modern_decoder_rope_safe_low_interaction.json",
+      "remaining_blocker": "Real GPU fused-kernel implementation.",
+      "status": "supported"
+    },
+    "scalable_lm_head_dense_mask_not_feasible": {
+      "evidence_artifact": "outputs/lm_head_scalability.json",
+      "remaining_blocker": "Real serving runtime sample-loop integration.",
+      "status": "supported"
+    }
+  },
+  "paper_safe_summary_wording": "We prepare a CPU local-emulation experiment suite that validates padded masked generation correctness, low-interaction operator-compatible execution, RoPE-safe pre-masking, norm-mask granularity, attention privacy modes, scalable LM-head alternatives, LoRA integration, paged KV abstraction, multi-session isolation, and probabilistic integrity spot-checking. These experiments establish algebraic correctness and leakage/cost accounting, but do not constitute real GPU/TEE deployment or formal cryptographic security.",
+  "proxy_supported_claims": [
+    "integrity_only_probabilistic_spot_check"
+  ],
+  "remaining_blockers_before_real_gpu_tee": [
+    "Real H100 CC / SGX / Gramine / Occlum / TEE platform.",
+    "Real CUDA / FlashAttention / vLLM backend with fused confidential kernels.",
+    "Real GPU paged-attention kernel + serving scheduler.",
+    "Cryptographic verifiable-computation primitive.",
+    "Hardware side-channel evaluation platform.",
+    "LoRA training (backward) integration."
+  ],
+  "stage": "7.7",
+  "stages": {
+    "7.6e_modern_decoder_generation_correctness": {
+      "loaded_from": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_generation_correctness.json",
+      "status": "ok",
+      "summary_keys": [
+        "ablation_use_pad_false",
+        "config",
+        "correctness",
+        "coverage",
+        "device",
+        "diagnostics_main_run",
+        "dtype",
+        "fresh_mask",
+        "fresh_pad",
+        "gqa_indexing",
+        "limitations",
+        "main_mode",
+        "model_type",
+        "module_modes",
+        "pad_policy",
+        "paper_safe_wording",
+        "security_relevant_checks",
+        "stage",
+        "status",
+        "tolerances"
+      ]
+    },
+    "7.6f_modern_decoder_low_interaction_correctness": {
+      "loaded_from": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_low_interaction_correctness.json",
+      "status": "ok",
+      "summary_keys": [
+        "config",
+        "correctness",
+        "device",
+        "diagnostics_main_run",
+        "dtype",
+        "fresh_mask_used_at_linear_boundaries",
+        "fresh_pad_used_at_linear_boundaries",
+        "intermediate_tee_reentry",
+        "limitations",
+        "main_layer_invariant",
+        "main_mode",
+        "model_type",
+        "module_modes",
+        "norm_leakage_audit",
+        "online_boundary_protocol",
+        "online_boundary_round_trips_per_decode_step",
+        "pad_policy",
+        "paper_safe_wording",
+        "rmsnorm_mode",
+        "rope_blocker"
+      ]
+    },
+    "7.6g_modern_decoder_rope_safe_low_interaction": {
+      "loaded_from": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_rope_safe_low_interaction.json",
+      "status": "ok",
+      "summary_keys": [
+        "config",
+        "correctness",
+        "device",
+        "diagnostics_main_run",
+        "dtype",
+        "fresh_mask_used_at_linear_boundaries",
+        "fresh_pad_used_at_linear_boundaries",
+        "generic_pre_rope_dense_commutation_used",
+        "intermediate_tee_reentry",
+        "kv_cache_invariant_max_abs_error",
+        "limitations",
+        "main_layer_invariant",
+        "main_mode",
+        "model_type",
+        "module_modes",
+        "online_boundary_protocol",
+        "online_boundary_round_trips_per_decode_step",
+        "pad_policy",
+        "paper_safe_wording",
+        "qk_constraint_max_error"
+      ]
+    },
+    "7.6h_norm_granularity_low_interaction": {
+      "limitations_excerpt": [
+        "Token-wise orthogonal masking does not hide row norms, because exact RMSNorm requires row-norm preservation. Row L2 norms remain observable on every boundary.",
+        "Token / chunk modes reduce full Gram leakage by avoiding a sequence-shared orthogonal basis; off-diagonal Gram terms become per-row Q_i Q_j^T mixtures rather than identity.",
+        "Per-token / per-chunk Q sampling and transition tables introduce per-row matmuls (einsum over the token axis); this is a security-efficiency knob, not formal cryptographic security."
+      ],
+      "main_mode": "norm_mask_granularity_low_interaction",
+      "modes_evaluated": [
+        "sequence",
+        "chunk",
+        "token"
+      ],
+      "paper_safe_wording": "We add a granularity knob to the orthogonal RMSNorm-compatible mask. Token-wise and chunk-wise modes preserve per-row L2 norms (required by exact RMSNorm correctness) but disrupt the full-sequence Gram-matrix leakage that sequence-shared Q exhibits. Per-decode-step token-wise masking trades fresh per-row transition cost for reduced Gram leakage on the accelerator boundary; we present this as a security-efficiency knob, not a formal security guarantee.",
+      "stage": "7.6h",
+      "status": "ok"
+    },
+    "7.6i_attention_privacy_modes": {
+      "limitations_excerpt": [
+        "exact_visible_attention exposes the attention map by construction: the QK invariant Q_tilde K_tilde^T = Q K^T intentionally preserves scores on the accelerator side.",
+        "trusted_softmax_attention adds extra TEE round trips per decode step (one per layer) and re-enters the trusted primitive once per attention block.",
+        "score_blinding_experimental shows that row-constant score shifts preserve softmax exactly but do NOT hide ranking, relative margins, entropy, or attention topology."
+      ],
+      "main_mode": "attention_privacy_modes",
+      "modes_evaluated": [
+        "exact_visible_attention",
+        "trusted_softmax_attention",
+        "score_blinding_experimental"
+      ],
+      "paper_safe_wording": "Exact low-interaction attention with ordinary accelerator-side softmax exposes the attention map because the QK invariant intentionally preserves the score matrix. To hide attention maps exactly, the softmax computation must be moved to a trusted/secure primitive or replaced by an approximate/private attention mechanism. We therefore provide two modes: an exact low-interaction mode with visible attention maps, and an exact trusted-softmax mode that hides attention maps at the cost of additional trusted interaction.",
+      "stage": "7.6i",
+      "status": "ok"
+    },
+    "7.7a_lm_head_scalability": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real TEE / GPU.",
+        "Dense N_vocab not feasible for real LLM vocab sizes (V >= 16k); estimated symbolically only.",
+        "Permutation mask preserves the multiset of logits; this is observable side information, not formal cryptographic security."
+      ],
+      "main_mode": "lm_head_scalability",
+      "modes_evaluated": [
+        "dense_vocab_mask_baseline",
+        "vocab_permutation_mask",
+        "block_diagonal_vocab_mask",
+        "topk_trusted_recovery_mode"
+      ],
+      "paper_safe_wording": "Dense orthogonal N_vocab is not scalable to real LLM vocab sizes. Permutation and block-diagonal masks scale but disclose either the sorted logit multiset or the block partition; we present them as scalable algebraic alternatives with explicit leakage notes, not formal cryptographic security.",
+      "stage": "7.7a",
+      "status": "ok"
+    },
+    "7.7b_lora_integration": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real TEE / GPU.",
+        "LoRA forward path validated only; backward / training is NOT implemented.",
+        "Algebraic identity is verified per insertion site with fresh masks and pads; sample sizes are small."
+      ],
+      "main_mode": "lora_protocol_integration",
+      "modes_evaluated": null,
+      "paper_safe_wording": "LoRA adapters integrate with the low-interaction main protocol via the same padded-boundary algebra used for the base linear: A_tilde = M^{-1} A R, B_tilde = R^{-1} B N_out, with rank-space mask R. The forward path is exact at float64; rank padding hides the true rank but the padded rank is observable. We do not address LoRA training.",
+      "stage": "7.7b",
+      "status": "ok"
+    },
+    "7.7c_paged_kv_abstraction": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real GPU paged attention kernel.",
+        "Block-table abstraction is in-memory Python; no real memory allocator or page-fault behaviour.",
+        "Cross-session block sharing is disabled by default; prefix sharing requires explicit public-prefix flag and is reported as a leakage surface when enabled."
+      ],
+      "main_mode": "paged_kv_abstraction",
+      "modes_evaluated": null,
+      "paper_safe_wording": "The masked KV invariant ``K_tilde = K @ N_K`` and ``V_tilde = V @ N_V`` is preserved under a CPU synthetic paged cache: per-session N_K and N_V are sampled independently, each physical block of a session is masked by the same per-(layer, head) mask, and the logical-to-physical mapping is reconstructed by walking the block table. Cross-session block sharing is disabled by default.",
+      "stage": "7.7c",
+      "status": "ok"
+    },
+    "7.7d_multi_session_batching": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real serving scheduler or continuous-batching engine.",
+        "Sessions are simulated independently with fresh per-session masks; the wrapper does NOT yet batch their boundaries into a single low-interaction call.",
+        "Cross-session prefix sharing is OFF by default; any future support must be reported as a leakage surface."
+      ],
+      "main_mode": "multi_session_batching",
+      "modes_evaluated": null,
+      "paper_safe_wording": "Per-session orthogonal masks are sampled independently and produce per-session boundary fingerprints; the same prompt under two different sessions yields different masked boundary tensors. Cross-session prefix sharing is disabled by default.",
+      "stage": "7.7d",
+      "status": "ok"
+    },
+    "7.7e_integrity_spotcheck": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real attestation, no real TEE / GPU.",
+        "Detection rate is parameterised by checked_fraction; with sample size 50 the empirical rate is noisy and is checked monotonically rather than to exact theoretical value.",
+        "This is NOT a verifiable computation primitive, NOT a ZK proof, NOT an authenticated dataflow."
+      ],
+      "main_mode": "integrity_spotcheck",
+      "modes_evaluated": [
+        "no_check",
+        "spot_check_linear_projection",
+        "spot_check_lm_head_slice",
+        "spot_check_kv_cache_append"
+      ],
+      "paper_safe_wording": "We prototype a probabilistic spot-check defence against an active adversary that returns corrupted masked tensors. The TEE recomputes a random fraction of the boundary linear and detects any mismatch. This is a lightweight prototype, not full verifiable computation; detection is per-call probabilistic, false-positive-free under correct execution, and explicitly does not address privacy under a malicious accelerator.",
+      "stage": "7.7e",
+      "status": "ok"
+    },
+    "7.7f_complexity_model": {
+      "limitations_excerpt": [
+        "CPU local emulation only; no real wall-clock measurement.",
+        "All numbers are FLOP / byte estimates, NOT real timings.",
+        "Real GPU / TEE deployment cost is not modelled."
+      ],
+      "main_mode": "paper_cost_model",
+      "modes_evaluated": [
+        "baseline_plain",
+        "padded_correctness_trusted_fallback",
+        "low_interaction_sequence_norm_exact_visible_attention",
+        "low_interaction_token_norm_exact_visible_attention",
+        "trusted_softmax_attention",
+        "rope_safe_pre_mask",
+        "lora_enabled",
+        "paged_kv",
+        "scalable_lm_head_permutation",
+        "scalable_lm_head_block"
+      ],
+      "paper_safe_wording": "We provide symbolic and tiny / real-config FLOP and storage estimates for every protocol mode. These are complexity-model evidence only; no real GPU / TEE wall-clock is measured.",
+      "stage": "7.7f",
+      "status": "ok"
+    },
+    "7.7g_paper_claims_audit_v2": {
+      "limitations_excerpt": [
+        "Audit table is paper-ready guidance, not a formal proof.",
+        "Evidence-artifact existence is checked; semantic validity is not re-evaluated here.",
+        "Unsupported claims must be NEVER written as supported in the paper."
+      ],
+      "main_mode": "paper_claims_audit_v2",
+      "modes_evaluated": null,
+      "paper_safe_wording": "All paper claims are classified into supported, proxy_supported, cost_model_only, or unsupported, with the corresponding safe and unsafe wording per claim.",
+      "stage": "7.7g",
+      "status": "ok"
+    }
+  },
+  "status": "ok",
+  "supported_claims": [
+    "padded_full_generation_correctness",
+    "one_round_low_interaction_exact_mode",
+    "rope_transient_plain_qk_eliminated",
+    "norm_full_gram_reduced_by_token_chunk_masks",
+    "attention_maps_hidden_only_in_trusted_softmax_mode",
+    "attention_maps_visible_in_exact_low_interaction_mode",
+    "scalable_lm_head_dense_mask_not_feasible",
+    "lora_integration_supported_for_specified_sites",
+    "paged_kv_invariant_supported_in_synthetic_abstraction",
+    "multi_session_mask_isolation_supported_in_cpu_simulation"
+  ],
+  "unsafe_wording_to_avoid": [
+    "real TEE/GPU performance",
+    "formal cryptographic security",
+    "semantic security",
+    "full Qwen/LLaMA deployment",
+    "attention maps hidden in exact low-interaction mode",
+    "dense vocab mask is scalable",
+    "active malicious accelerator fully handled",
+    "hardware side channels evaluated"
+  ],
+  "unsupported_claims": [
+    "no_real_gpu_or_tee_wall_clock",
+    "no_formal_cryptographic_security",
+    "no_full_qwen_or_llama_deployment_unless_real_wrapper",
+    "no_hardware_side_channel_evaluation"
+  ]
+}

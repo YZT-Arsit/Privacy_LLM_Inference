@@ -1,0 +1,299 @@
+{
+  "config": {
+    "batch_size": 2,
+    "block_size": 64,
+    "dense_max_real_v": 4096,
+    "estimated_vocab_sizes": [
+      16384,
+      50000
+    ],
+    "hidden_size": 64,
+    "real_vocab_sizes": [
+      97,
+      1024,
+      4096
+    ],
+    "seq_len": 4,
+    "topk": 8
+  },
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "limitations": [
+    "CPU local emulation only; no real TEE / GPU.",
+    "Dense N_vocab not feasible for real LLM vocab sizes (V >= 16k); estimated symbolically only.",
+    "Permutation mask preserves the multiset of logits; this is observable side information, not formal cryptographic security.",
+    "Block-diagonal mask reveals block membership of each vocab index unless the block partition is itself permuted.",
+    "topk_trusted_recovery_mode is exact for top-1 greedy decoding; for sampling that depends on the full distribution, full recovery must be performed before truncation.",
+    "This is NOT formal cryptographic / semantic / differential-privacy security."
+  ],
+  "main_mode": "lm_head_scalability",
+  "modes_evaluated": [
+    "dense_vocab_mask_baseline",
+    "vocab_permutation_mask",
+    "block_diagonal_vocab_mask",
+    "topk_trusted_recovery_mode"
+  ],
+  "paper_safe_wording": "Dense orthogonal N_vocab is not scalable to real LLM vocab sizes. Permutation and block-diagonal masks scale but disclose either the sorted logit multiset or the block partition; we present them as scalable algebraic alternatives with explicit leakage notes, not formal cryptographic security.",
+  "real_runs": {
+    "block_diagonal_vocab_mask": [
+      {
+        "accelerator_compute_ops_estimate": 65536,
+        "block_size": 64,
+        "exactness": "exact",
+        "feasibility": "scalable_with_block_size_tunable",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Block-diagonal orthogonal mask. Within-block values are hidden via orthogonal rotation; block membership of each vocab index is still observable unless the block partition is itself permuted. Not formal cryptographic security.",
+        "max_abs_error": 2.220446049250313e-15,
+        "memory_bytes_mask": 65536,
+        "mode": "block_diagonal_vocab_mask",
+        "num_blocks": 2,
+        "online_recovery_ops_estimate": 65536,
+        "preprocessing_ops_estimate": 524288,
+        "trusted_compute_ops_estimate": 65536,
+        "vocab_size": 97
+      },
+      {
+        "accelerator_compute_ops_estimate": 524288,
+        "block_size": 64,
+        "exactness": "exact",
+        "feasibility": "scalable_with_block_size_tunable",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Block-diagonal orthogonal mask. Within-block values are hidden via orthogonal rotation; block membership of each vocab index is still observable unless the block partition is itself permuted. Not formal cryptographic security.",
+        "max_abs_error": 3.1086244689504383e-15,
+        "memory_bytes_mask": 524288,
+        "mode": "block_diagonal_vocab_mask",
+        "num_blocks": 16,
+        "online_recovery_ops_estimate": 524288,
+        "preprocessing_ops_estimate": 4194304,
+        "trusted_compute_ops_estimate": 524288,
+        "vocab_size": 1024
+      },
+      {
+        "accelerator_compute_ops_estimate": 2097152,
+        "block_size": 64,
+        "exactness": "exact",
+        "feasibility": "scalable_with_block_size_tunable",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Block-diagonal orthogonal mask. Within-block values are hidden via orthogonal rotation; block membership of each vocab index is still observable unless the block partition is itself permuted. Not formal cryptographic security.",
+        "max_abs_error": 3.774758283725532e-15,
+        "memory_bytes_mask": 2097152,
+        "mode": "block_diagonal_vocab_mask",
+        "num_blocks": 64,
+        "online_recovery_ops_estimate": 2097152,
+        "preprocessing_ops_estimate": 16777216,
+        "trusted_compute_ops_estimate": 2097152,
+        "vocab_size": 4096
+      }
+    ],
+    "dense_vocab_mask_baseline": [
+      {
+        "accelerator_compute_ops_estimate": 75272,
+        "exactness": "exact",
+        "feasibility": "feasible_only_for_small_V",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Dense orthogonal mask exact; storage and recovery O(V^2); not feasible for real LLM vocab sizes.",
+        "max_abs_error": 3.4416913763379853e-15,
+        "memory_bytes_mask": 75272,
+        "mode": "dense_vocab_mask_baseline",
+        "online_recovery_ops_estimate": 75272,
+        "preprocessing_ops_estimate": 912673,
+        "trusted_compute_ops_estimate": 75272,
+        "vocab_size": 97
+      },
+      {
+        "accelerator_compute_ops_estimate": 8388608,
+        "exactness": "exact",
+        "feasibility": "feasible_only_for_small_V",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Dense orthogonal mask exact; storage and recovery O(V^2); not feasible for real LLM vocab sizes.",
+        "max_abs_error": 1.4210854715202004e-14,
+        "memory_bytes_mask": 8388608,
+        "mode": "dense_vocab_mask_baseline",
+        "online_recovery_ops_estimate": 8388608,
+        "preprocessing_ops_estimate": 1073741824,
+        "trusted_compute_ops_estimate": 8388608,
+        "vocab_size": 1024
+      },
+      {
+        "accelerator_compute_ops_estimate": 134217728,
+        "exactness": "exact",
+        "feasibility": "feasible_only_for_small_V",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Dense orthogonal mask exact; storage and recovery O(V^2); not feasible for real LLM vocab sizes.",
+        "max_abs_error": 2.4424906541753444e-14,
+        "memory_bytes_mask": 134217728,
+        "mode": "dense_vocab_mask_baseline",
+        "online_recovery_ops_estimate": 134217728,
+        "preprocessing_ops_estimate": 68719476736,
+        "trusted_compute_ops_estimate": 134217728,
+        "vocab_size": 4096
+      }
+    ],
+    "topk_trusted_recovery_mode": [
+      {
+        "accelerator_compute_ops_estimate": 776,
+        "exactness": "exact_for_greedy_top1__not_full_softmax_unless_full_recovery",
+        "feasibility": "scalable_top1_only",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "TEE recovers full logits via inverse permutation, then returns only the top-k values + indices. Greedy decoding is exact; if the downstream sampler depends on the full distribution, full recovery must be performed before truncation. Not formal cryptographic security.",
+        "max_abs_error_full_recovery": 0.0,
+        "memory_bytes_mask": 776,
+        "mode": "topk_trusted_recovery_mode",
+        "online_recovery_ops_estimate": 776,
+        "preprocessing_ops_estimate": 97,
+        "topk": 8,
+        "trusted_compute_ops_estimate": 776,
+        "vocab_size": 97
+      },
+      {
+        "accelerator_compute_ops_estimate": 8192,
+        "exactness": "exact_for_greedy_top1__not_full_softmax_unless_full_recovery",
+        "feasibility": "scalable_top1_only",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "TEE recovers full logits via inverse permutation, then returns only the top-k values + indices. Greedy decoding is exact; if the downstream sampler depends on the full distribution, full recovery must be performed before truncation. Not formal cryptographic security.",
+        "max_abs_error_full_recovery": 0.0,
+        "memory_bytes_mask": 8192,
+        "mode": "topk_trusted_recovery_mode",
+        "online_recovery_ops_estimate": 8192,
+        "preprocessing_ops_estimate": 1024,
+        "topk": 8,
+        "trusted_compute_ops_estimate": 8192,
+        "vocab_size": 1024
+      },
+      {
+        "accelerator_compute_ops_estimate": 32768,
+        "exactness": "exact_for_greedy_top1__not_full_softmax_unless_full_recovery",
+        "feasibility": "scalable_top1_only",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "TEE recovers full logits via inverse permutation, then returns only the top-k values + indices. Greedy decoding is exact; if the downstream sampler depends on the full distribution, full recovery must be performed before truncation. Not formal cryptographic security.",
+        "max_abs_error_full_recovery": 0.0,
+        "memory_bytes_mask": 32768,
+        "mode": "topk_trusted_recovery_mode",
+        "online_recovery_ops_estimate": 32768,
+        "preprocessing_ops_estimate": 4096,
+        "topk": 8,
+        "trusted_compute_ops_estimate": 32768,
+        "vocab_size": 4096
+      }
+    ],
+    "vocab_permutation_mask": [
+      {
+        "accelerator_compute_ops_estimate": 776,
+        "exactness": "exact",
+        "feasibility": "scalable",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Permutation mask preserves the multiset of logits exactly. Token-index alignment is hidden, but the sorted logit vector is observable. Not formal cryptographic security.",
+        "logit_multiset_preserved_max_abs_error": 0.0,
+        "max_abs_error": 0.0,
+        "memory_bytes_mask": 776,
+        "mode": "vocab_permutation_mask",
+        "online_recovery_ops_estimate": 776,
+        "preprocessing_ops_estimate": 97,
+        "trusted_compute_ops_estimate": 776,
+        "vocab_size": 97
+      },
+      {
+        "accelerator_compute_ops_estimate": 8192,
+        "exactness": "exact",
+        "feasibility": "scalable",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Permutation mask preserves the multiset of logits exactly. Token-index alignment is hidden, but the sorted logit vector is observable. Not formal cryptographic security.",
+        "logit_multiset_preserved_max_abs_error": 0.0,
+        "max_abs_error": 0.0,
+        "memory_bytes_mask": 8192,
+        "mode": "vocab_permutation_mask",
+        "online_recovery_ops_estimate": 8192,
+        "preprocessing_ops_estimate": 1024,
+        "trusted_compute_ops_estimate": 8192,
+        "vocab_size": 1024
+      },
+      {
+        "accelerator_compute_ops_estimate": 32768,
+        "exactness": "exact",
+        "feasibility": "scalable",
+        "greedy_token_match_rate": 1.0,
+        "leakage_notes": "Permutation mask preserves the multiset of logits exactly. Token-index alignment is hidden, but the sorted logit vector is observable. Not formal cryptographic security.",
+        "logit_multiset_preserved_max_abs_error": 0.0,
+        "max_abs_error": 0.0,
+        "memory_bytes_mask": 32768,
+        "mode": "vocab_permutation_mask",
+        "online_recovery_ops_estimate": 32768,
+        "preprocessing_ops_estimate": 4096,
+        "trusted_compute_ops_estimate": 32768,
+        "vocab_size": 4096
+      }
+    ]
+  },
+  "stage": "7.7a",
+  "status": "ok",
+  "symbolic_estimates": {
+    "block_diagonal_vocab_mask": [
+      {
+        "block_size": 64,
+        "feasibility": "scalable_with_block_size_tunable",
+        "leakage_notes": "Block-membership of vocab index observable.",
+        "memory_bytes_mask": 8388608,
+        "mode": "block_diagonal_vocab_mask",
+        "online_recovery_ops_estimate": 8388608,
+        "symbolic_estimate_only": true,
+        "vocab_size": 16384
+      },
+      {
+        "block_size": 64,
+        "feasibility": "scalable_with_block_size_tunable",
+        "leakage_notes": "Block-membership of vocab index observable.",
+        "memory_bytes_mask": 25624576,
+        "mode": "block_diagonal_vocab_mask",
+        "online_recovery_ops_estimate": 25624576,
+        "symbolic_estimate_only": true,
+        "vocab_size": 50000
+      }
+    ],
+    "dense_vocab_mask_baseline": [
+      {
+        "feasibility": "infeasible_for_real_llm_vocab",
+        "leakage_notes": "Dense N_vocab not allocated; estimated.",
+        "memory_bytes_mask": 2147483648,
+        "mode": "dense_vocab_mask_baseline",
+        "online_recovery_ops_estimate": 2147483648,
+        "symbolic_estimate_only": true,
+        "vocab_size": 16384
+      },
+      {
+        "feasibility": "infeasible_for_real_llm_vocab",
+        "leakage_notes": "Dense N_vocab not allocated; estimated.",
+        "memory_bytes_mask": 20000000000,
+        "mode": "dense_vocab_mask_baseline",
+        "online_recovery_ops_estimate": 20000000000,
+        "symbolic_estimate_only": true,
+        "vocab_size": 50000
+      }
+    ],
+    "vocab_permutation_mask": [
+      {
+        "feasibility": "scalable",
+        "leakage_notes": "Sorted logit vector preserved.",
+        "memory_bytes_mask": 131072,
+        "mode": "vocab_permutation_mask",
+        "online_recovery_ops_estimate": 131072,
+        "symbolic_estimate_only": true,
+        "vocab_size": 16384
+      },
+      {
+        "feasibility": "scalable",
+        "leakage_notes": "Sorted logit vector preserved.",
+        "memory_bytes_mask": 400000,
+        "mode": "vocab_permutation_mask",
+        "online_recovery_ops_estimate": 400000,
+        "symbolic_estimate_only": true,
+        "vocab_size": 50000
+      }
+    ]
+  },
+  "unsafe_wording_to_avoid": [
+    "Dense vocab mask is scalable.",
+    "Permutation mask cryptographically hides logits.",
+    "topk_trusted_recovery_mode preserves full softmax.",
+    "This is formal cryptographic security."
+  ]
+}

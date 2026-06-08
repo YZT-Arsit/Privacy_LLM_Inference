@@ -1,0 +1,184 @@
+{
+  "batching_equivalence": {
+    "checked": false,
+    "reason": "ragged prompt lengths in this config"
+  },
+  "config": {
+    "mask_seeds": [
+      2031,
+      2032,
+      2033
+    ],
+    "max_new_tokens": [
+      2,
+      3,
+      2
+    ],
+    "num_layers": 1,
+    "num_sessions": 3,
+    "prompt_lens": [
+      4,
+      5,
+      7
+    ]
+  },
+  "continuous_batching_simulated": true,
+  "cross_session_mask_isolation": true,
+  "cross_session_prefix_sharing_default": false,
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "fingerprint_isolation": {
+    "fingerprint_keys": [
+      "session_0_layer_entry_h_hat",
+      "session_0_lm_head_logits_tilde",
+      "decode_step_0_layer_entry_h_hat",
+      "decode_step_0_lm_head_logits_tilde"
+    ],
+    "fingerprints_differ_per_session": true,
+    "same_prompt_sessions": [
+      0,
+      1
+    ],
+    "session_0_layer_entry": "373180222f71cc75520df561a838acb9731c6404dda6e44501597bc5bf706b37",
+    "session_1_layer_entry": "f18ffee1ea0f92dc366d595c64aa853321952d7a06cd423a94753629bb48857d"
+  },
+  "limitations": [
+    "CPU local emulation only; no real serving scheduler or continuous-batching engine.",
+    "Sessions are simulated independently with fresh per-session masks; the wrapper does NOT yet batch their boundaries into a single low-interaction call.",
+    "Cross-session prefix sharing is OFF by default; any future support must be reported as a leakage surface.",
+    "Timing / memory side channels NOT evaluated.",
+    "Not formal cryptographic / semantic / differential-privacy security."
+  ],
+  "main_mode": "multi_session_batching",
+  "multi_session_supported": true,
+  "paper_safe_wording": "Per-session orthogonal masks are sampled independently and produce per-session boundary fingerprints; the same prompt under two different sessions yields different masked boundary tensors. Cross-session prefix sharing is disabled by default.",
+  "per_session_results": [
+    {
+      "fingerprints": {
+        "decode_step_0_layer_entry_h_hat": "d8d4f549eaba82b3fc8c14ae9093d4e2f22be0a56bcdc1c3f5bfb380126d66e5",
+        "decode_step_0_lm_head_logits_tilde": "ea45dc66590ea37a65cded410cef7bbf522311704606b9469cc47f19368f9051",
+        "session_0_layer_entry_h_hat": "373180222f71cc75520df561a838acb9731c6404dda6e44501597bc5bf706b37",
+        "session_0_lm_head_logits_tilde": "4dae44d1a88ae08f09fe1d5f1275588056b33a86ae9b3a2bf5fadff8cec7c268"
+      },
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 2.220446049250313e-15,
+      "lm_head_recovery_max_abs_error": 8.786374405822528e-16,
+      "masked_tokens": [
+        [
+          88,
+          74,
+          34,
+          17,
+          46,
+          93
+        ]
+      ],
+      "max_new_tokens": 2,
+      "plain_tokens": [
+        [
+          88,
+          74,
+          34,
+          17,
+          46,
+          93
+        ]
+      ],
+      "prompt_len": 4,
+      "sequence_exact_match": true,
+      "session_id": 0
+    },
+    {
+      "fingerprints": {
+        "decode_step_0_layer_entry_h_hat": "14a08647a0ee163d8b5140ebc13d1b268fc6d859af8aafd9ec225413b4ddfbea",
+        "decode_step_0_lm_head_logits_tilde": "81eaefac011b6f07fb2570cadd7ea14d0745e90b32c7ed2fbaed368d0453a121",
+        "decode_step_1_layer_entry_h_hat": "8667ce8ecdde9bf22870f128decc342c7be4f49f65af702a05cb76ddf7eb45c0",
+        "decode_step_1_lm_head_logits_tilde": "4ee1a3da2bfdd7109bd0e38dffda1af184bae4baf23eb95d6e7d2f4fdaee6d6f",
+        "session_1_layer_entry_h_hat": "f18ffee1ea0f92dc366d595c64aa853321952d7a06cd423a94753629bb48857d",
+        "session_1_lm_head_logits_tilde": "bc91c951d70958aad8caab0cc801ee9bb67f661ae2412746954de731a400212f"
+      },
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 3.1086244689504383e-15,
+      "lm_head_recovery_max_abs_error": 8.604228440844963e-16,
+      "masked_tokens": [
+        [
+          53,
+          50,
+          7,
+          41,
+          1,
+          30,
+          4,
+          49
+        ]
+      ],
+      "max_new_tokens": 3,
+      "plain_tokens": [
+        [
+          53,
+          50,
+          7,
+          41,
+          1,
+          30,
+          4,
+          49
+        ]
+      ],
+      "prompt_len": 5,
+      "sequence_exact_match": true,
+      "session_id": 1
+    },
+    {
+      "fingerprints": {
+        "decode_step_0_layer_entry_h_hat": "f39e6d5b20705214d147354f4a045e0f3a35e1e397e7e3d6e657b066a64f1518",
+        "decode_step_0_lm_head_logits_tilde": "1f6c397b4032a6b3486af21f598e9ba0443fa6c08abb82751f818b5d719ca1a1",
+        "session_2_layer_entry_h_hat": "7581b8485bad508953fb9a0b73a8bfefea7c57300dd2da367ee5226f54810256",
+        "session_2_lm_head_logits_tilde": "59adfde80d06f494f3e90c760dd799ed811bd16146c0500b423d51e9798af3dd"
+      },
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 2.6645352591003757e-15,
+      "lm_head_recovery_max_abs_error": 8.881784197001252e-16,
+      "masked_tokens": [
+        [
+          24,
+          59,
+          0,
+          22,
+          40,
+          69,
+          64,
+          22,
+          2
+        ]
+      ],
+      "max_new_tokens": 2,
+      "plain_tokens": [
+        [
+          24,
+          59,
+          0,
+          22,
+          40,
+          69,
+          64,
+          22,
+          2
+        ]
+      ],
+      "prompt_len": 7,
+      "sequence_exact_match": true,
+      "session_id": 2
+    }
+  ],
+  "ragged_lengths_handled": true,
+  "stage": "7.7d",
+  "status": "ok",
+  "timing_side_channel_not_evaluated": true,
+  "unsafe_wording_to_avoid": [
+    "Continuous batching is cryptographically isolated.",
+    "Cross-session sharing is private.",
+    "Timing side channels evaluated.",
+    "This is formal cryptographic security."
+  ]
+}

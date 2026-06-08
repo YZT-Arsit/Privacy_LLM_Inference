@@ -1,0 +1,191 @@
+{
+  "claims": [
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_generation_correctness.json",
+      "claim": "Padded boundary linears integrate into full modern-decoder generation; pads never enter RMSNorm / RoPE / SwiGLU / softmax cores.",
+      "evidence_artifact": "outputs/modern_decoder_generation_correctness.json",
+      "evidence_artifact_exists": true,
+      "id": "padded_full_generation_correctness",
+      "remaining_blocker": "Real TEE/GPU deployment.",
+      "safe_wording": "Padded full-generation correctness verified at float64 precision under CPU local emulation.",
+      "status": "supported",
+      "unsafe_wording": "Padded generation gives cryptographic privacy."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_low_interaction_correctness.json",
+      "claim": "Low-interaction operator-compatible path achieves exact generation with one TEE-accelerator round trip per decode step under exact_visible_attention.",
+      "evidence_artifact": "outputs/modern_decoder_low_interaction_correctness.json",
+      "evidence_artifact_exists": true,
+      "id": "one_round_low_interaction_exact_mode",
+      "remaining_blocker": "Real TEE/GPU deployment.",
+      "safe_wording": "Exact low-interaction mode: greedy match 1.0, online_boundary_round_trips_per_decode_step = 1, intermediate_tee_reentry = false.",
+      "status": "supported",
+      "unsafe_wording": "Exact low-interaction mode hides attention maps."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/modern_decoder_rope_safe_low_interaction.json",
+      "claim": "RoPE-safe pre-mask mode eliminates transient plain Q/K/V on the accelerator: qkv_projection_outputs_masked_directly = true.",
+      "evidence_artifact": "outputs/modern_decoder_rope_safe_low_interaction.json",
+      "evidence_artifact_exists": true,
+      "id": "rope_transient_plain_qk_eliminated",
+      "remaining_blocker": "Real GPU fused-kernel implementation.",
+      "safe_wording": "Per-head block-diagonal RoPE-plane rotation masks commute with apply_rope and are folded into the qkv-projection, yielding masked Q_tilde / K_tilde / V_tilde directly.",
+      "status": "supported",
+      "unsafe_wording": "Hides Q/K/V cryptographically."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/norm_granularity_low_interaction.json",
+      "claim": "Token/chunk norm-mask granularity disrupts the full-sequence Gram-matrix leakage that sequence-shared Q exhibits; row L2 norms remain preserved by RMSNorm correctness.",
+      "evidence_artifact": "outputs/norm_granularity_low_interaction.json",
+      "evidence_artifact_exists": true,
+      "id": "norm_full_gram_reduced_by_token_chunk_masks",
+      "remaining_blocker": "None for algebraic claim.",
+      "safe_wording": "Token-wise masking preserves per-row L2 norms (required by RMSNorm) and disrupts off-diagonal Gram; chunk(k) preserves within-chunk Gram and disrupts cross-chunk Gram.",
+      "status": "supported",
+      "unsafe_wording": "Token-wise masking hides row norms."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/attention_privacy_modes.json",
+      "claim": "Attention maps are hidden from the accelerator transcript ONLY in trusted_softmax_attention mode; exact_visible_attention exposes them by construction.",
+      "evidence_artifact": "outputs/attention_privacy_modes.json",
+      "evidence_artifact_exists": true,
+      "id": "attention_maps_hidden_only_in_trusted_softmax_mode",
+      "remaining_blocker": "Real TEE with low boundary latency.",
+      "safe_wording": "Attention hiding requires trusted/secure softmax or approximate attention. Exact low-interaction with accelerator-side softmax exposes the QK invariant.",
+      "status": "supported",
+      "unsafe_wording": "Row-wise score shifts provide attention privacy."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/attention_privacy_modes.json",
+      "claim": "exact_visible_attention mode preserves the QK invariant by construction; attention scores and probabilities are visible on the accelerator.",
+      "evidence_artifact": "outputs/attention_privacy_modes.json",
+      "evidence_artifact_exists": true,
+      "id": "attention_maps_visible_in_exact_low_interaction_mode",
+      "remaining_blocker": "None for algebraic claim.",
+      "safe_wording": "Exact low-interaction baseline trades attention-map privacy for one-round-trip exactness.",
+      "status": "supported",
+      "unsafe_wording": "Exact low-interaction mode hides attention."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/lm_head_scalability.json",
+      "claim": "Dense V x V LM-head orthogonal mask is not feasible for real LLM vocab sizes; permutation and block-diagonal masks scale but disclose multiset/block leakage.",
+      "evidence_artifact": "outputs/lm_head_scalability.json",
+      "evidence_artifact_exists": true,
+      "id": "scalable_lm_head_dense_mask_not_feasible",
+      "remaining_blocker": "Real serving runtime sample-loop integration.",
+      "safe_wording": "Dense N_vocab not scalable to V >= 16k; permutation (O(V) storage) and block (O(V b) storage) are scalable alternatives with explicit leakage notes.",
+      "status": "supported",
+      "unsafe_wording": "Dense vocab mask is scalable."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/lora_protocol_integration.json",
+      "claim": "LoRA adapters integrate with the Stage 7.6h main protocol for q/k/v/o/up/gate/down_proj insertion sites; rank padding hides true rank but padded rank is observable.",
+      "evidence_artifact": "outputs/lora_protocol_integration.json",
+      "evidence_artifact_exists": true,
+      "id": "lora_integration_supported_for_specified_sites",
+      "remaining_blocker": "LoRA backward / training not implemented.",
+      "safe_wording": "Forward LoRA padded-boundary identity holds at every supported site at float64; A_tilde = M^{-1} A R, B_tilde = R^{-1} B N_out.",
+      "status": "supported",
+      "unsafe_wording": "LoRA training is supported."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/paged_kv_abstraction.json",
+      "claim": "The per-(session, layer, head) masked KV invariant holds under a CPU synthetic paged cache with block-table remapping.",
+      "evidence_artifact": "outputs/paged_kv_abstraction.json",
+      "evidence_artifact_exists": true,
+      "id": "paged_kv_invariant_supported_in_synthetic_abstraction",
+      "remaining_blocker": "Real GPU paged-attention kernel.",
+      "safe_wording": "Block-table indexing preserves K_tilde = K @ N_K and V_tilde = V @ N_V per session; cross-session block sharing disabled by default.",
+      "status": "supported",
+      "unsafe_wording": "Paged cache is cryptographically isolated."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/multi_session_batching.json",
+      "claim": "Per-session masks (Q_l, N_K, N_V, N_vocab) are independent; same prompt under two sessions produces different masked boundary fingerprints; cross-session prefix sharing off by default.",
+      "evidence_artifact": "outputs/multi_session_batching.json",
+      "evidence_artifact_exists": true,
+      "id": "multi_session_mask_isolation_supported_in_cpu_simulation",
+      "remaining_blocker": "Real serving scheduler integration.",
+      "safe_wording": "Per-session orthogonal masks are sampled independently; boundary fingerprints differ across sessions for the same prompt.",
+      "status": "supported",
+      "unsafe_wording": "Continuous batching is cryptographically isolated."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/integrity_spotcheck.json",
+      "claim": "Active-adversary integrity is supported ONLY as a probabilistic spot-check prototype; no verifiable computation.",
+      "evidence_artifact": "outputs/integrity_spotcheck.json",
+      "evidence_artifact_exists": true,
+      "id": "integrity_only_probabilistic_spot_check",
+      "remaining_blocker": "Cryptographic verifiable computation / authenticated dataflow.",
+      "safe_wording": "Detection rate scales with checked_fraction; no false alarms under correct execution; not a verifiable computation primitive.",
+      "status": "proxy_supported",
+      "unsafe_wording": "Active malicious accelerator fully handled."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/paper_cost_model.json",
+      "claim": "No real GPU or TEE wall-clock latency / throughput is measured; all numbers are FLOP / byte estimates or CPU emulated counts.",
+      "evidence_artifact": "outputs/paper_cost_model.json",
+      "evidence_artifact_exists": true,
+      "id": "no_real_gpu_or_tee_wall_clock",
+      "remaining_blocker": "Actual hardware access (H100 CC / SGX).",
+      "safe_wording": "Complexity-model evidence only; no real wall-clock.",
+      "status": "unsupported",
+      "unsafe_wording": "Measured real GPU/TEE performance."
+    },
+    {
+      "artifact_path": null,
+      "claim": "No formal cryptographic / semantic / differential-privacy security is claimed.",
+      "evidence_artifact": "every-report-limitations-section",
+      "evidence_artifact_exists": true,
+      "id": "no_formal_cryptographic_security",
+      "remaining_blocker": "Cryptographic protocol design or formal proof out of scope for this project.",
+      "safe_wording": "Algebraic correctness + leakage / cost accounting only.",
+      "status": "unsupported",
+      "unsafe_wording": "This is cryptographic security."
+    },
+    {
+      "artifact_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/paper_claims_audit_v2.json",
+      "claim": "No full Qwen / LLaMA deployment unless a real wrapper exists; only synthetic tiny modern decoder is exercised.",
+      "evidence_artifact": "outputs/paper_claims_audit_v2.json",
+      "evidence_artifact_exists": false,
+      "id": "no_full_qwen_or_llama_deployment_unless_real_wrapper",
+      "remaining_blocker": "Real model loader + real GPU.",
+      "safe_wording": "Tiny modern decoder used as paper-ready surrogate; scaling to LLaMA / Qwen requires the corresponding tokenizer + model loader + GPU kernels.",
+      "status": "unsupported",
+      "unsafe_wording": "Qwen / LLaMA deployed in TEE-GPU split."
+    },
+    {
+      "artifact_path": null,
+      "claim": "Hardware side channels (timing, memory, power, RDMA) are NOT evaluated.",
+      "evidence_artifact": "every-report-limitations-section",
+      "evidence_artifact_exists": true,
+      "id": "no_hardware_side_channel_evaluation",
+      "remaining_blocker": "Real hardware + side-channel platform.",
+      "safe_wording": "Side-channel evaluation out of scope; would require real hardware platform and counter-measure design.",
+      "status": "unsupported",
+      "unsafe_wording": "Side channels evaluated."
+    }
+  ],
+  "device": "cpu",
+  "limitations": [
+    "Audit table is paper-ready guidance, not a formal proof.",
+    "Evidence-artifact existence is checked; semantic validity is not re-evaluated here.",
+    "Unsupported claims must be NEVER written as supported in the paper."
+  ],
+  "main_mode": "paper_claims_audit_v2",
+  "outputs_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+  "paper_safe_wording": "All paper claims are classified into supported, proxy_supported, cost_model_only, or unsupported, with the corresponding safe and unsafe wording per claim.",
+  "stage": "7.7g",
+  "status": "ok",
+  "summary": {
+    "cost_model_only": 0,
+    "proxy_supported": 1,
+    "supported": 10,
+    "unsupported": 4
+  },
+  "unsafe_wording_to_avoid": [
+    "Treating unsupported claims as supported.",
+    "Citing missing-evidence artifacts as proof.",
+    "Combining algebraic correctness with cryptographic security in the abstract."
+  ]
+}

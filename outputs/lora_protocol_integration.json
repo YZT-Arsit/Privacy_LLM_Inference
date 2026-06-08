@@ -1,0 +1,193 @@
+{
+  "config": {
+    "batch_size": 2,
+    "hidden_size": 64,
+    "intermediate_size": 176,
+    "max_new_tokens": 3,
+    "num_layers": 1,
+    "padded_rank": 8,
+    "prompt_len": 6,
+    "true_rank": 4
+  },
+  "device": "cpu",
+  "dtype": "torch.float64",
+  "limitations": [
+    "CPU local emulation only; no real TEE / GPU.",
+    "LoRA forward path validated only; backward / training is NOT implemented.",
+    "Algebraic identity is verified per insertion site with fresh masks and pads; sample sizes are small.",
+    "Rank padding hides the *true* inner rank but the *padded* rank (inner dimension of A_tilde and B_tilde) is observable on the accelerator side.",
+    "The merged-weights generation path absorbs LoRA into the base weight; the resulting W_eff = W + A B is what the wrapper sees, equivalent to deploying a fine-tuned model.",
+    "No formal cryptographic / semantic / differential-privacy security claim."
+  ],
+  "lora_adapter_plaintext_visible": false,
+  "lora_training_backward_supported": false,
+  "main_mode": "lora_protocol_integration",
+  "merged_weights_generation_combos": [
+    {
+      "attention_privacy_mode": "exact_visible_attention",
+      "attention_scores_visible": true,
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 1.1546319456101628e-14,
+      "intermediate_tee_reentry": false,
+      "lm_head_recovery_max_abs_error": 1.4988010832439613e-15,
+      "norm_chunk_size": 1,
+      "norm_mask_granularity": "sequence",
+      "online_boundary_round_trips_per_decode_step": 1,
+      "sequence_exact_match": true
+    },
+    {
+      "attention_privacy_mode": "exact_visible_attention",
+      "attention_scores_visible": true,
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 6.2727600891321345e-15,
+      "intermediate_tee_reentry": false,
+      "lm_head_recovery_max_abs_error": 1.304512053934559e-15,
+      "norm_chunk_size": 1,
+      "norm_mask_granularity": "token",
+      "online_boundary_round_trips_per_decode_step": 1,
+      "sequence_exact_match": true
+    },
+    {
+      "attention_privacy_mode": "exact_visible_attention",
+      "attention_scores_visible": true,
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 8.382183835919932e-15,
+      "intermediate_tee_reentry": false,
+      "lm_head_recovery_max_abs_error": 1.3877787807814457e-15,
+      "norm_chunk_size": 2,
+      "norm_mask_granularity": "chunk",
+      "online_boundary_round_trips_per_decode_step": 1,
+      "sequence_exact_match": true
+    },
+    {
+      "attention_privacy_mode": "trusted_softmax_attention",
+      "attention_scores_visible": false,
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 1.509903313490213e-14,
+      "intermediate_tee_reentry": true,
+      "lm_head_recovery_max_abs_error": 1.7208456881689926e-15,
+      "norm_chunk_size": 1,
+      "norm_mask_granularity": "sequence",
+      "online_boundary_round_trips_per_decode_step": 2,
+      "sequence_exact_match": true
+    },
+    {
+      "attention_privacy_mode": "trusted_softmax_attention",
+      "attention_scores_visible": false,
+      "greedy_token_match_rate": 1.0,
+      "h_hat_layer_entry_invariant_max_abs_error": 7.993605777301127e-15,
+      "intermediate_tee_reentry": true,
+      "lm_head_recovery_max_abs_error": 1.6861512186494565e-15,
+      "norm_chunk_size": 1,
+      "norm_mask_granularity": "token",
+      "online_boundary_round_trips_per_decode_step": 2,
+      "sequence_exact_match": true
+    }
+  ],
+  "padded_rank_visible": true,
+  "paper_safe_wording": "LoRA adapters integrate with the low-interaction main protocol via the same padded-boundary algebra used for the base linear: A_tilde = M^{-1} A R, B_tilde = R^{-1} B N_out, with rank-space mask R. The forward path is exact at float64; rank padding hides the true rank but the padded rank is observable. We do not address LoRA training.",
+  "rank_padding_policy": "pad rank from true_rank to padded_rank with zeros in A and B; A_tilde / B_tilde share the inner dimension padded_rank on the accelerator side.",
+  "site_padded_boundary_identity_audit": {
+    "down_proj": {
+      "in_dim": 176,
+      "n_out_kind": "Q_l_residual_stream_orthogonal",
+      "out_dim": 64,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 1.4921397450962104e-13,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 1.6342482922482304e-13
+    },
+    "gate_proj": {
+      "in_dim": 64,
+      "n_out_kind": "paired_permutation_P",
+      "out_dim": 176,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 9.237055564881302e-14,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 9.237055564881302e-14
+    },
+    "k_proj": {
+      "in_dim": 64,
+      "n_out_kind": "B_K_block_diagonal_rope_plane_rotation",
+      "out_dim": 32,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 1.4210854715202004e-13,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 1.2256862191861728e-13
+    },
+    "o_proj": {
+      "in_dim": 64,
+      "n_out_kind": "Q_l_residual_stream_orthogonal",
+      "out_dim": 64,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 7.460698725481052e-14,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 7.815970093361102e-14
+    },
+    "q_proj": {
+      "in_dim": 64,
+      "n_out_kind": "B_Q_block_diagonal_rope_plane_rotation",
+      "out_dim": 64,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 7.105427357601002e-14,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 7.105427357601002e-14
+    },
+    "up_proj": {
+      "in_dim": 64,
+      "n_out_kind": "paired_permutation_P",
+      "out_dim": 176,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 8.704148513061227e-14,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 8.704148513061227e-14
+    },
+    "v_proj": {
+      "in_dim": 64,
+      "n_out_kind": "N_V_block_diagonal_orthogonal_per_head",
+      "out_dim": 32,
+      "padded_AB_minus_true_AB_max_abs_error": 0.0,
+      "padded_boundary_identity_max_abs_error": 6.039613253960852e-14,
+      "padded_rank": 8,
+      "rope_safe": true,
+      "true_rank": 4,
+      "trusted_recovery_max_abs_error": 5.684341886080802e-14
+    }
+  },
+  "stage": "7.7b",
+  "stage_7_6h_inherited": {
+    "qkv_projection_outputs_masked_directly": true,
+    "rope_mask_mode": "pre_rope_block_diagonal_rotation",
+    "use_pad": true
+  },
+  "status": "ok",
+  "supported_lora_sites": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "up_proj",
+    "gate_proj",
+    "down_proj"
+  ],
+  "true_rank_hidden_from_shape": true,
+  "unsafe_wording_to_avoid": [
+    "LoRA training is supported.",
+    "Padded rank cryptographically hides true rank.",
+    "LoRA fine-tuning is end-to-end private.",
+    "This is formal cryptographic security."
+  ],
+  "unsupported_lora_sites": []
+}
