@@ -1,0 +1,246 @@
+{
+  "config": {
+    "batch_size": 2,
+    "head_dim": 16,
+    "hidden_size": 64,
+    "intermediate_size": 176,
+    "mask_seed_a": 2028,
+    "mask_seed_b": 2029,
+    "max_new_tokens": 4,
+    "max_position_embeddings": 128,
+    "num_kv_heads": 2,
+    "num_layers": 1,
+    "num_query_heads": 4,
+    "prompt_len": 5,
+    "prompt_seed": 2027,
+    "rms_norm_eps": 1e-06,
+    "rope_base": 10000.0,
+    "vocab_size": 97,
+    "weights_seed": 2026
+  },
+  "correctness": {
+    "decode_step_logits_max_abs_error_max": 9.315465065995454e-16,
+    "down_proj_recovery_max_abs_error": 1.916869440954372e-15,
+    "greedy_token_match_rate": 1.0,
+    "h_hat_layer_entry_invariant_max_abs_error": 2.6645352591003757e-15,
+    "kv_cache_invariant_max_abs_error": 1.1102230246251565e-15,
+    "lm_head_recovery_max_abs_error": 9.315465065995454e-16,
+    "masked_token_sequence": [
+      [
+        76,
+        86,
+        53,
+        12,
+        27,
+        26,
+        17,
+        46,
+        93
+      ],
+      [
+        76,
+        71,
+        26,
+        91,
+        10,
+        33,
+        36,
+        57,
+        96
+      ]
+    ],
+    "o_proj_recovery_max_abs_error": 8.951173136040325e-16,
+    "plain_token_sequence": [
+      [
+        76,
+        86,
+        53,
+        12,
+        27,
+        26,
+        17,
+        46,
+        93
+      ],
+      [
+        76,
+        71,
+        26,
+        91,
+        10,
+        33,
+        36,
+        57,
+        96
+      ]
+    ],
+    "prefill_logits_max_abs_error": 9.315465065995454e-16,
+    "qk_constraint_max_error": 6.661338147750939e-16,
+    "rmsnorm_core_orthogonal_commutation_max_abs_error": 1.7763568394002505e-15,
+    "sequence_exact_match": true,
+    "swiglu_paired_permutation_max_abs_error": 1.9984014443252818e-15,
+    "transition_trick_max_abs_error": 1.6653345369377348e-15
+  },
+  "device": "cpu",
+  "diagnostics_main_run": {
+    "attention_score_mode": "plaintext_scores_due_to_qk_invariant",
+    "decode_step_logits_max_abs_error_max": 9.315465065995454e-16,
+    "down_proj_recovery_max_abs_error": 1.916869440954372e-15,
+    "fresh_pad_used_at_linear_boundaries": true,
+    "h_hat_layer_entry_invariant_max_abs_error": 2.6645352591003757e-15,
+    "intermediate_tee_reentry": false,
+    "kv_cache_invariant_max_abs_error": 1.1102230246251565e-15,
+    "lm_head_mode": "padded_masked_logits_with_trusted_recovery",
+    "lm_head_recovery_max_abs_error": 9.315465065995454e-16,
+    "main_layer_invariant": "H_hat_l = H_l Q_l",
+    "masked_boundary_fingerprints": {
+      "decode_step_0_layer_entry_h_hat": "a6b017b641a4ee20a39f5f69487c5c25e5116b76b2cf3dc0422f066b6a1caf9f",
+      "decode_step_0_lm_head_logits_tilde": "242dd124ffc59335768f2fce4f362683c9a21b347345583fe588dcf607404559",
+      "decode_step_1_layer_entry_h_hat": "57296714644271dced0ba8a0857ad29d0e9affd094d97e817900fc8ee0dd608c",
+      "decode_step_1_lm_head_logits_tilde": "606b9e129fc63f377770a7bd098107d93b0edafbac1c92683ac1a2ba41c6e8f0",
+      "decode_step_2_layer_entry_h_hat": "60b5fb5b85d0b4df329fc7dde8e7a8bc23e993c547e9883ac181180508c2f2d6",
+      "decode_step_2_lm_head_logits_tilde": "d8e61da0a2e2bdd3c084fbc831c574bdf0b1e39ed2f31772d07c52e52ed121de",
+      "main_prefill_layer_entry_h_hat": "eb1faf1c4c18a62c2d8f794e6b9bca0699acdbc4fab271405963e53c87bec70e",
+      "main_prefill_lm_head_logits_tilde": "e859d4afca70c4c254c7867acce7ded92d824e82b43131bd59c623f74870cbc3"
+    },
+    "o_proj_recovery_max_abs_error": 8.951173136040325e-16,
+    "online_boundary_round_trips_per_decode_step": 1,
+    "pad_at_linear_boundaries": true,
+    "pad_enters_rmsnorm_core": false,
+    "pad_enters_rope_core": false,
+    "pad_enters_softmax": false,
+    "pad_enters_swiglu_core": false,
+    "prefill_logits_max_abs_error": 9.315465065995454e-16,
+    "qk_constraint_max_error": 6.661338147750939e-16,
+    "rmsnorm_core_orthogonal_commutation_max_abs_error": 1.7763568394002505e-15,
+    "rmsnorm_mode": "operator_compatible_orthogonal",
+    "rope_blocker_transient_plain_qk_on_accelerator": true,
+    "rope_mode": "post_rope_masking_with_transient_plain_qk_blocker",
+    "swiglu_mode": "paired_permutation_with_boundary_pad",
+    "swiglu_paired_permutation_max_abs_error": 1.9984014443252818e-15,
+    "transition_trick_max_abs_error": 1.6653345369377348e-15,
+    "trusted_fallback_used_in_main_path": false,
+    "use_pad": true
+  },
+  "dtype": "float64",
+  "fresh_mask_used_at_linear_boundaries": true,
+  "fresh_pad_used_at_linear_boundaries": true,
+  "intermediate_tee_reentry": false,
+  "limitations": [
+    "CPU local emulation only; no real TEE / GPU deployment.",
+    "Synthetic tiny modern decoder (vocab=97, hidden=64, num_layers configurable).",
+    "Default num_layers=1 demonstrates the invariant on a single layer; the wrapper supports N layers via accelerator-side inter-layer orthogonal change-of-basis matrices.",
+    "RoPE remains the explicit blocker: post-RoPE per-head masking requires plain Q / K transiently on the accelerator. No TEE re-entry happens, but this is accelerator-side transient leakage of plain Q / K / V inside the qkv -> RoPE -> per-head-mask block.",
+    "Attention scores / probabilities are plain by construction of the QK invariant (N_Q N_K^T = I); attention-map hiding is out of scope.",
+    "Orthogonal RMSNorm-compatible masking preserves row L2 norms and Gram matrices; this is reported as an explicit boundary leakage surface.",
+    "Low-interaction mode trades fewer TEE boundary crossings for norm-structure leakage; this is a deliberate trade-off, not a security claim.",
+    "This is NOT formal cryptographic / semantic / differential privacy.",
+    "No hardware side-channel evaluation."
+  ],
+  "main_layer_invariant": "H_hat_l = H_l Q_l",
+  "main_mode": "low_interaction_operator_compatible_execution",
+  "model_type": "synthetic_tiny_modern_decoder",
+  "module_modes": {
+    "attention_score_mode": "plaintext_scores_due_to_qk_invariant",
+    "down_proj_uses_transition_trick": true,
+    "lm_head_mode": "padded_masked_logits_with_trusted_recovery",
+    "lm_head_uses_transition_trick": true,
+    "mlp_in_uses_transition_trick": true,
+    "o_proj_uses_transition_trick": true,
+    "qkv_projection_uses_transition_trick": true,
+    "rmsnorm_mode": "operator_compatible_orthogonal",
+    "rope_mode": "post_rope_masking_with_transient_plain_qk_blocker",
+    "swiglu_mode": "paired_permutation_with_boundary_pad"
+  },
+  "norm_leakage_audit": {
+    "different_prompt_gram_distance": 31.343673688686877,
+    "gram_matrix_error": 2.1316282072803006e-14,
+    "interpretation": "Orthogonal RMSNorm-compatible masking preserves row L2 norms and the full Gram matrix of the hidden states. The accelerator boundary therefore exposes the token-pair similarity structure of the plain hidden states. Fresh Q per session does NOT randomise this structure (both runs yield the same Gram matrix).",
+    "nearest_neighbour_gram_match_rate_different_prompt": 0.2,
+    "nearest_neighbour_gram_match_rate_same_prompt": 1.0,
+    "notes": "Row L2 norms and Gram matrices of the plain hidden states are exactly preserved by orthogonal Q; the no-reentry path therefore leaks token-pair similarity structure on the accelerator boundary.",
+    "row_norm_error": 1.7763568394002505e-15,
+    "same_prompt_fresh_Q_gram_linkability": 2.842170943040401e-14
+  },
+  "online_boundary_protocol": {
+    "accelerator_to_tee_tensors_per_step": [
+      "z_tilde = z @ N_vocab (masked logits)"
+    ],
+    "kv_cache_remasking_during_decode": false,
+    "no_per_layer_trusted_recovery": true,
+    "no_trusted_rmsnorm_fallback": true,
+    "no_trusted_rope_recovery": true,
+    "post_rope_per_head_masking_used": true,
+    "rmsnorm_gamma_folded_into_following_linear": true,
+    "tee_to_accelerator_tensors_per_step": [
+      "h_hat_0 = h_0 @ Q_1 (masked current-token state)"
+    ]
+  },
+  "online_boundary_round_trips_per_decode_step": 1,
+  "pad_policy": {
+    "pad_at_linear_boundaries": true,
+    "pad_compensated_before_nonlinear_core": true,
+    "pad_enters_rmsnorm_core": false,
+    "pad_enters_rope_core": false,
+    "pad_enters_softmax": false,
+    "pad_enters_swiglu_core": false
+  },
+  "paper_safe_wording": "We verify that the operator-compatible orthogonal RMSNorm path, combined with fresh boundary pads and the trusted-precomputed Q^{-1} M transition trick, can run a full tiny modern-decoder generation step without any per-layer TEE re-entry. The trade-off, made explicit by the Gram-matrix leakage audit, is that the GPU-visible H_hat = H Q preserves row-norm and token-pair similarity structure.",
+  "rmsnorm_mode": "operator_compatible_orthogonal",
+  "rope_blocker": {
+    "blocker_present": true,
+    "description": "Preferred path is post-RoPE per-head masking. The qkv-projection output is plain Q / K / V transiently on the accelerator -- RoPE is applied on plain Q / K and per-head masks are applied immediately afterwards. No TEE re-entry happens during this step (no data leaves the accelerator), but plain Q / K / V are transiently visible to the accelerator inside that block. This is the explicit blocker for the no-reentry path.",
+    "tee_reentry_inside_rope_block": false,
+    "transient_plain_qk_on_accelerator": true
+  },
+  "security_relevant_checks": {
+    "embedding_in_trusted_side": true,
+    "kv_cache_contains_plaintext": false,
+    "lm_head_logits_masked_before_recovery": true,
+    "main_run_fingerprints": {
+      "decode_step_0_layer_entry_h_hat": "a6b017b641a4ee20a39f5f69487c5c25e5116b76b2cf3dc0422f066b6a1caf9f",
+      "decode_step_0_lm_head_logits_tilde": "242dd124ffc59335768f2fce4f362683c9a21b347345583fe588dcf607404559",
+      "decode_step_1_layer_entry_h_hat": "57296714644271dced0ba8a0857ad29d0e9affd094d97e817900fc8ee0dd608c",
+      "decode_step_1_lm_head_logits_tilde": "606b9e129fc63f377770a7bd098107d93b0edafbac1c92683ac1a2ba41c6e8f0",
+      "decode_step_2_layer_entry_h_hat": "60b5fb5b85d0b4df329fc7dde8e7a8bc23e993c547e9883ac181180508c2f2d6",
+      "decode_step_2_lm_head_logits_tilde": "d8e61da0a2e2bdd3c084fbc831c574bdf0b1e39ed2f31772d07c52e52ed121de",
+      "main_prefill_layer_entry_h_hat": "eb1faf1c4c18a62c2d8f794e6b9bca0699acdbc4fab271405963e53c87bec70e",
+      "main_prefill_lm_head_logits_tilde": "e859d4afca70c4c254c7867acce7ded92d824e82b43131bd59c623f74870cbc3"
+    },
+    "same_input_two_runs_different_masked_fingerprints": true,
+    "same_input_two_runs_same_output": true,
+    "sampling_on_trusted_recovered_logits": true,
+    "second_run_fingerprints": {
+      "decode_step_0_layer_entry_h_hat": "06902b6c6bf180f07e35577e11236a6f5b90042d1d89827c1ed87b9d017fc187",
+      "decode_step_0_lm_head_logits_tilde": "77130a7588a041b785ef74faaae0d3e5b703c4e48c7033165badf32d1603303a",
+      "decode_step_1_layer_entry_h_hat": "54b71608090a25ef78e803fe005b89b21e38338f4facc3dfc1c4aa308b2183a7",
+      "decode_step_1_lm_head_logits_tilde": "2a0b0f0b28572c7563cdf8e5e2c64e457dd8870887b7b90bdd0ffa0d68e0c1c5",
+      "decode_step_2_layer_entry_h_hat": "f8460d70dab0853899364c3dee28cd71ee397a432bcf373a35ed70d11c4a490e",
+      "decode_step_2_lm_head_logits_tilde": "4b889d938927018145fbc03acd90ad003aa33e7f219876917bc3ec1226e4d691",
+      "run_b_prefill_layer_entry_h_hat": "740449365bd86fdc9560982e837877e444b0749dc94720c25c68a05c30c86b73",
+      "run_b_prefill_lm_head_logits_tilde": "fb94a7705a27af4fb4e1365c26290fef38189fde03b57f9532ebd921ff377883"
+    },
+    "token_ids_exposed_to_accelerator": false
+  },
+  "stage": "7.6f",
+  "status": "ok",
+  "tolerances": {
+    "invariant_tolerance": 1e-10,
+    "kv_cache_invariant_tolerance": 1e-11,
+    "logits_tolerance": 1e-09
+  },
+  "trusted_fallback_used_in_main_path": false,
+  "unsafe_wording_to_avoid": [
+    "The scheme is formally secure.",
+    "Orthogonal masking hides hidden states cryptographically.",
+    "Attention maps are hidden.",
+    "We evaluate real TEE / GPU performance.",
+    "Generic dense masks commute with RoPE.",
+    "Pads can pass through nonlinear layers.",
+    "We support full Qwen / LLaMA private generation on real TEE / GPU.",
+    "No information leaks on the accelerator boundary.",
+    "The Gram matrix is hidden.",
+    "Row norms are randomised by fresh Q."
+  ],
+  "use_pad": true
+}
