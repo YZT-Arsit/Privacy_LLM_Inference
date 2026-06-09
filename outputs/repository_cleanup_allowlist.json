@@ -1,0 +1,8 @@
+{
+  "_comment": "Explicit, human-reviewed cleanup allowlist. Only files listed here may be deleted/archived/moved by apply_repository_cleanup_allowlist.py. Every entry is justified in outputs/repository_cleanup_plan.md.",
+  "delete": [],
+  "archive": [
+    "outputs/gpt2_block_correctness_small.json"
+  ],
+  "move": []
+}

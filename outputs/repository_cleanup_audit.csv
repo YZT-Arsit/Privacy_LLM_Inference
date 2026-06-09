@@ -1,0 +1,716 @@
+path,ext,size_bytes,mtime,referenced,action,action_reason
+README.md,.md,14372,1780997282,True,keep_referenced,path 'README.md' appears in repo text
+docs/PAPER_EVALUATION_MAP.md,.md,11830,1780989513,True,keep_referenced,basename 'PAPER_EVALUATION_MAP.md' appears in repo text
+docs/PAPER_THEORY_OUTLINE.md,.md,12885,1780989443,True,keep_referenced,path 'docs/PAPER_THEORY_OUTLINE.md' appears in repo text
+docs/STAGE_ARTIFACTS.md,.md,209911,1780997196,True,keep_referenced,basename 'STAGE_ARTIFACTS.md' appears in repo text
+docs/paper_draft/00_paper_positioning.md,.md,9416,1780962704,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/01_introduction.md,.md,8963,1780962754,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/02_system_and_threat_model.md,.md,9855,1780962813,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/03_method.md,.md,18185,1780962924,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/04_theory_and_proofs.md,.md,22111,1780963052,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/05_experiments.md,.md,18830,1780963165,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/06_limitations.md,.md,11154,1780963228,True,keep_referenced,basename '06_limitations.md' appears in repo text
+docs/paper_draft/07_related_work_notes.md,.md,10805,1780963291,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/appendix_a_component_coverage.md,.md,8427,1780963343,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/appendix_b_claims_audit.md,.md,11089,1780963402,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+docs/paper_draft/appendix_c_cost_model.md,.md,8891,1780963467,True,keep_referenced,path 'docs/paper_draft/appendix_c_cost_model.md' appears in repo text
+docs/paper_draft/tables.md,.md,12154,1780963532,True,keep_referenced,basename 'tables.md' appears in repo text
+docs/runtime_boundary.md,.md,5562,1780454025,True,keep_referenced,basename 'runtime_boundary.md' appears in repo text
+outputs/_summary_runs/gpt2_block_pad_false.json,.json,1439,1780019521,True,keep_referenced,basename 'gpt2_block_pad_false.json' appears in repo text
+outputs/_summary_runs/gpt2_block_pad_true.json,.json,1425,1780019514,True,keep_referenced,basename 'gpt2_block_pad_true.json' appears in repo text
+outputs/_summary_runs/gpt2_cache_pad_false.json,.json,2683,1780019550,True,keep_referenced,basename 'gpt2_cache_pad_false.json' appears in repo text
+outputs/_summary_runs/gpt2_cache_pad_true.json,.json,2684,1780019543,True,keep_referenced,basename 'gpt2_cache_pad_true.json' appears in repo text
+outputs/_summary_runs/gpt2_generation_pad_false.json,.json,3547,1780019564,True,keep_referenced,basename 'gpt2_generation_pad_false.json' appears in repo text
+outputs/_summary_runs/gpt2_generation_pad_true.json,.json,3565,1780019557,True,keep_referenced,basename 'gpt2_generation_pad_true.json' appears in repo text
+outputs/_summary_runs/gpt2_model_pad_false.json,.json,1354,1780019536,True,keep_referenced,basename 'gpt2_model_pad_false.json' appears in repo text
+outputs/_summary_runs/gpt2_model_pad_true.json,.json,1349,1780019528,True,keep_referenced,basename 'gpt2_model_pad_true.json' appears in repo text
+outputs/_summary_runs/kv_cache.json,.json,1448,1780019507,True,keep_referenced,basename 'kv_cache.json' appears in repo text
+outputs/_summary_runs/lora_pad_false.json,.json,586,1780019506,True,keep_referenced,basename 'lora_pad_false.json' appears in repo text
+outputs/_summary_runs/lora_pad_true.json,.json,586,1780019505,True,keep_referenced,basename 'lora_pad_true.json' appears in repo text
+outputs/_summary_runs/static_pad_false.json,.json,585,1780019504,True,keep_referenced,basename 'static_pad_false.json' appears in repo text
+outputs/_summary_runs/static_pad_true.json,.json,585,1780019504,True,keep_referenced,basename 'static_pad_true.json' appears in repo text
+outputs/_summary_runs/tiny_generation.json,.json,825,1780019508,True,keep_referenced,basename 'tiny_generation.json' appears in repo text
+outputs/_summary_runs/tiny_transformer.json,.json,854,1780019506,True,keep_referenced,basename 'tiny_transformer.json' appears in repo text
+outputs/adaptive_island_attacks.csv,.csv,17356,1780236232,True,keep_referenced,basename 'adaptive_island_attacks.csv' appears in repo text
+outputs/adaptive_island_attacks.json,.json,20536,1780236232,True,keep_referenced,basename 'adaptive_island_attacks.json' appears in repo text
+outputs/adaptive_island_attacks.md,.md,7592,1780236232,True,keep_referenced,basename 'adaptive_island_attacks.md' appears in repo text
+outputs/architecture_coverage.csv,.csv,738,1780042056,True,keep_referenced,basename 'architecture_coverage.csv' appears in repo text
+outputs/architecture_coverage.json,.json,5264,1780042056,True,keep_referenced,basename 'architecture_coverage.json' appears in repo text
+outputs/architecture_coverage.md,.md,4535,1780042056,True,keep_referenced,basename 'architecture_coverage.md' appears in repo text
+outputs/archive/outputs/gpt2_block_correctness_small.json,.json,975,1779951049,True,keep_referenced,basename 'gpt2_block_correctness_small.json' appears in repo text
+outputs/attention_experiments.csv,.csv,9608,1780021933,True,keep_referenced,basename 'attention_experiments.csv' appears in repo text
+outputs/attention_experiments.json,.json,198587,1780021933,True,keep_referenced,basename 'attention_experiments.json' appears in repo text
+outputs/attention_experiments.md,.md,2959,1780021933,True,keep_referenced,basename 'attention_experiments.md' appears in repo text
+outputs/attention_privacy_modes.json,.json,19356,1780923839,True,keep_referenced,basename 'attention_privacy_modes.json' appears in repo text
+outputs/attention_privacy_modes.md,.md,7979,1780923839,True,keep_referenced,basename 'attention_privacy_modes.md' appears in repo text
+outputs/cpu_runtime_completion.csv,.csv,19335,1780451856,True,keep_referenced,basename 'cpu_runtime_completion.csv' appears in repo text
+outputs/cpu_runtime_completion.json,.json,45897,1780451856,True,keep_referenced,basename 'cpu_runtime_completion.json' appears in repo text
+outputs/cpu_runtime_completion.md,.md,22878,1780451856,True,keep_referenced,basename 'cpu_runtime_completion.md' appears in repo text
+outputs/cross_architecture_compatible_island_smoke.json,.json,14031,1780202323,True,keep_referenced,basename 'cross_architecture_compatible_island_smoke.json' appears in repo text
+outputs/cross_architecture_compatible_island_smoke.md,.md,2393,1780202323,True,keep_referenced,basename 'cross_architecture_compatible_island_smoke.md' appears in repo text
+outputs/cross_architecture_summary.csv,.csv,1283,1780997430,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/cross_architecture_summary.json,.json,61959,1780997430,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/cross_architecture_summary.md,.md,30008,1780997430,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/cross_attention_experiments.csv,.csv,17137,1780041392,True,keep_referenced,basename 'cross_attention_experiments.csv' appears in repo text
+outputs/cross_attention_experiments.json,.json,132022,1780041392,True,keep_referenced,basename 'cross_attention_experiments.json' appears in repo text
+outputs/cross_attention_experiments.md,.md,8656,1780041392,True,keep_referenced,basename 'cross_attention_experiments.md' appears in repo text
+outputs/decoder_component_coverage_audit.json,.json,12374,1780938670,True,keep_referenced,basename 'decoder_component_coverage_audit.json' appears in repo text
+outputs/decoder_component_coverage_audit.md,.md,6046,1780938670,True,keep_referenced,basename 'decoder_component_coverage_audit.md' appears in repo text
+outputs/direct_prior_work_comparison.csv,.csv,7551,1780454682,True,keep_referenced,basename 'direct_prior_work_comparison.csv' appears in repo text
+outputs/direct_prior_work_comparison.json,.json,16658,1780454682,True,keep_referenced,basename 'direct_prior_work_comparison.json' appears in repo text
+outputs/direct_prior_work_comparison.md,.md,9547,1780454682,True,keep_referenced,basename 'direct_prior_work_comparison.md' appears in repo text
+outputs/encoder_attention_experiments.csv,.csv,7332,1780042049,True,keep_referenced,basename 'encoder_attention_experiments.csv' appears in repo text
+outputs/encoder_attention_experiments.json,.json,54586,1780042049,True,keep_referenced,basename 'encoder_attention_experiments.json' appears in repo text
+outputs/encoder_attention_experiments.md,.md,5171,1780042049,True,keep_referenced,basename 'encoder_attention_experiments.md' appears in repo text
+outputs/experiment_summary.csv,.csv,2636,1780019565,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/experiment_summary.json,.json,16985,1780019565,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/experiment_summary.md,.md,5883,1780019565,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/generation_correctness.json,.json,771,1779949688,True,keep_referenced,basename 'generation_correctness.json' appears in repo text
+outputs/generation_processor_coverage.json,.json,5656,1780938526,True,keep_referenced,basename 'generation_processor_coverage.json' appears in repo text
+outputs/generation_processor_coverage.md,.md,2695,1780938526,True,keep_referenced,basename 'generation_processor_coverage.md' appears in repo text
+outputs/gpt2_block_correctness.json,.json,1436,1779951959,True,keep_referenced,path 'outputs/gpt2_block_correctness.json' appears in repo text
+outputs/gpt2_block_correctness_no_pad.json,.json,1438,1779951959,True,keep_referenced,path 'outputs/gpt2_block_correctness_no_pad.json' appears in repo text
+outputs/gpt2_cache_correctness.json,.json,2682,1779956360,True,keep_referenced,path 'outputs/gpt2_cache_correctness.json' appears in repo text
+outputs/gpt2_compatible_island_smoke.json,.json,2587,1780141761,True,keep_referenced,basename 'gpt2_compatible_island_smoke.json' appears in repo text
+outputs/gpt2_compatible_island_smoke.md,.md,1538,1780141761,True,keep_referenced,basename 'gpt2_compatible_island_smoke.md' appears in repo text
+outputs/gpt2_conv1d_mapping.json,.json,7849,1779950535,True,keep_referenced,path 'outputs/gpt2_conv1d_mapping.json' appears in repo text
+outputs/gpt2_generation_correctness.json,.json,3554,1780018550,True,keep_referenced,path 'outputs/gpt2_generation_correctness.json' appears in repo text
+outputs/gpt2_model_compatible_island_smoke.json,.json,11331,1780202310,True,keep_referenced,basename 'gpt2_model_compatible_island_smoke.json' appears in repo text
+outputs/gpt2_model_compatible_island_smoke.md,.md,2565,1780202310,True,keep_referenced,basename 'gpt2_model_compatible_island_smoke.md' appears in repo text
+outputs/gpt2_model_correctness.json,.json,1352,1779954345,True,keep_referenced,path 'outputs/gpt2_model_correctness.json' appears in repo text
+outputs/hf_gpt2_smoke.json,.json,781,1779950062,True,keep_referenced,path 'outputs/hf_gpt2_smoke.json' appears in repo text
+outputs/hf_model_inspection.json,.json,5149,1779950106,True,keep_referenced,path 'outputs/hf_model_inspection.json' appears in repo text
+outputs/integrity_spotcheck.json,.json,15228,1780925892,True,keep_referenced,basename 'integrity_spotcheck.json' appears in repo text
+outputs/integrity_spotcheck.md,.md,3682,1780925892,True,keep_referenced,basename 'integrity_spotcheck.md' appears in repo text
+outputs/kv_cache_correctness.json,.json,1412,1779949688,True,keep_referenced,path 'outputs/kv_cache_correctness.json' appears in repo text
+outputs/lm_head_scalability.json,.json,13059,1780925330,True,keep_referenced,basename 'lm_head_scalability.json' appears in repo text
+outputs/lm_head_scalability.md,.md,3812,1780925330,True,keep_referenced,basename 'lm_head_scalability.md' appears in repo text
+outputs/lookup_nonlinear_cost_proxy.csv,.csv,1401,1780999090,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/lookup_nonlinear_cost_proxy.json,.json,8047,1780999090,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/lookup_nonlinear_cost_proxy.md,.md,5903,1780999090,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/lora_backward_experiments.csv,.csv,6689,1780338157,True,keep_referenced,basename 'lora_backward_experiments.csv' appears in repo text
+outputs/lora_backward_experiments.json,.json,11538,1780338157,True,keep_referenced,basename 'lora_backward_experiments.json' appears in repo text
+outputs/lora_backward_experiments.md,.md,4486,1780338157,True,keep_referenced,basename 'lora_backward_experiments.md' appears in repo text
+outputs/lora_correctness.json,.json,601,1779949664,True,keep_referenced,path 'outputs/lora_correctness.json' appears in repo text
+outputs/lora_correctness_no_pad_float32.json,.json,603,1779948009,True,keep_referenced,path 'outputs/lora_correctness_no_pad_float32.json' appears in repo text
+outputs/lora_gradient_security_proxy.csv,.csv,38740,1780338158,True,keep_referenced,basename 'lora_gradient_security_proxy.csv' appears in repo text
+outputs/lora_gradient_security_proxy.json,.json,25084,1780338158,True,keep_referenced,basename 'lora_gradient_security_proxy.json' appears in repo text
+outputs/lora_gradient_security_proxy.md,.md,6346,1780338158,True,keep_referenced,basename 'lora_gradient_security_proxy.md' appears in repo text
+outputs/lora_protocol_integration.json,.json,7423,1780925498,True,keep_referenced,basename 'lora_protocol_integration.json' appears in repo text
+outputs/lora_protocol_integration.md,.md,3142,1780925498,True,keep_referenced,basename 'lora_protocol_integration.md' appears in repo text
+outputs/lora_rank_padding_experiments.csv,.csv,5277,1780366171,True,keep_referenced,basename 'lora_rank_padding_experiments.csv' appears in repo text
+outputs/lora_rank_padding_experiments.json,.json,6860,1780366171,True,keep_referenced,basename 'lora_rank_padding_experiments.json' appears in repo text
+outputs/lora_rank_padding_experiments.md,.md,4909,1780366171,True,keep_referenced,basename 'lora_rank_padding_experiments.md' appears in repo text
+outputs/lora_rank_security_proxy.csv,.csv,10102,1780366172,True,keep_referenced,basename 'lora_rank_security_proxy.csv' appears in repo text
+outputs/lora_rank_security_proxy.json,.json,9904,1780366172,True,keep_referenced,basename 'lora_rank_security_proxy.json' appears in repo text
+outputs/lora_rank_security_proxy.md,.md,5773,1780366172,True,keep_referenced,basename 'lora_rank_security_proxy.md' appears in repo text
+outputs/lora_security_proxy.csv,.csv,33423,1780326025,True,keep_referenced,basename 'lora_security_proxy.csv' appears in repo text
+outputs/lora_security_proxy.json,.json,23587,1780326025,True,keep_referenced,basename 'lora_security_proxy.json' appears in repo text
+outputs/lora_security_proxy.md,.md,5945,1780326025,True,keep_referenced,basename 'lora_security_proxy.md' appears in repo text
+outputs/lora_stronger_dummy_experiments.csv,.csv,41135,1780383573,True,keep_referenced,basename 'lora_stronger_dummy_experiments.csv' appears in repo text
+outputs/lora_stronger_dummy_experiments.json,.json,37062,1780383573,True,keep_referenced,basename 'lora_stronger_dummy_experiments.json' appears in repo text
+outputs/lora_stronger_dummy_experiments.md,.md,6275,1780383573,True,keep_referenced,basename 'lora_stronger_dummy_experiments.md' appears in repo text
+outputs/lora_stronger_dummy_security_proxy.csv,.csv,38460,1780383580,True,keep_referenced,basename 'lora_stronger_dummy_security_proxy.csv' appears in repo text
+outputs/lora_stronger_dummy_security_proxy.json,.json,26893,1780383580,True,keep_referenced,basename 'lora_stronger_dummy_security_proxy.json' appears in repo text
+outputs/lora_stronger_dummy_security_proxy.md,.md,8045,1780383580,True,keep_referenced,basename 'lora_stronger_dummy_security_proxy.md' appears in repo text
+outputs/lora_training_experiments.csv,.csv,4302,1780326024,True,keep_referenced,basename 'lora_training_experiments.csv' appears in repo text
+outputs/lora_training_experiments.json,.json,9430,1780326024,True,keep_referenced,basename 'lora_training_experiments.json' appears in repo text
+outputs/lora_training_experiments.md,.md,4132,1780326024,True,keep_referenced,basename 'lora_training_experiments.md' appears in repo text
+outputs/lora_training_inference_lifecycle.csv,.csv,5577,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/lora_training_inference_lifecycle.json,.json,21442,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/lora_training_inference_lifecycle.md,.md,13485,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/lora_training_timing_proxy.csv,.csv,9765,1780381468,True,keep_referenced,basename 'lora_training_timing_proxy.csv' appears in repo text
+outputs/lora_training_timing_proxy.json,.json,8404,1780381468,True,keep_referenced,basename 'lora_training_timing_proxy.json' appears in repo text
+outputs/lora_training_timing_proxy.md,.md,4132,1780381468,True,keep_referenced,basename 'lora_training_timing_proxy.md' appears in repo text
+outputs/masked_gradient_lora_security_proxy.csv,.csv,605,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/masked_gradient_lora_security_proxy.json,.json,14627,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/masked_gradient_lora_security_proxy.md,.md,1754,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/masked_gradient_lora_training.csv,.csv,892,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/masked_gradient_lora_training.json,.json,12582,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/masked_gradient_lora_training.md,.md,8030,1780999091,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/modern_decoder_block_wrapper_smoke.json,.json,17728,1780235496,True,keep_referenced,basename 'modern_decoder_block_wrapper_smoke.json' appears in repo text
+outputs/modern_decoder_block_wrapper_smoke.md,.md,4698,1780235496,True,keep_referenced,basename 'modern_decoder_block_wrapper_smoke.md' appears in repo text
+outputs/modern_decoder_generation_correctness.json,.json,12700,1780902975,True,keep_referenced,basename 'modern_decoder_generation_correctness.json' appears in repo text
+outputs/modern_decoder_generation_correctness.md,.md,4213,1780902975,True,keep_referenced,basename 'modern_decoder_generation_correctness.md' appears in repo text
+outputs/modern_decoder_low_interaction_correctness.json,.json,12128,1780906162,True,keep_referenced,basename 'modern_decoder_low_interaction_correctness.json' appears in repo text
+outputs/modern_decoder_low_interaction_correctness.md,.md,6900,1780906162,True,keep_referenced,basename 'modern_decoder_low_interaction_correctness.md' appears in repo text
+outputs/modern_decoder_model_wrapper_smoke.json,.json,39584,1780282833,True,keep_referenced,basename 'modern_decoder_model_wrapper_smoke.json' appears in repo text
+outputs/modern_decoder_model_wrapper_smoke.md,.md,5485,1780282833,True,keep_referenced,basename 'modern_decoder_model_wrapper_smoke.md' appears in repo text
+outputs/modern_decoder_probe.csv,.csv,5579,1780236231,True,keep_referenced,basename 'modern_decoder_probe.csv' appears in repo text
+outputs/modern_decoder_probe.json,.json,13228,1780236231,True,keep_referenced,basename 'modern_decoder_probe.json' appears in repo text
+outputs/modern_decoder_probe.md,.md,4414,1780236231,True,keep_referenced,basename 'modern_decoder_probe.md' appears in repo text
+outputs/modern_decoder_rope_safe_low_interaction.json,.json,11622,1780908432,True,keep_referenced,basename 'modern_decoder_rope_safe_low_interaction.json' appears in repo text
+outputs/modern_decoder_rope_safe_low_interaction.md,.md,6015,1780908432,True,keep_referenced,basename 'modern_decoder_rope_safe_low_interaction.md' appears in repo text
+outputs/multi_session_batching.json,.json,5751,1780925755,True,keep_referenced,basename 'multi_session_batching.json' appears in repo text
+outputs/multi_session_batching.md,.md,2328,1780925755,True,keep_referenced,basename 'multi_session_batching.md' appears in repo text
+outputs/multilayer_lora_security_proxy.csv,.csv,15433,1780381462,True,keep_referenced,basename 'multilayer_lora_security_proxy.csv' appears in repo text
+outputs/multilayer_lora_security_proxy.json,.json,12542,1780381462,True,keep_referenced,basename 'multilayer_lora_security_proxy.json' appears in repo text
+outputs/multilayer_lora_security_proxy.md,.md,6313,1780381462,True,keep_referenced,basename 'multilayer_lora_security_proxy.md' appears in repo text
+outputs/multilayer_lora_training_experiments.csv,.csv,23242,1780381456,True,keep_referenced,basename 'multilayer_lora_training_experiments.csv' appears in repo text
+outputs/multilayer_lora_training_experiments.json,.json,19518,1780381456,True,keep_referenced,basename 'multilayer_lora_training_experiments.json' appears in repo text
+outputs/multilayer_lora_training_experiments.md,.md,5148,1780381456,True,keep_referenced,basename 'multilayer_lora_training_experiments.md' appears in repo text
+outputs/nonlinear_island_experiments.csv,.csv,4988,1780128075,True,keep_referenced,basename 'nonlinear_island_experiments.csv' appears in repo text
+outputs/nonlinear_island_experiments.json,.json,24024,1780128075,True,keep_referenced,basename 'nonlinear_island_experiments.json' appears in repo text
+outputs/nonlinear_island_experiments.md,.md,5799,1780128075,True,keep_referenced,basename 'nonlinear_island_experiments.md' appears in repo text
+outputs/nonlinear_island_security.csv,.csv,12546,1780129848,True,keep_referenced,basename 'nonlinear_island_security.csv' appears in repo text
+outputs/nonlinear_island_security.json,.json,14024,1780129848,True,keep_referenced,basename 'nonlinear_island_security.json' appears in repo text
+outputs/nonlinear_island_security.md,.md,7923,1780129848,True,keep_referenced,basename 'nonlinear_island_security.md' appears in repo text
+outputs/norm_experiments.csv,.csv,5249,1780123567,True,keep_referenced,basename 'norm_experiments.csv' appears in repo text
+outputs/norm_experiments.json,.json,40110,1780123567,True,keep_referenced,basename 'norm_experiments.json' appears in repo text
+outputs/norm_experiments.md,.md,5801,1780123567,True,keep_referenced,basename 'norm_experiments.md' appears in repo text
+outputs/norm_granularity_low_interaction.json,.json,14891,1780921665,True,keep_referenced,basename 'norm_granularity_low_interaction.json' appears in repo text
+outputs/norm_granularity_low_interaction.md,.md,4717,1780921665,True,keep_referenced,basename 'norm_granularity_low_interaction.md' appears in repo text
+outputs/ours_runtime_api_validation.csv,.csv,1946,1780454683,True,keep_referenced,basename 'ours_runtime_api_validation.csv' appears in repo text
+outputs/ours_runtime_api_validation.json,.json,6075,1780454683,True,keep_referenced,basename 'ours_runtime_api_validation.json' appears in repo text
+outputs/ours_runtime_api_validation.md,.md,3002,1780454683,True,keep_referenced,basename 'ours_runtime_api_validation.md' appears in repo text
+outputs/paged_kv_abstraction.json,.json,3446,1780925653,True,keep_referenced,basename 'paged_kv_abstraction.json' appears in repo text
+outputs/paged_kv_abstraction.md,.md,2340,1780925653,True,keep_referenced,basename 'paged_kv_abstraction.md' appears in repo text
+outputs/paper_ablation_study.csv,.csv,2181,1780451854,True,keep_referenced,basename 'paper_ablation_study.csv' appears in repo text
+outputs/paper_ablation_study.json,.json,6881,1780451854,True,keep_referenced,basename 'paper_ablation_study.json' appears in repo text
+outputs/paper_ablation_study.md,.md,4541,1780451854,True,keep_referenced,basename 'paper_ablation_study.md' appears in repo text
+outputs/paper_baseline_comparison.csv,.csv,2241,1780451854,True,keep_referenced,basename 'paper_baseline_comparison.csv' appears in repo text
+outputs/paper_baseline_comparison.json,.json,6369,1780451854,True,keep_referenced,basename 'paper_baseline_comparison.json' appears in repo text
+outputs/paper_baseline_comparison.md,.md,3461,1780451854,True,keep_referenced,basename 'paper_baseline_comparison.md' appears in repo text
+outputs/paper_claims_audit_v2.json,.json,19972,1780938864,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/paper_claims_audit_v2.md,.md,14346,1780938864,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/paper_cost_model.json,.json,15930,1780926046,True,keep_referenced,basename 'paper_cost_model.json' appears in repo text
+outputs/paper_cost_model.md,.md,7097,1780926046,True,keep_referenced,basename 'paper_cost_model.md' appears in repo text
+outputs/paper_experiment_suite.json,.json,28242,1780938877,True,keep_referenced,basename 'paper_experiment_suite.json' appears in repo text
+outputs/paper_experiment_suite.md,.md,10953,1780938877,True,keep_referenced,basename 'paper_experiment_suite.md' appears in repo text
+outputs/paper_stability_study.csv,.csv,858,1780451855,True,keep_referenced,basename 'paper_stability_study.csv' appears in repo text
+outputs/paper_stability_study.json,.json,1878987,1780451855,True,keep_referenced,basename 'paper_stability_study.json' appears in repo text
+outputs/paper_stability_study.md,.md,1820,1780451855,True,keep_referenced,basename 'paper_stability_study.md' appears in repo text
+outputs/paper_toy_tasks.csv,.csv,660,1780451854,True,keep_referenced,basename 'paper_toy_tasks.csv' appears in repo text
+outputs/paper_toy_tasks.json,.json,17026,1780451854,True,keep_referenced,basename 'paper_toy_tasks.json' appears in repo text
+outputs/paper_toy_tasks.md,.md,1824,1780451854,True,keep_referenced,basename 'paper_toy_tasks.md' appears in repo text
+outputs/permutation_invariant_leakage.csv,.csv,7793,1780999093,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/permutation_invariant_leakage.json,.json,65033,1780999093,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/permutation_invariant_leakage.md,.md,21672,1780999093,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/precision_quantization_stability.json,.json,17847,1780938375,True,keep_referenced,basename 'precision_quantization_stability.json' appears in repo text
+outputs/precision_quantization_stability.md,.md,6446,1780938375,True,keep_referenced,basename 'precision_quantization_stability.md' appears in repo text
+outputs/real_activation_attacks.csv,.csv,53454,1780242561,True,keep_referenced,basename 'real_activation_attacks.csv' appears in repo text
+outputs/real_activation_attacks.json,.json,57732,1780242561,True,keep_referenced,basename 'real_activation_attacks.json' appears in repo text
+outputs/real_activation_attacks.md,.md,11230,1780242561,True,keep_referenced,basename 'real_activation_attacks.md' appears in repo text
+outputs/real_token_activation_attacks.csv,.csv,118082,1780323685,True,keep_referenced,basename 'real_token_activation_attacks.csv' appears in repo text
+outputs/real_token_activation_attacks.json,.json,136397,1780323685,True,keep_referenced,basename 'real_token_activation_attacks.json' appears in repo text
+outputs/real_token_activation_attacks.md,.md,20647,1780323685,True,keep_referenced,basename 'real_token_activation_attacks.md' appears in repo text
+outputs/repository_cleanup_allowlist.json,.json,321,1780998847,True,keep_referenced,basename 'repository_cleanup_allowlist.json' appears in repo text
+outputs/repository_cleanup_apply_report.json,.json,591,1780998989,True,keep_referenced,basename 'repository_cleanup_apply_report.json' appears in repo text
+outputs/repository_cleanup_audit.csv,.csv,101407,1780998593,True,keep_referenced,basename 'repository_cleanup_audit.csv' appears in repo text
+outputs/repository_cleanup_audit.json,.json,344423,1780998593,True,keep_referenced,basename 'repository_cleanup_audit.json' appears in repo text
+outputs/repository_cleanup_audit.md,.md,3155,1780998593,True,keep_referenced,basename 'repository_cleanup_audit.md' appears in repo text
+outputs/repository_cleanup_plan.md,.md,3667,1780998936,False,keep_uncertain,output not matched to core set or references
+outputs/security_proxy_experiments.csv,.csv,7033,1780050296,True,keep_referenced,basename 'security_proxy_experiments.csv' appears in repo text
+outputs/security_proxy_experiments.json,.json,12946,1780050296,True,keep_referenced,basename 'security_proxy_experiments.json' appears in repo text
+outputs/security_proxy_experiments.md,.md,6499,1780050296,True,keep_referenced,basename 'security_proxy_experiments.md' appears in repo text
+outputs/sliding_window_attention.json,.json,5666,1780938270,True,keep_referenced,basename 'sliding_window_attention.json' appears in repo text
+outputs/sliding_window_attention.md,.md,3048,1780938270,True,keep_referenced,basename 'sliding_window_attention.md' appears in repo text
+outputs/stage_7_6_claims_consistency.csv,.csv,9829694,1780999092,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/stage_7_6_claims_consistency.json,.json,17938033,1780999092,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/stage_7_6_claims_consistency.md,.md,8871773,1780999092,True,keep_core_artifact,Stage 5.7/5.8/7.6 or paper core artifact
+outputs/static_correctness.json,.json,585,1779949664,True,keep_referenced,path 'outputs/static_correctness.json' appears in repo text
+outputs/static_correctness_no_pad_float32.json,.json,603,1779948009,True,keep_referenced,path 'outputs/static_correctness_no_pad_float32.json' appears in repo text
+outputs/stronger_attackers.csv,.csv,9574,1780323687,True,keep_referenced,basename 'stronger_attackers.csv' appears in repo text
+outputs/stronger_attackers.json,.json,22128,1780323687,True,keep_referenced,basename 'stronger_attackers.json' appears in repo text
+outputs/stronger_attackers.md,.md,12371,1780323687,True,keep_referenced,basename 'stronger_attackers.md' appears in repo text
+outputs/tiny_transformer_correctness.json,.json,854,1779949682,True,keep_referenced,path 'outputs/tiny_transformer_correctness.json' appears in repo text
+outputs/workload_profile.csv,.csv,1750,1780400984,True,keep_referenced,basename 'workload_profile.csv' appears in repo text
+outputs/workload_profile.json,.json,55668,1780400984,True,keep_referenced,basename 'workload_profile.json' appears in repo text
+outputs/workload_profile.md,.md,28561,1780400984,True,keep_referenced,basename 'workload_profile.md' appears in repo text
+paper_draft/abstract.md,.md,3316,1780403288,True,keep_referenced,basename 'abstract.md' appears in repo text
+paper_draft/background.md,.md,4942,1780403365,True,keep_referenced,basename 'background.md' appears in repo text
+paper_draft/baseline_fairness_review.md,.md,6814,1780468828,True,keep_referenced,basename 'baseline_fairness_review.md' appears in repo text
+paper_draft/claims_mapping.md,.md,11104,1780403864,True,keep_referenced,basename 'claims_mapping.md' appears in repo text
+paper_draft/conclusion.md,.md,3034,1780403745,True,keep_referenced,basename 'conclusion.md' appears in repo text
+paper_draft/correctness.md,.md,9068,1780403543,True,keep_referenced,basename 'correctness.md' appears in repo text
+paper_draft/design.md,.md,13555,1780403491,True,keep_referenced,basename 'design.md' appears in repo text
+paper_draft/evaluation.md,.md,11271,1780403650,True,keep_referenced,basename 'evaluation.md' appears in repo text
+paper_draft/evaluation_sufficiency_review.md,.md,3662,1780468828,True,keep_referenced,basename 'evaluation_sufficiency_review.md' appears in repo text
+paper_draft/figures.md,.md,6168,1780403815,True,keep_referenced,basename 'figures.md' appears in repo text
+paper_draft/introduction.md,.md,7830,1780403332,True,keep_referenced,basename 'introduction.md' appears in repo text
+paper_draft/latex/BUILD.md,.md,4310,1780406050,True,keep_referenced,basename 'BUILD.md' appears in repo text
+paper_draft/latex/compile_notes.md,.md,5663,1780406087,True,keep_referenced,basename 'compile_notes.md' appears in repo text
+paper_draft/latex/figures/boundary_call_reduction.png,.png,27778,1780405351,True,keep_referenced,basename 'boundary_call_reduction.png' appears in repo text
+paper_draft/latex/figures/correctness_error_summary.png,.png,50838,1780405351,True,keep_referenced,basename 'correctness_error_summary.png' appears in repo text
+paper_draft/latex/figures/fig_dense_sandwich.tex,.tex,1761,1780405989,True,keep_referenced,basename 'fig_dense_sandwich.tex' appears in repo text
+paper_draft/latex/figures/fig_lora_training.tex,.tex,2902,1780406010,True,keep_referenced,basename 'fig_lora_training.tex' appears in repo text
+paper_draft/latex/figures/fig_nonlinear_island.tex,.tex,1979,1780405974,True,keep_referenced,basename 'fig_nonlinear_island.tex' appears in repo text
+paper_draft/latex/figures/fig_right_masked_decode.tex,.tex,2510,1780405958,True,keep_referenced,basename 'fig_right_masked_decode.tex' appears in repo text
+paper_draft/latex/figures/fig_system_overview.tex,.tex,2780,1780405937,True,keep_referenced,basename 'fig_system_overview.tex' appears in repo text
+paper_draft/latex/figures/lora_training_errors.png,.png,57965,1780405351,True,keep_referenced,basename 'lora_training_errors.png' appears in repo text
+paper_draft/latex/figures/measured_runtime_summary.png,.png,29781,1780405351,True,keep_referenced,basename 'measured_runtime_summary.png' appears in repo text
+paper_draft/latex/figures/rank_inference_risk.png,.png,38905,1780405351,True,keep_referenced,basename 'rank_inference_risk.png' appears in repo text
+paper_draft/latex/figures/security_risk_matrix.png,.png,62025,1780405351,True,keep_referenced,basename 'security_risk_matrix.png' appears in repo text
+paper_draft/latex/figures/timing_proxy_before_after.png,.png,40523,1780405351,True,keep_referenced,basename 'timing_proxy_before_after.png' appears in repo text
+paper_draft/latex/macros.tex,.tex,2660,1780405372,True,keep_referenced,basename 'macros.tex' appears in repo text
+paper_draft/latex/main.tex,.tex,1398,1780405384,True,keep_referenced,basename 'main.tex' appears in repo text
+paper_draft/latex/refs.bib,.bib,12973,1780405906,True,keep_referenced,basename 'refs.bib' appears in repo text
+paper_draft/latex/sections/00_abstract.tex,.tex,3198,1780405410,True,keep_referenced,basename '00_abstract.tex' appears in repo text
+paper_draft/latex/sections/01_introduction.tex,.tex,7711,1780405448,True,keep_referenced,basename '01_introduction.tex' appears in repo text
+paper_draft/latex/sections/02_background.tex,.tex,5560,1780405478,True,keep_referenced,basename '02_background.tex' appears in repo text
+paper_draft/latex/sections/03_system_and_threat_model.tex,.tex,5844,1780405510,True,keep_referenced,basename '03_system_and_threat_model.tex' appears in repo text
+paper_draft/latex/sections/04_design.tex,.tex,12721,1780454872,True,keep_referenced,basename '04_design.tex' appears in repo text
+paper_draft/latex/sections/05_correctness.tex,.tex,7037,1780405608,True,keep_referenced,basename '05_correctness.tex' appears in repo text
+paper_draft/latex/sections/06_security_analysis.tex,.tex,7490,1780405646,True,keep_referenced,basename '06_security_analysis.tex' appears in repo text
+paper_draft/latex/sections/07_evaluation.tex,.tex,21627,1780454849,True,keep_referenced,basename '07_evaluation.tex' appears in repo text
+paper_draft/latex/sections/08_limitations.tex,.tex,5764,1780454899,True,keep_referenced,basename '08_limitations.tex' appears in repo text
+paper_draft/latex/sections/09_related_work.tex,.tex,5776,1780405751,True,keep_referenced,basename '09_related_work.tex' appears in repo text
+paper_draft/latex/sections/10_conclusion.tex,.tex,2582,1780405765,True,keep_referenced,basename '10_conclusion.tex' appears in repo text
+paper_draft/latex/sections/a_notation.tex,.tex,2758,1780405789,True,keep_referenced,basename 'a_notation.tex' appears in repo text
+paper_draft/latex/sections/b_claims_mapping.tex,.tex,6220,1780454921,True,keep_referenced,basename 'b_claims_mapping.tex' appears in repo text
+paper_draft/latex/tables/ablation_summary.tex,.tex,2815,1780452061,True,keep_referenced,basename 'ablation_summary.tex' appears in repo text
+paper_draft/latex/tables/baseline_comparison_summary.tex,.tex,1950,1780452061,True,keep_referenced,basename 'baseline_comparison_summary.tex' appears in repo text
+paper_draft/latex/tables/correctness_summary.tex,.tex,3859,1780405351,True,keep_referenced,basename 'correctness_summary.tex' appears in repo text
+paper_draft/latex/tables/cpu_runtime_completion.tex,.tex,17685,1780452061,True,keep_referenced,basename 'cpu_runtime_completion.tex' appears in repo text
+paper_draft/latex/tables/direct_prior_work_comparison.tex,.tex,5323,1780454815,True,keep_referenced,basename 'direct_prior_work_comparison.tex' appears in repo text
+paper_draft/latex/tables/lora_training_summary.tex,.tex,2912,1780405351,True,keep_referenced,basename 'lora_training_summary.tex' appears in repo text
+paper_draft/latex/tables/measured_runtime.tex,.tex,2318,1780405351,True,keep_referenced,basename 'measured_runtime.tex' appears in repo text
+paper_draft/latex/tables/ours_runtime_api_validation.tex,.tex,2508,1780454815,True,keep_referenced,basename 'ours_runtime_api_validation.tex' appears in repo text
+paper_draft/latex/tables/paper_claims_audit.tex,.tex,6109,1780405351,True,keep_referenced,basename 'paper_claims_audit.tex' appears in repo text
+paper_draft/latex/tables/security_proxy_summary.tex,.tex,4647,1780405351,True,keep_referenced,basename 'security_proxy_summary.tex' appears in repo text
+paper_draft/latex/tables/stability_summary.tex,.tex,1252,1780452061,True,keep_referenced,basename 'stability_summary.tex' appears in repo text
+paper_draft/latex/tables/toy_task_summary.tex,.tex,1030,1780452061,True,keep_referenced,basename 'toy_task_summary.tex' appears in repo text
+paper_draft/latex/tables/workload_summary.tex,.tex,1595,1780405351,True,keep_referenced,basename 'workload_summary.tex' appears in repo text
+paper_draft/latex/unsafe_wording_check.md,.md,5406,1780406124,True,keep_referenced,basename 'unsafe_wording_check.md' appears in repo text
+paper_draft/limitations.md,.md,5917,1780403685,True,keep_referenced,basename 'limitations.md' appears in repo text
+paper_draft/main.md,.md,3350,1780403885,True,keep_referenced,basename 'main.md' appears in repo text
+paper_draft/notation.md,.md,3641,1780403267,True,keep_referenced,basename 'notation.md' appears in repo text
+paper_draft/novelty_positioning_review.md,.md,3676,1780468828,True,keep_referenced,basename 'novelty_positioning_review.md' appears in repo text
+paper_draft/related_work.md,.md,6659,1780403726,True,keep_referenced,basename 'related_work.md' appears in repo text
+paper_draft/reviewer_risk_audit.csv,.csv,20477,1780468828,True,keep_referenced,basename 'reviewer_risk_audit.csv' appears in repo text
+paper_draft/reviewer_risk_audit.json,.json,65665,1780468828,True,keep_referenced,basename 'reviewer_risk_audit.json' appears in repo text
+paper_draft/reviewer_risk_audit.md,.md,45040,1780468828,True,keep_referenced,basename 'reviewer_risk_audit.md' appears in repo text
+paper_draft/revision_plan.md,.md,11938,1780468828,True,keep_referenced,basename 'revision_plan.md' appears in repo text
+paper_draft/security_analysis.md,.md,8443,1780403589,True,keep_referenced,basename 'security_analysis.md' appears in repo text
+paper_draft/system_and_threat_model.md,.md,5584,1780403399,True,keep_referenced,basename 'system_and_threat_model.md' appears in repo text
+paper_draft/tables.md,.md,4066,1780403778,True,keep_referenced,basename 'tables.md' appears in repo text
+paper_draft/threat_model_review.md,.md,4168,1780468828,True,keep_referenced,basename 'threat_model_review.md' appears in repo text
+paper_draft/unsafe_wording_review.md,.md,19680,1780468828,True,keep_referenced,basename 'unsafe_wording_review.md' appears in repo text
+paper_results/csv/ablation_summary.csv,.csv,2181,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/artifact_inventory.csv,.csv,8181,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/baseline_comparison_summary.csv,.csv,1408,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/correctness_summary.csv,.csv,3046,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/cpu_runtime_completion.csv,.csv,14673,1780467391,True,keep_referenced,basename 'cpu_runtime_completion.csv' appears in repo text
+paper_results/csv/direct_prior_work_comparison.csv,.csv,5345,1780467391,True,keep_referenced,basename 'direct_prior_work_comparison.csv' appears in repo text
+paper_results/csv/limitations_summary.csv,.csv,58190,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/lora_training_summary.csv,.csv,2226,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/measured_runtime.csv,.csv,1716,1780467391,True,keep_referenced,basename 'measured_runtime.csv' appears in repo text
+paper_results/csv/ours_runtime_api_validation.csv,.csv,1946,1780467391,True,keep_referenced,basename 'ours_runtime_api_validation.csv' appears in repo text
+paper_results/csv/security_proxy_summary.csv,.csv,3960,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/stability_summary.csv,.csv,858,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/toy_task_summary.csv,.csv,660,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/csv/workload_summary.csv,.csv,1133,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/figures/boundary_call_reduction.png,.png,27778,1780467391,True,keep_referenced,basename 'boundary_call_reduction.png' appears in repo text
+paper_results/figures/correctness_error_summary.png,.png,50838,1780467391,True,keep_referenced,basename 'correctness_error_summary.png' appears in repo text
+paper_results/figures/lora_training_errors.png,.png,57965,1780467391,True,keep_referenced,basename 'lora_training_errors.png' appears in repo text
+paper_results/figures/measured_runtime_summary.png,.png,29787,1780467391,True,keep_referenced,basename 'measured_runtime_summary.png' appears in repo text
+paper_results/figures/rank_inference_risk.png,.png,38905,1780467391,True,keep_referenced,basename 'rank_inference_risk.png' appears in repo text
+paper_results/figures/security_risk_matrix.png,.png,62025,1780467391,True,keep_referenced,basename 'security_risk_matrix.png' appears in repo text
+paper_results/figures/timing_proxy_before_after.png,.png,40523,1780467391,True,keep_referenced,basename 'timing_proxy_before_after.png' appears in repo text
+paper_results/json/artifact_inventory.json,.json,195866,1780467391,True,keep_referenced,basename 'artifact_inventory.json' appears in repo text
+paper_results/json/measured_runtime.json,.json,5446,1780467391,True,keep_referenced,basename 'measured_runtime.json' appears in repo text
+paper_results/json/paper_claims_audit.json,.json,13292,1780467391,True,keep_referenced,basename 'paper_claims_audit.json' appears in repo text
+paper_results/latex/ablation_summary.tex,.tex,2815,1780467391,True,keep_referenced,basename 'ablation_summary.tex' appears in repo text
+paper_results/latex/artifact_inventory.tex,.tex,5995,1780467391,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+paper_results/latex/baseline_comparison_summary.tex,.tex,1950,1780467391,True,keep_referenced,basename 'baseline_comparison_summary.tex' appears in repo text
+paper_results/latex/correctness_summary.tex,.tex,3859,1780467391,True,keep_referenced,basename 'correctness_summary.tex' appears in repo text
+paper_results/latex/cpu_runtime_completion.tex,.tex,17685,1780467391,True,keep_referenced,basename 'cpu_runtime_completion.tex' appears in repo text
+paper_results/latex/direct_prior_work_comparison.tex,.tex,5323,1780467391,True,keep_referenced,basename 'direct_prior_work_comparison.tex' appears in repo text
+paper_results/latex/limitations_summary.tex,.tex,54275,1780467391,True,keep_referenced,path 'paper_results/latex/limitations_summary.tex' appears in repo text
+paper_results/latex/lora_training_summary.tex,.tex,2912,1780467391,True,keep_referenced,basename 'lora_training_summary.tex' appears in repo text
+paper_results/latex/measured_runtime.tex,.tex,2317,1780467391,True,keep_referenced,basename 'measured_runtime.tex' appears in repo text
+paper_results/latex/ours_runtime_api_validation.tex,.tex,2508,1780467391,True,keep_referenced,basename 'ours_runtime_api_validation.tex' appears in repo text
+paper_results/latex/paper_claims_audit.tex,.tex,6109,1780467391,True,keep_referenced,basename 'paper_claims_audit.tex' appears in repo text
+paper_results/latex/security_proxy_summary.tex,.tex,4647,1780467391,True,keep_referenced,basename 'security_proxy_summary.tex' appears in repo text
+paper_results/latex/stability_summary.tex,.tex,1252,1780467391,True,keep_referenced,basename 'stability_summary.tex' appears in repo text
+paper_results/latex/toy_task_summary.tex,.tex,1030,1780467391,True,keep_referenced,basename 'toy_task_summary.tex' appears in repo text
+paper_results/latex/workload_summary.tex,.tex,1595,1780467391,True,keep_referenced,basename 'workload_summary.tex' appears in repo text
+paper_results/markdown/ablation_summary.md,.md,2546,1780467391,True,keep_referenced,path 'paper_results/markdown/ablation_summary.md' appears in repo text
+paper_results/markdown/artifact_inventory.md,.md,6611,1780467391,True,keep_referenced,path 'paper_results/markdown/artifact_inventory.md' appears in repo text
+paper_results/markdown/baseline_comparison_summary.md,.md,1723,1780467391,True,keep_referenced,path 'paper_results/markdown/baseline_comparison_summary.md' appears in repo text
+paper_results/markdown/correctness_summary.md,.md,3515,1780467391,True,keep_referenced,path 'paper_results/markdown/correctness_summary.md' appears in repo text
+paper_results/markdown/cpu_runtime_completion.md,.md,17192,1780467391,True,keep_referenced,basename 'cpu_runtime_completion.md' appears in repo text
+paper_results/markdown/direct_prior_work_comparison.md,.md,5585,1780467391,True,keep_referenced,basename 'direct_prior_work_comparison.md' appears in repo text
+paper_results/markdown/limitations_summary.md,.md,59742,1780467391,True,keep_referenced,path 'paper_results/markdown/limitations_summary.md' appears in repo text
+paper_results/markdown/lora_training_summary.md,.md,2653,1780467391,True,keep_referenced,path 'paper_results/markdown/lora_training_summary.md' appears in repo text
+paper_results/markdown/measured_runtime.md,.md,2845,1780467391,True,keep_referenced,basename 'measured_runtime.md' appears in repo text
+paper_results/markdown/ours_runtime_api_validation.md,.md,2264,1780467391,True,keep_referenced,basename 'ours_runtime_api_validation.md' appears in repo text
+paper_results/markdown/paper_claims_audit.md,.md,12367,1780467391,True,keep_referenced,basename 'paper_claims_audit.md' appears in repo text
+paper_results/markdown/security_claims_table.md,.md,7768,1780989562,True,keep_referenced,path 'paper_results/markdown/security_claims_table.md' appears in repo text
+paper_results/markdown/security_proxy_summary.md,.md,4340,1780467391,True,keep_referenced,basename 'security_proxy_summary.md' appears in repo text
+paper_results/markdown/stability_summary.md,.md,1071,1780467391,True,keep_referenced,path 'paper_results/markdown/stability_summary.md' appears in repo text
+paper_results/markdown/toy_task_summary.md,.md,853,1780467391,True,keep_referenced,path 'paper_results/markdown/toy_task_summary.md' appears in repo text
+paper_results/markdown/workload_summary.md,.md,1394,1780467391,True,keep_referenced,path 'paper_results/markdown/workload_summary.md' appears in repo text
+paper_results/summary.md,.md,5825,1780467391,True,keep_referenced,basename 'summary.md' appears in repo text
+pyproject.toml,.toml,655,1779949910,True,keep_referenced,path 'pyproject.toml' appears in repo text
+scripts/apply_repository_cleanup_allowlist.py,.py,8492,1780998826,True,keep_referenced,basename 'apply_repository_cleanup_allowlist.py' appears in repo text
+scripts/audit_repository_cleanup.py,.py,16088,1780998551,True,keep_referenced,basename 'audit_repository_cleanup.py' appears in repo text
+scripts/clean_repository_low_risk.py,.py,3055,1780998751,True,keep_referenced,path 'scripts/clean_repository_low_risk.py' appears in repo text
+scripts/inspect_hf_model.py,.py,2502,1779949948,True,keep_referenced,path 'scripts/inspect_hf_model.py' appears in repo text
+scripts/run_adaptive_island_attacks.py,.py,14851,1780161353,True,keep_referenced,basename 'run_adaptive_island_attacks.py' appears in repo text
+scripts/run_architecture_coverage.py,.py,14107,1780035644,True,keep_referenced,basename 'run_architecture_coverage.py' appears in repo text
+scripts/run_attention_experiments.py,.py,10497,1780021189,True,keep_referenced,basename 'run_attention_experiments.py' appears in repo text
+scripts/run_attention_privacy_modes.py,.py,1459,1780923748,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_cpu_only_paper_experiments.py,.py,3860,1780451721,True,keep_referenced,path 'scripts/run_cpu_only_paper_experiments.py' appears in repo text
+scripts/run_cpu_runtime_completion.py,.py,1795,1780451691,True,keep_referenced,path 'scripts/run_cpu_runtime_completion.py' appears in repo text
+scripts/run_cross_architecture_compatible_island_smoke.py,.py,18634,1780202042,True,keep_referenced,basename 'run_cross_architecture_compatible_island_smoke.py' appears in repo text
+scripts/run_cross_architecture_summary.py,.py,60228,1780400946,True,keep_referenced,basename 'run_cross_architecture_summary.py' appears in repo text
+scripts/run_cross_attention_experiments.py,.py,16434,1780041272,True,keep_referenced,basename 'run_cross_attention_experiments.py' appears in repo text
+scripts/run_decoder_component_coverage_audit.py,.py,816,1780938640,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_direct_prior_work_comparison.py,.py,1915,1780454402,True,keep_referenced,path 'scripts/run_direct_prior_work_comparison.py' appears in repo text
+scripts/run_encoder_attention_experiments.py,.py,13318,1780036769,True,keep_referenced,basename 'run_encoder_attention_experiments.py' appears in repo text
+scripts/run_experiment_summary.py,.py,23545,1780019487,True,keep_referenced,basename 'run_experiment_summary.py' appears in repo text
+scripts/run_generation_correctness.py,.py,4933,1779949533,True,keep_referenced,path 'scripts/run_generation_correctness.py' appears in repo text
+scripts/run_generation_processor_coverage.py,.py,869,1780938518,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_gpt2_block_correctness.py,.py,4730,1779951803,True,keep_referenced,path 'scripts/run_gpt2_block_correctness.py' appears in repo text
+scripts/run_gpt2_cache_correctness.py,.py,8612,1779955801,True,keep_referenced,path 'scripts/run_gpt2_cache_correctness.py' appears in repo text
+scripts/run_gpt2_compatible_island_smoke.py,.py,9784,1780141741,True,keep_referenced,path 'scripts/run_gpt2_compatible_island_smoke.py' appears in repo text
+scripts/run_gpt2_conv1d_mapping.py,.py,4774,1779950371,True,keep_referenced,path 'scripts/run_gpt2_conv1d_mapping.py' appears in repo text
+scripts/run_gpt2_generation_correctness.py,.py,8519,1780018163,True,keep_referenced,path 'scripts/run_gpt2_generation_correctness.py' appears in repo text
+scripts/run_gpt2_model_compatible_island_smoke.py,.py,15211,1780201906,True,keep_referenced,path 'scripts/run_gpt2_model_compatible_island_smoke.py' appears in repo text
+scripts/run_gpt2_model_correctness.py,.py,4986,1779953676,True,keep_referenced,path 'scripts/run_gpt2_model_correctness.py' appears in repo text
+scripts/run_hf_gpt2_smoke.py,.py,3125,1779949948,True,keep_referenced,path 'scripts/run_hf_gpt2_smoke.py' appears in repo text
+scripts/run_integrity_spotcheck.py,.py,964,1780925836,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_kv_cache_correctness.py,.py,4906,1779949533,True,keep_referenced,path 'scripts/run_kv_cache_correctness.py' appears in repo text
+scripts/run_lm_head_scalability.py,.py,734,1780925301,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_lookup_nonlinear_cost_proxy.py,.py,1294,1780987907,True,keep_referenced,basename 'run_lookup_nonlinear_cost_proxy.py' appears in repo text
+scripts/run_lora_backward_experiments.py,.py,9192,1780337787,True,keep_referenced,basename 'run_lora_backward_experiments.py' appears in repo text
+scripts/run_lora_correctness.py,.py,3787,1779947962,True,keep_referenced,path 'scripts/run_lora_correctness.py' appears in repo text
+scripts/run_lora_gradient_security_proxy.py,.py,8632,1780337823,True,keep_referenced,basename 'run_lora_gradient_security_proxy.py' appears in repo text
+scripts/run_lora_protocol_integration.py,.py,1011,1780925492,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_lora_rank_padding_experiments.py,.py,10826,1780365734,True,keep_referenced,basename 'run_lora_rank_padding_experiments.py' appears in repo text
+scripts/run_lora_rank_security_proxy.py,.py,9172,1780365773,True,keep_referenced,basename 'run_lora_rank_security_proxy.py' appears in repo text
+scripts/run_lora_security_proxy.py,.py,8605,1780325692,True,keep_referenced,basename 'run_lora_security_proxy.py' appears in repo text
+scripts/run_lora_stronger_dummy_experiments.py,.py,10194,1780383085,True,keep_referenced,basename 'run_lora_stronger_dummy_experiments.py' appears in repo text
+scripts/run_lora_stronger_dummy_security_proxy.py,.py,9429,1780383363,True,keep_referenced,basename 'run_lora_stronger_dummy_security_proxy.py' appears in repo text
+scripts/run_lora_training_experiments.py,.py,9400,1780325625,True,keep_referenced,basename 'run_lora_training_experiments.py' appears in repo text
+scripts/run_lora_training_timing_proxy.py,.py,8727,1780381231,True,keep_referenced,basename 'run_lora_training_timing_proxy.py' appears in repo text
+scripts/run_masked_gradient_lora_training.py,.py,2721,1780986613,True,keep_referenced,basename 'run_masked_gradient_lora_training.py' appears in repo text
+scripts/run_measured_runtime_evaluation.py,.py,2734,1780400505,True,keep_referenced,basename 'run_measured_runtime_evaluation.py' appears in repo text
+scripts/run_modern_decoder_block_smoke.py,.py,13084,1780234561,True,keep_referenced,basename 'run_modern_decoder_block_smoke.py' appears in repo text
+scripts/run_modern_decoder_generation_correctness.py,.py,2036,1780902967,True,keep_referenced,basename 'run_modern_decoder_generation_correctness.py' appears in repo text
+scripts/run_modern_decoder_low_interaction_correctness.py,.py,2023,1780906154,True,keep_referenced,basename 'run_modern_decoder_low_interaction_correctness.py' appears in repo text
+scripts/run_modern_decoder_model_smoke.py,.py,14467,1780282610,True,keep_referenced,basename 'run_modern_decoder_model_smoke.py' appears in repo text
+scripts/run_modern_decoder_probe.py,.py,17268,1780201954,True,keep_referenced,basename 'run_modern_decoder_probe.py' appears in repo text
+scripts/run_modern_decoder_rope_safe_low_interaction.py,.py,2219,1780908417,True,keep_referenced,basename 'run_modern_decoder_rope_safe_low_interaction.py' appears in repo text
+scripts/run_multi_session_batching.py,.py,889,1780925732,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_multilayer_lora_security_proxy.py,.py,9487,1780380973,True,keep_referenced,basename 'run_multilayer_lora_security_proxy.py' appears in repo text
+scripts/run_multilayer_lora_training_experiments.py,.py,11216,1780380692,True,keep_referenced,basename 'run_multilayer_lora_training_experiments.py' appears in repo text
+scripts/run_nonlinear_island_experiments.py,.py,11980,1780202065,True,keep_referenced,basename 'run_nonlinear_island_experiments.py' appears in repo text
+scripts/run_nonlinear_island_security.py,.py,14275,1780129839,True,keep_referenced,basename 'run_nonlinear_island_security.py' appears in repo text
+scripts/run_norm_experiments.py,.py,13076,1780123088,True,keep_referenced,basename 'run_norm_experiments.py' appears in repo text
+scripts/run_norm_granularity_low_interaction.py,.py,1882,1780921657,True,keep_referenced,basename 'run_norm_granularity_low_interaction.py' appears in repo text
+scripts/run_ours_runtime_api_validation.py,.py,1769,1780454513,True,keep_referenced,path 'scripts/run_ours_runtime_api_validation.py' appears in repo text
+scripts/run_paged_kv_abstraction.py,.py,937,1780925629,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_paper_ablation_study.py,.py,1792,1780451450,True,keep_referenced,path 'scripts/run_paper_ablation_study.py' appears in repo text
+scripts/run_paper_artifact_consolidation.py,.py,2332,1780400386,True,keep_referenced,basename 'run_paper_artifact_consolidation.py' appears in repo text
+scripts/run_paper_baseline_comparison.py,.py,1819,1780451353,True,keep_referenced,path 'scripts/run_paper_baseline_comparison.py' appears in repo text
+scripts/run_paper_claims_audit.py,.py,1414,1780400606,True,keep_referenced,basename 'run_paper_claims_audit.py' appears in repo text
+scripts/run_paper_claims_audit_v2.py,.py,822,1780926135,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_paper_cost_model.py,.py,975,1780926019,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_paper_experiment_suite.py,.py,977,1780926258,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_paper_results_all.py,.py,21742,1780454789,True,keep_referenced,path 'scripts/run_paper_results_all.py' appears in repo text
+scripts/run_paper_stability_study.py,.py,1630,1780451555,True,keep_referenced,path 'scripts/run_paper_stability_study.py' appears in repo text
+scripts/run_paper_toy_tasks.py,.py,2173,1780451236,True,keep_referenced,path 'scripts/run_paper_toy_tasks.py' appears in repo text
+scripts/run_permutation_invariant_leakage.py,.py,1410,1780975803,True,keep_referenced,basename 'run_permutation_invariant_leakage.py' appears in repo text
+scripts/run_precision_quantization_stability.py,.py,1269,1780938365,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_real_activation_attacks.py,.py,21371,1780242366,True,keep_referenced,basename 'run_real_activation_attacks.py' appears in repo text
+scripts/run_real_token_activation_attacks.py,.py,25326,1780322998,True,keep_referenced,basename 'run_real_token_activation_attacks.py' appears in repo text
+scripts/run_reviewer_risk_audit.py,.py,1664,1780468623,True,keep_referenced,path 'scripts/run_reviewer_risk_audit.py' appears in repo text
+scripts/run_security_proxy_experiments.py,.py,12415,1780049855,True,keep_referenced,basename 'run_security_proxy_experiments.py' appears in repo text
+scripts/run_sliding_window_attention.py,.py,1035,1780938199,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+scripts/run_static_correctness.py,.py,3437,1779947962,True,keep_referenced,path 'scripts/run_static_correctness.py' appears in repo text
+scripts/run_stronger_attackers.py,.py,25928,1780323050,True,keep_referenced,basename 'run_stronger_attackers.py' appears in repo text
+scripts/run_tiny_transformer_correctness.py,.py,4287,1779949073,True,keep_referenced,path 'scripts/run_tiny_transformer_correctness.py' appears in repo text
+scripts/run_workload_profile.py,.py,50901,1780400905,True,keep_referenced,basename 'run_workload_profile.py' appears in repo text
+src/pllo/__init__.py,.py,159,1779951012,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/architectures/__init__.py,.py,1460,1780035534,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/architectures/architecture_inspector.py,.py,12078,1780035523,True,keep_referenced,basename 'architecture_inspector.py' appears in repo text
+src/pllo/architectures/architecture_registry.py,.py,2705,1780194537,True,keep_referenced,basename 'architecture_registry.py' appears in repo text
+src/pllo/architectures/architecture_types.py,.py,1773,1780035402,True,keep_referenced,basename 'architecture_types.py' appears in repo text
+src/pllo/architectures/attention_taxonomy.py,.py,2435,1780035421,True,keep_referenced,basename 'attention_taxonomy.py' appears in repo text
+src/pllo/architectures/encoder_decoder_spec.py,.py,3311,1780035465,True,keep_referenced,basename 'encoder_decoder_spec.py' appears in repo text
+src/pllo/architectures/encoder_only_spec.py,.py,1459,1780035447,True,keep_referenced,basename 'encoder_only_spec.py' appears in repo text
+src/pllo/backends/__init__.py,.py,227,1779947568,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/backends/simulated_tee.py,.py,7059,1779947962,True,keep_referenced,path 'src/pllo/backends/simulated_tee.py' appears in repo text
+src/pllo/backends/trusted_backend.py,.py,1971,1779947962,True,keep_referenced,path 'src/pllo/backends/trusted_backend.py' appears in repo text
+src/pllo/backends/untrusted_gpu.py,.py,4050,1779947854,True,keep_referenced,path 'src/pllo/backends/untrusted_gpu.py' appears in repo text
+src/pllo/baselines/__init__.py,.py,1592,1780454282,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/baselines/amulet.py,.py,11348,1780454121,True,keep_referenced,module 'pllo.baselines.amulet' imported / referenced
+src/pllo/baselines/arrow.py,.py,2571,1780454210,True,keep_referenced,module 'pllo.baselines.arrow' imported / referenced
+src/pllo/baselines/baseline_protocol.py,.py,3874,1780454068,True,keep_referenced,module 'pllo.baselines.baseline_protocol' imported / referenced
+src/pllo/baselines/cryptonets.py,.py,4681,1780454236,True,keep_referenced,module 'pllo.baselines.cryptonets' imported / referenced
+src/pllo/baselines/darknight.py,.py,4828,1780454194,True,keep_referenced,module 'pllo.baselines.darknight' imported / referenced
+src/pllo/baselines/gazelle_costed.py,.py,6940,1780454269,True,keep_referenced,module 'pllo.baselines.gazelle_costed' imported / referenced
+src/pllo/baselines/slalom.py,.py,7327,1780454166,True,keep_referenced,module 'pllo.baselines.slalom' imported / referenced
+src/pllo/cache/__init__.py,.py,264,1779949294,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/cache/cache_state.py,.py,2046,1779949294,True,keep_referenced,path 'src/pllo/cache/cache_state.py' appears in repo text
+src/pllo/cache/kv_cache.py,.py,3608,1779949294,True,keep_referenced,basename 'kv_cache.py' appears in repo text
+src/pllo/cache/modern_decoder_kv_cache.py,.py,9250,1780322307,True,keep_referenced,basename 'modern_decoder_kv_cache.py' appears in repo text
+src/pllo/evaluation/__init__.py,.py,279,1779949455,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/evaluation/correctness.py,.py,1535,1779949450,True,keep_referenced,basename 'correctness.py' appears in repo text
+src/pllo/experiments/__init__.py,.py,2785,1780129763,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/experiments/adaptive_island_attacker.py,.py,37361,1780201749,True,keep_referenced,basename 'adaptive_island_attacker.py' appears in repo text
+src/pllo/experiments/attention_privacy_modes.py,.py,28169,1780923824,True,keep_referenced,module 'pllo.experiments.attention_privacy_modes' imported / referenced
+src/pllo/experiments/attention_probe.py,.py,15600,1780020977,True,keep_referenced,basename 'attention_probe.py' appears in repo text
+src/pllo/experiments/blackbox_attacker.py,.py,20423,1780306849,True,keep_referenced,basename 'blackbox_attacker.py' appears in repo text
+src/pllo/experiments/cpu_runtime_completion.py,.py,17110,1780451679,True,keep_referenced,basename 'cpu_runtime_completion.py' appears in repo text
+src/pllo/experiments/cross_architecture_summary.py,.py,56244,1780988002,True,keep_referenced,basename 'cross_architecture_summary.py' appears in repo text
+src/pllo/experiments/cross_attention_probe.py,.py,24836,1780041334,True,keep_referenced,basename 'cross_attention_probe.py' appears in repo text
+src/pllo/experiments/decoder_component_coverage_audit.py,.py,17625,1780938632,True,keep_referenced,module 'pllo.experiments.decoder_component_coverage_audit' imported / referenced
+src/pllo/experiments/direct_prior_work_comparison.py,.py,21330,1780454388,True,keep_referenced,basename 'direct_prior_work_comparison.py' appears in repo text
+src/pllo/experiments/encoder_attention_probe.py,.py,18605,1780036855,True,keep_referenced,path 'src/pllo/experiments/encoder_attention_probe.py' appears in repo text
+src/pllo/experiments/encoder_decoder_ffn_island_probe.py,.py,18506,1780201523,True,keep_referenced,path 'src/pllo/experiments/encoder_decoder_ffn_island_probe.py' appears in repo text
+src/pllo/experiments/encoder_ffn_island_probe.py,.py,10553,1780201458,True,keep_referenced,path 'src/pllo/experiments/encoder_ffn_island_probe.py' appears in repo text
+src/pllo/experiments/experiment_registry.py,.py,11967,1780161459,True,keep_referenced,path 'src/pllo/experiments/experiment_registry.py' appears in repo text
+src/pllo/experiments/generation_processor_coverage.py,.py,18167,1780938511,True,keep_referenced,module 'pllo.experiments.generation_processor_coverage' imported / referenced
+src/pllo/experiments/gqa_probe.py,.py,7078,1780194658,True,keep_referenced,basename 'gqa_probe.py' appears in repo text
+src/pllo/experiments/integrity_spotcheck.py,.py,15283,1780925883,True,keep_referenced,module 'pllo.experiments.integrity_spotcheck' imported / referenced
+src/pllo/experiments/inter_block_masking_probe.py,.py,15178,1780323122,True,keep_referenced,basename 'inter_block_masking_probe.py' appears in repo text
+src/pllo/experiments/lm_head_scalability.py,.py,21012,1780925294,True,keep_referenced,module 'pllo.experiments.lm_head_scalability' imported / referenced
+src/pllo/experiments/lookup_nonlinear_cost_proxy.py,.py,25202,1780987891,True,keep_referenced,basename 'lookup_nonlinear_cost_proxy.py' appears in repo text
+src/pllo/experiments/lora_backward_probe.py,.py,24263,1780337593,True,keep_referenced,basename 'lora_backward_probe.py' appears in repo text
+src/pllo/experiments/lora_gradient_security_proxy.py,.py,28799,1780337724,True,keep_referenced,basename 'lora_gradient_security_proxy.py' appears in repo text
+src/pllo/experiments/lora_protocol_integration.py,.py,23587,1780925483,True,keep_referenced,module 'pllo.experiments.lora_protocol_integration' imported / referenced
+src/pllo/experiments/lora_rank_padding_probe.py,.py,19245,1780365513,True,keep_referenced,basename 'lora_rank_padding_probe.py' appears in repo text
+src/pllo/experiments/lora_rank_security_proxy.py,.py,31404,1780365657,True,keep_referenced,basename 'lora_rank_security_proxy.py' appears in repo text
+src/pllo/experiments/lora_security_proxy.py,.py,28123,1780325574,True,keep_referenced,basename 'lora_security_proxy.py' appears in repo text
+src/pllo/experiments/lora_stronger_dummy_probe.py,.py,21101,1780383031,True,keep_referenced,basename 'lora_stronger_dummy_probe.py' appears in repo text
+src/pllo/experiments/lora_stronger_dummy_security_proxy.py,.py,34791,1780383302,True,keep_referenced,basename 'lora_stronger_dummy_security_proxy.py' appears in repo text
+src/pllo/experiments/lora_training_inference_lifecycle.py,.py,20529,1780986529,True,keep_referenced,basename 'lora_training_inference_lifecycle.py' appears in repo text
+src/pllo/experiments/lora_training_probe.py,.py,20713,1780325409,True,keep_referenced,basename 'lora_training_probe.py' appears in repo text
+src/pllo/experiments/lora_training_timing_proxy.py,.py,28823,1780381185,True,keep_referenced,basename 'lora_training_timing_proxy.py' appears in repo text
+src/pllo/experiments/masked_gradient_lora_security_proxy.py,.py,23488,1780984851,True,keep_referenced,basename 'masked_gradient_lora_security_proxy.py' appears in repo text
+src/pllo/experiments/masked_gradient_lora_training.py,.py,30109,1780985002,True,keep_referenced,basename 'masked_gradient_lora_training.py' appears in repo text
+src/pllo/experiments/measured_runtime_evaluation.py,.py,20588,1780400478,True,keep_referenced,basename 'measured_runtime_evaluation.py' appears in repo text
+src/pllo/experiments/modern_decoder_block_probe.py,.py,15763,1780234484,True,keep_referenced,path 'src/pllo/experiments/modern_decoder_block_probe.py' appears in repo text
+src/pllo/experiments/modern_decoder_generation_correctness.py,.py,25411,1780902954,True,keep_referenced,basename 'modern_decoder_generation_correctness.py' appears in repo text
+src/pllo/experiments/modern_decoder_low_interaction_correctness.py,.py,31012,1780906138,True,keep_referenced,basename 'modern_decoder_low_interaction_correctness.py' appears in repo text
+src/pllo/experiments/modern_decoder_model_probe.py,.py,12091,1780282186,True,keep_referenced,path 'src/pllo/experiments/modern_decoder_model_probe.py' appears in repo text
+src/pllo/experiments/modern_decoder_probe.py,.py,16948,1780201614,True,keep_referenced,basename 'modern_decoder_probe.py' appears in repo text
+src/pllo/experiments/modern_decoder_rope_safe_low_interaction.py,.py,27347,1780908404,True,keep_referenced,basename 'modern_decoder_rope_safe_low_interaction.py' appears in repo text
+src/pllo/experiments/multi_session_batching.py,.py,13722,1780925725,True,keep_referenced,module 'pllo.experiments.multi_session_batching' imported / referenced
+src/pllo/experiments/multilayer_lora_security_proxy.py,.py,34034,1780380905,True,keep_referenced,basename 'multilayer_lora_security_proxy.py' appears in repo text
+src/pllo/experiments/multilayer_lora_training.py,.py,30463,1780380624,True,keep_referenced,basename 'multilayer_lora_training.py' appears in repo text
+src/pllo/experiments/nonlinear_island_probe.py,.py,15626,1780126555,True,keep_referenced,path 'src/pllo/experiments/nonlinear_island_probe.py' appears in repo text
+src/pllo/experiments/nonlinear_island_security.py,.py,31025,1780129749,True,keep_referenced,basename 'nonlinear_island_security.py' appears in repo text
+src/pllo/experiments/norm_granularity_low_interaction.py,.py,26490,1780921644,True,keep_referenced,basename 'norm_granularity_low_interaction.py' appears in repo text
+src/pllo/experiments/norm_probe.py,.py,11075,1780122990,True,keep_referenced,basename 'norm_probe.py' appears in repo text
+src/pllo/experiments/ours_runtime_api_validation.py,.py,20475,1780454499,True,keep_referenced,basename 'ours_runtime_api_validation.py' appears in repo text
+src/pllo/experiments/paged_kv_abstraction.py,.py,19657,1780925616,True,keep_referenced,module 'pllo.experiments.paged_kv_abstraction' imported / referenced
+src/pllo/experiments/paper_ablation_study.py,.py,16541,1780451439,True,keep_referenced,basename 'paper_ablation_study.py' appears in repo text
+src/pllo/experiments/paper_artifact_consolidation.py,.py,45514,1780454760,True,keep_referenced,basename 'paper_artifact_consolidation.py' appears in repo text
+src/pllo/experiments/paper_baseline_comparison.py,.py,16140,1780451342,True,keep_referenced,basename 'paper_baseline_comparison.py' appears in repo text
+src/pllo/experiments/paper_claims_audit.py,.py,19591,1780400596,True,keep_referenced,basename 'paper_claims_audit.py' appears in repo text
+src/pllo/experiments/paper_claims_audit_v2.py,.py,24324,1780938825,True,keep_referenced,basename 'paper_claims_audit_v2.py' appears in repo text
+src/pllo/experiments/paper_cost_model.py,.py,21700,1780926004,True,keep_referenced,module 'pllo.experiments.paper_cost_model' imported / referenced
+src/pllo/experiments/paper_experiment_suite.py,.py,18720,1780938733,True,keep_referenced,module 'pllo.experiments.paper_experiment_suite' imported / referenced
+src/pllo/experiments/paper_stability_study.py,.py,20591,1780451587,True,keep_referenced,basename 'paper_stability_study.py' appears in repo text
+src/pllo/experiments/paper_toy_tasks.py,.py,17094,1780451263,True,keep_referenced,basename 'paper_toy_tasks.py' appears in repo text
+src/pllo/experiments/permutation_invariant_leakage.py,.py,39235,1780975792,True,keep_referenced,basename 'permutation_invariant_leakage.py' appears in repo text
+src/pllo/experiments/precision_quantization_stability.py,.py,17383,1780938355,True,keep_referenced,module 'pllo.experiments.precision_quantization_stability' imported / referenced
+src/pllo/experiments/real_activation_attacker.py,.py,31187,1780242216,True,keep_referenced,basename 'real_activation_attacker.py' appears in repo text
+src/pllo/experiments/real_activation_trace.py,.py,14899,1780241988,True,keep_referenced,basename 'real_activation_trace.py' appears in repo text
+src/pllo/experiments/real_token_activation_attacker.py,.py,28773,1780322709,True,keep_referenced,basename 'real_token_activation_attacker.py' appears in repo text
+src/pllo/experiments/real_token_trace.py,.py,22820,1780322628,True,keep_referenced,basename 'real_token_trace.py' appears in repo text
+src/pllo/experiments/report_utils.py,.py,3240,1780020900,True,keep_referenced,basename 'report_utils.py' appears in repo text
+src/pllo/experiments/reviewer_risk_audit.py,.py,68022,1780468815,True,keep_referenced,basename 'reviewer_risk_audit.py' appears in repo text
+src/pllo/experiments/rope_probe.py,.py,10418,1780194598,True,keep_referenced,basename 'rope_probe.py' appears in repo text
+src/pllo/experiments/security_proxy.py,.py,25884,1780049700,True,keep_referenced,basename 'security_proxy.py' appears in repo text
+src/pllo/experiments/sliding_window_attention.py,.py,20880,1780938259,True,keep_referenced,module 'pllo.experiments.sliding_window_attention' imported / referenced
+src/pllo/experiments/stage_7_6_claims_consistency.py,.py,16417,1780986779,True,keep_referenced,module 'pllo.experiments.stage_7_6_claims_consistency' imported / referenced
+src/pllo/experiments/stronger_attackers.py,.py,19025,1780322959,True,keep_referenced,basename 'stronger_attackers.py' appears in repo text
+src/pllo/experiments/timing_sidechannel_proxy.py,.py,18805,1780322847,True,keep_referenced,basename 'timing_sidechannel_proxy.py' appears in repo text
+src/pllo/experiments/workload_profiler.py,.py,75658,1780987991,True,keep_referenced,basename 'workload_profiler.py' appears in repo text
+src/pllo/hf_wrappers/__init__.py,.py,504,1779955697,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/hf_wrappers/gpt2_attention_wrapper.py,.py,14922,1779955584,True,keep_referenced,path 'src/pllo/hf_wrappers/gpt2_attention_wrapper.py' appears in repo text
+src/pllo/hf_wrappers/gpt2_block_wrapper.py,.py,22172,1780201347,True,keep_referenced,basename 'gpt2_block_wrapper.py' appears in repo text
+src/pllo/hf_wrappers/gpt2_cache.py,.py,3058,1779955526,True,keep_referenced,module 'pllo.hf_wrappers.gpt2_cache' imported / referenced
+src/pllo/hf_wrappers/gpt2_model_wrapper.py,.py,16139,1780201383,True,keep_referenced,basename 'gpt2_model_wrapper.py' appears in repo text
+src/pllo/hf_wrappers/modern_decoder_block_wrapper.py,.py,30650,1780241907,True,keep_referenced,basename 'modern_decoder_block_wrapper.py' appears in repo text
+src/pllo/hf_wrappers/modern_decoder_model_wrapper.py,.py,72207,1780322571,True,keep_referenced,basename 'modern_decoder_model_wrapper.py' appears in repo text
+src/pllo/hf_wrappers/nonlinear_modes.py,.py,1718,1780141327,True,keep_referenced,path 'src/pllo/hf_wrappers/nonlinear_modes.py' appears in repo text
+src/pllo/masks/__init__.py,.py,272,1779947568,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/masks/mask_generator.py,.py,1081,1779947568,True,keep_referenced,path 'src/pllo/masks/mask_generator.py' appears in repo text
+src/pllo/masks/mask_state.py,.py,468,1779947568,True,keep_referenced,path 'src/pllo/masks/mask_state.py' appears in repo text
+src/pllo/masks/pad_generator.py,.py,637,1779947568,True,keep_referenced,path 'src/pllo/masks/pad_generator.py' appears in repo text
+src/pllo/model_zoo/__init__.py,.py,1659,1780380376,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/model_zoo/base.py,.py,1391,1779949910,True,keep_referenced,path 'src/pllo/model_zoo/base.py' appears in repo text
+src/pllo/model_zoo/gpt2_conv1d_adapter.py,.py,5266,1779950333,True,keep_referenced,basename 'gpt2_conv1d_adapter.py' appears in repo text
+src/pllo/model_zoo/gpt2_mapping.py,.py,3670,1779950333,True,keep_referenced,basename 'gpt2_mapping.py' appears in repo text
+src/pllo/model_zoo/gpt2_spec.py,.py,2512,1779949910,True,keep_referenced,path 'src/pllo/model_zoo/gpt2_spec.py' appears in repo text
+src/pllo/model_zoo/hf_loader.py,.py,2664,1779950092,True,keep_referenced,path 'src/pllo/model_zoo/hf_loader.py' appears in repo text
+src/pllo/model_zoo/model_inspector.py,.py,2415,1779949910,True,keep_referenced,path 'src/pllo/model_zoo/model_inspector.py' appears in repo text
+src/pllo/model_zoo/modern_decoder_spec.py,.py,12760,1780234231,True,keep_referenced,basename 'modern_decoder_spec.py' appears in repo text
+src/pllo/model_zoo/registry.py,.py,614,1779949910,True,keep_referenced,basename 'registry.py' appears in repo text
+src/pllo/model_zoo/tiny_lora_transformer.py,.py,10646,1780380760,True,keep_referenced,path 'src/pllo/model_zoo/tiny_lora_transformer.py' appears in repo text
+src/pllo/models/__init__.py,.py,384,1779948948,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/models/obfuscated_tiny_transformer.py,.py,17202,1779949440,True,keep_referenced,path 'src/pllo/models/obfuscated_tiny_transformer.py' appears in repo text
+src/pllo/models/plain_tiny_transformer.py,.py,9130,1779949383,True,keep_referenced,path 'src/pllo/models/plain_tiny_transformer.py' appears in repo text
+src/pllo/models/tiny_config.py,.py,1767,1779948948,True,keep_referenced,path 'src/pllo/models/tiny_config.py' appears in repo text
+src/pllo/models/tiny_modern_decoder.py,.py,15882,1780902588,True,keep_referenced,module 'pllo.models.tiny_modern_decoder' imported / referenced
+src/pllo/ops/__init__.py,.py,5490,1780383438,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/ops/attention.py,.py,16790,1779949350,True,keep_referenced,basename 'attention.py' appears in repo text
+src/pllo/ops/compatible_masks.py,.py,7499,1780126376,True,keep_referenced,path 'src/pllo/ops/compatible_masks.py' appears in repo text
+src/pllo/ops/layernorm.py,.py,912,1779948948,True,keep_referenced,path 'src/pllo/ops/layernorm.py' appears in repo text
+src/pllo/ops/linear.py,.py,1437,1779947854,True,keep_referenced,basename 'linear.py' appears in repo text
+src/pllo/ops/lm_head.py,.py,1592,1779948948,True,keep_referenced,basename 'lm_head.py' appears in repo text
+src/pllo/ops/lora.py,.py,20185,1780325280,True,keep_referenced,basename 'lora.py' appears in repo text
+src/pllo/ops/lora_backward.py,.py,16144,1780337449,True,keep_referenced,path 'src/pllo/ops/lora_backward.py' appears in repo text
+src/pllo/ops/lora_dummy_strategies.py,.py,22121,1780382928,True,keep_referenced,basename 'lora_dummy_strategies.py' appears in repo text
+src/pllo/ops/lora_linear.py,.py,1762,1779947854,True,keep_referenced,basename 'lora_linear.py' appears in repo text
+src/pllo/ops/lora_rank_padding.py,.py,17280,1780365386,True,keep_referenced,path 'src/pllo/ops/lora_rank_padding.py' appears in repo text
+src/pllo/ops/masked_gradient_lora.py,.py,14524,1780984615,True,keep_referenced,path 'src/pllo/ops/masked_gradient_lora.py' appears in repo text
+src/pllo/ops/mitigation_bundles.py,.py,7894,1780201229,True,keep_referenced,basename 'mitigation_bundles.py' appears in repo text
+src/pllo/ops/mlp.py,.py,2313,1779948948,True,keep_referenced,basename 'mlp.py' appears in repo text
+src/pllo/ops/nonlinear_islands.py,.py,15341,1780201282,True,keep_referenced,basename 'nonlinear_islands.py' appears in repo text
+src/pllo/ops/norm.py,.py,6026,1780122941,True,keep_referenced,basename 'norm.py' appears in repo text
+src/pllo/runtime/__init__.py,.py,1178,1780453995,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/runtime/accelerator_backend.py,.py,471,1780453974,True,keep_referenced,leaf module 'accelerator_backend' imported
+src/pllo/runtime/backend_registry.py,.py,1292,1780453985,True,keep_referenced,path 'src/pllo/runtime/backend_registry.py' appears in repo text
+src/pllo/runtime/interfaces.py,.py,4595,1780453881,True,keep_referenced,path 'src/pllo/runtime/interfaces.py' appears in repo text
+src/pllo/runtime/local_cpu_backend.py,.py,8372,1780453932,True,keep_referenced,path 'src/pllo/runtime/local_cpu_backend.py' appears in repo text
+src/pllo/runtime/transcript.py,.py,2324,1780453896,True,keep_referenced,path 'src/pllo/runtime/transcript.py' appears in repo text
+src/pllo/runtime/trusted_controller.py,.py,7558,1780453966,True,keep_referenced,path 'src/pllo/runtime/trusted_controller.py' appears in repo text
+src/pllo/utils/__init__.py,.py,160,1779947568,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/utils/seed.py,.py,299,1779947568,True,keep_referenced,path 'src/pllo/utils/seed.py' appears in repo text
+src/pllo/utils/tensor_compare.py,.py,2090,1779954201,True,keep_referenced,path 'src/pllo/utils/tensor_compare.py' appears in repo text
+src/pllo/utils/validation.py,.py,3865,1779947791,True,keep_referenced,basename 'validation.py' appears in repo text
+src/pllo/wrappers/__init__.py,.py,477,1780902689,True,keep_referenced,basename '__init__.py' appears in repo text
+src/pllo/wrappers/low_interaction_modern_decoder_generation_wrapper.py,.py,89266,1780923588,True,keep_referenced,module 'pllo.wrappers.low_interaction_modern_decoder_generation_wrapper' imported / referenced
+src/pllo/wrappers/padded_modern_decoder_generation_wrapper.py,.py,32364,1780902826,True,keep_referenced,module 'pllo.wrappers.padded_modern_decoder_generation_wrapper' imported / referenced
+src/privacy_llm_obfuscation.egg-info/PKG-INFO,,9843,1779953540,True,keep_referenced,path 'src/privacy_llm_obfuscation.egg-info/PKG-INFO' appears in repo text
+src/privacy_llm_obfuscation.egg-info/SOURCES.txt,.txt,2016,1779953540,True,keep_referenced,path 'src/privacy_llm_obfuscation.egg-info/SOURCES.txt' appears in repo text
+src/privacy_llm_obfuscation.egg-info/dependency_links.txt,.txt,1,1779953540,True,keep_referenced,path 'src/privacy_llm_obfuscation.egg-info/dependency_links.txt' appears in repo text
+src/privacy_llm_obfuscation.egg-info/requires.txt,.txt,124,1779953540,True,keep_referenced,path 'src/privacy_llm_obfuscation.egg-info/requires.txt' appears in repo text
+src/privacy_llm_obfuscation.egg-info/top_level.txt,.txt,5,1779953540,True,keep_referenced,path 'src/privacy_llm_obfuscation.egg-info/top_level.txt' appears in repo text
+tests/test_adaptive_attacker_dense_sandwich_bundle.py,.py,5703,1780202221,True,keep_referenced,path 'tests/test_adaptive_attacker_dense_sandwich_bundle.py' appears in repo text
+tests/test_adaptive_island_attacker.py,.py,11742,1780202980,True,keep_referenced,path 'tests/test_adaptive_island_attacker.py' appears in repo text
+tests/test_architecture_coverage.py,.py,6008,1780035733,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_architecture_registry.py,.py,7977,1780195784,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_attention.py,.py,2472,1779949073,True,keep_referenced,path 'tests/test_attention.py' appears in repo text
+tests/test_attention_experiments.py,.py,4293,1780021436,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_attention_privacy_modes.py,.py,12589,1780923810,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_baselines_amulet.py,.py,1986,1780454578,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_baselines_arrow.py,.py,1373,1780454589,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_baselines_crypto.py,.py,2444,1780454605,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_baselines_slalom.py,.py,1819,1780454565,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_blackbox_attacker.py,.py,2867,1780307050,True,keep_referenced,path 'tests/test_blackbox_attacker.py' appears in repo text
+tests/test_compatible_masks.py,.py,3235,1780126900,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_constant_time_decode_proxy.py,.py,3047,1780323266,True,keep_referenced,path 'tests/test_constant_time_decode_proxy.py' appears in repo text
+tests/test_cpu_runtime_completion.py,.py,2861,1780451821,True,keep_referenced,path 'tests/test_cpu_runtime_completion.py' appears in repo text
+tests/test_cross_architecture_dense_sandwich.py,.py,7713,1780202194,True,keep_referenced,path 'tests/test_cross_architecture_dense_sandwich.py' appears in repo text
+tests/test_cross_architecture_summary.py,.py,15103,1780049919,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_cross_architecture_summary_compatible_islands.py,.py,8626,1780131560,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_cross_attention_compatible_islands.py,.py,6428,1780156349,True,keep_referenced,path 'tests/test_cross_attention_compatible_islands.py' appears in repo text
+tests/test_cross_attention_probe.py,.py,10827,1780041320,True,keep_referenced,path 'tests/test_cross_attention_probe.py' appears in repo text
+tests/test_decode_attention.py,.py,2738,1779949578,True,keep_referenced,path 'tests/test_decode_attention.py' appears in repo text
+tests/test_decoder_component_coverage_audit.py,.py,4162,1780938659,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_dense_sandwich_nonlinear_islands.py,.py,6939,1780202128,True,keep_referenced,path 'tests/test_dense_sandwich_nonlinear_islands.py' appears in repo text
+tests/test_direct_prior_work_comparison.py,.py,3988,1780454626,True,keep_referenced,path 'tests/test_direct_prior_work_comparison.py' appears in repo text
+tests/test_encoder_attention_probe.py,.py,7728,1780036823,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_encoder_compatible_islands.py,.py,4863,1780156320,True,keep_referenced,path 'tests/test_encoder_compatible_islands.py' appears in repo text
+tests/test_experiment_summary.py,.py,5903,1780019462,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_generation_correctness.py,.py,2843,1779949578,True,keep_referenced,path 'tests/test_generation_correctness.py' appears in repo text
+tests/test_generation_processor_coverage.py,.py,4012,1780938545,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_gpt2_block_pad.py,.py,4683,1780303725,True,keep_referenced,path 'tests/test_gpt2_block_pad.py' appears in repo text
+tests/test_gpt2_block_wrapper.py,.py,2620,1779951004,True,keep_referenced,path 'tests/test_gpt2_block_wrapper.py' appears in repo text
+tests/test_gpt2_cache_wrapper.py,.py,10246,1779955888,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_gpt2_compatible_islands.py,.py,12878,1780141489,True,keep_referenced,path 'tests/test_gpt2_compatible_islands.py' appears in repo text
+tests/test_gpt2_conv1d_adapter.py,.py,2703,1779950418,True,keep_referenced,path 'tests/test_gpt2_conv1d_adapter.py' appears in repo text
+tests/test_gpt2_dense_sandwich_integration.py,.py,7493,1780202161,True,keep_referenced,path 'tests/test_gpt2_dense_sandwich_integration.py' appears in repo text
+tests/test_gpt2_generation_wrapper.py,.py,8112,1780018234,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_gpt2_mapping.py,.py,1659,1779950418,True,keep_referenced,path 'tests/test_gpt2_mapping.py' appears in repo text
+tests/test_gpt2_model_compatible_islands.py,.py,14512,1780282761,True,keep_referenced,path 'tests/test_gpt2_model_compatible_islands.py' appears in repo text
+tests/test_gpt2_model_wrapper.py,.py,6711,1779954210,True,keep_referenced,path 'tests/test_gpt2_model_wrapper.py' appears in repo text
+tests/test_gqa_probe.py,.py,2709,1780195070,True,keep_referenced,path 'tests/test_gqa_probe.py' appears in repo text
+tests/test_hf_gpt2_loader.py,.py,2170,1779949972,True,keep_referenced,path 'tests/test_hf_gpt2_loader.py' appears in repo text
+tests/test_integrity_spotcheck.py,.py,3123,1780925851,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_inter_block_masking_probe.py,.py,2475,1780323130,True,keep_referenced,path 'tests/test_inter_block_masking_probe.py' appears in repo text
+tests/test_kv_cache.py,.py,1814,1779949578,True,keep_referenced,path 'tests/test_kv_cache.py' appears in repo text
+tests/test_linear.py,.py,4771,1779947934,True,keep_referenced,path 'tests/test_linear.py' appears in repo text
+tests/test_lm_head.py,.py,1384,1779949073,True,keep_referenced,path 'tests/test_lm_head.py' appears in repo text
+tests/test_lm_head_scalability.py,.py,3593,1780925320,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_lookup_nonlinear_cost_proxy.py,.py,9212,1780987959,True,keep_referenced,path 'tests/test_lookup_nonlinear_cost_proxy.py' appears in repo text
+tests/test_lora_backward_ops.py,.py,11067,1780337890,True,keep_referenced,path 'tests/test_lora_backward_ops.py' appears in repo text
+tests/test_lora_backward_probe.py,.py,8009,1780337921,True,keep_referenced,path 'tests/test_lora_backward_probe.py' appears in repo text
+tests/test_lora_dummy_strategies.py,.py,7399,1780383118,True,keep_referenced,path 'tests/test_lora_dummy_strategies.py' appears in repo text
+tests/test_lora_gradient_security_proxy.py,.py,7470,1780337951,True,keep_referenced,path 'tests/test_lora_gradient_security_proxy.py' appears in repo text
+tests/test_lora_linear.py,.py,6816,1779947934,True,keep_referenced,path 'tests/test_lora_linear.py' appears in repo text
+tests/test_lora_ops.py,.py,8146,1780325738,True,keep_referenced,path 'tests/test_lora_ops.py' appears in repo text
+tests/test_lora_protocol_integration.py,.py,4409,1780925521,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_lora_rank_padding_ops.py,.py,14202,1780365861,True,keep_referenced,path 'tests/test_lora_rank_padding_ops.py' appears in repo text
+tests/test_lora_rank_padding_probe.py,.py,8446,1780365942,True,keep_referenced,path 'tests/test_lora_rank_padding_probe.py' appears in repo text
+tests/test_lora_rank_security_proxy.py,.py,7404,1780365922,True,keep_referenced,path 'tests/test_lora_rank_security_proxy.py' appears in repo text
+tests/test_lora_security_proxy.py,.py,8139,1780325799,True,keep_referenced,path 'tests/test_lora_security_proxy.py' appears in repo text
+tests/test_lora_stronger_dummy_probe.py,.py,9325,1780383156,True,keep_referenced,path 'tests/test_lora_stronger_dummy_probe.py' appears in repo text
+tests/test_lora_stronger_dummy_security_proxy.py,.py,9582,1780383401,True,keep_referenced,path 'tests/test_lora_stronger_dummy_security_proxy.py' appears in repo text
+tests/test_lora_training_inference_lifecycle.py,.py,11737,1780986848,True,keep_referenced,path 'tests/test_lora_training_inference_lifecycle.py' appears in repo text
+tests/test_lora_training_probe.py,.py,7414,1780325765,True,keep_referenced,path 'tests/test_lora_training_probe.py' appears in repo text
+tests/test_lora_training_timing_proxy.py,.py,8654,1780381266,True,keep_referenced,path 'tests/test_lora_training_timing_proxy.py' appears in repo text
+tests/test_masked_gradient_lora_training.py,.py,10075,1780984963,True,keep_referenced,path 'tests/test_masked_gradient_lora_training.py' appears in repo text
+tests/test_measured_runtime_evaluation.py,.py,5808,1780400797,True,keep_referenced,path 'tests/test_measured_runtime_evaluation.py' appears in repo text
+tests/test_mitigation_bundles.py,.py,3986,1780202094,True,keep_referenced,path 'tests/test_mitigation_bundles.py' appears in repo text
+tests/test_mlp.py,.py,2616,1779949073,True,keep_referenced,path 'tests/test_mlp.py' appears in repo text
+tests/test_model_zoo.py,.py,1203,1779949972,True,keep_referenced,path 'tests/test_model_zoo.py' appears in repo text
+tests/test_modern_decoder_block_smoke.py,.py,4827,1780235119,True,keep_referenced,path 'tests/test_modern_decoder_block_smoke.py' appears in repo text
+tests/test_modern_decoder_block_wrapper.py,.py,11251,1780235092,True,keep_referenced,path 'tests/test_modern_decoder_block_wrapper.py' appears in repo text
+tests/test_modern_decoder_generation.py,.py,7119,1780282363,True,keep_referenced,path 'tests/test_modern_decoder_generation.py' appears in repo text
+tests/test_modern_decoder_generation_correctness.py,.py,17335,1780903054,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_modern_decoder_inter_block_masking.py,.py,6517,1780323233,True,keep_referenced,path 'tests/test_modern_decoder_inter_block_masking.py' appears in repo text
+tests/test_modern_decoder_kv_cache.py,.py,5971,1780282294,True,keep_referenced,path 'tests/test_modern_decoder_kv_cache.py' appears in repo text
+tests/test_modern_decoder_low_interaction_correctness.py,.py,13038,1780906217,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_modern_decoder_model_smoke.py,.py,4626,1780282386,True,keep_referenced,path 'tests/test_modern_decoder_model_smoke.py' appears in repo text
+tests/test_modern_decoder_model_wrapper.py,.py,8331,1780282330,True,keep_referenced,path 'tests/test_modern_decoder_model_wrapper.py' appears in repo text
+tests/test_modern_decoder_probe.py,.py,9847,1780282812,True,keep_referenced,path 'tests/test_modern_decoder_probe.py' appears in repo text
+tests/test_modern_decoder_rope_safe_low_interaction.py,.py,16413,1780908501,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_modern_decoder_spec.py,.py,9129,1780235148,True,keep_referenced,path 'tests/test_modern_decoder_spec.py' appears in repo text
+tests/test_multi_session_batching.py,.py,3185,1780925748,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_multilayer_lora_security_proxy.py,.py,8407,1780381005,True,keep_referenced,path 'tests/test_multilayer_lora_security_proxy.py' appears in repo text
+tests/test_multilayer_lora_training.py,.py,12326,1780380740,True,keep_referenced,path 'tests/test_multilayer_lora_training.py' appears in repo text
+tests/test_nonlinear_island_probe.py,.py,3082,1780126957,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_nonlinear_island_security.py,.py,12074,1780129909,True,keep_referenced,path 'tests/test_nonlinear_island_security.py' appears in repo text
+tests/test_nonlinear_islands.py,.py,8303,1780126939,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_norm_granularity_low_interaction.py,.py,14012,1780921729,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_norm_primitives.py,.py,6582,1780123129,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_norm_probe.py,.py,5959,1780123156,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_ours_runtime_api_validation.py,.py,2821,1780454643,True,keep_referenced,path 'tests/test_ours_runtime_api_validation.py' appears in repo text
+tests/test_paged_kv_abstraction.py,.py,3234,1780925646,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_paper_ablation_study.py,.py,2402,1780451779,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_paper_artifact_consolidation.py,.py,7817,1780453179,True,keep_referenced,path 'tests/test_paper_artifact_consolidation.py' appears in repo text
+tests/test_paper_baseline_comparison.py,.py,2810,1780451765,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_paper_claims_audit.py,.py,6821,1780400831,True,keep_referenced,path 'tests/test_paper_claims_audit.py' appears in repo text
+tests/test_paper_claims_audit_v2.py,.py,5493,1780938855,True,keep_referenced,path 'tests/test_paper_claims_audit_v2.py' appears in repo text
+tests/test_paper_cost_model.py,.py,3248,1780926037,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_paper_experiment_suite.py,.py,4348,1780939670,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_paper_stability_study.py,.py,1848,1780451790,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_paper_toy_tasks.py,.py,3096,1780451750,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_permutation_invariant_leakage.py,.py,10285,1780975883,True,keep_referenced,path 'tests/test_permutation_invariant_leakage.py' appears in repo text
+tests/test_precision_quantization_stability.py,.py,4905,1780938420,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_real_activation_attacker.py,.py,10646,1780242469,True,keep_referenced,path 'tests/test_real_activation_attacker.py' appears in repo text
+tests/test_real_activation_trace.py,.py,5772,1780242423,True,keep_referenced,path 'tests/test_real_activation_trace.py' appears in repo text
+tests/test_real_token_activation_attacker.py,.py,8060,1780303494,True,keep_referenced,path 'tests/test_real_token_activation_attacker.py' appears in repo text
+tests/test_real_token_inter_block_masking.py,.py,2296,1780323248,True,keep_referenced,path 'tests/test_real_token_inter_block_masking.py' appears in repo text
+tests/test_real_token_trace.py,.py,5472,1780303459,True,keep_referenced,path 'tests/test_real_token_trace.py' appears in repo text
+tests/test_reviewer_risk_audit.py,.py,11056,1780468796,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_rope_probe.py,.py,3596,1780195054,True,keep_referenced,path 'tests/test_rope_probe.py' appears in repo text
+tests/test_runtime_boundary.py,.py,3430,1780454664,True,keep_referenced,path 'tests/test_runtime_boundary.py' appears in repo text
+tests/test_security_proxy.py,.py,8651,1780049958,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_sliding_window_attention.py,.py,3429,1780938225,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_stronger_attackers.py,.py,5727,1780307119,True,keep_referenced,path 'tests/test_stronger_attackers.py' appears in repo text
+tests/test_stronger_attackers_inter_block_closed.py,.py,5082,1780323289,True,keep_referenced,path 'tests/test_stronger_attackers_inter_block_closed.py' appears in repo text
+tests/test_timing_sidechannel_proxy.py,.py,2885,1780307154,True,keep_referenced,path 'tests/test_timing_sidechannel_proxy.py' appears in repo text
+tests/test_tiny_transformer.py,.py,2607,1779949073,True,keep_referenced,path 'tests/test_tiny_transformer.py' appears in repo text
+tests/test_workload_profiler.py,.py,13054,1780023748,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_workload_profiler_compatible_islands.py,.py,10104,1780282776,False,keep,protected path (src/tests/scripts/docs/paper_*/README/pyproject)
+tests/test_workload_profiler_cross_architecture_islands.py,.py,12459,1780282756,True,keep_referenced,path 'tests/test_workload_profiler_cross_architecture_islands.py' appears in repo text
+src/pllo/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/architectures/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/backends/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/cache/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/experiments/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/hf_wrappers/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/masks/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/model_zoo/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/ops/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)
+src/pllo/utils/__pycache__/,,,,False,delete_candidate,low-risk junk (cache / temp / editor backup)

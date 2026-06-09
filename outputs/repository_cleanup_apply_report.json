@@ -1,0 +1,23 @@
+{
+  "allowlist": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs/repository_cleanup_allowlist.json",
+  "counts": {
+    "eligible": 1,
+    "performed": 1,
+    "refused_protected": 0,
+    "refused_referenced": 0,
+    "skip_missing": 0
+  },
+  "mode": "APPLY",
+  "results": [
+    {
+      "decision": "eligible",
+      "dest": "outputs/archive/outputs/gpt2_block_correctness_small.json",
+      "op": "archive",
+      "path": "outputs/gpt2_block_correctness_small.json",
+      "performed": true,
+      "reason": "passed all guards",
+      "reference_hits": []
+    }
+  ],
+  "status": "ok"
+}

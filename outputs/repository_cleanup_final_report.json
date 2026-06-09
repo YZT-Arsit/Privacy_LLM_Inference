@@ -1,0 +1,83 @@
+{
+  "status": "ok",
+  "report": "repository_cleanup_final_report",
+  "audit_artifacts": [
+    "outputs/repository_cleanup_audit.json",
+    "outputs/repository_cleanup_audit.csv",
+    "outputs/repository_cleanup_audit.md",
+    "outputs/repository_cleanup_plan.md",
+    "outputs/repository_cleanup_allowlist.json",
+    "outputs/repository_cleanup_apply_report.json"
+  ],
+  "scripts_added": [
+    "scripts/audit_repository_cleanup.py",
+    "scripts/clean_repository_low_risk.py",
+    "scripts/apply_repository_cleanup_allowlist.py"
+  ],
+  "deleted_low_risk": {
+    "count": 18,
+    "kind": "python_caches_only",
+    "items": [
+      ".pytest_cache/",
+      "scripts/__pycache__/",
+      "src/pllo/__pycache__/",
+      "src/pllo/architectures/__pycache__/",
+      "src/pllo/backends/__pycache__/",
+      "src/pllo/baselines/__pycache__/",
+      "src/pllo/cache/__pycache__/",
+      "src/pllo/evaluation/__pycache__/",
+      "src/pllo/experiments/__pycache__/",
+      "src/pllo/hf_wrappers/__pycache__/",
+      "src/pllo/masks/__pycache__/",
+      "src/pllo/model_zoo/__pycache__/",
+      "src/pllo/models/__pycache__/",
+      "src/pllo/ops/__pycache__/",
+      "src/pllo/runtime/__pycache__/",
+      "src/pllo/utils/__pycache__/",
+      "src/pllo/wrappers/__pycache__/",
+      "tests/__pycache__/"
+    ],
+    "note": "Caches are regenerated on next import/test run. No source, docs, or output content removed."
+  },
+  "archived_outputs": [
+    {
+      "from": "outputs/gpt2_block_correctness_small.json",
+      "to": "outputs/archive/outputs/gpt2_block_correctness_small.json",
+      "reason": "Stale (2024-05-28), 975 B, unreferenced, superseded by referenced outputs/gpt2_block_correctness.json. Archived (reversible), not deleted."
+    }
+  ],
+  "deleted_markdown": [],
+  "moved_files": [],
+  "kept_uncertain": [
+    {
+      "path": "outputs/repository_cleanup_plan.md",
+      "reason": "Freshly created cleanup-control document; flagged keep_uncertain only because it is not yet referenced by non-control files. Intentionally retained."
+    }
+  ],
+  "false_positives": [
+    {
+      "item": "paper_claims_audit versioned-sibling group",
+      "reason": "Only paper_claims_audit_v2.{json,md} exist under outputs/; there is no non-v2 sibling there. v2 is the current referenced artifact. No action taken."
+    }
+  ],
+  "verification": {
+    "pytest": "1307 passed, 4 skipped, 0 failed (785.49s)",
+    "claims_consistency_scanner": "112 files scanned, total_unsafe_wording_present=0, passes_consistency_check=true",
+    "smoke_lookup_nonlinear_cost_proxy": "status=ok formal_security_claim=False cryptographic_lookup_implemented=False",
+    "smoke_masked_gradient_lora_training": "status=ok adamw_status=explicitly_raised_as_designed claims_passes=True",
+    "smoke_permutation_invariant_leakage": "ran ok, 18 tensors_with_metrics per bundle",
+    "smoke_audit_repository_cleanup": "ran ok",
+    "readme_docs_link_check": "34 links checked, 0 broken"
+  },
+  "protocol_code_changed": false,
+  "default_config_changed": false,
+  "core_artifacts_deleted": false,
+  "core_artifacts_present": [
+    "outputs/permutation_invariant_leakage.{json,csv,md}",
+    "outputs/lookup_nonlinear_cost_proxy.{json,csv,md}",
+    "outputs/masked_gradient_lora_training.{json,csv,md}",
+    "outputs/masked_gradient_lora_security_proxy.{json,csv,md}",
+    "outputs/lora_training_inference_lifecycle.{json,csv,md}",
+    "outputs/stage_7_6_claims_consistency.{json,csv,md}"
+  ]
+}
