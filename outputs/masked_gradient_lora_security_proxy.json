@@ -1,0 +1,448 @@
+{
+  "config": {
+    "base": {
+      "batch_size": 8,
+      "d_in": 16,
+      "d_out": 8,
+      "device": "cpu",
+      "dtype": "float64",
+      "dummy_strategy": "paired_cancellation",
+      "lr": 0.01,
+      "mixer_kind": "orthogonal",
+      "momentum": 0.9,
+      "padded_rank": 6,
+      "seed": 0,
+      "true_rank": 2,
+      "use_momentum": false,
+      "use_rank_padding": true
+    },
+    "fixed_masks_baseline": true,
+    "fresh_masks_per_step": true,
+    "num_steps": 4,
+    "num_trials": 3
+  },
+  "formal_security_claim": false,
+  "honesty_phrases": [
+    "The GPU never receives plaintext LoRA adapters or plaintext LoRA gradients in this experiment.",
+    "This is a CPU-only algebraic and proxy-leakage experiment, not a real TEE/GPU training benchmark.",
+    "No formal, cryptographic, or semantic security is claimed."
+  ],
+  "limitations": [
+    "Proxy attacks only -- NOT a formal security proof.",
+    "True-rank inference depends on the dummy strategy and on the mixer's invariance properties; the cancellation-padded paired-strategy used here is not guaranteed to hide the rank against all spectral attacks.",
+    "Fixed-mask baseline is included for reference; the default Stage 7.6 policy is fresh masks per step.",
+    "No real TEE / GPU runtime; no hardware side-channel evaluation.",
+    "No formal cryptographic / semantic / differential-privacy security is claimed.",
+    "Raw tensors, masks, adapters, and gradients are NEVER exported."
+  ],
+  "main_mode": "masked_gradient_lora_security_proxy",
+  "paper_safe_wording": "We probe the masked-gradient surface with spectral and linkability proxies. Risk labels are conservative; no formal security is claimed.",
+  "stage": "7.6",
+  "status": "ok",
+  "trials_fixed_masks_baseline": [
+    {
+      "linkability": {
+        "abs_mean_consecutive_cos_A": 0.03331861227383978,
+        "abs_mean_consecutive_cos_B": 0.2546516715773933,
+        "fresh_masks": false,
+        "mean_consecutive_cos_A": -0.03331861227383978,
+        "mean_consecutive_cos_B": -0.2546516715773933
+      },
+      "linkability_label": "low_proxy_risk",
+      "policy": "fixed_masks_baseline",
+      "rank_proxy": {
+        "all_estimates_above_or_equal_true_rank": true,
+        "any_estimate_matches_true_rank": false,
+        "estimates": {
+          "A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9784710451653232,
+            "top_two_sorted": [
+              7.126040809899181,
+              6.972624599152798
+            ]
+          },
+          "B_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.8408538319206947,
+            "top_two_sorted": [
+              3.118015847695954,
+              2.6217955735245964
+            ]
+          },
+          "grad_A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.6365678962784072,
+            "top_two_sorted": [
+              1.137799118606423,
+              0.7242863913187165
+            ]
+          },
+          "grad_B_tilde": {
+            "energy_rank": 4,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.7465591008623438,
+            "top_two_sorted": [
+              2.2938196741493293,
+              1.7124719534732777
+            ]
+          }
+        },
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "rank_proxy_label": "low_proxy_risk",
+      "subspace_proxy": {
+        "A_tilde_largest_spectral_gap": 6.589172514155313,
+        "A_tilde_largest_spectral_gap_idx": 2,
+        "B_tilde_largest_spectral_gap": 2.3417177154336164,
+        "B_tilde_largest_spectral_gap_idx": 2
+      },
+      "trial": 0
+    },
+    {
+      "linkability": {
+        "abs_mean_consecutive_cos_A": 0.13492170742584544,
+        "abs_mean_consecutive_cos_B": 0.3035018322632026,
+        "fresh_masks": false,
+        "mean_consecutive_cos_A": 0.07854545294133297,
+        "mean_consecutive_cos_B": -0.3035018322632026
+      },
+      "linkability_label": "medium_proxy_risk",
+      "policy": "fixed_masks_baseline",
+      "rank_proxy": {
+        "all_estimates_above_or_equal_true_rank": true,
+        "any_estimate_matches_true_rank": false,
+        "estimates": {
+          "A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9784691041585143,
+            "top_two_sorted": [
+              7.126036879162628,
+              6.972606921354791
+            ]
+          },
+          "B_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.8408121435414109,
+            "top_two_sorted": [
+              3.118125353615829,
+              2.621757662404545
+            ]
+          },
+          "grad_A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.6222902473588539,
+            "top_two_sorted": [
+              0.765529123346766,
+              0.47638130752786556
+            ]
+          },
+          "grad_B_tilde": {
+            "energy_rank": 5,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.7052972169197248,
+            "top_two_sorted": [
+              1.9997537501597522,
+              1.4104207545124559
+            ]
+          }
+        },
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "rank_proxy_label": "low_proxy_risk",
+      "subspace_proxy": {
+        "A_tilde_largest_spectral_gap": 6.589082030226008,
+        "A_tilde_largest_spectral_gap_idx": 2,
+        "B_tilde_largest_spectral_gap": 2.3413943426134214,
+        "B_tilde_largest_spectral_gap_idx": 2
+      },
+      "trial": 1
+    },
+    {
+      "linkability": {
+        "abs_mean_consecutive_cos_A": 0.11424509281567297,
+        "abs_mean_consecutive_cos_B": 0.2564511890348194,
+        "fresh_masks": false,
+        "mean_consecutive_cos_A": -0.0502078896993907,
+        "mean_consecutive_cos_B": -0.15491890230522765
+      },
+      "linkability_label": "low_proxy_risk",
+      "policy": "fixed_masks_baseline",
+      "rank_proxy": {
+        "all_estimates_above_or_equal_true_rank": true,
+        "any_estimate_matches_true_rank": false,
+        "estimates": {
+          "A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9784730474692367,
+            "top_two_sorted": [
+              7.126025287628289,
+              6.972623679528495
+            ]
+          },
+          "B_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.8408371173758284,
+            "top_two_sorted": [
+              3.118011893335505,
+              2.621740132335775
+            ]
+          },
+          "grad_A_tilde": {
+            "energy_rank": 5,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.5934372035582984,
+            "top_two_sorted": [
+              0.8411694046521818,
+              0.49918121921558956
+            ]
+          },
+          "grad_B_tilde": {
+            "energy_rank": 4,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9795127335860314,
+            "top_two_sorted": [
+              1.4454684532394442,
+              1.4158547559449406
+            ]
+          }
+        },
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "rank_proxy_label": "low_proxy_risk",
+      "subspace_proxy": {
+        "A_tilde_largest_spectral_gap": 6.589127943161081,
+        "A_tilde_largest_spectral_gap_idx": 2,
+        "B_tilde_largest_spectral_gap": 2.3408695594250473,
+        "B_tilde_largest_spectral_gap_idx": 2
+      },
+      "trial": 2
+    }
+  ],
+  "trials_fresh_masks": [
+    {
+      "dummy_strategy_classification": {
+        "col_norm_max": 5.866648004653872,
+        "col_norm_mean": 3.7719865765063942,
+        "col_norm_min": 1.9754954292950186,
+        "col_norm_std": 1.542803228619449
+      },
+      "linkability": {
+        "abs_mean_consecutive_cos_A": 0.01686313340614692,
+        "abs_mean_consecutive_cos_B": 0.09766468099550978,
+        "fresh_masks": true,
+        "mean_consecutive_cos_A": 0.010677941390429081,
+        "mean_consecutive_cos_B": -0.016386845376553803
+      },
+      "linkability_label": "low_proxy_risk",
+      "policy": "fresh_masks_per_step",
+      "rank_proxy": {
+        "all_estimates_above_or_equal_true_rank": true,
+        "any_estimate_matches_true_rank": false,
+        "estimates": {
+          "A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9784742188201417,
+            "top_two_sorted": [
+              7.125964266192851,
+              6.972572318703294
+            ]
+          },
+          "B_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.8408401107938724,
+            "top_two_sorted": [
+              3.1180032524546695,
+              2.621742200249639
+            ]
+          },
+          "grad_A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.4703729779640306,
+            "top_two_sorted": [
+              0.9430823113662515,
+              0.4436004352625449
+            ]
+          },
+          "grad_B_tilde": {
+            "energy_rank": 4,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.790942200613279,
+            "top_two_sorted": [
+              1.7245134233826973,
+              1.36399044207745
+            ]
+          }
+        },
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "rank_proxy_label": "low_proxy_risk",
+      "subspace_proxy": {
+        "A_tilde_largest_spectral_gap": 6.588798054185441,
+        "A_tilde_largest_spectral_gap_idx": 2,
+        "B_tilde_largest_spectral_gap": 2.340205758210079,
+        "B_tilde_largest_spectral_gap_idx": 2
+      },
+      "trial": 0
+    },
+    {
+      "dummy_strategy_classification": {
+        "col_norm_max": 6.697845581526617,
+        "col_norm_mean": 3.821021579031882,
+        "col_norm_min": 1.9936808844994596,
+        "col_norm_std": 1.4171050356564545
+      },
+      "linkability": {
+        "abs_mean_consecutive_cos_A": 0.08802103917464044,
+        "abs_mean_consecutive_cos_B": 0.0531676417345866,
+        "fresh_masks": true,
+        "mean_consecutive_cos_A": 0.08802103917464044,
+        "mean_consecutive_cos_B": 0.005892856331191798
+      },
+      "linkability_label": "low_proxy_risk",
+      "policy": "fresh_masks_per_step",
+      "rank_proxy": {
+        "all_estimates_above_or_equal_true_rank": true,
+        "any_estimate_matches_true_rank": false,
+        "estimates": {
+          "A_tilde": {
+            "energy_rank": 5,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9784692049561308,
+            "top_two_sorted": [
+              7.1260669322243855,
+              6.972637045637768
+            ]
+          },
+          "B_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.8408465029492951,
+            "top_two_sorted": [
+              3.1179950866502124,
+              2.6217552648229154
+            ]
+          },
+          "grad_A_tilde": {
+            "energy_rank": 5,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.5992365573233182,
+            "top_two_sorted": [
+              1.7837306372554496,
+              1.068876606261084
+            ]
+          },
+          "grad_B_tilde": {
+            "energy_rank": 5,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.6610506767967974,
+            "top_two_sorted": [
+              2.0420754600250524,
+              1.3499153649196922
+            ]
+          }
+        },
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "rank_proxy_label": "low_proxy_risk",
+      "subspace_proxy": {
+        "A_tilde_largest_spectral_gap": 6.589103271116719,
+        "A_tilde_largest_spectral_gap_idx": 2,
+        "B_tilde_largest_spectral_gap": 2.3412934378100725,
+        "B_tilde_largest_spectral_gap_idx": 2
+      },
+      "trial": 1
+    },
+    {
+      "dummy_strategy_classification": {
+        "col_norm_max": 6.106907240889627,
+        "col_norm_mean": 3.846473800495509,
+        "col_norm_min": 1.934113341208494,
+        "col_norm_std": 1.3465223833325433
+      },
+      "linkability": {
+        "abs_mean_consecutive_cos_A": 0.03895276005153709,
+        "abs_mean_consecutive_cos_B": 0.044258028404045795,
+        "fresh_masks": true,
+        "mean_consecutive_cos_A": 0.01908080693004142,
+        "mean_consecutive_cos_B": 0.044258028404045795
+      },
+      "linkability_label": "low_proxy_risk",
+      "policy": "fresh_masks_per_step",
+      "rank_proxy": {
+        "all_estimates_above_or_equal_true_rank": true,
+        "any_estimate_matches_true_rank": false,
+        "estimates": {
+          "A_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.9784773153790907,
+            "top_two_sorted": [
+              7.12603203460735,
+              6.972660694527999
+            ]
+          },
+          "B_tilde": {
+            "energy_rank": 6,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.8408354912112803,
+            "top_two_sorted": [
+              3.118066089283451,
+              2.6217806318118866
+            ]
+          },
+          "grad_A_tilde": {
+            "energy_rank": 5,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.20728539034861257,
+            "top_two_sorted": [
+              1.894250025750907,
+              0.3926503560056462
+            ]
+          },
+          "grad_B_tilde": {
+            "energy_rank": 4,
+            "num_values": 6,
+            "spectral_decay_ratio_top2": 0.32024266181996774,
+            "top_two_sorted": [
+              2.6582964450183306,
+              0.8512999294592277
+            ]
+          }
+        },
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "rank_proxy_label": "low_proxy_risk",
+      "subspace_proxy": {
+        "A_tilde_largest_spectral_gap": 6.588508707484905,
+        "A_tilde_largest_spectral_gap_idx": 2,
+        "B_tilde_largest_spectral_gap": 2.3398002558884667,
+        "B_tilde_largest_spectral_gap_idx": 2
+      },
+      "trial": 2
+    }
+  ],
+  "unsafe_wording_to_avoid": [
+    "GPU has zero information about adapters.",
+    "Cryptographic privacy.",
+    "Semantic security.",
+    "Adapter-extraction failed implies security."
+  ]
+}

@@ -1,0 +1,7 @@
+trial,policy,rank_proxy_any_match_true_rank,rank_proxy_label,linkability_abs_mean_cos_A,linkability_abs_mean_cos_B,linkability_label
+0,fresh_masks_per_step,False,low_proxy_risk,0.016863,0.097665,low_proxy_risk
+1,fresh_masks_per_step,False,low_proxy_risk,0.088021,0.053168,low_proxy_risk
+2,fresh_masks_per_step,False,low_proxy_risk,0.038953,0.044258,low_proxy_risk
+0,fixed_masks_baseline,False,low_proxy_risk,0.033319,0.254652,low_proxy_risk
+1,fixed_masks_baseline,False,low_proxy_risk,0.134922,0.303502,medium_proxy_risk
+2,fixed_masks_baseline,False,low_proxy_risk,0.114245,0.256451,low_proxy_risk

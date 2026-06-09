@@ -1,0 +1,350 @@
+{
+  "adamw_dense_mask_unsupported": {
+    "exception_type": "DenseMaskedAdamWUnsupported",
+    "reason": "Dense masked AdamW exactness is NOT supported. Coordinate-wise second moments are not invariant under a dense orthogonal mixer. Options: (i) trusted-assisted update (recover, AdamW on plain, re-mask), (ii) signed-permutation masks (the only orthogonal class that commutes with coordinate-wise squaring), (iii) a specialised masked optimiser. None of these is in scope for Stage 7.6.",
+    "status": "explicitly_raised_as_designed"
+  },
+  "config": {
+    "batch_size": 8,
+    "d_in": 16,
+    "d_out": 8,
+    "device": "cpu",
+    "dtype": "float64",
+    "dummy_strategy": "paired_cancellation",
+    "lr": 0.01,
+    "mixer_kind": "orthogonal",
+    "momentum": 0.9,
+    "padded_rank": 6,
+    "seed": 0,
+    "true_rank": 2,
+    "use_momentum": false,
+    "use_rank_padding": true
+  },
+  "dummy_rank_padding": {
+    "dummy_columns_in_A": 4,
+    "dummy_pair_norm_R": 5.16106528623236,
+    "dummy_pair_norm_S": 3.838991768972081,
+    "dummy_rows_in_B": 4,
+    "initial_dummy_contribution_norm": 6.26220207271555e-16,
+    "padded_rank": 6,
+    "strategy_used": "paired_cancellation",
+    "true_rank": 2
+  },
+  "formal_security_claim": false,
+  "gpu_visibility": [
+    {
+      "exposed_form": "never_exported",
+      "variable": "plaintext_A",
+      "visible_to_gpu": false
+    },
+    {
+      "exposed_form": "never_exported",
+      "variable": "plaintext_B",
+      "visible_to_gpu": false
+    },
+    {
+      "exposed_form": "never_exported",
+      "variable": "plaintext_grad_A",
+      "visible_to_gpu": false
+    },
+    {
+      "exposed_form": "never_exported",
+      "variable": "plaintext_grad_B",
+      "visible_to_gpu": false
+    },
+    {
+      "exposed_form": "never_exported",
+      "variable": "plaintext_optimizer_state",
+      "visible_to_gpu": false
+    },
+    {
+      "exposed_form": "trusted_only",
+      "variable": "N_x / N_y / M",
+      "visible_to_gpu": false
+    },
+    {
+      "exposed_form": "X @ N_x (masked)",
+      "variable": "X_tilde",
+      "visible_to_gpu": true
+    },
+    {
+      "exposed_form": "N_x^T A_pad M (masked, rank-padded)",
+      "variable": "A_tilde",
+      "visible_to_gpu": true
+    },
+    {
+      "exposed_form": "M^T B_pad N_y (masked, rank-padded)",
+      "variable": "B_tilde",
+      "visible_to_gpu": true
+    },
+    {
+      "exposed_form": "N_x^T grad_A M (masked)",
+      "variable": "grad_A_tilde",
+      "visible_to_gpu": true
+    },
+    {
+      "exposed_form": "M^T grad_B N_y (masked)",
+      "variable": "grad_B_tilde",
+      "visible_to_gpu": true
+    }
+  ],
+  "honesty_phrases": [
+    "The GPU never receives plaintext LoRA adapters or plaintext LoRA gradients in this experiment.",
+    "Masked SGD is algebraically equivalent under orthogonal masks.",
+    "Dense masked AdamW is not claimed because coordinate-wise second moments are not invariant under dense orthogonal mixing.",
+    "This is a CPU-only algebraic and proxy-leakage experiment, not a real TEE/GPU training benchmark.",
+    "The user side does not require a GPU; the simulated cloud accelerator performs masked forward, backward, and optimizer updates.",
+    "No formal, cryptographic, or semantic security is claimed."
+  ],
+  "limitations": [
+    "Dense masked AdamW is not claimed because coordinate-wise second moments are not invariant under dense orthogonal mixing.",
+    "AdamW under dense masks would require trusted-assisted update, signed-permutation masks, or a specialised masked optimiser; none are implemented in Stage 7.6.",
+    "CPU local emulation only; no real TEE / GPU runtime is measured.",
+    "This is an algebraic correctness + proxy leakage stage; no formal cryptographic / semantic / differential-privacy security is claimed.",
+    "Synthetic regression task only; this is not a real Qwen / LLaMA LoRA fine-tuning workload.",
+    "Loss boundary uses MSE on Y_tilde vs target_tilde; orthogonal N_y preserves the L2 loss exactly, but a softmax / cross-entropy loss would require a trusted loss boundary, which is out of scope for Stage 7.6.",
+    "Raw tensors, adapters, gradients, and masks are NEVER exported; outputs contain only summary scalars, shapes, and short fingerprints."
+  ],
+  "main_mode": "masked_gradient_lora_training",
+  "num_steps": 6,
+  "paper_safe_wording": "We validate that the masked-gradient LoRA construction preserves plaintext SGD and momentum-SGD updates algebraically at float64 machine precision, and we explicitly raise on dense masked AdamW rather than approximating. The construction hides the true rank via cancellation padding while the visible padded rank is observable.",
+  "per_step": [
+    {
+      "dummy_contribution_norm_after_step": 0.10362714531420435,
+      "forward_max_abs_err": 7.435024818036595e-15,
+      "grad_A_tilde_relation_max_abs_err": 3.6637359812630166e-15,
+      "grad_B_tilde_relation_max_abs_err": 3.524958103184872e-15,
+      "loss_abs_err": 5.551115123125783e-16,
+      "masked_momentum_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_momentum_sgd_update_B_max_abs_err_after_recovery": 1.4432899320127035e-15,
+      "masked_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_sgd_update_B_max_abs_err_after_recovery": 1.4432899320127035e-15,
+      "masked_state_fingerprint": {
+        "A_tilde_fingerprint": "a471b8ddb44e3709",
+        "A_tilde_shape": [
+          16,
+          6
+        ],
+        "B_tilde_fingerprint": "c2d1405c5976325c",
+        "B_tilde_shape": [
+          6,
+          8
+        ],
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "step": 0,
+      "visible_grad_fingerprint": {
+        "grad_A_tilde_fingerprint": "035ef89c8281b413",
+        "grad_A_tilde_shape": [
+          16,
+          6
+        ],
+        "grad_B_tilde_fingerprint": "7b12087d031de03d",
+        "grad_B_tilde_shape": [
+          6,
+          8
+        ]
+      }
+    },
+    {
+      "dummy_contribution_norm_after_step": 0.19381021936857654,
+      "forward_max_abs_err": 1.029037965949442e-14,
+      "grad_A_tilde_relation_max_abs_err": 4.413136522884997e-15,
+      "grad_B_tilde_relation_max_abs_err": 4.3021142204224816e-15,
+      "loss_abs_err": 4.440892098500626e-16,
+      "masked_momentum_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_momentum_sgd_update_B_max_abs_err_after_recovery": 1.3322676295501878e-15,
+      "masked_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_sgd_update_B_max_abs_err_after_recovery": 1.3322676295501878e-15,
+      "masked_state_fingerprint": {
+        "A_tilde_fingerprint": "64a9c4cde2e30434",
+        "A_tilde_shape": [
+          16,
+          6
+        ],
+        "B_tilde_fingerprint": "46a54f81017d7913",
+        "B_tilde_shape": [
+          6,
+          8
+        ],
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "step": 1,
+      "visible_grad_fingerprint": {
+        "grad_A_tilde_fingerprint": "ca39c984759ef8da",
+        "grad_A_tilde_shape": [
+          16,
+          6
+        ],
+        "grad_B_tilde_fingerprint": "fdf3473bfc96acef",
+        "grad_B_tilde_shape": [
+          6,
+          8
+        ]
+      }
+    },
+    {
+      "dummy_contribution_norm_after_step": 0.27337364690443006,
+      "forward_max_abs_err": 7.896461262646426e-15,
+      "grad_A_tilde_relation_max_abs_err": 3.899658373995862e-15,
+      "grad_B_tilde_relation_max_abs_err": 3.469446951953614e-15,
+      "loss_abs_err": 0.0,
+      "masked_momentum_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_momentum_sgd_update_B_max_abs_err_after_recovery": 1.3322676295501878e-15,
+      "masked_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_sgd_update_B_max_abs_err_after_recovery": 1.3322676295501878e-15,
+      "masked_state_fingerprint": {
+        "A_tilde_fingerprint": "bf34f83606930496",
+        "A_tilde_shape": [
+          16,
+          6
+        ],
+        "B_tilde_fingerprint": "19f3b07332cbf3db",
+        "B_tilde_shape": [
+          6,
+          8
+        ],
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "step": 2,
+      "visible_grad_fingerprint": {
+        "grad_A_tilde_fingerprint": "8bff642965033944",
+        "grad_A_tilde_shape": [
+          16,
+          6
+        ],
+        "grad_B_tilde_fingerprint": "bc409b10718ad1db",
+        "grad_B_tilde_shape": [
+          6,
+          8
+        ]
+      }
+    },
+    {
+      "dummy_contribution_norm_after_step": 0.3444085257074571,
+      "forward_max_abs_err": 4.496403249731884e-15,
+      "grad_A_tilde_relation_max_abs_err": 1.5543122344752192e-15,
+      "grad_B_tilde_relation_max_abs_err": 1.4155343563970746e-15,
+      "loss_abs_err": 1.1102230246251565e-16,
+      "masked_momentum_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_momentum_sgd_update_B_max_abs_err_after_recovery": 1.5543122344752192e-15,
+      "masked_sgd_update_A_max_abs_err_after_recovery": 1.9984014443252818e-15,
+      "masked_sgd_update_B_max_abs_err_after_recovery": 1.5543122344752192e-15,
+      "masked_state_fingerprint": {
+        "A_tilde_fingerprint": "6ad492ef8fc9f6f2",
+        "A_tilde_shape": [
+          16,
+          6
+        ],
+        "B_tilde_fingerprint": "39cade185122db7f",
+        "B_tilde_shape": [
+          6,
+          8
+        ],
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "step": 3,
+      "visible_grad_fingerprint": {
+        "grad_A_tilde_fingerprint": "be1d69f9f9e23793",
+        "grad_A_tilde_shape": [
+          16,
+          6
+        ],
+        "grad_B_tilde_fingerprint": "401d62c308c4858c",
+        "grad_B_tilde_shape": [
+          6,
+          8
+        ]
+      }
+    },
+    {
+      "dummy_contribution_norm_after_step": 0.4084781234972396,
+      "forward_max_abs_err": 7.521760991835436e-15,
+      "grad_A_tilde_relation_max_abs_err": 2.8553548414578245e-15,
+      "grad_B_tilde_relation_max_abs_err": 2.525757381022231e-15,
+      "loss_abs_err": 3.3306690738754696e-16,
+      "masked_momentum_sgd_update_A_max_abs_err_after_recovery": 2.220446049250313e-15,
+      "masked_momentum_sgd_update_B_max_abs_err_after_recovery": 1.5543122344752192e-15,
+      "masked_sgd_update_A_max_abs_err_after_recovery": 2.220446049250313e-15,
+      "masked_sgd_update_B_max_abs_err_after_recovery": 1.5543122344752192e-15,
+      "masked_state_fingerprint": {
+        "A_tilde_fingerprint": "4adceb909599e29c",
+        "A_tilde_shape": [
+          16,
+          6
+        ],
+        "B_tilde_fingerprint": "22adce726abd4cbd",
+        "B_tilde_shape": [
+          6,
+          8
+        ],
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "step": 4,
+      "visible_grad_fingerprint": {
+        "grad_A_tilde_fingerprint": "01d973145e6fbe8c",
+        "grad_A_tilde_shape": [
+          16,
+          6
+        ],
+        "grad_B_tilde_fingerprint": "74d462c0b13ecbe1",
+        "grad_B_tilde_shape": [
+          6,
+          8
+        ]
+      }
+    },
+    {
+      "dummy_contribution_norm_after_step": 0.46676527578594834,
+      "forward_max_abs_err": 4.6629367034256575e-15,
+      "grad_A_tilde_relation_max_abs_err": 1.887379141862766e-15,
+      "grad_B_tilde_relation_max_abs_err": 2.518818487118324e-15,
+      "loss_abs_err": 1.1102230246251565e-16,
+      "masked_momentum_sgd_update_A_max_abs_err_after_recovery": 1.7763568394002505e-15,
+      "masked_momentum_sgd_update_B_max_abs_err_after_recovery": 1.3322676295501878e-15,
+      "masked_sgd_update_A_max_abs_err_after_recovery": 1.7763568394002505e-15,
+      "masked_sgd_update_B_max_abs_err_after_recovery": 1.3322676295501878e-15,
+      "masked_state_fingerprint": {
+        "A_tilde_fingerprint": "308f497b8bff7a9c",
+        "A_tilde_shape": [
+          16,
+          6
+        ],
+        "B_tilde_fingerprint": "6ed3be974eebf840",
+        "B_tilde_shape": [
+          6,
+          8
+        ],
+        "padded_rank": 6,
+        "true_rank": 2
+      },
+      "step": 5,
+      "visible_grad_fingerprint": {
+        "grad_A_tilde_fingerprint": "9b3fce2d755a69dc",
+        "grad_A_tilde_shape": [
+          16,
+          6
+        ],
+        "grad_B_tilde_fingerprint": "94cb881187fb7e12",
+        "grad_B_tilde_shape": [
+          6,
+          8
+        ]
+      }
+    }
+  ],
+  "stage": "7.6",
+  "status": "ok",
+  "unsafe_wording_to_avoid": [
+    "Dense masked AdamW exact.",
+    "Cryptographic security.",
+    "Semantic security.",
+    "Plaintext gradients revealed to GPU.",
+    "Full Qwen / LLaMA private fine-tuning deployed."
+  ]
+}

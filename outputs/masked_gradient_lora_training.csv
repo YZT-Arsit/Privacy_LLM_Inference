@@ -1,0 +1,7 @@
+step,forward_max_abs_err,loss_abs_err,grad_A_tilde_relation_max_abs_err,grad_B_tilde_relation_max_abs_err,masked_sgd_update_A_max_abs_err_after_recovery,masked_sgd_update_B_max_abs_err_after_recovery,masked_momentum_sgd_update_A_max_abs_err_after_recovery,masked_momentum_sgd_update_B_max_abs_err_after_recovery,dummy_contribution_norm_after_step,A_tilde_fingerprint,B_tilde_fingerprint
+0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.103627145314,a471b8ddb44e3709,c2d1405c5976325c
+1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.193810219369,64a9c4cde2e30434,46a54f81017d7913
+2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.273373646904,bf34f83606930496,19f3b07332cbf3db
+3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.344408525707,6ad492ef8fc9f6f2,39cade185122db7f
+4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.408478123497,4adceb909599e29c,22adce726abd4cbd
+5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.466765275786,308f497b8bff7a9c,6ed3be974eebf840

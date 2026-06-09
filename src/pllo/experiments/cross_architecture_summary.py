@@ -723,6 +723,47 @@ def _compatible_island_integration_status(
                     "security_profile_detail_with_permutation_invariant_leakage"
                 )
             ),
+            # Stage 7.6 — masked-gradient LoRA training. Additive only.
+            "masked_gradient_lora_training_status": str(
+                effective_status.get("masked_gradient_lora_training_status")
+                or method.get("masked_gradient_lora_training_status")
+                or "not_yet"
+            ),
+            "masked_gradient_lora_training_artifact": (
+                effective_status.get("masked_gradient_lora_training_artifact")
+                or method.get("masked_gradient_lora_training_artifact")
+            ),
+            "masked_gradient_lora_security_proxy_status": str(
+                effective_status.get(
+                    "masked_gradient_lora_security_proxy_status"
+                )
+                or method.get("masked_gradient_lora_security_proxy_status")
+                or "not_yet"
+            ),
+            "masked_gradient_lora_security_proxy_artifact": (
+                effective_status.get(
+                    "masked_gradient_lora_security_proxy_artifact"
+                )
+                or method.get("masked_gradient_lora_security_proxy_artifact")
+            ),
+            "masked_gradient_lora_adamw_dense_mask_supported": bool(
+                effective_status.get(
+                    "masked_gradient_lora_adamw_dense_mask_supported", False,
+                )
+                if "masked_gradient_lora_adamw_dense_mask_supported"
+                in effective_status
+                else method.get(
+                    "masked_gradient_lora_adamw_dense_mask_supported", False,
+                )
+            ),
+            "security_profile_detail_with_masked_gradient_lora": (
+                effective_status.get(
+                    "security_profile_detail_with_masked_gradient_lora"
+                )
+                or method.get(
+                    "security_profile_detail_with_masked_gradient_lora"
+                )
+            ),
             # Stage 7.0 — LoRA private training prototype metadata.
             "lora_private_training_status": str(
                 effective_status.get("lora_private_training_status")

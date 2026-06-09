@@ -1135,6 +1135,25 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             ] = (
                 "permutation-invariant-leakage-audited, not formal"
             )
+            # Stage 7.6 — masked-gradient LoRA training with rank-space
+            # mixing. CPU-only algebraic + proxy-leakage prototype; no
+            # runtime defaults changed. AdamW dense-mask exactness is
+            # explicitly NOT claimed (the module raises on AdamW).
+            record["masked_gradient_lora_training_status"] = "implemented"
+            record["masked_gradient_lora_training_artifact"] = (
+                "outputs/masked_gradient_lora_training.json"
+            )
+            record["masked_gradient_lora_security_proxy_status"] = "implemented"
+            record["masked_gradient_lora_security_proxy_artifact"] = (
+                "outputs/masked_gradient_lora_security_proxy.json"
+            )
+            record["masked_gradient_lora_adamw_dense_mask_supported"] = False
+            record["masked_gradient_lora_sgd_supported"] = True
+            record["masked_gradient_lora_momentum_sgd_supported"] = True
+            record["security_profile_detail_with_masked_gradient_lora"] = (
+                "masked-gradient-lora-sgd-and-momentum-algebraic-equiv, "
+                "adamw-dense-mask-unsupported, not formal"
+            )
             record["wrapper_integration_status"] = {
                 "gpt2_single_block": "implemented",
                 "gpt2_model_level": "implemented",
