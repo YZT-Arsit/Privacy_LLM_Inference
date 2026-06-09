@@ -1120,6 +1120,21 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
             record["security_profile_detail_with_full_bundle"] = (
                 "adaptive-proxy-mitigated, not formal"
             )
+            # Stage 5.7 — permutation-invariant leakage audit. Additive
+            # metadata; the audit is paper-grade theoretical/security
+            # evidence that ZP permutation-only nonlinear views preserve
+            # row-wise norms, extrema, sorted multisets, and quantiles.
+            # No runtime defaults are changed; ``implemented`` and the
+            # mitigation-bundle defaults remain as recorded above.
+            record["permutation_invariant_leakage_status"] = "implemented"
+            record["permutation_invariant_leakage_artifact"] = (
+                "outputs/permutation_invariant_leakage.json"
+            )
+            record[
+                "security_profile_detail_with_permutation_invariant_leakage"
+            ] = (
+                "permutation-invariant-leakage-audited, not formal"
+            )
             record["wrapper_integration_status"] = {
                 "gpt2_single_block": "implemented",
                 "gpt2_model_level": "implemented",

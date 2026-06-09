@@ -1,0 +1,1635 @@
+{
+  "config": {
+    "attempt_real_model_load": false,
+    "attempt_tokenizer_load": false,
+    "bundles": [
+      "fresh_perm_only",
+      "fresh_perm_plus_sandwich_plus_pad"
+    ],
+    "include_fixed_debug": true,
+    "max_layers": 2,
+    "max_new_tokens": 3,
+    "model_id": null,
+    "num_prompts": 8,
+    "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/outputs",
+    "prompt_max_length": 8,
+    "seed": 0,
+    "synthetic_head_dim": 8,
+    "synthetic_hidden_size": 32,
+    "synthetic_intermediate_size": 64,
+    "synthetic_num_attention_heads": 4,
+    "synthetic_num_key_value_heads": 2,
+    "synthetic_vocab_size": 256,
+    "target_tensors": [
+      "gate",
+      "up",
+      "swiglu_intermediate",
+      "post_island",
+      "q",
+      "k",
+      "v",
+      "boundary_input",
+      "final"
+    ],
+    "use_pad": true
+  },
+  "device": "cpu",
+  "fixed_permutation_debug": {
+    "fixed_perm_linkability_accuracy": 1.0,
+    "fixed_permutation_metrics": {
+      "l1_corr": 1.0,
+      "l2_corr": 1.0,
+      "l2_max_abs_diff": 4.76837158203125e-07,
+      "l2_mean_abs_diff": 2.086162567138672e-07,
+      "linf_corr": 1.0,
+      "max_abs_diff": 0.0,
+      "max_corr": 1.0,
+      "min_abs_diff": 0.0,
+      "min_corr": 1.0,
+      "quantile_mse_mean": 0.0,
+      "quantile_p10_abs_err_mean": 0.0,
+      "quantile_p25_abs_err_mean": 0.0,
+      "quantile_p50_abs_err_mean": 0.0,
+      "quantile_p75_abs_err_mean": 0.0,
+      "quantile_p90_abs_err_mean": 0.0,
+      "sorted_l2_rel_mean": 0.0,
+      "sorted_mse_max": 0.0,
+      "sorted_mse_mean": 0.0
+    },
+    "fresh_perm_linkability_accuracy": 1.0,
+    "fresh_permutation_metrics": {
+      "l1_corr": 1.0,
+      "l2_corr": 1.0,
+      "l2_max_abs_diff": 4.76837158203125e-07,
+      "l2_mean_abs_diff": 1.1920928955078125e-07,
+      "linf_corr": 1.0,
+      "max_abs_diff": 0.0,
+      "max_corr": 1.0,
+      "min_abs_diff": 0.0,
+      "min_corr": 1.0,
+      "quantile_mse_mean": 0.0,
+      "quantile_p10_abs_err_mean": 0.0,
+      "quantile_p25_abs_err_mean": 0.0,
+      "quantile_p50_abs_err_mean": 0.0,
+      "quantile_p75_abs_err_mean": 0.0,
+      "quantile_p90_abs_err_mean": 0.0,
+      "sorted_l2_rel_mean": 0.0,
+      "sorted_mse_max": 0.0,
+      "sorted_mse_mean": 0.0
+    },
+    "hidden_dim": 32,
+    "interpretation": "Both fixed and fresh permutation views preserve per-row norms, sorted multisets, and quantiles by construction. The freshness contract changes the row-signature linkability (fixed perm preserves it exactly via deterministic channel re-mapping; fresh perm does not), but does not remove single-shot permutation-invariant statistics inside the activation core.",
+    "linkability_chance_level": 0.125,
+    "num_rows": 8,
+    "status": "ok"
+  },
+  "formal_security_claim": false,
+  "honesty_phrases": [
+    "Permutation-only nonlinear views provide channel-index hiding, not value hiding.",
+    "This is a proxy leakage audit, not a formal security proof.",
+    "Dense sandwiching and boundary pads mitigate temporal and boundary exposure but do not remove single-shot permutation-invariant statistics inside the activation core.",
+    "No real TEE isolation or hardware side-channel resistance is evaluated.",
+    "Raw tensors, masks, permutations, adapters, gradients, and private data are not exported."
+  ],
+  "limitations": [
+    "Permutation-only nonlinear views provide channel-index hiding, not value hiding.",
+    "Dense sandwiching and boundary pads mitigate temporal and boundary exposure but do not remove single-shot permutation-invariant statistics inside the activation core.",
+    "This is a proxy leakage audit, not a formal security proof.",
+    "No real TEE isolation or hardware side-channel resistance is evaluated.",
+    "Raw tensors, masks, permutations, adapters, gradients, and private data are not exported.",
+    "Per-row prompt-id and position-bucket labels are not available in the stitched [N, D] view; the corresponding classifier tasks are skipped rather than fabricated."
+  ],
+  "main_mode": "permutation_invariant_leakage_audit",
+  "paper_safe_wording": "We report a permutation-invariant leakage audit of the existing ZP-style compatible nonlinear islands. Row-wise norms, extrema, sorted multisets, and quantiles are preserved across both selectable mitigation bundles; this is a *channel-index hiding* property, not value hiding. The full bundle changes the freshness / temporal contract but does not remove single-shot permutation-invariant statistics inside the activation core.",
+  "per_bundle": {
+    "fresh_perm_only": {
+      "bundle": "fresh_perm_only",
+      "classifier_proxy_tasks": {
+        "boundary_input": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.4124999940395355,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "final": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.512499988079071,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "gate": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.574999988079071,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "k": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.4625000059604645,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 320,
+            "num_test": 160,
+            "num_train": 160,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "post_island": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.5625,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "q": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.518750011920929,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 640,
+            "num_test": 320,
+            "num_train": 320,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "swiglu_intermediate": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.6000000238418579,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "up": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.574999988079071,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "v": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.53125,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 320,
+            "num_test": 160,
+            "num_train": 160,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        }
+      },
+      "generation_token_match_rate": 1.0,
+      "model_loading_status": null,
+      "per_tensor": {
+        "boundary_input": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "boundary_input"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "boundary_input"
+          }
+        },
+        "final": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "final"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "final"
+          }
+        },
+        "gate": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 3.725290298461914e-08,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "gate"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 0.9999999035661526,
+              "l2_corr": 1.000000064239233,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 1.043081283569336e-07,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "gate"
+          }
+        },
+        "k": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.8945976179305103,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 3.5762786865234375e-07,
+              "l2_mean_abs_diff": 7.729977369308472e-08,
+              "linf_corr": 0.7283722646799313,
+              "max_abs_diff": 1.3036367893218994,
+              "max_corr": 0.07813713741166287,
+              "min_abs_diff": 0.770113468170166,
+              "min_corr": 0.6180839578377473,
+              "quantile_mse_mean": 0.10241788625717163,
+              "quantile_p10_abs_err_mean": 0.17153695225715637,
+              "quantile_p25_abs_err_mean": 0.2464916706085205,
+              "quantile_p50_abs_err_mean": 0.2516636848449707,
+              "quantile_p75_abs_err_mean": 0.23284421861171722,
+              "quantile_p90_abs_err_mean": 0.2556505501270294,
+              "sorted_l2_rel_mean": 0.5585804581642151,
+              "sorted_mse_max": 0.8408656716346741,
+              "sorted_mse_mean": 0.1261676549911499
+            },
+            "num_rows": 64,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "k"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9211454689567219,
+              "l2_corr": 0.9999999047045732,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 8.032657206058502e-08,
+              "linf_corr": 0.7776564325367721,
+              "max_abs_diff": 1.126266598701477,
+              "max_corr": 0.33635992309110746,
+              "min_abs_diff": 1.1001861095428467,
+              "min_corr": 0.48710056503670024,
+              "quantile_mse_mean": 0.11347305774688721,
+              "quantile_p10_abs_err_mean": 0.23679429292678833,
+              "quantile_p25_abs_err_mean": 0.25149455666542053,
+              "quantile_p50_abs_err_mean": 0.2678978145122528,
+              "quantile_p75_abs_err_mean": 0.26740196347236633,
+              "quantile_p90_abs_err_mean": 0.25893518328666687,
+              "sorted_l2_rel_mean": 0.6097041368484497,
+              "sorted_mse_max": 1.148339033126831,
+              "sorted_mse_mean": 0.13246053457260132
+            },
+            "num_rows": 256,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "k"
+          }
+        },
+        "post_island": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 0.9637946107423736,
+              "l2_corr": 0.9999999275089532,
+              "l2_max_abs_diff": 1.1920928955078125e-07,
+              "l2_mean_abs_diff": 2.7939677238464355e-08,
+              "linf_corr": 0.747862736608494,
+              "max_abs_diff": 0.265773743391037,
+              "max_corr": 0.6752201166417734,
+              "min_abs_diff": 0.20447948575019836,
+              "min_corr": 0.8859883165864375,
+              "quantile_mse_mean": 0.0015880900900810957,
+              "quantile_p10_abs_err_mean": 0.0331648513674736,
+              "quantile_p25_abs_err_mean": 0.036990053951740265,
+              "quantile_p50_abs_err_mean": 0.03318086266517639,
+              "quantile_p75_abs_err_mean": 0.024992741644382477,
+              "quantile_p90_abs_err_mean": 0.02634970098733902,
+              "sorted_l2_rel_mean": 0.30918073654174805,
+              "sorted_mse_max": 0.007511643692851067,
+              "sorted_mse_mean": 0.0019975246395915747
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_borderline",
+            "tensor": "post_island"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 0.9695570116402252,
+              "l2_corr": 1.0000001088957362,
+              "l2_max_abs_diff": 1.1920928955078125e-07,
+              "l2_mean_abs_diff": 2.8870999813079834e-08,
+              "linf_corr": 0.7435717939637962,
+              "max_abs_diff": 0.20945489406585693,
+              "max_corr": 0.651666033329139,
+              "min_abs_diff": 0.20858517289161682,
+              "min_corr": 0.6513954791197233,
+              "quantile_mse_mean": 0.001679156324826181,
+              "quantile_p10_abs_err_mean": 0.03458057716488838,
+              "quantile_p25_abs_err_mean": 0.031817689538002014,
+              "quantile_p50_abs_err_mean": 0.03186596930027008,
+              "quantile_p75_abs_err_mean": 0.0329413115978241,
+              "quantile_p90_abs_err_mean": 0.031581759452819824,
+              "sorted_l2_rel_mean": 0.320931077003479,
+              "sorted_mse_max": 0.011504216119647026,
+              "sorted_mse_mean": 0.0021331720054149628
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_borderline",
+            "tensor": "post_island"
+          }
+        },
+        "q": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.8812331122751386,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 3.5762786865234375e-07,
+              "l2_mean_abs_diff": 8.242204785346985e-08,
+              "linf_corr": 0.7270347983313117,
+              "max_abs_diff": 1.7596251964569092,
+              "max_corr": 0.3862562849335528,
+              "min_abs_diff": 1.3907430171966553,
+              "min_corr": 0.28124096174685564,
+              "quantile_mse_mean": 0.11274756491184235,
+              "quantile_p10_abs_err_mean": 0.23704755306243896,
+              "quantile_p25_abs_err_mean": 0.2565169632434845,
+              "quantile_p50_abs_err_mean": 0.2524019181728363,
+              "quantile_p75_abs_err_mean": 0.2681291103363037,
+              "quantile_p90_abs_err_mean": 0.2736418545246124,
+              "sorted_l2_rel_mean": 0.5972833633422852,
+              "sorted_mse_max": 1.14631986618042,
+              "sorted_mse_mean": 0.13068705797195435
+            },
+            "num_rows": 128,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "q"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9087287167576009,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 7.863854989409447e-08,
+              "linf_corr": 0.7201088587628278,
+              "max_abs_diff": 1.0514159202575684,
+              "max_corr": 0.3664202590524802,
+              "min_abs_diff": 1.3263697624206543,
+              "min_corr": 0.3967057085201143,
+              "quantile_mse_mean": 0.09213678538799286,
+              "quantile_p10_abs_err_mean": 0.23004701733589172,
+              "quantile_p25_abs_err_mean": 0.2512715756893158,
+              "quantile_p50_abs_err_mean": 0.24641987681388855,
+              "quantile_p75_abs_err_mean": 0.2350086271762848,
+              "quantile_p90_abs_err_mean": 0.22479347884655,
+              "sorted_l2_rel_mean": 0.5589650869369507,
+              "sorted_mse_max": 0.6802014708518982,
+              "sorted_mse_mean": 0.11439402401447296
+            },
+            "num_rows": 512,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "q"
+          }
+        },
+        "swiglu_intermediate": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 7.152557373046875e-07,
+              "l2_mean_abs_diff": 2.551823854446411e-07,
+              "linf_corr": 1.0,
+              "max_abs_diff": 5.960464477539062e-07,
+              "max_corr": 1.0,
+              "min_abs_diff": 5.960464477539062e-07,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 4.41966502932596e-15,
+              "quantile_p10_abs_err_mean": 5.2619725465774536e-08,
+              "quantile_p25_abs_err_mean": 5.0175003707408905e-08,
+              "quantile_p50_abs_err_mean": 2.43535396293737e-08,
+              "quantile_p75_abs_err_mean": 4.1851308196783066e-08,
+              "quantile_p90_abs_err_mean": 6.728805601596832e-08,
+              "sorted_l2_rel_mean": 6.820276894359267e-07,
+              "sorted_mse_max": 2.715393827758955e-14,
+              "sorted_mse_mean": 1.1187606932170063e-14
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "swiglu_intermediate"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 0.999999923591324,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 1.1920928955078125e-06,
+              "l2_mean_abs_diff": 3.03611159324646e-07,
+              "linf_corr": 1.0,
+              "max_abs_diff": 7.748603820800781e-07,
+              "max_corr": 1.0,
+              "min_abs_diff": 9.5367431640625e-07,
+              "min_corr": 0.9999998915095598,
+              "quantile_mse_mean": 5.326603534741873e-15,
+              "quantile_p10_abs_err_mean": 6.245682016015053e-08,
+              "quantile_p25_abs_err_mean": 4.680623533204198e-08,
+              "quantile_p50_abs_err_mean": 2.2363906282407697e-08,
+              "quantile_p75_abs_err_mean": 4.489265847951174e-08,
+              "quantile_p90_abs_err_mean": 7.33998604118824e-08,
+              "sorted_l2_rel_mean": 7.154321792768314e-07,
+              "sorted_mse_max": 6.326285795135028e-14,
+              "sorted_mse_mean": 1.3465055757671748e-14
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "swiglu_intermediate"
+          }
+        },
+        "up": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 8.940696716308594e-08,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "up"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0000001406295507,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 7.078051567077637e-08,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "up"
+          }
+        },
+        "v": {
+          "decode": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9476606559303108,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 3.5762786865234375e-07,
+              "l2_mean_abs_diff": 5.960464477539063e-08,
+              "linf_corr": 0.8384193718877176,
+              "max_abs_diff": 0.9820780754089355,
+              "max_corr": 0.38070549528451475,
+              "min_abs_diff": 1.3067588806152344,
+              "min_corr": 0.1899071195225768,
+              "quantile_mse_mean": 0.13603655993938446,
+              "quantile_p10_abs_err_mean": 0.24072971940040588,
+              "quantile_p25_abs_err_mean": 0.2353135496377945,
+              "quantile_p50_abs_err_mean": 0.2910906672477722,
+              "quantile_p75_abs_err_mean": 0.29977184534072876,
+              "quantile_p90_abs_err_mean": 0.23777787387371063,
+              "sorted_l2_rel_mean": 0.5775960683822632,
+              "sorted_mse_max": 1.0571506023406982,
+              "sorted_mse_mean": 0.16269388794898987
+            },
+            "num_rows": 64,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "v"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_only",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9110505692834355,
+              "l2_corr": 0.9999999073780257,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 8.614733815193176e-08,
+              "linf_corr": 0.7504880738675105,
+              "max_abs_diff": 1.5372177362442017,
+              "max_corr": 0.2729040197755791,
+              "min_abs_diff": 1.4333722591400146,
+              "min_corr": 0.29851338217677487,
+              "quantile_mse_mean": 0.1284429132938385,
+              "quantile_p10_abs_err_mean": 0.27476057410240173,
+              "quantile_p25_abs_err_mean": 0.2811913788318634,
+              "quantile_p50_abs_err_mean": 0.2950361371040344,
+              "quantile_p75_abs_err_mean": 0.2736732065677643,
+              "quantile_p90_abs_err_mean": 0.2823009192943573,
+              "sorted_l2_rel_mean": 0.5939342379570007,
+              "sorted_mse_max": 1.518040657043457,
+              "sorted_mse_mean": 0.154380202293396
+            },
+            "num_rows": 256,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "v"
+          }
+        }
+      },
+      "skipped_target_tensors": [],
+      "tokenizer_status": "not_requested",
+      "trace_source": "synthetic_block"
+    },
+    "fresh_perm_plus_sandwich_plus_pad": {
+      "bundle": "fresh_perm_plus_sandwich_plus_pad",
+      "classifier_proxy_tasks": {
+        "boundary_input": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.4124999940395355,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "final": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.512499988079071,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "gate": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.574999988079071,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "k": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.4625000059604645,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 320,
+            "num_test": 160,
+            "num_train": 160,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "post_island": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.5625,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "q": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.518750011920929,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 640,
+            "num_test": 320,
+            "num_train": 320,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "swiglu_intermediate": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.6000000238418579,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "up": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.574999988079071,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 160,
+            "num_test": 80,
+            "num_train": 80,
+            "proxy_attack_label": "proxy_attack_low",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        },
+        "v": {
+          "position_bucket_classification": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_position_label_in_stitched_view",
+            "task": "position_bucket_classification"
+          },
+          "prompt_id_linkability": {
+            "proxy_attack_label": "proxy_attack_skipped",
+            "status": "skipped_no_per_row_prompt_label_in_stitched_view",
+            "task": "prompt_id_linkability"
+          },
+          "scope_classification": {
+            "accuracy": 0.53125,
+            "chance_level": 0.5,
+            "num_classes": 2,
+            "num_samples": 320,
+            "num_test": 160,
+            "num_train": 160,
+            "proxy_attack_label": "proxy_attack_chance_level",
+            "status": "ok",
+            "task": "scope_classification"
+          }
+        }
+      },
+      "generation_token_match_rate": 1.0,
+      "model_loading_status": null,
+      "per_tensor": {
+        "boundary_input": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "boundary_input"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "boundary_input"
+          }
+        },
+        "final": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "final"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 0.0,
+              "l2_mean_abs_diff": 0.0,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "final"
+          }
+        },
+        "gate": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 3.725290298461914e-08,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "gate"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 0.9999999035661526,
+              "l2_corr": 1.000000064239233,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 1.043081283569336e-07,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "gate"
+          }
+        },
+        "k": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.8945976179305103,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 3.5762786865234375e-07,
+              "l2_mean_abs_diff": 7.729977369308472e-08,
+              "linf_corr": 0.7283722646799313,
+              "max_abs_diff": 1.3036367893218994,
+              "max_corr": 0.07813713741166287,
+              "min_abs_diff": 0.770113468170166,
+              "min_corr": 0.6180839578377473,
+              "quantile_mse_mean": 0.10241788625717163,
+              "quantile_p10_abs_err_mean": 0.17153695225715637,
+              "quantile_p25_abs_err_mean": 0.2464916706085205,
+              "quantile_p50_abs_err_mean": 0.2516636848449707,
+              "quantile_p75_abs_err_mean": 0.23284421861171722,
+              "quantile_p90_abs_err_mean": 0.2556505501270294,
+              "sorted_l2_rel_mean": 0.5585804581642151,
+              "sorted_mse_max": 0.8408656716346741,
+              "sorted_mse_mean": 0.1261676549911499
+            },
+            "num_rows": 64,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "k"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9211454689567219,
+              "l2_corr": 0.9999999047045732,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 8.032657206058502e-08,
+              "linf_corr": 0.7776564325367721,
+              "max_abs_diff": 1.126266598701477,
+              "max_corr": 0.33635992309110746,
+              "min_abs_diff": 1.1001861095428467,
+              "min_corr": 0.48710056503670024,
+              "quantile_mse_mean": 0.11347305774688721,
+              "quantile_p10_abs_err_mean": 0.23679429292678833,
+              "quantile_p25_abs_err_mean": 0.25149455666542053,
+              "quantile_p50_abs_err_mean": 0.2678978145122528,
+              "quantile_p75_abs_err_mean": 0.26740196347236633,
+              "quantile_p90_abs_err_mean": 0.25893518328666687,
+              "sorted_l2_rel_mean": 0.6097041368484497,
+              "sorted_mse_max": 1.148339033126831,
+              "sorted_mse_mean": 0.13246053457260132
+            },
+            "num_rows": 256,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "k"
+          }
+        },
+        "post_island": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 0.9637946107423736,
+              "l2_corr": 0.9999999275089532,
+              "l2_max_abs_diff": 1.1920928955078125e-07,
+              "l2_mean_abs_diff": 2.7939677238464355e-08,
+              "linf_corr": 0.747862736608494,
+              "max_abs_diff": 0.265773743391037,
+              "max_corr": 0.6752201166417734,
+              "min_abs_diff": 0.20447948575019836,
+              "min_corr": 0.8859883165864375,
+              "quantile_mse_mean": 0.0015880900900810957,
+              "quantile_p10_abs_err_mean": 0.0331648513674736,
+              "quantile_p25_abs_err_mean": 0.036990053951740265,
+              "quantile_p50_abs_err_mean": 0.03318086266517639,
+              "quantile_p75_abs_err_mean": 0.024992741644382477,
+              "quantile_p90_abs_err_mean": 0.02634970098733902,
+              "sorted_l2_rel_mean": 0.30918073654174805,
+              "sorted_mse_max": 0.007511643692851067,
+              "sorted_mse_mean": 0.0019975246395915747
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_borderline",
+            "tensor": "post_island"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 32,
+            "metrics": {
+              "l1_corr": 0.9695570116402252,
+              "l2_corr": 1.0000001088957362,
+              "l2_max_abs_diff": 1.1920928955078125e-07,
+              "l2_mean_abs_diff": 2.8870999813079834e-08,
+              "linf_corr": 0.7435717939637962,
+              "max_abs_diff": 0.20945489406585693,
+              "max_corr": 0.651666033329139,
+              "min_abs_diff": 0.20858517289161682,
+              "min_corr": 0.6513954791197233,
+              "quantile_mse_mean": 0.001679156324826181,
+              "quantile_p10_abs_err_mean": 0.03458057716488838,
+              "quantile_p25_abs_err_mean": 0.031817689538002014,
+              "quantile_p50_abs_err_mean": 0.03186596930027008,
+              "quantile_p75_abs_err_mean": 0.0329413115978241,
+              "quantile_p90_abs_err_mean": 0.031581759452819824,
+              "sorted_l2_rel_mean": 0.320931077003479,
+              "sorted_mse_max": 0.011504216119647026,
+              "sorted_mse_mean": 0.0021331720054149628
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_borderline",
+            "tensor": "post_island"
+          }
+        },
+        "q": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.8812331122751386,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 3.5762786865234375e-07,
+              "l2_mean_abs_diff": 8.242204785346985e-08,
+              "linf_corr": 0.7270347983313117,
+              "max_abs_diff": 1.7596251964569092,
+              "max_corr": 0.3862562849335528,
+              "min_abs_diff": 1.3907430171966553,
+              "min_corr": 0.28124096174685564,
+              "quantile_mse_mean": 0.11274756491184235,
+              "quantile_p10_abs_err_mean": 0.23704755306243896,
+              "quantile_p25_abs_err_mean": 0.2565169632434845,
+              "quantile_p50_abs_err_mean": 0.2524019181728363,
+              "quantile_p75_abs_err_mean": 0.2681291103363037,
+              "quantile_p90_abs_err_mean": 0.2736418545246124,
+              "sorted_l2_rel_mean": 0.5972833633422852,
+              "sorted_mse_max": 1.14631986618042,
+              "sorted_mse_mean": 0.13068705797195435
+            },
+            "num_rows": 128,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "q"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9087287167576009,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 7.863854989409447e-08,
+              "linf_corr": 0.7201088587628278,
+              "max_abs_diff": 1.0514159202575684,
+              "max_corr": 0.3664202590524802,
+              "min_abs_diff": 1.3263697624206543,
+              "min_corr": 0.3967057085201143,
+              "quantile_mse_mean": 0.09213678538799286,
+              "quantile_p10_abs_err_mean": 0.23004701733589172,
+              "quantile_p25_abs_err_mean": 0.2512715756893158,
+              "quantile_p50_abs_err_mean": 0.24641987681388855,
+              "quantile_p75_abs_err_mean": 0.2350086271762848,
+              "quantile_p90_abs_err_mean": 0.22479347884655,
+              "sorted_l2_rel_mean": 0.5589650869369507,
+              "sorted_mse_max": 0.6802014708518982,
+              "sorted_mse_mean": 0.11439402401447296
+            },
+            "num_rows": 512,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "q"
+          }
+        },
+        "swiglu_intermediate": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 7.152557373046875e-07,
+              "l2_mean_abs_diff": 2.551823854446411e-07,
+              "linf_corr": 1.0,
+              "max_abs_diff": 5.960464477539062e-07,
+              "max_corr": 1.0,
+              "min_abs_diff": 5.960464477539062e-07,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 4.41966502932596e-15,
+              "quantile_p10_abs_err_mean": 5.2619725465774536e-08,
+              "quantile_p25_abs_err_mean": 5.0175003707408905e-08,
+              "quantile_p50_abs_err_mean": 2.43535396293737e-08,
+              "quantile_p75_abs_err_mean": 4.1851308196783066e-08,
+              "quantile_p90_abs_err_mean": 6.728805601596832e-08,
+              "sorted_l2_rel_mean": 6.820276894359267e-07,
+              "sorted_mse_max": 2.715393827758955e-14,
+              "sorted_mse_mean": 1.1187606932170063e-14
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "swiglu_intermediate"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 0.999999923591324,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 1.1920928955078125e-06,
+              "l2_mean_abs_diff": 3.03611159324646e-07,
+              "linf_corr": 1.0,
+              "max_abs_diff": 7.748603820800781e-07,
+              "max_corr": 1.0,
+              "min_abs_diff": 9.5367431640625e-07,
+              "min_corr": 0.9999998915095598,
+              "quantile_mse_mean": 5.326603534741873e-15,
+              "quantile_p10_abs_err_mean": 6.245682016015053e-08,
+              "quantile_p25_abs_err_mean": 4.680623533204198e-08,
+              "quantile_p50_abs_err_mean": 2.2363906282407697e-08,
+              "quantile_p75_abs_err_mean": 4.489265847951174e-08,
+              "quantile_p90_abs_err_mean": 7.33998604118824e-08,
+              "sorted_l2_rel_mean": 7.154321792768314e-07,
+              "sorted_mse_max": 6.326285795135028e-14,
+              "sorted_mse_mean": 1.3465055757671748e-14
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "swiglu_intermediate"
+          }
+        },
+        "up": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 8.940696716308594e-08,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 32,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "up"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 64,
+            "metrics": {
+              "l1_corr": 1.0000001406295507,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 7.078051567077637e-08,
+              "linf_corr": 1.0,
+              "max_abs_diff": 0.0,
+              "max_corr": 1.0,
+              "min_abs_diff": 0.0,
+              "min_corr": 1.0,
+              "quantile_mse_mean": 0.0,
+              "quantile_p10_abs_err_mean": 0.0,
+              "quantile_p25_abs_err_mean": 0.0,
+              "quantile_p50_abs_err_mean": 0.0,
+              "quantile_p75_abs_err_mean": 0.0,
+              "quantile_p90_abs_err_mean": 0.0,
+              "sorted_l2_rel_mean": 0.0,
+              "sorted_mse_max": 0.0,
+              "sorted_mse_mean": 0.0
+            },
+            "num_rows": 128,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_detected_high",
+            "tensor": "up"
+          }
+        },
+        "v": {
+          "decode": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9476606559303108,
+              "l2_corr": 1.0,
+              "l2_max_abs_diff": 3.5762786865234375e-07,
+              "l2_mean_abs_diff": 5.960464477539063e-08,
+              "linf_corr": 0.8384193718877176,
+              "max_abs_diff": 0.9820780754089355,
+              "max_corr": 0.38070549528451475,
+              "min_abs_diff": 1.3067588806152344,
+              "min_corr": 0.1899071195225768,
+              "quantile_mse_mean": 0.13603655993938446,
+              "quantile_p10_abs_err_mean": 0.24072971940040588,
+              "quantile_p25_abs_err_mean": 0.2353135496377945,
+              "quantile_p50_abs_err_mean": 0.2910906672477722,
+              "quantile_p75_abs_err_mean": 0.29977184534072876,
+              "quantile_p90_abs_err_mean": 0.23777787387371063,
+              "sorted_l2_rel_mean": 0.5775960683822632,
+              "sorted_mse_max": 1.0571506023406982,
+              "sorted_mse_mean": 0.16269388794898987
+            },
+            "num_rows": 64,
+            "scope": "decode",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "v"
+          },
+          "prefill": {
+            "bundle": "fresh_perm_plus_sandwich_plus_pad",
+            "feature_dim": 8,
+            "metrics": {
+              "l1_corr": 0.9110505692834355,
+              "l2_corr": 0.9999999073780257,
+              "l2_max_abs_diff": 4.76837158203125e-07,
+              "l2_mean_abs_diff": 8.614733815193176e-08,
+              "linf_corr": 0.7504880738675105,
+              "max_abs_diff": 1.5372177362442017,
+              "max_corr": 0.2729040197755791,
+              "min_abs_diff": 1.4333722591400146,
+              "min_corr": 0.29851338217677487,
+              "quantile_mse_mean": 0.1284429132938385,
+              "quantile_p10_abs_err_mean": 0.27476057410240173,
+              "quantile_p25_abs_err_mean": 0.2811913788318634,
+              "quantile_p50_abs_err_mean": 0.2950361371040344,
+              "quantile_p75_abs_err_mean": 0.2736732065677643,
+              "quantile_p90_abs_err_mean": 0.2823009192943573,
+              "sorted_l2_rel_mean": 0.5939342379570007,
+              "sorted_mse_max": 1.518040657043457,
+              "sorted_mse_mean": 0.154380202293396
+            },
+            "num_rows": 256,
+            "scope": "prefill",
+            "statistical_leakage_label": "statistical_leakage_low",
+            "tensor": "v"
+          }
+        }
+      },
+      "skipped_target_tensors": [],
+      "tokenizer_status": "not_requested",
+      "trace_source": "synthetic_block"
+    }
+  },
+  "stage": "5.7",
+  "status": "ok",
+  "target_tensor_inventory": {
+    "boundary_input": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "final": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "gate": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "k": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "post_island": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "q": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "swiglu_intermediate": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "up": {
+      "decode_present": true,
+      "prefill_present": true
+    },
+    "v": {
+      "decode_present": true,
+      "prefill_present": true
+    }
+  },
+  "unsafe_wording_to_avoid": [
+    "Permutation-only views give value-level privacy.",
+    "Fresh permutation hides per-row magnitudes.",
+    "Dense sandwiching provides cryptographic security.",
+    "This is a formal security proof.",
+    "Real TEE / GPU evaluated."
+  ]
+}

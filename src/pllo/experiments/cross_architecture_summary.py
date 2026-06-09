@@ -700,6 +700,29 @@ def _compatible_island_integration_status(
                 )
                 or method.get("security_profile_detail_with_extended_proxy")
             ),
+            # Stage 5.7 — permutation-invariant leakage audit. Additive
+            # only; mirrors the workload_profiler metadata.
+            "permutation_invariant_leakage_status": str(
+                effective_status.get(
+                    "permutation_invariant_leakage_status"
+                )
+                or method.get("permutation_invariant_leakage_status")
+                or "not_yet"
+            ),
+            "permutation_invariant_leakage_artifact": (
+                effective_status.get(
+                    "permutation_invariant_leakage_artifact"
+                )
+                or method.get("permutation_invariant_leakage_artifact")
+            ),
+            "security_profile_detail_with_permutation_invariant_leakage": (
+                effective_status.get(
+                    "security_profile_detail_with_permutation_invariant_leakage"
+                )
+                or method.get(
+                    "security_profile_detail_with_permutation_invariant_leakage"
+                )
+            ),
             # Stage 7.0 — LoRA private training prototype metadata.
             "lora_private_training_status": str(
                 effective_status.get("lora_private_training_status")
