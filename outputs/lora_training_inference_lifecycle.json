@@ -1,0 +1,508 @@
+{
+  "formal_security_claim": false,
+  "honesty_phrases": [
+    "Base model W is public but transformed to preserve hidden-state masks; the trusted side never exports plaintext A or B.",
+    "User input and token ids are trusted-side only and never leave the user device in plaintext.",
+    "GPU sees masked hidden states, masked LoRA adapters, masked LoRA gradients, and masked momentum buffers.",
+    "GPU does not see plaintext A/B, plaintext gradients, masks, or plaintext optimizer state.",
+    "AdamW under dense masks is unsupported; the module raises DenseMaskedAdamWUnsupported rather than approximating.",
+    "Masked-gradient LoRA provides algebraic equivalence for SGD/Momentum under orthogonal masks and proxy-evaluated leakage mitigation; it does not provide formal, cryptographic, or semantic security."
+  ],
+  "invariants": {
+    "adamw_under_dense_masks_supported": false,
+    "base_model_W_public": true,
+    "base_model_W_transformed_to_preserve_hidden_state_masks": true,
+    "gpu_sees_masked_hidden_states": true,
+    "gpu_sees_masked_lora_adapters": true,
+    "gpu_sees_masked_lora_gradients": true,
+    "gpu_sees_masked_momentum_buffers": true,
+    "masks_visible_to_gpu": false,
+    "plaintext_A_or_B_visible_to_gpu": false,
+    "plaintext_grad_A_or_B_visible_to_gpu": false,
+    "plaintext_optimizer_state_visible_to_gpu": false,
+    "user_input_visible_to_gpu": false
+  },
+  "lifecycle_by_phase": {
+    "final_adapter_recovery_or_audit": [
+      {
+        "exposed_form": "A_pad = N_x A_tilde M^T, B_pad = M B_tilde N_y^T (trusted side)",
+        "note": "Recovery uses the orthogonal inverses; never executed on the GPU.",
+        "object": "A_pad_recovered, B_pad_recovered",
+        "phase": "final_adapter_recovery_or_audit",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "extracted from A_pad / B_pad (trusted side)",
+        "note": "True rank slices used for downstream inference; never exposed to the GPU in plaintext.",
+        "object": "A_real, B_real (trained)",
+        "phase": "final_adapter_recovery_or_audit",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "shapes and 16-char SHA-256 prefixes only",
+        "note": "Outputs publish summary scalars and short fingerprints to enable third-party audit without exposing raw tensors.",
+        "object": "published fingerprints",
+        "phase": "final_adapter_recovery_or_audit",
+        "visibility": "public"
+      }
+    ],
+    "lora_initialization": [
+      {
+        "exposed_form": "never_exported",
+        "note": "Plaintext LoRA factors live only on the trusted side.",
+        "object": "A_real, B_real",
+        "phase": "lora_initialization",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Orthogonal masks held only by trusted side.",
+        "object": "N_x, N_y, M",
+        "phase": "lora_initialization",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Cancellation-padded factors: A_pad=[A_real, R, -R], B_pad=vstack(B_real, S, S); dummy contribution is zero at init.",
+        "object": "A_pad, B_pad",
+        "phase": "lora_initialization",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "N_x^T A_pad M, M^T B_pad N_y",
+        "note": "Masked, rank-padded LoRA factors uploaded to the GPU. Visible padded rank, true rank hidden.",
+        "object": "A_tilde, B_tilde",
+        "phase": "lora_initialization",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "transformed_to_preserve_hidden_state_masks (e.g., boundary linear absorbs N_x / N_y on trusted side)",
+        "note": "Base weights are publicly known but their use on the GPU is composed with the trusted-side mask boundary so that hidden-state masks survive the linear path.",
+        "object": "base_model_W",
+        "phase": "lora_initialization",
+        "visibility": "public"
+      }
+    ],
+    "masked_adamw_unsupported": [
+      {
+        "exposed_form": "masked_adamw_step_unsupported raises DenseMaskedAdamWUnsupported",
+        "note": "Coordinate-wise second moments are not invariant under dense orthogonal mixing; AdamW under dense masks is unsupported.",
+        "object": "AdamW second moments",
+        "phase": "masked_adamw_unsupported",
+        "visibility": "plaintext_trusted_only"
+      }
+    ],
+    "masked_backward": [
+      {
+        "exposed_form": "target @ N_y (masked)",
+        "note": "MSE loss is computed against masked target. Orthogonal N_y preserves the L2 loss exactly. Plain target never leaves the trusted side.",
+        "object": "target_tilde = target @ N_y",
+        "phase": "masked_backward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Plaintext output gradient never crosses the boundary.",
+        "object": "grad_Y (plaintext)",
+        "phase": "masked_backward",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "masked output gradient",
+        "note": "Equals 2 (Y - target) N_y / n; orthogonal masks commute through MSE.",
+        "object": "grad_Y_tilde = 2 (Y_tilde - target_tilde) / n",
+        "phase": "masked_backward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "N_x^T grad_A M (masked)",
+        "note": "Algebraic equivalence verified per step at float64 machine precision.",
+        "object": "grad_A_tilde",
+        "phase": "masked_backward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "M^T grad_B N_y (masked)",
+        "note": "Algebraic equivalence verified per step at float64 machine precision.",
+        "object": "grad_B_tilde",
+        "phase": "masked_backward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Plaintext gradients never leave the trusted side.",
+        "object": "grad_A, grad_B (plaintext)",
+        "phase": "masked_backward",
+        "visibility": "plaintext_trusted_only"
+      }
+    ],
+    "masked_forward": [
+      {
+        "exposed_form": "never_exported",
+        "note": "Tokenisation, embedding lookup happen trusted-side.",
+        "object": "user_input / token_ids",
+        "phase": "masked_forward",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Plaintext hidden state never crosses the boundary.",
+        "object": "X (plaintext hidden state)",
+        "phase": "masked_forward",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "X @ N_x (masked)",
+        "note": "Only masked hidden state is uploaded.",
+        "object": "X_tilde = X N_x",
+        "phase": "masked_forward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "N_x^T A M, M^T B N_y",
+        "note": "GPU sees masked, rank-padded LoRA factors only.",
+        "object": "A_tilde, B_tilde",
+        "phase": "masked_forward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "masked LoRA output",
+        "note": "Algebraically equals X A B N_y so the trusted side recovers Y by Y_tilde N_y^T.",
+        "object": "Y_tilde = X_tilde A_tilde B_tilde",
+        "phase": "masked_forward",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Recovered only on the trusted side.",
+        "object": "Y (plaintext output)",
+        "phase": "masked_forward",
+        "visibility": "plaintext_trusted_only"
+      }
+    ],
+    "masked_momentum_sgd": [
+      {
+        "exposed_form": "V_tilde <- mu V_tilde + grad_tilde; param_tilde <- param_tilde - lr V_tilde",
+        "note": "Heavy-ball update is linear in the gradients; orthogonal masks commute, so masked momentum SGD is algebraically equivalent to plaintext momentum SGD after recovery.",
+        "object": "V_A_tilde, V_B_tilde (masked momentum buffers)",
+        "phase": "masked_momentum_sgd",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Plaintext momentum buffers never live on the GPU; they can be recovered from the masked buffers on the trusted side only when needed.",
+        "object": "plaintext momentum buffers V_A, V_B",
+        "phase": "masked_momentum_sgd",
+        "visibility": "plaintext_trusted_only"
+      }
+    ],
+    "masked_sgd": [
+      {
+        "exposed_form": "A_tilde - lr * grad_A_tilde, B_tilde - lr * grad_B_tilde",
+        "note": "Linear update; right-multiplication by orthogonal masks distributes, so masked SGD is algebraically equivalent to plaintext SGD after trusted-side recovery.",
+        "object": "A_tilde_next, B_tilde_next",
+        "phase": "masked_sgd",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "SGD has no persistent state besides the parameters.",
+        "object": "plaintext optimizer state",
+        "phase": "masked_sgd",
+        "visibility": "plaintext_trusted_only"
+      }
+    ],
+    "trained_lora_inference": [
+      {
+        "exposed_form": "never_exported",
+        "note": "As in masked forward, tokens are trusted-side only.",
+        "object": "user_input / token_ids",
+        "phase": "trained_lora_inference",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Plaintext hidden state not uploaded.",
+        "object": "X_infer (plaintext hidden state)",
+        "phase": "trained_lora_inference",
+        "visibility": "plaintext_trusted_only"
+      },
+      {
+        "exposed_form": "masked hidden state",
+        "note": "GPU only sees the masked hidden state.",
+        "object": "X_infer_tilde = X_infer N_x",
+        "phase": "trained_lora_inference",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "N_x^T A_real_pad M, M^T B_real_pad N_y",
+        "note": "Trained masked LoRA factors uploaded for inference; true rank still hidden behind cancellation padding.",
+        "object": "A_tilde, B_tilde (trained)",
+        "phase": "trained_lora_inference",
+        "visibility": "gpu_visible_masked"
+      },
+      {
+        "exposed_form": "transformed_to_preserve_hidden_state_masks at the boundary",
+        "note": "Base model is public but its composition with the trusted-side mask boundary preserves hidden-state masks at inference time.",
+        "object": "base_model_W",
+        "phase": "trained_lora_inference",
+        "visibility": "public"
+      },
+      {
+        "exposed_form": "never_exported",
+        "note": "Final output recovered on the trusted side by Y_infer = Y_infer_tilde @ N_y^T.",
+        "object": "Y_infer (plaintext output)",
+        "phase": "trained_lora_inference",
+        "visibility": "plaintext_trusted_only"
+      }
+    ]
+  },
+  "lifecycle_rows": [
+    {
+      "exposed_form": "never_exported",
+      "note": "Plaintext LoRA factors live only on the trusted side.",
+      "object": "A_real, B_real",
+      "phase": "lora_initialization",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Orthogonal masks held only by trusted side.",
+      "object": "N_x, N_y, M",
+      "phase": "lora_initialization",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Cancellation-padded factors: A_pad=[A_real, R, -R], B_pad=vstack(B_real, S, S); dummy contribution is zero at init.",
+      "object": "A_pad, B_pad",
+      "phase": "lora_initialization",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "N_x^T A_pad M, M^T B_pad N_y",
+      "note": "Masked, rank-padded LoRA factors uploaded to the GPU. Visible padded rank, true rank hidden.",
+      "object": "A_tilde, B_tilde",
+      "phase": "lora_initialization",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "transformed_to_preserve_hidden_state_masks (e.g., boundary linear absorbs N_x / N_y on trusted side)",
+      "note": "Base weights are publicly known but their use on the GPU is composed with the trusted-side mask boundary so that hidden-state masks survive the linear path.",
+      "object": "base_model_W",
+      "phase": "lora_initialization",
+      "visibility": "public"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Tokenisation, embedding lookup happen trusted-side.",
+      "object": "user_input / token_ids",
+      "phase": "masked_forward",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Plaintext hidden state never crosses the boundary.",
+      "object": "X (plaintext hidden state)",
+      "phase": "masked_forward",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "X @ N_x (masked)",
+      "note": "Only masked hidden state is uploaded.",
+      "object": "X_tilde = X N_x",
+      "phase": "masked_forward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "N_x^T A M, M^T B N_y",
+      "note": "GPU sees masked, rank-padded LoRA factors only.",
+      "object": "A_tilde, B_tilde",
+      "phase": "masked_forward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "masked LoRA output",
+      "note": "Algebraically equals X A B N_y so the trusted side recovers Y by Y_tilde N_y^T.",
+      "object": "Y_tilde = X_tilde A_tilde B_tilde",
+      "phase": "masked_forward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Recovered only on the trusted side.",
+      "object": "Y (plaintext output)",
+      "phase": "masked_forward",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "target @ N_y (masked)",
+      "note": "MSE loss is computed against masked target. Orthogonal N_y preserves the L2 loss exactly. Plain target never leaves the trusted side.",
+      "object": "target_tilde = target @ N_y",
+      "phase": "masked_backward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Plaintext output gradient never crosses the boundary.",
+      "object": "grad_Y (plaintext)",
+      "phase": "masked_backward",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "masked output gradient",
+      "note": "Equals 2 (Y - target) N_y / n; orthogonal masks commute through MSE.",
+      "object": "grad_Y_tilde = 2 (Y_tilde - target_tilde) / n",
+      "phase": "masked_backward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "N_x^T grad_A M (masked)",
+      "note": "Algebraic equivalence verified per step at float64 machine precision.",
+      "object": "grad_A_tilde",
+      "phase": "masked_backward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "M^T grad_B N_y (masked)",
+      "note": "Algebraic equivalence verified per step at float64 machine precision.",
+      "object": "grad_B_tilde",
+      "phase": "masked_backward",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Plaintext gradients never leave the trusted side.",
+      "object": "grad_A, grad_B (plaintext)",
+      "phase": "masked_backward",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "A_tilde - lr * grad_A_tilde, B_tilde - lr * grad_B_tilde",
+      "note": "Linear update; right-multiplication by orthogonal masks distributes, so masked SGD is algebraically equivalent to plaintext SGD after trusted-side recovery.",
+      "object": "A_tilde_next, B_tilde_next",
+      "phase": "masked_sgd",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "SGD has no persistent state besides the parameters.",
+      "object": "plaintext optimizer state",
+      "phase": "masked_sgd",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "V_tilde <- mu V_tilde + grad_tilde; param_tilde <- param_tilde - lr V_tilde",
+      "note": "Heavy-ball update is linear in the gradients; orthogonal masks commute, so masked momentum SGD is algebraically equivalent to plaintext momentum SGD after recovery.",
+      "object": "V_A_tilde, V_B_tilde (masked momentum buffers)",
+      "phase": "masked_momentum_sgd",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Plaintext momentum buffers never live on the GPU; they can be recovered from the masked buffers on the trusted side only when needed.",
+      "object": "plaintext momentum buffers V_A, V_B",
+      "phase": "masked_momentum_sgd",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "masked_adamw_step_unsupported raises DenseMaskedAdamWUnsupported",
+      "note": "Coordinate-wise second moments are not invariant under dense orthogonal mixing; AdamW under dense masks is unsupported.",
+      "object": "AdamW second moments",
+      "phase": "masked_adamw_unsupported",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "A_pad = N_x A_tilde M^T, B_pad = M B_tilde N_y^T (trusted side)",
+      "note": "Recovery uses the orthogonal inverses; never executed on the GPU.",
+      "object": "A_pad_recovered, B_pad_recovered",
+      "phase": "final_adapter_recovery_or_audit",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "extracted from A_pad / B_pad (trusted side)",
+      "note": "True rank slices used for downstream inference; never exposed to the GPU in plaintext.",
+      "object": "A_real, B_real (trained)",
+      "phase": "final_adapter_recovery_or_audit",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "shapes and 16-char SHA-256 prefixes only",
+      "note": "Outputs publish summary scalars and short fingerprints to enable third-party audit without exposing raw tensors.",
+      "object": "published fingerprints",
+      "phase": "final_adapter_recovery_or_audit",
+      "visibility": "public"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "As in masked forward, tokens are trusted-side only.",
+      "object": "user_input / token_ids",
+      "phase": "trained_lora_inference",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Plaintext hidden state not uploaded.",
+      "object": "X_infer (plaintext hidden state)",
+      "phase": "trained_lora_inference",
+      "visibility": "plaintext_trusted_only"
+    },
+    {
+      "exposed_form": "masked hidden state",
+      "note": "GPU only sees the masked hidden state.",
+      "object": "X_infer_tilde = X_infer N_x",
+      "phase": "trained_lora_inference",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "N_x^T A_real_pad M, M^T B_real_pad N_y",
+      "note": "Trained masked LoRA factors uploaded for inference; true rank still hidden behind cancellation padding.",
+      "object": "A_tilde, B_tilde (trained)",
+      "phase": "trained_lora_inference",
+      "visibility": "gpu_visible_masked"
+    },
+    {
+      "exposed_form": "transformed_to_preserve_hidden_state_masks at the boundary",
+      "note": "Base model is public but its composition with the trusted-side mask boundary preserves hidden-state masks at inference time.",
+      "object": "base_model_W",
+      "phase": "trained_lora_inference",
+      "visibility": "public"
+    },
+    {
+      "exposed_form": "never_exported",
+      "note": "Final output recovered on the trusted side by Y_infer = Y_infer_tilde @ N_y^T.",
+      "object": "Y_infer (plaintext output)",
+      "phase": "trained_lora_inference",
+      "visibility": "plaintext_trusted_only"
+    }
+  ],
+  "limitations": [
+    "Lifecycle classification is descriptive; it is not a formal information-flow proof.",
+    "Base model W is public; we rely on a trusted-side boundary transformation to preserve hidden-state masks. A real deployment would have to verify the boundary transformation matches the trusted side's mask choice.",
+    "AdamW under dense masks is unsupported and is gated by DenseMaskedAdamWUnsupported in the ops module.",
+    "Raw tensors, masks, adapters, gradients, and optimiser states are NEVER exported."
+  ],
+  "paper_safe_wording": "masked-gradient LoRA provides algebraic equivalence for SGD/Momentum under orthogonal masks and proxy-evaluated leakage mitigation; it does not provide formal, cryptographic, or semantic security.",
+  "phases_present": [
+    "final_adapter_recovery_or_audit",
+    "lora_initialization",
+    "masked_adamw_unsupported",
+    "masked_backward",
+    "masked_forward",
+    "masked_momentum_sgd",
+    "masked_sgd",
+    "trained_lora_inference"
+  ],
+  "report": "lora_training_inference_lifecycle",
+  "required_phases": [
+    "lora_initialization",
+    "masked_forward",
+    "masked_backward",
+    "masked_sgd",
+    "masked_momentum_sgd",
+    "final_adapter_recovery_or_audit",
+    "trained_lora_inference"
+  ],
+  "stage": "7.6",
+  "status": "ok"
+}

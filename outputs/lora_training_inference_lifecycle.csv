@@ -1,0 +1,32 @@
+phase,object,visibility,exposed_form,note
+lora_initialization,"A_real, B_real",plaintext_trusted_only,never_exported,Plaintext LoRA factors live only on the trusted side.
+lora_initialization,"N_x, N_y, M",plaintext_trusted_only,never_exported,Orthogonal masks held only by trusted side.
+lora_initialization,"A_pad, B_pad",plaintext_trusted_only,never_exported,"Cancellation-padded factors: A_pad=[A_real, R, -R], B_pad=vstack(B_real, S, S); dummy contribution is zero at init."
+lora_initialization,"A_tilde, B_tilde",gpu_visible_masked,"N_x^T A_pad M, M^T B_pad N_y","Masked, rank-padded LoRA factors uploaded to the GPU. Visible padded rank, true rank hidden."
+lora_initialization,base_model_W,public,"transformed_to_preserve_hidden_state_masks (e.g., boundary linear absorbs N_x / N_y on trusted side)",Base weights are publicly known but their use on the GPU is composed with the trusted-side mask boundary so that hidden-state masks survive the linear path.
+masked_forward,user_input / token_ids,plaintext_trusted_only,never_exported,"Tokenisation, embedding lookup happen trusted-side."
+masked_forward,X (plaintext hidden state),plaintext_trusted_only,never_exported,Plaintext hidden state never crosses the boundary.
+masked_forward,X_tilde = X N_x,gpu_visible_masked,X @ N_x (masked),Only masked hidden state is uploaded.
+masked_forward,"A_tilde, B_tilde",gpu_visible_masked,"N_x^T A M, M^T B N_y","GPU sees masked, rank-padded LoRA factors only."
+masked_forward,Y_tilde = X_tilde A_tilde B_tilde,gpu_visible_masked,masked LoRA output,Algebraically equals X A B N_y so the trusted side recovers Y by Y_tilde N_y^T.
+masked_forward,Y (plaintext output),plaintext_trusted_only,never_exported,Recovered only on the trusted side.
+masked_backward,target_tilde = target @ N_y,gpu_visible_masked,target @ N_y (masked),MSE loss is computed against masked target. Orthogonal N_y preserves the L2 loss exactly. Plain target never leaves the trusted side.
+masked_backward,grad_Y (plaintext),plaintext_trusted_only,never_exported,Plaintext output gradient never crosses the boundary.
+masked_backward,grad_Y_tilde = 2 (Y_tilde - target_tilde) / n,gpu_visible_masked,masked output gradient,Equals 2 (Y - target) N_y / n; orthogonal masks commute through MSE.
+masked_backward,grad_A_tilde,gpu_visible_masked,N_x^T grad_A M (masked),Algebraic equivalence verified per step at float64 machine precision.
+masked_backward,grad_B_tilde,gpu_visible_masked,M^T grad_B N_y (masked),Algebraic equivalence verified per step at float64 machine precision.
+masked_backward,"grad_A, grad_B (plaintext)",plaintext_trusted_only,never_exported,Plaintext gradients never leave the trusted side.
+masked_sgd,"A_tilde_next, B_tilde_next",gpu_visible_masked,"A_tilde - lr * grad_A_tilde, B_tilde - lr * grad_B_tilde","Linear update; right-multiplication by orthogonal masks distributes, so masked SGD is algebraically equivalent to plaintext SGD after trusted-side recovery."
+masked_sgd,plaintext optimizer state,plaintext_trusted_only,never_exported,SGD has no persistent state besides the parameters.
+masked_momentum_sgd,"V_A_tilde, V_B_tilde (masked momentum buffers)",gpu_visible_masked,V_tilde <- mu V_tilde + grad_tilde; param_tilde <- param_tilde - lr V_tilde,"Heavy-ball update is linear in the gradients; orthogonal masks commute, so masked momentum SGD is algebraically equivalent to plaintext momentum SGD after recovery."
+masked_momentum_sgd,"plaintext momentum buffers V_A, V_B",plaintext_trusted_only,never_exported,Plaintext momentum buffers never live on the GPU; they can be recovered from the masked buffers on the trusted side only when needed.
+masked_adamw_unsupported,AdamW second moments,plaintext_trusted_only,masked_adamw_step_unsupported raises DenseMaskedAdamWUnsupported,Coordinate-wise second moments are not invariant under dense orthogonal mixing; AdamW under dense masks is unsupported.
+final_adapter_recovery_or_audit,"A_pad_recovered, B_pad_recovered",plaintext_trusted_only,"A_pad = N_x A_tilde M^T, B_pad = M B_tilde N_y^T (trusted side)",Recovery uses the orthogonal inverses; never executed on the GPU.
+final_adapter_recovery_or_audit,"A_real, B_real (trained)",plaintext_trusted_only,extracted from A_pad / B_pad (trusted side),True rank slices used for downstream inference; never exposed to the GPU in plaintext.
+final_adapter_recovery_or_audit,published fingerprints,public,shapes and 16-char SHA-256 prefixes only,Outputs publish summary scalars and short fingerprints to enable third-party audit without exposing raw tensors.
+trained_lora_inference,user_input / token_ids,plaintext_trusted_only,never_exported,"As in masked forward, tokens are trusted-side only."
+trained_lora_inference,X_infer (plaintext hidden state),plaintext_trusted_only,never_exported,Plaintext hidden state not uploaded.
+trained_lora_inference,X_infer_tilde = X_infer N_x,gpu_visible_masked,masked hidden state,GPU only sees the masked hidden state.
+trained_lora_inference,"A_tilde, B_tilde (trained)",gpu_visible_masked,"N_x^T A_real_pad M, M^T B_real_pad N_y",Trained masked LoRA factors uploaded for inference; true rank still hidden behind cancellation padding.
+trained_lora_inference,base_model_W,public,transformed_to_preserve_hidden_state_masks at the boundary,Base model is public but its composition with the trusted-side mask boundary preserves hidden-state masks at inference time.
+trained_lora_inference,Y_infer (plaintext output),plaintext_trusted_only,never_exported,Final output recovered on the trusted side by Y_infer = Y_infer_tilde @ N_y^T.

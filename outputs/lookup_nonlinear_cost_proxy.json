@@ -1,0 +1,196 @@
+{
+  "config": {
+    "batch_size": 1,
+    "bit_widths": [
+      4,
+      6,
+      8
+    ],
+    "device": "cpu",
+    "dtype": "float32",
+    "entry_bytes": 2,
+    "intermediate_size": 11008,
+    "method_labels": [
+      "compatible_swiglu_island_current",
+      "compatible_swiglu_full_bundle"
+    ],
+    "microbench_intermediate_size": 1024,
+    "microbench_seq_len": 128,
+    "num_layers": 1,
+    "num_tables_policy": "per_layer_shared",
+    "per_channel_proxy": true,
+    "repeats": 10,
+    "run_microbench": true,
+    "seed": 0,
+    "seq_len": 128
+  },
+  "cryptographic_lookup_implemented": false,
+  "experiment": "lookup_nonlinear_cost_proxy",
+  "formal_security_claim": false,
+  "honesty_phrases": [
+    "This is a lookup cost proxy, not a secure lookup implementation.",
+    "No garbled circuit, MPC, FHE, Tabula, FLUTE, or cryptographic lookup protocol is implemented.",
+    "Lookup-style nonlinear protection may improve value hiding, but this stage evaluates only table-size and memory-access costs.",
+    "The current compatible island is faster and lower-memory but preserves permutation-invariant activation statistics.",
+    "No formal, cryptographic, or semantic security is claimed.",
+    "No real TEE or GPU wall-time is measured."
+  ],
+  "limitations": [
+    "This is a CPU-only cost proxy; no real TEE or GPU wall-time is measured.",
+    "No secure lookup, garbled circuit, MPC, FHE, Tabula, or FLUTE protocol is implemented; the microbenchmark uses ordinary CPU memory lookup.",
+    "The current compatible island preserves permutation-invariant activation statistics; lookup-style protection could close this leakage channel but only if combined with a real cryptographic lookup protocol.",
+    "Per-channel tables are reported as impractical_proxy_only to make the bandwidth cost explicit; they are not evaluated in the microbenchmark.",
+    "Bit widths above 8 are not microbenchmarked because the table size grows as 2^(2b); a 12-bit table already has 16M entries and is reported for cost only.",
+    "No formal, cryptographic, or semantic security is claimed."
+  ],
+  "methods": [
+    {
+      "cost": {
+        "known_leakage": "permutation_invariant_statistics_preserved",
+        "multiply_ops": 1409024,
+        "num_tables": 0,
+        "online_memory_bytes": 16908288,
+        "preprocessing_bytes": 0,
+        "read_bytes_G_plus_U": 11272192,
+        "silu_ops": 1409024,
+        "table_bytes": 0,
+        "table_entries": 0,
+        "write_bytes_A": 5636096
+      },
+      "implemented_security": "proxy_evaluated_not_formal",
+      "kind": "current_island",
+      "method": "compatible_swiglu_island_current",
+      "notes": "Stage 5.3e fresh_perm_only baseline. No lookup table; the GPU sees fresh masks per call but values themselves can leak through permutation-invariant statistics.",
+      "security_potential": "as_currently_implemented_only",
+      "security_profile": "lightweight_correctness_preserving_proxy_evaluated_not_formal"
+    },
+    {
+      "cost": {
+        "known_leakage": "permutation_invariant_statistics_preserved",
+        "multiply_ops": 1409024,
+        "num_tables": 0,
+        "online_memory_bytes": 16908288,
+        "preprocessing_bytes": 0,
+        "read_bytes_G_plus_U": 11272192,
+        "silu_ops": 1409024,
+        "table_bytes": 0,
+        "table_entries": 0,
+        "write_bytes_A": 5636096
+      },
+      "implemented_security": "fresh_perm_plus_sandwich_plus_pad_proxy_evaluated_not_formal",
+      "kind": "current_island_full_bundle",
+      "method": "compatible_swiglu_full_bundle",
+      "notes": "Stage 5.3e fresh_perm_plus_sandwich_plus_pad bundle. Same raw arithmetic shape as the current island; cost profile is dominated by the same SiLU + multiply path.",
+      "security_potential": "as_currently_implemented_only",
+      "security_profile": "lightweight_correctness_preserving_proxy_evaluated_not_formal"
+    },
+    {
+      "cost": {
+        "bit_width": 4,
+        "num_lookups": 1409024,
+        "num_tables": 1,
+        "online_lookup_bytes": 2818048,
+        "per_channel_status": "impractical_proxy_only",
+        "per_channel_table_bytes": 5636096,
+        "policy": "per_layer_shared",
+        "preprocessing_bytes": 512,
+        "table_bytes": 512,
+        "table_entries": 256
+      },
+      "implemented_security": "none_cost_proxy_only",
+      "kind": "lookup_proxy",
+      "method": "lookup_swiglu_proxy_4bit",
+      "notes": "Two-input (4-bit, 4-bit) finite-domain lookup proxy of SwiGLU. The table has 2^(2*4) = 256 entries. No secure lookup protocol is implemented.",
+      "security_potential": "stronger_value_hiding_if_combined_with_secure_lookup_protocol",
+      "security_profile": "cost_proxy_only_not_a_security_implementation"
+    },
+    {
+      "cost": {
+        "bit_width": 6,
+        "num_lookups": 1409024,
+        "num_tables": 1,
+        "online_lookup_bytes": 2818048,
+        "per_channel_status": "impractical_proxy_only",
+        "per_channel_table_bytes": 90177536,
+        "policy": "per_layer_shared",
+        "preprocessing_bytes": 8192,
+        "table_bytes": 8192,
+        "table_entries": 4096
+      },
+      "implemented_security": "none_cost_proxy_only",
+      "kind": "lookup_proxy",
+      "method": "lookup_swiglu_proxy_6bit",
+      "notes": "Two-input (6-bit, 6-bit) finite-domain lookup proxy of SwiGLU. The table has 2^(2*6) = 4096 entries. No secure lookup protocol is implemented.",
+      "security_potential": "stronger_value_hiding_if_combined_with_secure_lookup_protocol",
+      "security_profile": "cost_proxy_only_not_a_security_implementation"
+    },
+    {
+      "cost": {
+        "bit_width": 8,
+        "num_lookups": 1409024,
+        "num_tables": 1,
+        "online_lookup_bytes": 2818048,
+        "per_channel_status": "impractical_proxy_only",
+        "per_channel_table_bytes": 1442840576,
+        "policy": "per_layer_shared",
+        "preprocessing_bytes": 131072,
+        "table_bytes": 131072,
+        "table_entries": 65536
+      },
+      "implemented_security": "none_cost_proxy_only",
+      "kind": "lookup_proxy",
+      "method": "lookup_swiglu_proxy_8bit",
+      "notes": "Two-input (8-bit, 8-bit) finite-domain lookup proxy of SwiGLU. The table has 2^(2*8) = 65536 entries. No secure lookup protocol is implemented.",
+      "security_potential": "stronger_value_hiding_if_combined_with_secure_lookup_protocol",
+      "security_profile": "cost_proxy_only_not_a_security_implementation"
+    }
+  ],
+  "microbench": {
+    "batch_size": 1,
+    "compatible_swiglu_island_current": {
+      "mean_ms": 0.1000666874460876,
+      "median_ms": 0.10424997890368104,
+      "std_ms": 0.012798882932731803
+    },
+    "enabled": true,
+    "intermediate_size": 1024,
+    "lookup_swiglu_proxy_4bit": {
+      "mean_ms": 0.18919160356745124,
+      "median_ms": 0.1884165103547275,
+      "std_ms": 0.030551400114162505
+    },
+    "lookup_swiglu_proxy_6bit": {
+      "mean_ms": 0.1700415974482894,
+      "median_ms": 0.1708130002953112,
+      "std_ms": 0.012494157171231403
+    },
+    "lookup_swiglu_proxy_8bit": {
+      "mean_ms": 0.16426699003204703,
+      "median_ms": 0.16318797133862972,
+      "std_ms": 0.013172134546386154
+    },
+    "repeats": 10,
+    "seq_len": 128
+  },
+  "next_stage_plan": "Stage 5.8 produces a cost baseline. A future stage could (i) integrate a real secure lookup primitive (e.g. Tabula-style 2-PC) and validate correctness on a small model; (ii) explore mixed designs that keep the compatible island for hot paths and use lookup only at designated boundary tensors; (iii) extend the cost model to multi-layer / multi-head workloads. None of these are implemented in Stage 5.8.",
+  "recommended_use": "cost-baseline-and-future-work-motivation",
+  "stage": "5.8",
+  "status": "ok",
+  "table_size_scaling": [
+    {
+      "bit_width": 4,
+      "table_bytes": 512,
+      "table_entries": 256
+    },
+    {
+      "bit_width": 6,
+      "table_bytes": 8192,
+      "table_entries": 4096
+    },
+    {
+      "bit_width": 8,
+      "table_bytes": 131072,
+      "table_entries": 65536
+    }
+  ]
+}

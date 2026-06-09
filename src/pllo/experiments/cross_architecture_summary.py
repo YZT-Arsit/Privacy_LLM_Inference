@@ -764,6 +764,42 @@ def _compatible_island_integration_status(
                     "security_profile_detail_with_masked_gradient_lora"
                 )
             ),
+            # Stage 5.8 -- lookup nonlinear cost proxy. Additive only.
+            "lookup_nonlinear_cost_proxy_status": str(
+                effective_status.get("lookup_nonlinear_cost_proxy_status")
+                or method.get("lookup_nonlinear_cost_proxy_status")
+                or "not_yet"
+            ),
+            "lookup_nonlinear_cost_proxy_artifact": (
+                effective_status.get(
+                    "lookup_nonlinear_cost_proxy_artifact"
+                )
+                or method.get("lookup_nonlinear_cost_proxy_artifact")
+            ),
+            "lookup_nonlinear_cryptographic_lookup_implemented": bool(
+                effective_status.get(
+                    "lookup_nonlinear_cryptographic_lookup_implemented",
+                    False,
+                )
+                if "lookup_nonlinear_cryptographic_lookup_implemented"
+                in effective_status
+                else method.get(
+                    "lookup_nonlinear_cryptographic_lookup_implemented",
+                    False,
+                )
+            ),
+            "lookup_nonlinear_recommended_use": (
+                effective_status.get("lookup_nonlinear_recommended_use")
+                or method.get("lookup_nonlinear_recommended_use")
+            ),
+            "security_profile_detail_with_lookup_nonlinear": (
+                effective_status.get(
+                    "security_profile_detail_with_lookup_nonlinear"
+                )
+                or method.get(
+                    "security_profile_detail_with_lookup_nonlinear"
+                )
+            ),
             # Stage 7.0 — LoRA private training prototype metadata.
             "lora_private_training_status": str(
                 effective_status.get("lora_private_training_status")

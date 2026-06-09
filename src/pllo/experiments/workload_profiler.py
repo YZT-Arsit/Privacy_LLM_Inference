@@ -1154,6 +1154,24 @@ def run_workload_profile(config: WorkloadProfileConfig) -> dict[str, Any]:
                 "masked-gradient-lora-sgd-and-momentum-algebraic-equiv, "
                 "adamw-dense-mask-unsupported, not formal"
             )
+            # Stage 5.8 -- lookup nonlinear cost proxy. CPU-only cost
+            # comparison vs the current compatible SwiGLU island;
+            # NO secure lookup / MPC / FHE / Tabula / FLUTE protocol
+            # is implemented. Strictly additive metadata.
+            record["lookup_nonlinear_cost_proxy_status"] = "implemented"
+            record["lookup_nonlinear_cost_proxy_artifact"] = (
+                "outputs/lookup_nonlinear_cost_proxy.json"
+            )
+            record["lookup_nonlinear_cryptographic_lookup_implemented"] = (
+                False
+            )
+            record["lookup_nonlinear_recommended_use"] = (
+                "cost-baseline-and-future-work-motivation"
+            )
+            record["security_profile_detail_with_lookup_nonlinear"] = (
+                "lookup-cost-proxy-only, no-secure-lookup-implemented, "
+                "not formal"
+            )
             record["wrapper_integration_status"] = {
                 "gpt2_single_block": "implemented",
                 "gpt2_model_level": "implemented",
