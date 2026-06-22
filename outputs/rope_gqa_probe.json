@@ -1,0 +1,328 @@
+{
+  "stage": "6.4.1_rope_gqa_complex_scaling",
+  "experiment": "rope_gqa_probe",
+  "status": "ok",
+  "security_status": "operator_compatible_leakage_reduction_not_semantic_security",
+  "no_intermediate_tee": true,
+  "statement": "RoPE-compatible masks are correctness-preserving and reduce direct leakage, but they are weaker than dense masks. They are used because no intermediate TEE is allowed.",
+  "config": {
+    "batch_size": 2,
+    "seq_len": 8,
+    "decode_steps": 3,
+    "hidden_size": 32,
+    "num_heads": 4,
+    "num_key_value_heads": 2,
+    "rope_base": 10000.0,
+    "dtype": "float64",
+    "device": "cpu",
+    "seed": 2027,
+    "mask_family": "pairwise_complex_scaling",
+    "run_rotation_baseline": true,
+    "run_complex_scaling": true,
+    "run_leakage_proxy": true,
+    "leakage_num_samples": 128
+  },
+  "mha": {
+    "mask_family": "pairwise_complex_scaling",
+    "num_heads": 4,
+    "num_key_value_heads": 4,
+    "head_dim": 8,
+    "rope_commutation_max_error": 6.661338147750939e-16,
+    "score_max_abs_error": 4.263256414560601e-14,
+    "prob_max_abs_error": 2.4424906541753444e-15,
+    "v_aggregation_max_abs_error": 3.064215547965432e-14,
+    "output_max_abs_error": 1.1812772982011666e-13,
+    "prefill_cache_key_max_abs_error": 7.105427357601002e-15,
+    "prefill_cache_value_max_abs_error": 0.0,
+    "rope_commutation_q_error": 9.769962616701378e-15,
+    "decode_steps": [
+      {
+        "step": 0,
+        "position": 8,
+        "output_max_abs_error": 4.263256414560601e-14,
+        "key_max_abs_error": 3.552713678800501e-15,
+        "value_max_abs_error": 0.0
+      },
+      {
+        "step": 1,
+        "position": 9,
+        "output_max_abs_error": 2.3447910280083306e-13,
+        "key_max_abs_error": 3.552713678800501e-15,
+        "value_max_abs_error": 0.0
+      },
+      {
+        "step": 2,
+        "position": 10,
+        "output_max_abs_error": 3.552713678800501e-14,
+        "key_max_abs_error": 3.552713678800501e-15,
+        "value_max_abs_error": 0.0
+      }
+    ],
+    "cache_append_key_max_abs_error": 3.552713678800501e-15,
+    "cache_append_value_max_abs_error": 0.0,
+    "allclose": true
+  },
+  "gqa": {
+    "mask_family": "pairwise_complex_scaling",
+    "num_heads": 4,
+    "num_key_value_heads": 2,
+    "head_dim": 8,
+    "rope_commutation_max_error": 8.881784197001252e-16,
+    "score_max_abs_error": 3.552713678800501e-14,
+    "prob_max_abs_error": 1.304512053934559e-15,
+    "v_aggregation_max_abs_error": 3.019806626980426e-14,
+    "output_max_abs_error": 1.4210854715202004e-13,
+    "prefill_cache_key_max_abs_error": 3.552713678800501e-15,
+    "prefill_cache_value_max_abs_error": 0.0,
+    "rope_commutation_q_error": 7.105427357601002e-15,
+    "decode_steps": [
+      {
+        "step": 0,
+        "position": 8,
+        "output_max_abs_error": 3.552713678800501e-14,
+        "key_max_abs_error": 3.552713678800501e-15,
+        "value_max_abs_error": 0.0
+      },
+      {
+        "step": 1,
+        "position": 9,
+        "output_max_abs_error": 5.684341886080802e-14,
+        "key_max_abs_error": 3.552713678800501e-15,
+        "value_max_abs_error": 0.0
+      },
+      {
+        "step": 2,
+        "position": 10,
+        "output_max_abs_error": 3.552713678800501e-14,
+        "key_max_abs_error": 3.552713678800501e-15,
+        "value_max_abs_error": 0.0
+      }
+    ],
+    "cache_append_key_max_abs_error": 3.552713678800501e-15,
+    "cache_append_value_max_abs_error": 0.0,
+    "allclose": true
+  },
+  "all_allclose": true,
+  "correctness": {
+    "pairwise_rotation": {
+      "mha": {
+        "mask_family": "pairwise_rotation",
+        "num_heads": 4,
+        "num_key_value_heads": 4,
+        "head_dim": 8,
+        "rope_commutation_max_error": 4.440892098500626e-16,
+        "score_max_abs_error": 2.842170943040401e-14,
+        "prob_max_abs_error": 1.6653345369377348e-15,
+        "v_aggregation_max_abs_error": 3.197442310920451e-14,
+        "output_max_abs_error": 9.947598300641403e-14,
+        "prefill_cache_key_max_abs_error": 3.552713678800501e-15,
+        "prefill_cache_value_max_abs_error": 0.0,
+        "rope_commutation_q_error": 3.552713678800501e-15,
+        "decode_steps": [
+          {
+            "step": 0,
+            "position": 8,
+            "output_max_abs_error": 2.1316282072803006e-14,
+            "key_max_abs_error": 1.7763568394002505e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 1,
+            "position": 9,
+            "output_max_abs_error": 3.090860900556436e-13,
+            "key_max_abs_error": 1.7763568394002505e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 2,
+            "position": 10,
+            "output_max_abs_error": 7.283063041541027e-14,
+            "key_max_abs_error": 1.7763568394002505e-15,
+            "value_max_abs_error": 0.0
+          }
+        ],
+        "cache_append_key_max_abs_error": 1.7763568394002505e-15,
+        "cache_append_value_max_abs_error": 0.0,
+        "allclose": true
+      },
+      "gqa": {
+        "mask_family": "pairwise_rotation",
+        "num_heads": 4,
+        "num_key_value_heads": 2,
+        "head_dim": 8,
+        "rope_commutation_max_error": 4.440892098500626e-16,
+        "score_max_abs_error": 4.263256414560601e-14,
+        "prob_max_abs_error": 2.0261570199409107e-15,
+        "v_aggregation_max_abs_error": 5.684341886080802e-14,
+        "output_max_abs_error": 1.4921397450962104e-13,
+        "prefill_cache_key_max_abs_error": 1.7763568394002505e-15,
+        "prefill_cache_value_max_abs_error": 0.0,
+        "rope_commutation_q_error": 3.552713678800501e-15,
+        "decode_steps": [
+          {
+            "step": 0,
+            "position": 8,
+            "output_max_abs_error": 2.842170943040401e-14,
+            "key_max_abs_error": 1.7763568394002505e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 1,
+            "position": 9,
+            "output_max_abs_error": 7.105427357601002e-14,
+            "key_max_abs_error": 1.7763568394002505e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 2,
+            "position": 10,
+            "output_max_abs_error": 3.552713678800501e-14,
+            "key_max_abs_error": 1.942890293094024e-15,
+            "value_max_abs_error": 0.0
+          }
+        ],
+        "cache_append_key_max_abs_error": 1.942890293094024e-15,
+        "cache_append_value_max_abs_error": 0.0,
+        "allclose": true
+      }
+    },
+    "pairwise_complex_scaling": {
+      "mha": {
+        "mask_family": "pairwise_complex_scaling",
+        "num_heads": 4,
+        "num_key_value_heads": 4,
+        "head_dim": 8,
+        "rope_commutation_max_error": 6.661338147750939e-16,
+        "score_max_abs_error": 4.263256414560601e-14,
+        "prob_max_abs_error": 2.4424906541753444e-15,
+        "v_aggregation_max_abs_error": 3.064215547965432e-14,
+        "output_max_abs_error": 1.1812772982011666e-13,
+        "prefill_cache_key_max_abs_error": 7.105427357601002e-15,
+        "prefill_cache_value_max_abs_error": 0.0,
+        "rope_commutation_q_error": 9.769962616701378e-15,
+        "decode_steps": [
+          {
+            "step": 0,
+            "position": 8,
+            "output_max_abs_error": 4.263256414560601e-14,
+            "key_max_abs_error": 3.552713678800501e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 1,
+            "position": 9,
+            "output_max_abs_error": 2.3447910280083306e-13,
+            "key_max_abs_error": 3.552713678800501e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 2,
+            "position": 10,
+            "output_max_abs_error": 3.552713678800501e-14,
+            "key_max_abs_error": 3.552713678800501e-15,
+            "value_max_abs_error": 0.0
+          }
+        ],
+        "cache_append_key_max_abs_error": 3.552713678800501e-15,
+        "cache_append_value_max_abs_error": 0.0,
+        "allclose": true
+      },
+      "gqa": {
+        "mask_family": "pairwise_complex_scaling",
+        "num_heads": 4,
+        "num_key_value_heads": 2,
+        "head_dim": 8,
+        "rope_commutation_max_error": 8.881784197001252e-16,
+        "score_max_abs_error": 3.552713678800501e-14,
+        "prob_max_abs_error": 1.304512053934559e-15,
+        "v_aggregation_max_abs_error": 3.019806626980426e-14,
+        "output_max_abs_error": 1.4210854715202004e-13,
+        "prefill_cache_key_max_abs_error": 3.552713678800501e-15,
+        "prefill_cache_value_max_abs_error": 0.0,
+        "rope_commutation_q_error": 7.105427357601002e-15,
+        "decode_steps": [
+          {
+            "step": 0,
+            "position": 8,
+            "output_max_abs_error": 3.552713678800501e-14,
+            "key_max_abs_error": 3.552713678800501e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 1,
+            "position": 9,
+            "output_max_abs_error": 5.684341886080802e-14,
+            "key_max_abs_error": 3.552713678800501e-15,
+            "value_max_abs_error": 0.0
+          },
+          {
+            "step": 2,
+            "position": 10,
+            "output_max_abs_error": 3.552713678800501e-14,
+            "key_max_abs_error": 3.552713678800501e-15,
+            "value_max_abs_error": 0.0
+          }
+        ],
+        "cache_append_key_max_abs_error": 3.552713678800501e-15,
+        "cache_append_value_max_abs_error": 0.0,
+        "allclose": true
+      }
+    }
+  },
+  "leakage_proxy": {
+    "no_mask": {
+      "pair_norm_correlation_same_session": 1.0000000000000004,
+      "cross_session_pair_norm_correlation": 1.0000000000000004,
+      "nearest_neighbor_matching_accuracy_pair_norm": 1.0
+    },
+    "pairwise_rotation": {
+      "pair_norm_correlation_same_session": 1.0000000000000002,
+      "cross_session_pair_norm_correlation": 1.0000000000000002,
+      "nearest_neighbor_matching_accuracy_pair_norm": 1.0
+    },
+    "pairwise_complex_scaling": {
+      "pair_norm_correlation_same_session": 0.7557386783020644,
+      "cross_session_pair_norm_correlation": 0.8896405981200988,
+      "nearest_neighbor_matching_accuracy_pair_norm": 0.0390625
+    },
+    "leakage_proxy_is_not_security_proof": true,
+    "preserved_structure": [
+      "RoPE pair partition",
+      "No cross-pair dense mixing inside RoPE-compatible region",
+      "Attention scores are preserved by construction",
+      "KV cache masks are reused within a generation session"
+    ],
+    "num_samples": 128,
+    "head_dim": 8,
+    "feature": "pair_norm"
+  },
+  "mask_structure": {
+    "rope_pairwise_commuting": true,
+    "default_mask_family": "pairwise_complex_scaling",
+    "q_mask": "per-query-head inverse-transpose of mapped KV mask",
+    "k_mask": "per-kv-head RoPE-compatible block mask",
+    "v_mask": "per-kv-head RoPE-compatible block mask",
+    "gqa_supported": true,
+    "same_cache_mask_within_session": true
+  },
+  "metadata": {
+    "default_mask_family": "pairwise_complex_scaling",
+    "leakage_caveats": [
+      "RoPE pair partition is preserved",
+      "No cross-pair dense mixing inside RoPE-compatible region",
+      "rotation mode preserves per-pair norm",
+      "complex-scaling mode changes per-pair norm but preserves pair structure",
+      "KV cache requires same mask within a generation session",
+      "attention scores remain visible to the GPU in this probe",
+      "This is not a semantic-security proof"
+    ]
+  },
+  "limitations": [
+    "Synthetic tensor-level probe, not a HF LLaMA/Qwen wrapper.",
+    "q_proj/k_proj/v_proj/o_proj weight folding is not yet integrated (masks applied at the Q/K/V tensor level).",
+    "RoPE scaling variants (NTK/YaRN) are not implemented.",
+    "Real model embedding, LM head, sampling, and full generation are not covered.",
+    "RoPE-compatible masks are weaker than dense masks; dense masks should be restored before/after RoPE-constrained regions in later block integration.",
+    "CPU-only; no formal, cryptographic, or semantic security is claimed."
+  ]
+}

@@ -1,0 +1,6 @@
+
+# experiment outputs
+outputs/stage_7_6_claims_consistency.*
+outputs/**/*.json
+outputs/**/*.csv
+outputs/**/*.md
