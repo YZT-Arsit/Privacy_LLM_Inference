@@ -44,6 +44,18 @@ from pllo.ops.nonlinear_islands import (
     silu_reference,
     swiglu_reference,
 )
+from pllo.ops.amulet_lifted_islands import (
+    apply_feature_permutation,
+    block_lift,
+    inverse_permutation,
+    make_layernorm_shift_gadget,
+    make_relu_squeeze,
+    make_selector_lift_params,
+    run_layernorm_gadget_island,
+    run_relu_lifted_mlp_island,
+    run_selector_lifted_mlp_island,
+    run_swiglu_selector_lifted_mlp_island,
+)
 from pllo.ops.lm_head import lm_head_obfuscated, lm_head_plain
 from pllo.ops.lora_linear import lora_linear_plain, lora_linear_obfuscated
 from pllo.ops.lora import (
@@ -97,6 +109,16 @@ from pllo.ops.lora_dummy_strategies import (
 from pllo.ops.mlp import mlp_obfuscated, mlp_plain
 
 __all__ = [
+    "apply_feature_permutation",
+    "block_lift",
+    "inverse_permutation",
+    "make_layernorm_shift_gadget",
+    "make_relu_squeeze",
+    "make_selector_lift_params",
+    "run_layernorm_gadget_island",
+    "run_relu_lifted_mlp_island",
+    "run_selector_lifted_mlp_island",
+    "run_swiglu_selector_lifted_mlp_island",
     "causal_self_attention_obfuscated",
     "causal_self_attention_plain",
     "generate_qk_mask_pair",
