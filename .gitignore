@@ -4,3 +4,26 @@ outputs/stage_7_6_claims_consistency.*
 outputs/**/*.json
 outputs/**/*.csv
 outputs/**/*.md
+
+# Generated artifacts and local caches
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+outputs/paper_artifacts/
+outputs/paper_sections/
+outputs/*claims_consistency*.json
+outputs/*claims_consistency*.csv
+outputs/*claims_consistency*.md
+outputs/*probe*.json
+outputs/*probe*.md
+outputs/*cost*.json
+outputs/*cost*.md
+outputs/*cost*.csv

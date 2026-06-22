@@ -32,6 +32,8 @@ import csv
 import json
 import os
 import re
+from collections import Counter
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -369,25 +371,246 @@ def build_claims_consistency_report(
 
 
 # ---------------------------------------------------------------------------
+# Bounded report configuration
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ClaimsReportConfig:
+    """Bounds for the claims-consistency report writers.
+
+    By default the writers emit *compact* reports only: summary counts,
+    top-offender files/terms, and a capped set of examples per category.
+    The full per-occurrence list is **never** serialized unless
+    ``write_full_occurrences`` is set, and even then it is capped at
+    ``max_full_occurrences``. A hard ``max_report_mb`` guard prevents any
+    multi-GB file from being written: if a candidate report would exceed
+    the limit, a small summary report is written instead and
+    ``report_size_guard_triggered`` is set.
+    """
+
+    output_path: str | None = None
+    write_json: bool = True
+    write_csv: bool = True
+    write_md: bool = True
+    write_full_occurrences: bool = False
+    max_examples_per_category: int = 25
+    max_examples_per_file: int = 25
+    max_top_files: int = 50
+    max_top_terms: int = 50
+    max_full_occurrences: int = 100_000
+    # float so callers/tests can request a sub-MB guard threshold.
+    max_report_mb: float = 100
+
+
+# ---------------------------------------------------------------------------
+# Compact report
+# ---------------------------------------------------------------------------
+
+
+def build_compact_report(
+    report: dict[str, Any], cfg: ClaimsReportConfig | None = None,
+) -> dict[str, Any]:
+    """Project a (possibly huge) in-memory ``report`` onto a bounded,
+    serialization-safe structure: summary counts, top offenders, capped
+    examples, and truncation flags. The full occurrence list is included
+    only when ``cfg.write_full_occurrences`` is set (capped)."""
+    cfg = cfg or ClaimsReportConfig()
+    occurrences: list[dict[str, Any]] = report.get("occurrences", [])
+    total = len(occurrences)
+
+    categories: dict[str, int] = {}
+    file_counter: Counter[str] = Counter()
+    term_counter: Counter[str] = Counter()
+    examples: dict[str, list[dict[str, Any]]] = {}
+    per_file_example_count: dict[tuple[str, str], int] = {}
+    examples_truncated = False
+
+    for occ in occurrences:
+        cls = occ["classification"]
+        categories[cls] = categories.get(cls, 0) + 1
+        file_counter[occ["file"]] += 1
+        term_counter[occ["phrase"]] += 1
+        bucket = examples.setdefault(cls, [])
+        file_key = (cls, occ["file"])
+        seen_for_file = per_file_example_count.get(file_key, 0)
+        if (
+            len(bucket) < cfg.max_examples_per_category
+            and seen_for_file < cfg.max_examples_per_file
+        ):
+            bucket.append({
+                "path": occ["file"],
+                "line": occ["line"],
+                "term": occ["phrase"],
+                "context": occ.get("snippet", ""),
+            })
+            per_file_example_count[file_key] = seen_for_file + 1
+        else:
+            examples_truncated = True
+
+    unsafe = int(categories.get("unsafe_wording_present", 0))
+    allowed = int(categories.get("listed_as_unsafe_wording_to_avoid", 0))
+
+    top_files = [
+        {"path": p, "count": int(c)}
+        for p, c in file_counter.most_common(cfg.max_top_files)
+    ]
+    top_terms = [
+        {"term": t, "count": int(c)}
+        for t, c in term_counter.most_common(cfg.max_top_terms)
+    ]
+
+    compact: dict[str, Any] = {
+        "stage": "7.6_claims_consistency",
+        "report": report.get("report", "stage_7_6_claims_consistency"),
+        "status": report.get("status", "ok"),
+        "passes_consistency_check": report.get(
+            "passes_consistency_check", unsafe == 0),
+        "formal_security_claim": report.get("formal_security_claim", False),
+        "tracked_phrases": list(report.get("tracked_phrases", [])),
+        "summary": {
+            "total_files_scanned": report.get(
+                "files_scanned_count", len(report.get("files_scanned", []))),
+            "total_occurrences": total,
+            "unsafe_occurrences": unsafe,
+            "allowed_occurrences": allowed,
+            "categories": categories,
+            "summary_by_phrase": report.get("summary_by_phrase", {}),
+        },
+        "top_offender_files": top_files,
+        "top_offender_terms": top_terms,
+        "examples_by_category": examples,
+        "truncation": {
+            "examples_truncated": examples_truncated,
+            "full_occurrences_included": bool(cfg.write_full_occurrences),
+            "full_occurrences_truncated": False,
+            "max_examples_per_category": cfg.max_examples_per_category,
+            "max_examples_per_file": cfg.max_examples_per_file,
+            "max_top_files": cfg.max_top_files,
+            "max_top_terms": cfg.max_top_terms,
+            "max_full_occurrences": cfg.max_full_occurrences,
+        },
+        "report_size_guard_triggered": False,
+        "paper_safe_wording": report.get("paper_safe_wording", ""),
+        "honesty_phrases": list(report.get("honesty_phrases", [])),
+        "limitations": list(report.get("limitations", [])),
+    }
+
+    if cfg.write_full_occurrences:
+        capped = occurrences[: cfg.max_full_occurrences]
+        compact["full_occurrences"] = capped
+        if total > cfg.max_full_occurrences:
+            compact["truncation"]["full_occurrences_truncated"] = True
+
+    return compact
+
+
+def _minimal_guard_report(
+    compact: dict[str, Any], *, candidate_bytes: int, max_bytes: int,
+) -> dict[str, Any]:
+    """A tiny report written when the candidate would exceed the size
+    guard: summary counts only, no examples or full occurrences."""
+    return {
+        "stage": "7.6_claims_consistency",
+        "report": compact.get("report", "stage_7_6_claims_consistency"),
+        "status": compact.get("status", "ok"),
+        "passes_consistency_check": compact.get(
+            "passes_consistency_check", False),
+        "formal_security_claim": compact.get("formal_security_claim", False),
+        "summary": compact.get("summary", {}),
+        "top_offender_files": [],
+        "top_offender_terms": [],
+        "examples_by_category": {},
+        "truncation": {
+            **compact.get("truncation", {}),
+            "examples_truncated": True,
+            "full_occurrences_included": False,
+        },
+        "report_size_guard_triggered": True,
+        "report_size_guard": {
+            "candidate_bytes": int(candidate_bytes),
+            "max_bytes": int(max_bytes),
+            "message": (
+                "Candidate report exceeded max_report_mb; wrote summary "
+                "only. Re-run with a larger --max-report-mb to emit the "
+                "full report."
+            ),
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Writers
 # ---------------------------------------------------------------------------
 
 
-def _write_json(report: dict[str, Any], path: str) -> None:
-    with open(path, "w", encoding="utf-8") as fh:
-        json.dump(report, fh, indent=2, sort_keys=True, default=str)
+def _json_str(obj: dict[str, Any]) -> str:
+    return json.dumps(obj, indent=2, sort_keys=True, default=str)
 
 
-def _write_csv(report: dict[str, Any], path: str) -> None:
-    fields = ["file", "line", "phrase", "classification", "snippet"]
+def _write_compact_csv(compact: dict[str, Any], path: str) -> None:
+    """Aggregate CSV: one row per summary key / top offender / capped
+    example -- never one row per occurrence."""
+    fields = ["section", "key", "count", "detail"]
+    summary = compact.get("summary", {})
     with open(path, "w", encoding="utf-8", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=fields)
         w.writeheader()
-        for occ in report["occurrences"]:
+        for key in (
+            "total_files_scanned", "total_occurrences",
+            "unsafe_occurrences", "allowed_occurrences",
+        ):
+            w.writerow({"section": "summary", "key": key,
+                        "count": summary.get(key, 0), "detail": ""})
+        for cat, count in summary.get("categories", {}).items():
+            w.writerow({"section": "category", "key": cat,
+                        "count": count, "detail": ""})
+        for tf in compact.get("top_offender_files", []):
+            w.writerow({"section": "top_file", "key": tf["path"],
+                        "count": tf["count"], "detail": ""})
+        for tt in compact.get("top_offender_terms", []):
+            w.writerow({"section": "top_term", "key": tt["term"],
+                        "count": tt["count"], "detail": ""})
+        for cat, exs in compact.get("examples_by_category", {}).items():
+            for ex in exs:
+                detail = (
+                    f"{ex['path']}:{ex['line']} [{ex['term']}] "
+                    f"{ex['context']}"
+                )
+                w.writerow({"section": "example", "key": cat,
+                            "count": 1, "detail": detail})
+        if compact.get("report_size_guard_triggered"):
+            w.writerow({"section": "guard", "key": "report_size_guard_triggered",
+                        "count": 1, "detail": "summary-only report written"})
+
+
+def _write_occurrences_csv(
+    report: dict[str, Any], path: str, max_rows: int,
+) -> int:
+    """Separate, capped, one-row-per-occurrence CSV. Only written when
+    full occurrences are explicitly requested."""
+    fields = ["file", "line", "phrase", "classification", "snippet"]
+    written = 0
+    with open(path, "w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=fields)
+        w.writeheader()
+        for occ in report.get("occurrences", [])[:max_rows]:
             w.writerow({k: occ.get(k, "") for k in fields})
+            written += 1
+    return written
 
 
-def render_markdown(report: dict[str, Any]) -> str:
+def render_markdown(
+    report: dict[str, Any], *,
+    config: ClaimsReportConfig | None = None,
+    compact: dict[str, Any] | None = None,
+) -> str:
+    """Bounded Markdown report: summary, top offenders, and capped
+    examples only. Full per-occurrence detail is omitted by default."""
+    cfg = config or ClaimsReportConfig()
+    if compact is None:
+        compact = build_compact_report(report, cfg)
+    summary = compact["summary"]
     lines: list[str] = []
 
     def w(line: str = "") -> None:
@@ -402,89 +625,107 @@ def render_markdown(report: dict[str, Any]) -> str:
         "unsafe phrases that would be inconsistent with Stage 7.6's "
         "paper-safe framing. Each occurrence is classified either as "
         "an unsafe claim or as an explicit listing of unsafe wording "
-        "to avoid."
+        "to avoid. Full occurrence details are omitted by default to "
+        "keep reports bounded; pass `--write-full-occurrences` for the "
+        "capped per-occurrence dump."
     )
     w()
+    if compact.get("report_size_guard_triggered"):
+        w("> **Note:** the size guard triggered; this report contains "
+          "summary counts only. Re-run with a larger `--max-report-mb`.")
+        w()
     w("## 2. Tracked phrases (unsafe wording to avoid)")
     w()
-    for phrase in report["tracked_phrases"]:
+    for phrase in compact.get("tracked_phrases", []):
         w(f"- `{phrase}`")
     w()
     w("## 3. Headline counts")
     w()
-    w(f"- Files scanned: **{report['files_scanned_count']}**")
+    w(f"- Files scanned: **{summary.get('total_files_scanned', 0)}**")
+    w(f"- Total occurrences: **{summary.get('total_occurrences', 0)}**")
     w(
         f"- Unsafe-wording-present occurrences: "
-        f"**{report['total_unsafe_wording_present']}**"
+        f"**{summary.get('unsafe_occurrences', 0)}**"
     )
     w(
         f"- Listed-as-unsafe-wording-to-avoid occurrences: "
-        f"**{report['total_listed_as_unsafe_wording_to_avoid']}**"
+        f"**{summary.get('allowed_occurrences', 0)}**"
     )
-    w(f"- Passes consistency check: **{report['passes_consistency_check']}**")
+    w(
+        f"- Passes consistency check: "
+        f"**{compact.get('passes_consistency_check')}**"
+    )
     w()
     w("## 4. Summary by phrase")
     w()
     w("| phrase | unsafe_wording_present | listed_as_unsafe_wording_to_avoid |")
     w("|---|---|---|")
-    for phrase, counts in report["summary_by_phrase"].items():
+    for phrase, counts in summary.get("summary_by_phrase", {}).items():
         w(
             f"| `{phrase}` | "
-            f"{counts['unsafe_wording_present']} | "
-            f"{counts['listed_as_unsafe_wording_to_avoid']} |"
+            f"{counts.get('unsafe_wording_present', 0)} | "
+            f"{counts.get('listed_as_unsafe_wording_to_avoid', 0)} |"
         )
     w()
-    w("## 5. Unsafe wording present (must be zero for paper-safe claims)")
+    w("## 5. Top offender files")
     w()
-    unsafe_rows = [
-        o for o in report["occurrences"]
-        if o["classification"] == "unsafe_wording_present"
-    ]
-    if not unsafe_rows:
+    top_files = compact.get("top_offender_files", [])
+    if not top_files:
         w("(none)")
     else:
-        w("| file | line | phrase | snippet |")
-        w("|---|---|---|---|")
-        for o in unsafe_rows:
-            snippet = o["snippet"].replace("|", "\\|")
-            w(
-                f"| `{o['file']}` | {o['line']} | `{o['phrase']}` | "
-                f"{snippet} |"
-            )
+        w("| file | count |")
+        w("|---|---|")
+        for tf in top_files:
+            w(f"| `{tf['path']}` | {tf['count']} |")
     w()
-    w("## 6. Listed as unsafe wording to avoid (safe contexts)")
+    w("## 6. Top offender terms")
     w()
-    safe_rows = [
-        o for o in report["occurrences"]
-        if o["classification"] == "listed_as_unsafe_wording_to_avoid"
-    ]
-    if not safe_rows:
+    top_terms = compact.get("top_offender_terms", [])
+    if not top_terms:
         w("(none)")
     else:
-        w("| file | line | phrase | snippet |")
-        w("|---|---|---|---|")
-        for o in safe_rows:
-            snippet = o["snippet"].replace("|", "\\|")
-            w(
-                f"| `{o['file']}` | {o['line']} | `{o['phrase']}` | "
-                f"{snippet} |"
-            )
+        w("| term | count |")
+        w("|---|---|")
+        for tt in top_terms:
+            w(f"| `{tt['term']}` | {tt['count']} |")
     w()
-    w("## 7. Limitations")
+    w(
+        f"## 7. Examples (capped at {cfg.max_examples_per_category} "
+        f"per category)"
+    )
     w()
-    for lim in report["limitations"]:
+    examples = compact.get("examples_by_category", {})
+    if not examples:
+        w("(none)")
+    else:
+        if compact.get("truncation", {}).get("examples_truncated"):
+            w("_Examples are truncated; counts above are exact._")
+            w()
+        w("| category | file | line | phrase | snippet |")
+        w("|---|---|---|---|---|")
+        for cat, exs in examples.items():
+            for ex in exs:
+                snippet = str(ex["context"]).replace("|", "\\|")
+                w(
+                    f"| {cat} | `{ex['path']}` | {ex['line']} | "
+                    f"`{ex['term']}` | {snippet} |"
+                )
+    w()
+    w("## 8. Limitations")
+    w()
+    for lim in compact.get("limitations", []):
         w(f"- {lim}")
     w()
-    w("## 8. Honesty phrases (verbatim)")
+    w("## 9. Honesty phrases (verbatim)")
     w()
-    for phrase in report["honesty_phrases"]:
+    for phrase in compact.get("honesty_phrases", []):
         w(f"- {phrase}")
     w()
-    w("## 9. Paper-safe wording")
+    w("## 10. Paper-safe wording")
     w()
-    w(f"> {report['paper_safe_wording']}")
+    w(f"> {compact.get('paper_safe_wording', '')}")
     w()
-    w(f"`formal_security_claim`: `{report['formal_security_claim']}`")
+    w(f"`formal_security_claim`: `{compact.get('formal_security_claim')}`")
     w()
     return "\n".join(lines) + "\n"
 
@@ -494,20 +735,58 @@ def write_reports(
     json_filename: str = "stage_7_6_claims_consistency.json",
     csv_filename: str = "stage_7_6_claims_consistency.csv",
     md_filename: str = "stage_7_6_claims_consistency.md",
+    config: ClaimsReportConfig | None = None,
 ) -> tuple[str, str, str]:
+    """Write bounded claims-consistency reports.
+
+    Default behavior is compact: no full occurrence list, capped
+    examples, aggregate CSV. A hard ``max_report_mb`` guard prevents any
+    multi-GB file from ever being written.
+    """
+    cfg = config or ClaimsReportConfig()
     os.makedirs(outputs_dir, exist_ok=True)
     json_path = os.path.join(outputs_dir, json_filename)
     csv_path = os.path.join(outputs_dir, csv_filename)
     md_path = os.path.join(outputs_dir, md_filename)
-    _write_json(report, json_path)
-    _write_csv(report, csv_path)
-    with open(md_path, "w", encoding="utf-8") as fh:
-        fh.write(render_markdown(report))
+
+    compact = build_compact_report(report, cfg)
+
+    # Size guard: estimate from the JSON serialization (the largest of
+    # the three formats, since it can carry full_occurrences). If it
+    # would exceed the cap, fall back to a summary-only report.
+    json_text = _json_str(compact)
+    max_bytes = int(cfg.max_report_mb * 1024 * 1024)
+    candidate_bytes = len(json_text.encode("utf-8"))
+    if candidate_bytes > max_bytes:
+        compact = _minimal_guard_report(
+            compact, candidate_bytes=candidate_bytes, max_bytes=max_bytes)
+        json_text = _json_str(compact)
+
+    guarded = bool(compact.get("report_size_guard_triggered"))
+
+    if cfg.write_json:
+        with open(json_path, "w", encoding="utf-8") as fh:
+            fh.write(json_text)
+    if cfg.write_csv:
+        _write_compact_csv(compact, csv_path)
+    if cfg.write_md:
+        with open(md_path, "w", encoding="utf-8") as fh:
+            fh.write(render_markdown(report, config=cfg, compact=compact))
+
+    # Full per-occurrence dump only on explicit request, and never when
+    # the size guard fired.
+    if cfg.write_full_occurrences and not guarded:
+        occ_csv_path = os.path.join(
+            outputs_dir, csv_filename.replace(".csv", "_occurrences.csv"))
+        _write_occurrences_csv(report, occ_csv_path, cfg.max_full_occurrences)
+
     return json_path, csv_path, md_path
 
 
 __all__ = [
+    "ClaimsReportConfig",
     "build_claims_consistency_report",
+    "build_compact_report",
     "render_markdown",
     "scan_paths",
     "write_reports",
