@@ -36,6 +36,7 @@ from pllo.hf_wrappers.hf_causal_lm_skeleton import (
     generate_hf_causal_lm_masks,
     has_transformers,
     hf_causal_lm_masked_greedy_decode,
+    hf_causal_lm_masked_only_decode,
     hf_causal_lm_plain_decode,
     hf_causal_lm_plain_prefill,
 )
@@ -101,8 +102,10 @@ class ModelScopeRealCheckpointProbeConfig:
     # With neither set the probe falls back to synthetic tokens.
     prompt: str | None = None
     prompt_file: str | None = None
+    max_prompts: int | None = None  # cap prompts from prompt-file (batch scaling)
     include_prompts_in_report: bool = False
     negative_control: str = "none"  # none|wrong_vocab_recovery|plaintext_weights_on_masked_hidden
+    time_masked_only: bool = True  # extra masked-only timing pass (no plain ref)
 
 
 # ---------------------------------------------------------------------------
@@ -380,6 +383,8 @@ def load_prompts(
                 })
         if not prompts:
             raise ValueError(f"prompt-file {config.prompt_file!r} had no rows")
+        if config.max_prompts is not None:
+            prompts = prompts[:max(1, int(config.max_prompts))]
         return prompts, "prompt_file"
     if config.prompt:
         return [{"id": "literal_0", "prompt": config.prompt}], "literal_prompt"
@@ -488,6 +493,80 @@ def build_probe_inputs(
     meta["attention_mask_all_ones"] = bool(
         torch.equal(attention_mask, torch.ones_like(attention_mask)))
     return out, meta
+
+
+def _peak_mb(d: dict[str, Any] | None) -> float | None:
+    if not d:
+        return None
+    return d.get("max_allocated_mb")
+
+
+def _build_latency_memory(
+    config: ModelScopeRealCheckpointProbeConfig, report: dict[str, Any],
+    input_meta: dict[str, Any],
+) -> dict[str, Any]:
+    """Compact latency/memory block: ms timings, peak memory per mode, and the
+    masked-vs-extracted / masked-vs-HF slowdowns + tokens/s where comparable.
+
+    ``hf_baseline`` and ``masked_runtime`` are NOT directly comparable (HF runs
+    the full model + real generate; the masked/extracted stacks may be partial
+    and use our reference forward), so ``slowdown_masked_vs_hf`` is reported
+    only as a coarse, clearly-caveated ratio."""
+    def _ms(sec: Any) -> float | None:
+        return round(float(sec) * 1000.0, 3) if isinstance(sec, (int, float)) \
+            else None
+
+    hb = report.get("hf_baseline", {}) or {}
+    ep = report.get("extracted_plain", {}) or {}
+    mr = report.get("masked_runtime", {}) or {}
+
+    hf_ms = _ms(hb.get("latency_s"))
+    extracted_ms = _ms(ep.get("latency_s"))
+    masked_only_ms = _ms(mr.get("latency_s_masked_only"))
+    masked_withref_ms = _ms(mr.get("latency_s_with_reference"))
+    # Prefer the honest masked-only timing for slowdown; fall back to with-ref.
+    masked_ms = masked_only_ms if masked_only_ms is not None else masked_withref_ms
+
+    n_prompts = input_meta.get("prompt_count") or 1
+    decode_steps = config.decode_steps
+    total_new = n_prompts * decode_steps
+
+    def _ratio(a: float | None, b: float | None) -> float | None:
+        if a is None or b is None or b == 0:
+            return None
+        return round(a / b, 4)
+
+    def _tps(ms: float | None) -> float | None:
+        if ms is None or ms <= 0 or total_new <= 0:
+            return None
+        return round(total_new / (ms / 1000.0), 3)
+
+    return {
+        "hf_baseline_latency_ms": hf_ms,
+        "extracted_plaintext_latency_ms": extracted_ms,
+        "masked_runtime_latency_ms": masked_ms,
+        "masked_runtime_latency_ms_with_reference": masked_withref_ms,
+        "masked_only_timing_available": masked_only_ms is not None,
+        "peak_cuda_memory_mb": {
+            "hf_baseline": _peak_mb(hb.get("peak_cuda_memory")),
+            "extracted_plaintext": _peak_mb(ep.get("peak_cuda_memory")),
+            "masked_runtime": _peak_mb(mr.get("peak_cuda_memory_masked_only")
+                                       or mr.get("peak_cuda_memory")),
+        },
+        "slowdown_masked_vs_extracted": _ratio(masked_ms, extracted_ms),
+        "slowdown_masked_vs_hf": _ratio(masked_ms, hf_ms),
+        "slowdown_masked_vs_hf_caveat":
+            "HF baseline runs the full model with real generate; the "
+            "masked/extracted stacks may be partial-layer and use the extracted "
+            "reference forward -- not a like-for-like comparison.",
+        "tokens_per_second_masked": _tps(masked_ms),
+        "tokens_per_second_extracted": _tps(extracted_ms),
+        "tokens_per_second_hf": hb.get("tokens_per_s"),
+        "batch_size": n_prompts,
+        "decode_steps": decode_steps,
+        "total_new_tokens": total_new,
+        "device": config.device,
+    }
 
 
 def _build_audit(
@@ -744,9 +823,28 @@ def run_modelscope_real_checkpoint_probe(
         }
         report["bf16_diagnostics"] = pre.get("diagnostics", {})
 
+        # Masked-only timing (no plain reference recompute): the honest
+        # deployment cost used for the masked-vs-extracted slowdown.
+        if config.time_masked_only:
+            _reset_peak(device)
+            _sync(device)
+            t0 = time.perf_counter()
+            with torch.no_grad():
+                mo = hf_causal_lm_masked_only_decode(
+                    input_ids, weights, layer_configs, masks, skel_cfg)
+            _sync(device)
+            report["masked_runtime"]["latency_s_masked_only"] = round(
+                time.perf_counter() - t0, 4)
+            report["masked_runtime"]["masked_only_num_tokens"] = mo["num_tokens"]
+            report["masked_runtime"]["peak_cuda_memory_masked_only"] = \
+                _cuda_mem(device)
+
     report["boundary"] = _boundary_accounting(
         config, hidden, vocab, model_dtype, n_extracted,
         masks.shared_residual_mask)
+
+    # Consolidated latency / memory block (ms + ratios + tokens/s) --------
+    report["latency_memory"] = _build_latency_memory(config, report, input_meta)
 
     # Audit section -------------------------------------------------------
     masked_ran = "masked_runtime" in report

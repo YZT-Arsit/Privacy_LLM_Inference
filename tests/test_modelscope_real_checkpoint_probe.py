@@ -486,3 +486,168 @@ def test_unknown_negative_control_rejected(monkeypatch) -> None:
     _patch_tiny_loaded(monkeypatch)
     with pytest.raises(ValueError):
         run_modelscope_real_checkpoint_probe(_tiny_cfg(negative_control="bogus"))
+
+
+# ---------------------------------------------------------------------------
+# Top-conference evals: latency/memory (A), --max-prompts (E),
+# output-boundary ablation (C), leakage/attack metrics (D), summary generator.
+# ---------------------------------------------------------------------------
+
+
+# 25.
+def test_latency_memory_block_present(monkeypatch, tmp_path) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    pf, _ = _write_prompt_file(tmp_path)
+    r = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=16))
+    lm = r["latency_memory"]
+    for k in ("hf_baseline_latency_ms", "extracted_plaintext_latency_ms",
+              "masked_runtime_latency_ms", "slowdown_masked_vs_extracted",
+              "tokens_per_second_masked", "peak_cuda_memory_mb", "batch_size"):
+        assert k in lm, k
+    # masked-only timing was taken (no plain reference recompute in it)
+    assert lm["masked_only_timing_available"] is True
+    assert r["masked_runtime"]["latency_s_masked_only"] >= 0.0
+    # ratio is computed from the masked-only timing
+    assert lm["slowdown_masked_vs_extracted"] is not None
+
+
+# 26.
+def test_max_prompts_caps_batch(monkeypatch, tmp_path) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    pf, rows = _write_prompt_file(tmp_path)  # 3 prompts
+    r = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=8, max_prompts=2))
+    assert r["audit"]["prompt_count"] == 2
+    assert r["audit"]["input_ids_shape"] == [2, 8]
+    assert r["latency_memory"]["batch_size"] == 2
+
+
+# 27.
+def test_output_boundary_ablation_modes() -> None:
+    from pllo.experiments.stage8_2_topconf_evals import output_boundary_ablation
+    rows = output_boundary_ablation(
+        hidden_size=64, vocab_size=1000, batch_size=2, decode_steps=4,
+        transfer_dtype=torch.float32, masked_token_match_rate=1.0,
+        masked_recovered_logits_err=1e-7, masked_latency_ms=3.0)
+    modes = {r["boundary_mode"]: r for r in rows}
+    assert set(modes) == {"plaintext_logits", "masked_logits", "hidden_to_tee"}
+    # plaintext is the unsafe baseline; hidden_to_tee is analytical only
+    assert "UNSAFE" in modes["plaintext_logits"]["security_caveat"]
+    assert modes["hidden_to_tee"]["latency_kind"] == "analytical_cost_model"
+    # hidden_to_tee transfers far fewer bytes (hidden << vocab) but costs more
+    # TEE FLOPs (it runs the LM head inside the TEE)
+    assert (modes["hidden_to_tee"]["transfer_bytes"]
+            < modes["masked_logits"]["transfer_bytes"])
+    assert (modes["hidden_to_tee"]["tee_compute_flops"]
+            > modes["masked_logits"]["tee_compute_flops"])
+    # main scheme reproduces tokens with tiny error
+    assert modes["masked_logits"]["token_match_rate"] == 1.0
+
+
+# 28.
+def test_attack_token_recovery_plaintext_perfect_masked_degraded() -> None:
+    from pllo.experiments.stage8_2_topconf_evals import attack_token_recovery
+    from pllo.hf_wrappers.hf_causal_lm_skeleton import make_residual_mask
+    torch.manual_seed(0)
+    vocab, hidden = 400, 48
+    embed = torch.randn(vocab, hidden)
+    ids = torch.randint(0, vocab, (64,))
+    g = torch.Generator().manual_seed(1)
+    n_res, _ = make_residual_mask(hidden, "signed_permutation", torch.float32,
+                                  torch.device("cpu"), g)
+    g2 = torch.Generator().manual_seed(2)
+    wrong, _ = make_residual_mask(hidden, "signed_permutation", torch.float32,
+                                  torch.device("cpu"), g2)
+    d = attack_token_recovery(embed, ids, n_res, wrong)
+    # attacker with plaintext embedding recovers perfectly
+    assert d["plaintext_top1_token_recovery"] == 1.0
+    # masked embedding NN to the original table is near random (>= but tiny)
+    assert d["masked_top1_token_recovery"] <= 0.1
+    assert d["masked_wrong_mask_top1_token_recovery"] <= 0.1
+    assert d["random_baseline_top1"] == round(1.0 / vocab, 8)
+
+
+# 29.
+def test_attack_masked_logits_visible_low_recovered_perfect() -> None:
+    from pllo.experiments.stage8_2_topconf_evals import attack_masked_logits
+    from pllo.ops.causal_lm_boundaries import make_vocab_logit_mask
+    torch.manual_seed(0)
+    vocab = 500
+    logits = torch.randn(4, vocab)
+    g = torch.Generator().manual_seed(3)
+    vm = make_vocab_logit_mask(vocab, torch.float32, "cpu", g)
+    d = attack_masked_logits(logits, vm)
+    # GPU-visible masked argmax does not reveal the true token
+    assert d["gpu_visible_argmax_matches_plaintext"] <= 0.25
+    # correct TEE recovery is exact
+    assert d["recovered_argmax_matches_plaintext"] == 1.0
+    assert abs(d["rank_correlation_plain_vs_masked_visible"]) < 0.2
+
+
+# 30.
+def test_hidden_structure_leakage_orthogonal_preserves_geometry() -> None:
+    from pllo.experiments.stage8_2_topconf_evals import hidden_structure_leakage
+    from pllo.hf_wrappers.hf_causal_lm_skeleton import make_residual_mask
+    torch.manual_seed(0)
+    hidden = 48
+    X = torch.randn(80, hidden)
+    g = torch.Generator().manual_seed(4)
+    n_res, _ = make_residual_mask(hidden, "signed_permutation", torch.float32,
+                                  torch.device("cpu"), g)
+    d = hidden_structure_leakage(X, n_res)
+    # orthogonal mask preserves norms / geometry / NN identities (leakage)
+    assert abs(d["norm_preservation_ratio_mean"] - 1.0) < 1e-4
+    assert d["pairwise_distance_correlation"] > 0.999
+    assert d["pairwise_cosine_correlation"] > 0.999
+    assert d["nearest_neighbor_identity_preservation"] == 1.0
+
+
+# 31.
+def test_topconf_evals_driver_end_to_end(monkeypatch, tmp_path) -> None:
+    from pllo.experiments.stage8_2_topconf_evals import run_topconf_evals
+    _patch_tiny_loaded(monkeypatch, total_layers=4, vocab=512)
+    pf, _ = _write_prompt_file(tmp_path)
+    r = run_topconf_evals(_tiny_cfg(prompt_file=str(pf), prefill_seq_len=16,
+                                    max_prompts=3))
+    assert r["status"] == "ok"
+    assert r["token_match_rate_vs_extracted"] == 1.0
+    assert len(r["boundary_ablation"]) == 3
+    assert r["attack_token_recovery"]["plaintext_top1_token_recovery"] == 1.0
+    assert r["attack_token_recovery"]["masked_top1_token_recovery"] <= 0.1
+    assert r["attack_masked_logits"]["recovered_argmax_matches_plaintext"] == 1.0
+    assert (r["hidden_structure_leakage"]["pairwise_cosine_correlation"]
+            > 0.999)
+
+
+# 32.
+def test_summary_generator_aggregates(tmp_path) -> None:
+    import sys
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import summarize_topconf_experiments as S
+    outdir = tmp_path / "outputs"
+    outdir.mkdir()
+    # a boundary-ablation file + an attack file
+    (outdir / "eval_output_boundary_ablation_0_5b_realprompts.json").write_text(
+        json.dumps({"model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+                    "boundary_ablation": [
+                        {"boundary_mode": "masked_logits", "gpu_visible": "x",
+                         "tee_compute_flops": 1, "transfer_bytes": 2,
+                         "token_match_rate": 1.0, "recovered_logits_err": 1e-7,
+                         "latency_ms": 3.0, "latency_kind": "measured"}]}),
+        encoding="utf-8")
+    (outdir / "eval_attack_token_recovery_0_5b_realprompts.json").write_text(
+        json.dumps({"model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+                    "attack_token_recovery": {
+                        "vocab_size": 1000, "plaintext_top1_token_recovery": 1.0,
+                        "masked_top1_token_recovery": 0.0,
+                        "random_baseline_top1": 0.001}}),
+        encoding="utf-8")
+    agg = S.aggregate(str(outdir))
+    assert agg["4_output_boundary_ablation"]["present"] is True
+    assert agg["5_leakage_attack_metrics"]["present"] is True
+    md = S.render_md(agg)
+    assert "Output boundary ablation" in md
+    assert "disallowed" in md.lower()
+    # claim discipline always present
+    assert agg["9_limitations_and_disallowed_claims"]["disallowed_claims"]

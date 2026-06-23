@@ -201,9 +201,14 @@ def main() -> int:
     ap.add_argument("--prompt-file", default=None,
                     help="JSONL of {\"id\":..,\"prompt\":..}; tokenized with "
                          "the real checkpoint tokenizer")
+    ap.add_argument("--max-prompts", type=int, default=None,
+                    help="cap the number of prompts read from --prompt-file "
+                         "(batch-size scaling experiments)")
     ap.add_argument("--include-prompts-in-report", action="store_true",
                     help="store full prompt text in the report (default: only "
                          "prompt ids + length stats)")
+    ap.add_argument("--no-masked-only-timing", action="store_true",
+                    help="skip the extra masked-only latency pass")
     ap.add_argument("--negative-control", default="none",
                     choices=["none", "wrong_vocab_recovery",
                              "plaintext_weights_on_masked_hidden"])
@@ -229,8 +234,10 @@ def main() -> int:
         allow_dense_large_mask=args.allow_dense_large_mask,
         run_hf_baseline=not args.no_hf_baseline,
         prompt=args.prompt, prompt_file=args.prompt_file,
+        max_prompts=args.max_prompts,
         include_prompts_in_report=args.include_prompts_in_report,
         negative_control=args.negative_control,
+        time_masked_only=not args.no_masked_only_timing,
         max_report_mb=args.max_report_mb, seed=args.seed)
 
     report = run_modelscope_real_checkpoint_probe(cfg)

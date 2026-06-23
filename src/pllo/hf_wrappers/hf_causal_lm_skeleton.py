@@ -57,6 +57,7 @@ from pllo.ops.causal_lm_boundaries import (
     embedding_boundary_forward,
     final_norm_lm_head_masked,
     final_norm_lm_head_plain,
+    fold_final_norm_lm_head_with_vocab_mask,
     greedy_sample,
     make_vocab_logit_mask,
     recover_vocab_logits,
@@ -89,6 +90,7 @@ __all__ = [
     "signed_permutation_components",
     "has_transformers",
     "hf_causal_lm_masked_greedy_decode",
+    "hf_causal_lm_masked_only_decode",
     "hf_causal_lm_masked_prefill",
     "hf_causal_lm_plain_decode",
     "hf_causal_lm_plain_prefill",
@@ -1160,4 +1162,103 @@ def hf_causal_lm_masked_greedy_decode(
         "prefill_metrics": pre["metrics"],
         "decode_step_metrics": step_metrics,
         "metadata": pre["metadata"],
+    }
+
+
+def hf_causal_lm_masked_only_decode(
+    input_ids: torch.Tensor, weights: HFCausalLMSkeletonWeights,
+    layer_configs: list[HFSingleBlockConfig], masks: HFCausalLMMaskBundle,
+    config: HFCausalLMSkeletonConfig, decode_steps: int | None = None,
+) -> dict[str, Any]:
+    """Masked runtime ONLY (no plaintext reference, no error metrics).
+
+    This is the honest deployment cost: trusted embedding boundary -> masked
+    decoder blocks (folded weights, masked KV cache) -> masked LM head ->
+    trusted vocab recovery + greedy. Use it to time the masked path without
+    the diagnostic plain-reference recompute that the verification decode does.
+    """
+    decode_steps = config.decode_steps if decode_steps is None else decode_steps
+    cfg0 = layer_configs[0]
+    eps = cfg0.rms_norm_eps
+    dtype = cfg0.dtype
+    n_layers = len(layer_configs)
+    bw = _boundary_weights(weights)
+    cos, sin = _rope_cache(config, cfg0)
+
+    rt_dtype = config.folded_runtime_dtype
+    rec_dtype = config.recovery_dtype
+    runtime_cast = rt_dtype is not None and rt_dtype != dtype
+
+    foldeds = [
+        fold_hf_single_block_weights(weights.layer_weights[ell],
+                                     layer_configs[ell],
+                                     masks.layer_block_masks[ell])
+        for ell in range(n_layers)
+    ]
+    cos_m, sin_m = (cos.to(rt_dtype), sin.to(rt_dtype)) if runtime_cast \
+        else (cos, sin)
+    if runtime_cast:
+        foldeds = [_cast_folded(f, rt_dtype) for f in foldeds]
+
+    # Offline-foldable masked LM head (final-norm affine + N^{-1} + vocab mask).
+    n_res_inv_last = masks.residual_mask_inverses[-1]
+    vm = masks.vocab_mask
+    if rec_dtype is not None:
+        head_fn_w = bw.final_norm_weight.to(rec_dtype)
+        head_lm_w = bw.lm_head_weight.to(rec_dtype)
+        head_ninv = n_res_inv_last.to(rec_dtype)
+        vm_rec = _cast_vocab_mask(vm, rec_dtype)
+    else:
+        head_fn_w, head_lm_w = bw.final_norm_weight, bw.lm_head_weight
+        head_ninv, vm_rec = n_res_inv_last, vm
+    w_lm_tilde = fold_final_norm_lm_head_with_vocab_mask(
+        head_fn_w, head_lm_w, head_ninv, vm_rec)
+
+    def _masked_head(h_tilde: torch.Tensor) -> torch.Tensor:
+        core_tilde = rmsnorm_core(
+            h_tilde if rec_dtype is None else h_tilde.to(rec_dtype), eps)
+        logits_tilde = core_tilde @ w_lm_tilde            # GPU sees this only
+        return recover_vocab_logits(logits_tilde, vm_rec)  # TEE recovery
+
+    # Prefill (masked) --------------------------------------------------
+    emb = embedding_boundary_forward(input_ids, bw, masks.residual_masks[0],
+                                     masks.input_pad)
+    h_tilde = emb["x_tilde"]
+    if runtime_cast:
+        h_tilde = h_tilde.to(rt_dtype)
+    caches_tilde: list[dict[str, Any]] = []
+    for ell in range(n_layers):
+        blk = _hf_masked_block_prefill(h_tilde, foldeds[ell],
+                                       layer_configs[ell], cos_m, sin_m)
+        caches_tilde.append(blk["cache"])
+        h_tilde = (blk["y_tilde"] @ masks.handoff(ell).to(blk["y_tilde"].dtype)
+                   if masks.needs_handoff(ell) else blk["y_tilde"])
+    next_masked = greedy_sample(_masked_head(h_tilde)[:, -1, :])
+    gen = [next_masked]
+
+    # Decode (masked) ---------------------------------------------------
+    n0 = masks.residual_masks[0]
+    pad = masks.input_pad
+    for step in range(decode_steps):
+        position = config.prefill_seq_len + step
+        x_next = trusted_embedding_lookup(
+            next_masked, weights.embed_tokens_weight).unsqueeze(1)
+        x0 = x_next if pad is None else x_next - pad
+        h_tilde = x0 @ n0
+        if runtime_cast:
+            h_tilde = h_tilde.to(rt_dtype)
+        for ell in range(n_layers):
+            dec_m = _hf_masked_block_decode(h_tilde, caches_tilde[ell],
+                                            foldeds[ell], layer_configs[ell],
+                                            cos_m, sin_m, position)
+            caches_tilde[ell] = dec_m["cache"]
+            h_tilde = (dec_m["y_tilde"] @ masks.handoff(ell).to(
+                dec_m["y_tilde"].dtype)
+                if masks.needs_handoff(ell) else dec_m["y_tilde"])
+        next_masked = greedy_sample(_masked_head(h_tilde)[:, -1, :])
+        gen.append(next_masked)
+
+    return {
+        "generated_from_masked_tokens": torch.stack(gen, dim=1),
+        "num_tokens": len(gen),
     }

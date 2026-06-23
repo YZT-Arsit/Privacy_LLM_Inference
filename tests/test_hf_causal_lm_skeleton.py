@@ -19,6 +19,7 @@ from pllo.hf_wrappers.hf_causal_lm_skeleton import (  # noqa: E402
     generate_hf_causal_lm_masks,
     has_transformers,
     hf_causal_lm_masked_greedy_decode,
+    hf_causal_lm_masked_only_decode,
     hf_causal_lm_masked_prefill,
     hf_causal_lm_plain_prefill,
     make_random_tiny_hf_causal_lm,
@@ -220,6 +221,21 @@ def test_metadata_boundaries_and_no_security_claim() -> None:
     assert md["cryptographic_security_claimed"] is False
     assert md["no_network_download"] is True
     assert md["no_gpu_required"] is True
+
+
+# 15b.
+def test_masked_only_decode_matches_masked_greedy() -> None:
+    """The masked-only (no-plain-reference) runtime must produce exactly the
+    same masked tokens as the verification decode -- it is the same masked
+    path, just without the diagnostic plaintext recompute."""
+    cfg = _config("qwen2", max_layers=2, prefill_seq_len=6, decode_steps=3)
+    _, _, weights, lc, masks, _, input_ids = _build("qwen2", cfg)
+    full = hf_causal_lm_masked_greedy_decode(input_ids, weights, lc, masks, cfg)
+    only = hf_causal_lm_masked_only_decode(input_ids, weights, lc, masks, cfg)
+    assert torch.equal(full["generated_from_masked_tokens"],
+                       only["generated_from_masked_tokens"])
+    # and the masked path reproduces the plaintext tokens here (fp64 tiny model)
+    assert full["token_match_rate"] == 1.0
 
 
 # 15.
