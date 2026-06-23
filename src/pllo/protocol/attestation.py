@@ -39,6 +39,9 @@ __all__ = [
     "AttestationEvidence",
     "DEFAULT_TRUSTED_BOUNDARY_PATHS",
     "MANIFEST_EXCLUDES",
+    "binding_mismatch_reason",
+    "boundary_manifest_metadata",
+    "boundary_runtime_hash",
     "build_trusted_boundary_manifest",
     "compute_runtime_hash",
     "compute_runtime_hash_from_manifest",
@@ -280,6 +283,59 @@ def write_runtime_hash(
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(rh + "\n", encoding="utf-8")
     return rh
+
+
+def boundary_manifest_metadata(
+    boundary_backend: str,
+    gpu_backend: str,
+    expected_mr_td: str | None = None,
+    *,
+    protocol_version: str = "8.5",
+) -> dict[str, Any]:
+    """Canonical runtime-identity metadata shared by the demo + preflight tool.
+
+    Both the quote-binding step (``write_tee_boundary_runtime_hash.py`` /
+    ``--print-runtime-hash-only``) and the verification step (the demo) MUST use
+    this exact metadata so they compute the identical runtime hash. Changing any
+    field (notably ``expected_mr_td``) changes the binding."""
+    return {
+        "protocol_version": protocol_version,
+        "boundary_backend": boundary_backend,
+        "allowed_gpu_backend": gpu_backend,
+        "expected_mr_td": expected_mr_td,
+    }
+
+
+def boundary_runtime_hash(
+    metadata: dict[str, Any] | None = None,
+    paths: Iterable[str] | None = None,
+    *,
+    base: Path | str | None = None,
+) -> str:
+    """The single source of truth: the runtime hash the boundary binds + verifies.
+
+    Equals ``report_data`` of the TD Quote. The preflight tool prints this; the
+    demo recomputes it identically and checks it against the evidence."""
+    return compute_runtime_hash_from_manifest(
+        build_trusted_boundary_manifest(paths, metadata, base=base))
+
+
+def binding_mismatch_reason(ev: "AttestationEvidence") -> str | None:
+    """Explain why ``runtime_hash_bound`` is not True (or ``None`` if it is)."""
+    if ev.runtime_hash_bound is True:
+        return None
+    if ev.report_data_hex is None:
+        return ("no report_data in evidence (no TD Quote was bound, or this is a "
+                "simulated/off-TDX run)")
+    if ev.report_data_hex != ev.runtime_hash_hex:
+        return (
+            f"evidence.report_data ({ev.report_data_hex[:16]}...) != "
+            f"expected_runtime_hash ({ev.runtime_hash_hex[:16]}...): the TD Quote "
+            "was bound to a stale/different runtime hash. The boundary code or "
+            "metadata (e.g. expected_mr_td) changed since binding. Recompute with "
+            "scripts/write_tee_boundary_runtime_hash.py (identical flags), bind "
+            "the quote's report_data to that value, and re-run.")
+    return None
 
 
 def _jwt_parts(evidence: dict[str, Any]) -> tuple[bool, int]:

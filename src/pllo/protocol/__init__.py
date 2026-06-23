@@ -18,6 +18,9 @@ from __future__ import annotations
 from pllo.protocol.attestation import (
     AttestationEvidence,
     attest_boundary,
+    binding_mismatch_reason,
+    boundary_manifest_metadata,
+    boundary_runtime_hash,
     build_trusted_boundary_manifest,
     compute_runtime_hash,
     compute_runtime_hash_from_manifest,
@@ -57,6 +60,9 @@ from pllo.protocol.tee_gpu_messages import (
 __all__ = [
     "AttestationEvidence",
     "attest_boundary",
+    "binding_mismatch_reason",
+    "boundary_manifest_metadata",
+    "boundary_runtime_hash",
     "build_trusted_boundary_manifest",
     "compute_runtime_hash",
     "compute_runtime_hash_from_manifest",

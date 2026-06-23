@@ -143,10 +143,45 @@ actual boundary **code artifact**, not just a config string:
   *would* bind, so deployment is testable in CI.
 
 The demo adds an `attestation` block + `boundary_tee_type`, `boundary_attested`,
-`runtime_hash`, `runtime_hash_bound`, `runtime_manifest_path`, `mr_td`, and the
-flags `--write-runtime-manifest` / `--write-runtime-hash`. `tee_used_on_gpu`
-stays `False` regardless — attestation covers the *boundary*, never the GPU
-worker.
+`runtime_hash`, `expected_runtime_hash`, `evidence_report_data`,
+`runtime_hash_bound`, `binding_mismatch_reason`, `runtime_manifest_path`,
+`mr_td`. `tee_used_on_gpu` stays `False` regardless — attestation covers the
+*boundary*, never the GPU worker.
+
+### Stable deployment workflow (avoid binding to a stale hash)
+
+The runtime hash changes whenever a measured boundary file or the metadata
+changes — that is the point (it detects stale bindings). So compute it **once,
+after the code is frozen**, bind that exact value, and verify with the same
+recipe. Both steps share `pllo.protocol.attestation.boundary_runtime_hash`, so
+they cannot drift.
+
+```bash
+# 1. Read off the exact hash to bind (THE report_data value). Two equivalent ways:
+python scripts/write_tee_boundary_runtime_hash.py \
+    --boundary-backend process --gpu-backend mock --expected-mr-td <mr_td> \
+    --output outputs/runtime_hash.txt --manifest outputs/runtime_manifest.json
+# or, as a preflight on the demo itself:
+python scripts/run_tee_gpu_protocol_demo.py \
+    --boundary-backend process --gpu-backend mock --expected-mr-td <mr_td> \
+    --print-runtime-hash-only
+
+# 2. Bind that hash into the TD Quote report_data (your attestation client),
+#    collect the signed JWT, assemble evidence.json {tee, mr_td, report_data, jwt}.
+
+# 3. Verify — SAME flags as step 1:
+python scripts/run_tee_gpu_protocol_demo.py \
+    --boundary-backend process --gpu-backend mock --expected-mr-td <mr_td> \
+    --attestation-evidence evidence.json
+#   => runtime_hash_bound=True, boundary_attested=True
+```
+
+Use the **same** `--boundary-backend` / `--gpu-backend` / `--expected-mr-td` in
+steps 1 and 3 — they are part of the runtime identity. If `runtime_hash_bound`
+is `False`, the report prints `expected_runtime_hash`, `evidence_report_data`,
+and a `binding_mismatch_reason` (e.g. *"the TD Quote was bound to a
+stale/different runtime hash … recompute and re-bind"*). Re-running step 1 after
+any edit to a measured boundary file yields a new hash — re-bind the quote.
 
 > The JWT signature / certificate chain is verified by the remote attestation
 > service; this module verifies the tee/debug/binding/`mr_td` *claims*. We do not

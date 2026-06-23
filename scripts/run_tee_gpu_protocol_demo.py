@@ -36,6 +36,9 @@ from dataclasses import asdict  # noqa: E402
 
 from pllo.protocol.attestation import (  # noqa: E402
     attest_boundary,
+    binding_mismatch_reason,
+    boundary_manifest_metadata,
+    boundary_runtime_hash,
     build_trusted_boundary_manifest,
     compute_runtime_hash_from_manifest,
     write_runtime_hash,
@@ -58,17 +61,6 @@ def _bool(s: str) -> bool:
     return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
-def boundary_manifest_metadata(boundary_backend: str, gpu_backend: str,
-                               expected_mr_td: str | None) -> dict:
-    """Public runtime identity folded into the manifest (no secrets)."""
-    return {
-        "protocol_version": "8.5",
-        "boundary_backend": boundary_backend,
-        "allowed_gpu_backend": gpu_backend,
-        "expected_mr_td": expected_mr_td,
-    }
-
-
 def attach_attestation(report: dict, *, evidence: str | None,
                        expected_mr_td: str | None,
                        manifest_path: str | None = None) -> None:
@@ -76,18 +68,23 @@ def attach_attestation(report: dict, *, evidence: str | None,
 
     The runtime hash is SHA-512 over the trusted-boundary manifest (source-file
     digests + public runtime identity), which binds the attestation token to the
-    actual boundary code artifact rather than a config string."""
+    actual boundary code artifact. ``expected_runtime_hash`` is THE value the TD
+    Quote's ``report_data`` must equal; the report surfaces it alongside
+    ``evidence_report_data`` and a ``binding_mismatch_reason`` when they differ."""
     metadata = boundary_manifest_metadata(
         report["boundary_backend"], report["gpu_backend"], expected_mr_td)
     manifest = build_trusted_boundary_manifest(metadata=metadata)
-    runtime_hash = compute_runtime_hash_from_manifest(manifest)
-    ev = attest_boundary(runtime_hash=runtime_hash, evidence=evidence,
+    expected = compute_runtime_hash_from_manifest(manifest)    # source of truth
+    ev = attest_boundary(runtime_hash=expected, evidence=evidence,
                          expected_mr_td=expected_mr_td)
     report["attestation"] = asdict(ev)
     report["boundary_tee_type"] = ev.tee_type
     report["boundary_attested"] = ev.verified
     report["runtime_hash"] = ev.runtime_hash_hex
+    report["expected_runtime_hash"] = expected
+    report["evidence_report_data"] = ev.report_data_hex
     report["runtime_hash_bound"] = ev.runtime_hash_bound
+    report["binding_mismatch_reason"] = binding_mismatch_reason(ev)
     report["mr_td"] = ev.mr_td
     report["runtime_manifest_path"] = manifest_path
     report["runtime_manifest_file_count"] = len(manifest["files"])
@@ -243,8 +240,10 @@ def _write_md(path: Path, r: dict) -> None:
             f"- boundary_tee_type: `{r['boundary_tee_type']}`",
             f"- **boundary_attested: {r['boundary_attested']}**",
             f"- quote_status: `{att['quote_status']}`",
-            f"- runtime_hash: `{r['runtime_hash']}`",
-            f"- runtime_hash_bound: {r['runtime_hash_bound']}",
+            f"- expected_runtime_hash: `{r.get('expected_runtime_hash')}`",
+            f"- evidence_report_data: `{r.get('evidence_report_data')}`",
+            f"- **runtime_hash_bound: {r['runtime_hash_bound']}**",
+            f"- binding_mismatch_reason: {r.get('binding_mismatch_reason') or 'none'}",
             f"- runtime_manifest_path: `{r.get('runtime_manifest_path')}` "
             f"(files={r.get('runtime_manifest_file_count')})",
             f"- mr_td: `{r['mr_td']}`",
@@ -289,9 +288,32 @@ def main() -> int:
                     help="write the trusted-boundary manifest JSON to this path")
     ap.add_argument("--write-runtime-hash", default=None,
                     help="write the runtime hash (hex) to this path")
+    ap.add_argument("--print-runtime-hash-only", action="store_true",
+                    help="preflight: print the exact runtime_hash this demo will "
+                         "verify (== TD Quote report_data), then exit without "
+                         "running the protocol")
     ap.add_argument("--output-json", default="outputs/tee_gpu_protocol.json")
     ap.add_argument("--output-md", default="outputs/tee_gpu_protocol.md")
     args = ap.parse_args()
+
+    # --- preflight: read off the exact hash to bind into report_data ---------
+    md = boundary_manifest_metadata(args.boundary_backend, args.gpu_backend,
+                                    args.expected_mr_td)
+    if args.print_runtime_hash_only:
+        manifest = build_trusted_boundary_manifest(metadata=md)
+        rh = compute_runtime_hash_from_manifest(manifest)
+        if args.write_runtime_manifest:
+            write_runtime_manifest(args.write_runtime_manifest, metadata=md)
+        if args.write_runtime_hash:
+            write_runtime_hash(args.write_runtime_hash, metadata=md)
+        print(rh)
+        print(f"# files_measured={len(manifest['files'])} "
+              f"boundary_backend={args.boundary_backend} "
+              f"gpu_backend={args.gpu_backend} "
+              f"expected_mr_td={args.expected_mr_td}", file=sys.stderr)
+        print("# bind this value into the TD Quote report_data, then run the "
+              "demo with the SAME flags + --attestation-evidence", file=sys.stderr)
+        return 0
 
     if args.gpu_backend == "qwen7b":
         print("NOTE: --gpu-backend qwen7b runs masked prefill/decode on the GPU "
@@ -308,9 +330,7 @@ def main() -> int:
             seq_len=args.seq_len, seed=args.seed)
 
     # Write manifest / hash with the SAME metadata the attestation uses, so the
-    # written hash matches report["runtime_hash"].
-    md = boundary_manifest_metadata(args.boundary_backend, args.gpu_backend,
-                                    args.expected_mr_td)
+    # written hash matches report["runtime_hash"] / expected_runtime_hash.
     if args.write_runtime_manifest:
         write_runtime_manifest(args.write_runtime_manifest, metadata=md)
     if args.write_runtime_hash:
@@ -349,9 +369,12 @@ def main() -> int:
     print(f"boundary_tee_type={report['boundary_tee_type']} "
           f"boundary_attested={report['boundary_attested']} "
           f"quote_status={att['quote_status']}")
-    print(f"runtime_hash={report['runtime_hash'][:32]}... "
-          f"runtime_hash_bound={report['runtime_hash_bound']} "
+    print(f"expected_runtime_hash={report['expected_runtime_hash']}")
+    print(f"evidence_report_data ={report['evidence_report_data']}")
+    print(f"runtime_hash_bound={report['runtime_hash_bound']} "
           f"mr_td={report['mr_td']}")
+    if report.get("binding_mismatch_reason"):
+        print(f"binding_mismatch_reason: {report['binding_mismatch_reason']}")
     print(f"runtime_manifest_path={report['runtime_manifest_path']} "
           f"(files={report['runtime_manifest_file_count']})")
 

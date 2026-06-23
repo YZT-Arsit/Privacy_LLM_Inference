@@ -13,6 +13,9 @@ import json
 
 from pllo.protocol import (
     attest_boundary,
+    binding_mismatch_reason,
+    boundary_manifest_metadata,
+    boundary_runtime_hash,
     build_trusted_boundary_manifest,
     compute_runtime_hash,
     compute_runtime_hash_from_manifest,
@@ -226,3 +229,58 @@ def test_attest_boundary_requires_a_hash_source() -> None:
     import pytest
     with pytest.raises(ValueError):
         attest_boundary()
+
+
+# --- stable deployment workflow (preflight hash == demo-verified hash) ------
+
+
+def test_preflight_hash_equals_attestation_hash() -> None:
+    # The hash the preflight tool prints must equal the one the demo recomputes
+    # for the same metadata -> the quote is never bound to a stale value.
+    md = boundary_manifest_metadata("process", "mock", REAL_MR_TD)
+    preflight = boundary_runtime_hash(metadata=md)
+    demo = compute_runtime_hash_from_manifest(
+        build_trusted_boundary_manifest(metadata=md))
+    assert preflight == demo
+    assert len(preflight) == 128
+
+
+def test_metadata_changes_change_the_binding() -> None:
+    base = boundary_runtime_hash(
+        metadata=boundary_manifest_metadata("process", "mock", None))
+    # different expected_mr_td -> different binding (it is part of identity)
+    assert base != boundary_runtime_hash(
+        metadata=boundary_manifest_metadata("process", "mock", REAL_MR_TD))
+    # different backend -> different binding
+    assert base != boundary_runtime_hash(
+        metadata=boundary_manifest_metadata("simulated", "mock", None))
+
+
+def test_binding_mismatch_reason_flags_stale_quote() -> None:
+    md = boundary_manifest_metadata("process", "mock", REAL_MR_TD)
+    rh = boundary_runtime_hash(metadata=md)
+    stale = "11" * 64                                  # a different 64-byte hash
+    ev = attest_boundary(runtime_hash=rh, evidence=_evidence(stale),
+                         expected_mr_td=REAL_MR_TD)
+    assert ev.runtime_hash_bound is False
+    reason = binding_mismatch_reason(ev)
+    assert reason and "stale" in reason
+    assert ev.report_data_hex == stale
+    assert ev.runtime_hash_hex == rh
+
+
+def test_binding_mismatch_reason_none_when_bound() -> None:
+    md = boundary_manifest_metadata("process", "mock", REAL_MR_TD)
+    rh = boundary_runtime_hash(metadata=md)
+    ev = attest_boundary(runtime_hash=rh, evidence=_evidence(rh),
+                         expected_mr_td=REAL_MR_TD)
+    assert ev.runtime_hash_bound is True
+    assert binding_mismatch_reason(ev) is None
+
+
+def test_binding_mismatch_reason_when_no_report_data() -> None:
+    md = boundary_manifest_metadata("process", "mock", None)
+    rh = boundary_runtime_hash(metadata=md)
+    ev = attest_boundary(runtime_hash=rh)              # simulated, no evidence
+    reason = binding_mismatch_reason(ev)
+    assert reason and "report_data" in reason
