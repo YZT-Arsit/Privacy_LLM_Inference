@@ -227,3 +227,57 @@ def test_stage8_2_config_signed_permutation_is_default() -> None:
     c = ModelScopeRealCheckpointProbeConfig()
     assert c.mask_mode == "signed_permutation"
     assert c.residual_mask_strategy == "shared"
+
+
+# 16.
+def test_build_attention_mask_all_ones_long() -> None:
+    from pllo.experiments.modelscope_real_checkpoint_probe import (
+        build_attention_mask)
+    ids = torch.tensor([[5, 9, 2, 2]], dtype=torch.long)
+    am = build_attention_mask(ids)
+    assert am.shape == ids.shape
+    assert am.dtype == torch.long
+    assert am.device == ids.device
+    assert torch.equal(am, torch.ones_like(ids))
+
+
+# 17.
+def test_probe_passes_explicit_attention_mask_when_pad_eq_eos() -> None:
+    """When pad_token_id == eos_token_id, the HF baseline must still receive an
+    explicit all-ones attention_mask (no padding) -- silencing the warning."""
+    from pllo.experiments.modelscope_real_checkpoint_probe import _hf_baseline
+
+    captured: dict = {}
+
+    class _FakeTok:
+        pad_token_id = 7
+        eos_token_id = 7  # pad == eos: HF cannot infer the mask
+
+        def __call__(self, text, return_tensors=None):
+            return {"input_ids": torch.tensor([[1, 2, 3, 7]], dtype=torch.long)}
+
+        def decode(self, ids, skip_special_tokens=True):
+            return "hi"
+
+    class _FakeModel:
+        def generate(self, input_ids, attention_mask=None, **kw):
+            captured["attention_mask"] = attention_mask
+            captured["input_ids"] = input_ids
+            return torch.cat([input_ids, input_ids[:, :1]], dim=1)
+
+    cfg = ModelScopeRealCheckpointProbeConfig(device="cpu", decode_steps=1)
+    out = _hf_baseline(_FakeModel(), _FakeTok(), cfg, "cpu")
+    am = captured["attention_mask"]
+    assert am is not None, "attention_mask must be passed explicitly"
+    assert am.dtype == torch.long
+    assert torch.equal(am, torch.ones_like(captured["input_ids"]))
+    assert out["new_token_ids"]  # baseline still produced tokens
+
+
+# 18.
+def test_report_has_attention_mask_explicit_field(monkeypatch) -> None:
+    monkeypatch.setattr(M, "has_modelscope", lambda: False)
+    r = run_modelscope_real_checkpoint_probe(
+        ModelScopeRealCheckpointProbeConfig(device="cpu"))
+    assert r["attention_mask_explicit"] is True
+    assert r["no_padding_assumption"] is True

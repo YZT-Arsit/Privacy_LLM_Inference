@@ -40,6 +40,7 @@ from pllo.hf_wrappers.hf_causal_lm_skeleton import (
 __all__ = [
     "ModelScopeRealCheckpointProbeConfig",
     "REQUIRED_STATEMENT",
+    "build_attention_mask",
     "build_caveats",
     "has_modelscope",
     "load_modelscope_checkpoint",
@@ -296,19 +297,27 @@ def _boundary_accounting(
     }
 
 
+def build_attention_mask(input_ids: torch.Tensor) -> torch.Tensor:
+    """Explicit all-ones attention mask for non-padded synthetic input_ids.
+
+    The synthetic prompt has no padding, and Qwen's pad_token == eos_token, so
+    transformers cannot infer the mask and warns. We pass an explicit mask of
+    ones (long) on the same device, matching the no-padding assumption used by
+    the extracted-plaintext and masked pipelines (pure causal attention, no
+    padding positions)."""
+    return torch.ones_like(input_ids, dtype=torch.long,
+                           device=input_ids.device)
+
+
 def _hf_baseline(model: Any, tokenizer: Any,
                  config: ModelScopeRealCheckpointProbeConfig,
                  device: str) -> dict[str, Any]:
     enc = tokenizer(DEFAULT_PROMPT, return_tensors="pt")
     input_ids = enc["input_ids"]
-    # Explicit all-ones attention mask: the synthetic prompt has no padding,
-    # and pad_token == eos for Qwen, so HF cannot infer the mask otherwise.
-    attention_mask = enc.get("attention_mask")
-    if attention_mask is None:
-        attention_mask = torch.ones_like(input_ids)
     if device == "cuda" and torch.cuda.is_available():
         input_ids = input_ids.to("cuda")
-        attention_mask = attention_mask.to("cuda")
+    # Always pass an explicit all-ones attention mask (no padding).
+    attention_mask = build_attention_mask(input_ids)
     _reset_peak(device)
     _sync(device)
     t0 = time.perf_counter()
@@ -385,6 +394,8 @@ def run_modelscope_real_checkpoint_probe(
         },
         "resolved_dtype": _name(model_dtype),  # back-compat
         "environment": env,
+        "attention_mask_explicit": True,
+        "no_padding_assumption": True,
         "required_statement": REQUIRED_STATEMENT,
     }
 
