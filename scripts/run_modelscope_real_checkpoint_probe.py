@@ -31,7 +31,11 @@ def _render_markdown(r: dict) -> str:
     w()
     w(f"- model_id: **{r['config']['model_id']}**")
     w(f"- status: **{r['status']}**")
-    w(f"- resolved_dtype: **{r['resolved_dtype']}** | device: "
+    rd = r.get("resolved_dtypes", {})
+    w(f"- dtypes: model=**{rd.get('model', r.get('resolved_dtype'))}** "
+      f"folding=**{rd.get('folding')}** "
+      f"runtime=**{rd.get('folded_weight_runtime')}** "
+      f"recovery=**{rd.get('recovery')}** | device: "
       f"**{r['config']['device']}**")
     env = r.get("environment", {})
     w(f"- cuda_available: **{env.get('cuda_available')}** | device_name: "
@@ -92,6 +96,32 @@ def _render_markdown(r: dict) -> str:
         w(f"- latency_s (incl. reference): "
           f"**{mr['latency_s_with_reference']}**")
         w()
+    if "bf16_diagnostics" in r and r["bf16_diagnostics"]:
+        d = r["bf16_diagnostics"]
+        w("## Mixed-precision diagnostics")
+        w()
+        w("| metric | value |")
+        w("|---|---|")
+        for k in ("embedding_boundary_max_abs_err",
+                  "layer_0_input_invariant_max_abs_err",
+                  "layer_0_output_invariant_max_abs_err",
+                  "final_norm_core_max_abs_err", "masked_logits_max_abs_err",
+                  "recovered_logits_max_abs_err",
+                  "recovered_logits_mean_abs_err",
+                  "recovered_logits_relative_l2_err",
+                  "greedy_token_match_rate"):
+            if k in d:
+                v = d[k]
+                w(f"| `{k}` | {v:.3e} |" if isinstance(v, float)
+                  and 0 < abs(v) < 1e6 else f"| `{k}` | {v} |")
+        m = d.get("top1_margin_stats", {})
+        if m:
+            w(f"| `top1_min_margin` | {m['min_margin']:.3e} |")
+            w(f"| `top1_mean_margin` | {m['mean_margin']:.3e} |")
+            w(f"| `positions_with_margin_below_error` | "
+              f"{m['num_positions_with_margin_below_error']}/"
+              f"{m['num_positions']} |")
+        w()
     if "boundary" in r:
         b = r["boundary"]
         w("## Boundary accounting")
@@ -123,7 +153,16 @@ def main() -> int:
     ap.add_argument("--model-id", default="Qwen/Qwen2.5-0.5B-Instruct")
     ap.add_argument("--cache-dir", default="/root/modelscope_cache")
     ap.add_argument("--device", default="cuda")
-    ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--dtype", default="bfloat16",
+                    help="model load + HF baseline dtype")
+    ap.add_argument("--folding-dtype", default="float32",
+                    choices=["float32", "bfloat16", "float16"])
+    ap.add_argument("--folded-weight-runtime-dtype", default="float32",
+                    choices=["float32", "bfloat16", "float16"])
+    ap.add_argument("--recovery-dtype", default="float32",
+                    choices=["float32", "bfloat16", "float16"])
+    ap.add_argument("--compare-dtype", default="float32",
+                    choices=["float32", "bfloat16", "float16"])
     ap.add_argument("--prefill-seq-len", type=int, default=16)
     ap.add_argument("--decode-steps", type=int, default=8)
     ap.add_argument("--max-layers", default="1")
@@ -145,7 +184,10 @@ def main() -> int:
                              else int(args.max_layers))
     cfg = ModelScopeRealCheckpointProbeConfig(
         model_id=args.model_id, cache_dir=args.cache_dir, device=args.device,
-        dtype=args.dtype, prefill_seq_len=args.prefill_seq_len,
+        dtype=args.dtype, folding_dtype=args.folding_dtype,
+        folded_weight_runtime_dtype=args.folded_weight_runtime_dtype,
+        recovery_dtype=args.recovery_dtype, compare_dtype=args.compare_dtype,
+        prefill_seq_len=args.prefill_seq_len,
         decode_steps=args.decode_steps, max_layers=max_layers,
         mask_mode=args.mask_mode,
         residual_mask_strategy=args.residual_mask_strategy,

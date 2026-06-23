@@ -124,6 +124,14 @@ class HFCausalLMSkeletonConfig:
     residual_mask_strategy: str = "per_layer"   # "shared" | "per_layer"
     mask_block_size: int = 64
     allow_dense_large_mask: bool = False
+    # Mixed-precision knobs (Stage 8.2 bf16). ``None`` -> identical to the
+    # Stage 6.9 single-dtype behavior. ``folded_runtime_dtype`` casts the
+    # folded weights + masked hidden states for the masked forward (e.g. bf16)
+    # while the plain reference + folding stay at ``dtype``; ``recovery_dtype``
+    # runs the final-norm/LM-head/vocab recovery + comparison in higher
+    # precision (e.g. float32) to avoid bf16 inverse/scaling drift.
+    folded_runtime_dtype: torch.dtype | None = None
+    recovery_dtype: torch.dtype | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -734,6 +742,79 @@ def hf_causal_lm_plain_decode(
 
 
 # ---------------------------------------------------------------------------
+# Mixed-precision helpers (Stage 8.2)
+# ---------------------------------------------------------------------------
+
+
+def _cast_folded(folded: dict[str, Any],
+                 dtype: torch.dtype) -> dict[str, Any]:
+    """Cast every tensor entry of a folded-weight dict to ``dtype``."""
+    return {k: (v.to(dtype=dtype) if isinstance(v, torch.Tensor) else v)
+            for k, v in folded.items()}
+
+
+def _cast_vocab_mask(vm: VocabLogitMask, dtype: torch.dtype) -> VocabLogitMask:
+    """Vocab mask with scale/inverse_scale cast to ``dtype`` (perm stays
+    integer). Used to keep the permutation+scaling recovery in fp32."""
+    return VocabLogitMask(
+        permutation=vm.permutation, inverse_permutation=vm.inverse_permutation,
+        scale=vm.scale.to(dtype=dtype),
+        inverse_scale=vm.inverse_scale.to(dtype=dtype))
+
+
+def _logit_diagnostics(
+    logits_plain: torch.Tensor, logits_recovered: torch.Tensor,
+    max_abs_err: float,
+) -> dict[str, Any]:
+    """Scalar-only logit drift diagnostics (no tensor dumps). All in the dtype
+    of the inputs (callers pass fp32)."""
+    diff = (logits_recovered - logits_plain).abs()
+    denom = float(logits_plain.float().pow(2).sum().sqrt().item()) or 1.0
+    rel_l2 = float((logits_recovered - logits_plain).float().pow(2).sum()
+                   .sqrt().item()) / denom
+    # top-1 margin per position over [B, T]: top1 - top2 of the plain logits.
+    flat = logits_plain.reshape(-1, logits_plain.shape[-1]).float()
+    top2 = flat.topk(2, dim=-1).values
+    margins = (top2[:, 0] - top2[:, 1])
+    below = int((margins < max_abs_err).sum().item())
+    return {
+        "recovered_logits_mean_abs_err": float(diff.float().mean().item()),
+        "recovered_logits_relative_l2_err": rel_l2,
+        "top1_margin_stats": {
+            "min_margin": float(margins.min().item()),
+            "mean_margin": float(margins.mean().item()),
+            "num_positions_with_margin_below_error": below,
+            "num_positions": int(margins.numel()),
+        },
+    }
+
+
+def _masked_output_boundary(
+    h_L_plain: torch.Tensor, h_L_tilde: torch.Tensor,
+    bw: CausalLMBoundaryWeights, n_res_inv: torch.Tensor,
+    vocab_mask: VocabLogitMask, eps: float,
+    recovery_dtype: torch.dtype | None,
+) -> dict[str, Any]:
+    """Final norm + masked LM head + TEE recovery, optionally upcast to
+    ``recovery_dtype`` (e.g. float32) so the inverse/scaling recovery never
+    runs in bf16. ``recovery_dtype is None`` reproduces the single-dtype path
+    exactly."""
+    if recovery_dtype is None or recovery_dtype == h_L_tilde.dtype:
+        out = final_norm_lm_head_masked(
+            h_L_tilde, h_L_plain, bw, n_res_inv, vocab_mask, eps)
+        return out
+    rb = CausalLMBoundaryWeights(
+        embed_tokens_weight=bw.embed_tokens_weight,
+        final_norm_weight=bw.final_norm_weight.to(recovery_dtype),
+        lm_head_weight=bw.lm_head_weight.to(recovery_dtype))
+    out = final_norm_lm_head_masked(
+        h_L_tilde.to(recovery_dtype), h_L_plain.to(recovery_dtype), rb,
+        n_res_inv.to(recovery_dtype), _cast_vocab_mask(vocab_mask, recovery_dtype),
+        eps)
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Masked full-model prefill
 # ---------------------------------------------------------------------------
 
@@ -760,14 +841,25 @@ def hf_causal_lm_masked_prefill(
                                      masks.input_pad)
     embedding_mask_err = _mx(emb["x_tilde"], emb["expected_x_tilde"])
 
+    # Fold in `dtype` (folding precision); optionally cast the folded weights
+    # to a lower runtime precision (e.g. bf16) for the masked forward while the
+    # plain reference stays in `dtype`.
     foldeds = [
         fold_hf_single_block_weights(weights.layer_weights[ell],
                                      layer_configs[ell],
                                      masks.layer_block_masks[ell])
         for ell in range(n_layers)
     ]
+    rt_dtype = config.folded_runtime_dtype
+    runtime_cast = rt_dtype is not None and rt_dtype != dtype
+    cos_m, sin_m = (cos.to(rt_dtype), sin.to(rt_dtype)) if runtime_cast \
+        else (cos, sin)
+    if runtime_cast:
+        foldeds = [_cast_folded(f, rt_dtype) for f in foldeds]
 
     h_tilde = emb["x_tilde"]                        # H0_tilde in N_0
+    if runtime_cast:
+        h_tilde = h_tilde.to(rt_dtype)
     hidden_tilde_by_layer = [h_tilde]
     caches_tilde: list[dict[str, Any]] = []
     per_layer: list[dict[str, Any]] = []
@@ -776,7 +868,7 @@ def hf_causal_lm_masked_prefill(
         attn_masks = bm["attn"]
         n_ell = masks.residual_masks[ell]
         blk = _hf_masked_block_prefill(h_tilde, foldeds[ell],
-                                       layer_configs[ell], cos, sin)
+                                       layer_configs[ell], cos_m, sin_m)
         y_plain_ell = plain["hidden_by_layer_plain"][ell + 1]
         ref = plain["layer_refs"][ell]
         cache_plain = plain["caches_plain"][ell]
@@ -799,7 +891,8 @@ def hf_causal_lm_masked_prefill(
         # Handoff N_ell -> N_{ell+1} (one [H,H] GEMM on the masked state).
         # Skipped entirely for a shared residual mask (handoff == identity).
         if masks.needs_handoff(ell):
-            h_tilde = blk["y_tilde"] @ masks.handoff(ell)
+            h_tilde = blk["y_tilde"] @ masks.handoff(ell).to(
+                blk["y_tilde"].dtype)
         else:
             h_tilde = blk["y_tilde"]
         hidden_tilde_by_layer.append(h_tilde)
@@ -814,14 +907,31 @@ def hf_causal_lm_masked_prefill(
     h_L_tilde = hidden_tilde_by_layer[-1]
     final_hidden_err = _mx(h_L_tilde, h_L_plain @ masks.residual_masks[-1])
 
-    out = final_norm_lm_head_masked(
-        h_L_tilde, h_L_plain, bw, masks.residual_mask_inverses[-1],
-        masks.vocab_mask, eps)
-    next_token_from_masked = greedy_sample(
-        recover_vocab_logits(out["logits_tilde"], masks.vocab_mask)[:, -1, :])
+    rec_dtype = config.recovery_dtype
+    out = _masked_output_boundary(
+        h_L_plain, h_L_tilde, bw, masks.residual_mask_inverses[-1],
+        masks.vocab_mask, eps, rec_dtype)
+    vm_rec = (masks.vocab_mask if rec_dtype is None
+              else _cast_vocab_mask(masks.vocab_mask, rec_dtype))
+    recovered_logits = recover_vocab_logits(out["logits_tilde"], vm_rec)
+    next_token_from_masked = greedy_sample(recovered_logits[:, -1, :])
     greedy_match = float(
         (plain["next_token_plain"] == next_token_from_masked)
-        .to(dtype).mean().item())
+        .to(torch.float32).mean().item())
+
+    recovered_err = out["metrics"]["recovered_logits_max_abs_error"]
+    diagnostics = _logit_diagnostics(
+        out["logits_plain"], recovered_logits, recovered_err)
+    diagnostics["embedding_boundary_max_abs_err"] = embedding_mask_err
+    diagnostics["layer_0_input_invariant_max_abs_err"] = handoff_errs[0]
+    diagnostics["layer_0_output_invariant_max_abs_err"] = (
+        per_layer[0]["final_output_max_abs_error"] if per_layer else 0.0)
+    diagnostics["final_norm_core_max_abs_err"] = \
+        out["metrics"]["final_norm_core_max_abs_error"]
+    diagnostics["masked_logits_max_abs_err"] = \
+        out["metrics"]["masked_logits_max_abs_error"]
+    diagnostics["recovered_logits_max_abs_err"] = recovered_err
+    diagnostics["greedy_token_match_rate"] = greedy_match
 
     metrics = {
         "embedding_mask_max_abs_error": embedding_mask_err,
@@ -830,9 +940,9 @@ def hf_causal_lm_masked_prefill(
         "final_hidden_max_abs_error": final_hidden_err,
         "masked_logits_max_abs_error":
             out["metrics"]["masked_logits_max_abs_error"],
-        "recovered_logits_max_abs_error":
-            out["metrics"]["recovered_logits_max_abs_error"],
+        "recovered_logits_max_abs_error": recovered_err,
         "greedy_token_match_rate": greedy_match,
+        "diagnostics": diagnostics,
     }
     metrics["allclose"] = bool(
         embedding_mask_err <= 1e-8
@@ -879,9 +989,15 @@ def hf_causal_lm_masked_greedy_decode(
     n_layers = len(layer_configs)
     bw = _boundary_weights(weights)
 
+    rt_dtype = config.folded_runtime_dtype
+    rec_dtype = config.recovery_dtype
+    runtime_cast = rt_dtype is not None and rt_dtype != dtype
+
     pre = hf_causal_lm_masked_prefill(input_ids, weights, layer_configs, masks,
                                       config)
     cos, sin, foldeds = pre["cos"], pre["sin"], pre["foldeds"]
+    cos_m, sin_m = (cos.to(rt_dtype), sin.to(rt_dtype)) if runtime_cast \
+        else (cos, sin)
     caches_plain = [dict(c) for c in pre["caches_plain"]]
     caches_tilde = [dict(c) for c in pre["caches_tilde"]]
 
@@ -901,6 +1017,8 @@ def hf_causal_lm_masked_greedy_decode(
         x0 = x_next_plain if pad is None else x_next_plain - pad
         h_plain = x0
         h_tilde = x0 @ n0
+        if runtime_cast:
+            h_tilde = h_tilde.to(rt_dtype)
 
         layer_out_errs: list[float] = []
         layer_key_errs: list[float] = []
@@ -915,7 +1033,7 @@ def hf_causal_lm_masked_greedy_decode(
                                            position)
             dec_m = _hf_masked_block_decode(h_tilde, caches_tilde[ell],
                                             foldeds[ell], layer_configs[ell],
-                                            cos, sin, position)
+                                            cos_m, sin_m, position)
             caches_plain[ell] = dec_p["cache"]
             caches_tilde[ell] = dec_m["cache"]
             layer_out_errs.append(_mx(dec_m["y_tilde"], dec_p["y"] @ n_ell))
@@ -927,28 +1045,30 @@ def hf_causal_lm_masked_greedy_decode(
                 _apply_heads(dec_p["appended_value"],
                              attn_masks["value_masks"])))
             h_plain = dec_p["y"]
-            h_tilde = (dec_m["y_tilde"] @ masks.handoff(ell)
-                       if masks.needs_handoff(ell) else dec_m["y_tilde"])
+            h_tilde = (dec_m["y_tilde"] @ masks.handoff(ell).to(
+                dec_m["y_tilde"].dtype)
+                if masks.needs_handoff(ell) else dec_m["y_tilde"])
 
         final_hidden_err = _mx(h_tilde, h_plain @ masks.residual_masks[-1])
         fn_plain = final_norm_lm_head_plain(h_plain, bw.final_norm_weight,
                                             bw.lm_head_weight, eps)
-        out = final_norm_lm_head_masked(
-            h_tilde, h_plain, bw, masks.residual_mask_inverses[-1],
-            masks.vocab_mask, eps)
+        out = _masked_output_boundary(
+            h_plain, h_tilde, bw, masks.residual_mask_inverses[-1],
+            masks.vocab_mask, eps, rec_dtype)
+        vm_rec = (masks.vocab_mask if rec_dtype is None
+                  else _cast_vocab_mask(masks.vocab_mask, rec_dtype))
         masked_logits_err = out["metrics"]["masked_logits_max_abs_error"]
         recovered_logits_err = out["metrics"]["recovered_logits_max_abs_error"]
         tok_plain = greedy_sample(fn_plain["logits"][:, -1, :])
         tok_masked = greedy_sample(
-            recover_vocab_logits(out["logits_tilde"],
-                                 masks.vocab_mask)[:, -1, :])
+            recover_vocab_logits(out["logits_tilde"], vm_rec)[:, -1, :])
         step_metrics.append({
             "step": step, "position": position,
             "final_hidden_error": final_hidden_err,
             "masked_logits_error": masked_logits_err,
             "recovered_logits_error": recovered_logits_err,
             "sampled_token_match": float(
-                (tok_plain == tok_masked).to(dtype).mean().item()),
+                (tok_plain == tok_masked).to(torch.float32).mean().item()),
             "per_layer_output_error": max(layer_out_errs),
             "per_layer_cache_append_key_error": max(layer_key_errs),
             "per_layer_cache_append_value_error": max(layer_value_errs),
@@ -961,7 +1081,7 @@ def hf_causal_lm_masked_greedy_decode(
     gen_plain_t = torch.stack(gen_plain, dim=1)     # [B, 1+decode_steps]
     gen_masked_t = torch.stack(gen_masked, dim=1)
     token_match_rate = float(
-        (gen_plain_t == gen_masked_t).to(dtype).mean().item())
+        (gen_plain_t == gen_masked_t).to(torch.float32).mean().item())
 
     return {
         "generated_plain_tokens": gen_plain_t,

@@ -75,6 +75,13 @@ class ModelScopeRealCheckpointProbeConfig:
     residual_mask_strategy: str = "shared"
     block_size: int = 64
     allow_dense_large_mask: bool = False
+    # Mixed-precision knobs (Stage 8.2 bf16). ``dtype`` governs the model load
+    # + HF baseline; the masked correctness pipeline folds/recovers/compares in
+    # the higher precisions below to avoid bf16 inverse/scaling drift.
+    folding_dtype: str = "float32"
+    folded_weight_runtime_dtype: str = "float32"
+    recovery_dtype: str = "float32"
+    compare_dtype: str = "float32"
     run_hf_baseline: bool = True
     run_extracted_plain: bool = True
     run_masked_runtime: bool = True
@@ -294,14 +301,21 @@ def _hf_baseline(model: Any, tokenizer: Any,
                  device: str) -> dict[str, Any]:
     enc = tokenizer(DEFAULT_PROMPT, return_tensors="pt")
     input_ids = enc["input_ids"]
+    # Explicit all-ones attention mask: the synthetic prompt has no padding,
+    # and pad_token == eos for Qwen, so HF cannot infer the mask otherwise.
+    attention_mask = enc.get("attention_mask")
+    if attention_mask is None:
+        attention_mask = torch.ones_like(input_ids)
     if device == "cuda" and torch.cuda.is_available():
         input_ids = input_ids.to("cuda")
+        attention_mask = attention_mask.to("cuda")
     _reset_peak(device)
     _sync(device)
     t0 = time.perf_counter()
     with torch.no_grad():
         out = model.generate(
-            input_ids, max_new_tokens=config.decode_steps, do_sample=False,
+            input_ids, attention_mask=attention_mask,
+            max_new_tokens=config.decode_steps, do_sample=False,
             num_beams=1, use_cache=True,
             pad_token_id=getattr(tokenizer, "pad_token_id", None)
             or getattr(tokenizer, "eos_token_id", None))
@@ -352,18 +366,30 @@ def run_modelscope_real_checkpoint_probe(
     torch.manual_seed(config.seed)
     device = config.device
     env = _collect_environment(device)
-    dtype = resolve_dtype(config.dtype, device)
+    model_dtype = resolve_dtype(config.dtype, device)          # load + forward
+    folding_dtype = resolve_dtype(config.folding_dtype, device)
+    runtime_dtype = resolve_dtype(config.folded_weight_runtime_dtype, device)
+    recovery_dtype = resolve_dtype(config.recovery_dtype, device)
+
+    def _name(dt: torch.dtype) -> str:
+        return str(dt).replace("torch.", "")
 
     base = {
         "stage": "8.2_modelscope_real_checkpoint",
         "config": asdict(config),
-        "resolved_dtype": str(dtype).replace("torch.", ""),
+        "resolved_dtypes": {
+            "model": _name(model_dtype), "folding": _name(folding_dtype),
+            "folded_weight_runtime": _name(runtime_dtype),
+            "recovery": _name(recovery_dtype),
+            "compare": _name(resolve_dtype(config.compare_dtype, device)),
+        },
+        "resolved_dtype": _name(model_dtype),  # back-compat
         "environment": env,
         "required_statement": REQUIRED_STATEMENT,
     }
 
     loaded = load_modelscope_checkpoint(config.model_id, config.cache_dir,
-                                        dtype, device)
+                                        model_dtype, device)
     if loaded["status"] != "ok":
         return {**base, "status": loaded["status"],
                 "reason": loaded.get("reason"),
@@ -406,20 +432,25 @@ def run_modelscope_real_checkpoint_probe(
                 return report
 
     # 2/3. Extract weights + masked correctness --------------------------
+    # The masked correctness pipeline folds/runs at `folding_dtype` and the
+    # plain reference too; only the optional runtime cast drops to a lower
+    # precision, and recovery/compare run at `recovery_dtype`.
+    folded_rt = runtime_dtype if runtime_dtype != folding_dtype else None
     skel_cfg = HFCausalLMSkeletonConfig(
         model_family=report["model_type"], prefill_seq_len=config.prefill_seq_len,
         decode_steps=config.decode_steps,
-        max_layers=max_layers, dtype=dtype, device=device, seed=config.seed,
-        mask_mode=config.mask_mode,
+        max_layers=max_layers, dtype=folding_dtype, device=device,
+        seed=config.seed, mask_mode=config.mask_mode,
         residual_mask_strategy=config.residual_mask_strategy,
         mask_block_size=config.block_size,
-        allow_dense_large_mask=config.allow_dense_large_mask)
+        allow_dense_large_mask=config.allow_dense_large_mask,
+        folded_runtime_dtype=folded_rt, recovery_dtype=recovery_dtype)
 
     try:
         _reset_peak(device)
         weights, layer_configs, extract_meta = \
             extract_hf_causal_lm_skeleton_weights(
-                model, model_config, max_layers=max_layers, dtype=dtype,
+                model, model_config, max_layers=max_layers, dtype=folding_dtype,
                 device=device)
         report["extraction"] = {
             "num_layers_extracted": extract_meta["num_layers_extracted"],
@@ -501,9 +532,11 @@ def run_modelscope_real_checkpoint_probe(
             "decode_steps": len(res["decode_step_metrics"]),
             "peak_cuda_memory": _cuda_mem(device),
         }
+        report["bf16_diagnostics"] = pre.get("diagnostics", {})
 
     report["boundary"] = _boundary_accounting(
-        config, hidden, vocab, dtype, n_extracted, masks.shared_residual_mask)
+        config, hidden, vocab, model_dtype, n_extracted,
+        masks.shared_residual_mask)
     report["caveats"] = build_caveats(config, partial)
 
     # free GPU memory promptly
