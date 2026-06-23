@@ -28,21 +28,60 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 from dataclasses import dataclass, field
-from typing import Any
+from pathlib import Path
+from typing import Any, Iterable
 
 from pllo.tee.runtime_api import TDX_GUEST_DEVICE
 
 __all__ = [
     "AttestationEvidence",
+    "DEFAULT_TRUSTED_BOUNDARY_PATHS",
+    "MANIFEST_EXCLUDES",
+    "build_trusted_boundary_manifest",
     "compute_runtime_hash",
+    "compute_runtime_hash_from_manifest",
     "runtime_report_data_hex",
+    "write_runtime_manifest",
+    "write_runtime_hash",
     "attest_boundary",
     "verify_evidence",
 ]
 
 # Report data in TDX is 64 bytes; SHA-512 is a natural exact fit.
 REPORT_DATA_BYTES = 64
+
+# Repo root: .../src/pllo/protocol/attestation.py -> parents[3].
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
+# The trusted-boundary / protocol code measured into the runtime hash. Globs are
+# expanded relative to the manifest base (repo root by default); __pycache__ is
+# never matched by the *.py glob. Override via ``build_trusted_boundary_manifest``.
+DEFAULT_TRUSTED_BOUNDARY_PATHS: tuple[str, ...] = (
+    "src/pllo/protocol/attestation.py",
+    "src/pllo/protocol/tee_gpu_messages.py",
+    "src/pllo/protocol/security_audit.py",
+    "src/pllo/tee/*.py",
+    "scripts/run_tee_gpu_protocol_demo.py",
+)
+
+# Explicitly NOT part of the manifest: per-request, secret, or volatile data.
+# Recorded in the manifest itself for auditability (and the paper).
+MANIFEST_EXCLUDES: tuple[str, ...] = (
+    "raw_prompt",
+    "input_ids",
+    "generated_token_ids",
+    "recovered_logits",
+    "mask_secrets",
+    "tokenizer_output",
+    "temporary_outputs",
+    "logs",
+    "model_weights",
+)
+
+# Package versions folded into runtime identity (best effort; "if available").
+_MANIFEST_PACKAGES = ("pllo", "numpy")
 
 
 @dataclass
@@ -86,6 +125,161 @@ def runtime_report_data_hex(runtime_hash: bytes) -> str:
         runtime_hash = runtime_hash + b"\x00" * (
             REPORT_DATA_BYTES - len(runtime_hash))
     return runtime_hash.hex()
+
+
+# ---------------------------------------------------------------------------
+# Trusted-boundary manifest (the runtime-hash recipe)
+# ---------------------------------------------------------------------------
+
+
+def _rel_path(path: Path, base: Path) -> str:
+    """Path relative to ``base`` (POSIX) so the manifest is location-independent.
+
+    Falls back to the file name if ``path`` is not under ``base`` (e.g. a temp
+    file in a test), keeping the manifest deterministic within a run."""
+    try:
+        return path.resolve().relative_to(base.resolve()).as_posix()
+    except ValueError:
+        return path.name
+
+
+def _expand_paths(paths: Iterable[str], base: Path) -> list[Path]:
+    """Resolve each entry against ``base``; expand glob entries; drop pycache."""
+    out: list[Path] = []
+    for entry in paths:
+        if any(c in entry for c in "*?[]"):
+            for m in sorted(base.glob(entry)):
+                if "__pycache__" in m.parts:
+                    continue
+                out.append(m)
+        else:
+            out.append(base / entry)
+    # de-dup while preserving order
+    seen: set[str] = set()
+    uniq: list[Path] = []
+    for p in out:
+        key = str(p.resolve())
+        if key not in seen:
+            seen.add(key)
+            uniq.append(p)
+    return uniq
+
+
+def _package_versions() -> dict[str, str | None]:
+    versions: dict[str, str | None] = {}
+    try:
+        from importlib import metadata as _md
+    except Exception:                                   # pragma: no cover
+        return {name: None for name in _MANIFEST_PACKAGES}
+    for name in _MANIFEST_PACKAGES:
+        try:
+            versions[name] = _md.version(name)
+        except Exception:
+            versions[name] = None
+    return versions
+
+
+def build_trusted_boundary_manifest(
+    paths: Iterable[str] | None = None,
+    metadata: dict[str, Any] | None = None,
+    *,
+    base: Path | str | None = None,
+) -> dict[str, Any]:
+    """Build the deterministic trusted-boundary manifest (a canonical dict).
+
+    Contents:
+
+    * ``files`` -- for each measured trusted-boundary source file: repo-relative
+      path + SHA-256 digest + size (sorted by path). This binds the attestation
+      to the actual code artifact, not just a config string.
+    * ``runtime_identity`` -- ``protocol_version``, ``boundary_backend``,
+      ``allowed_gpu_backend``, ``expected_mr_td`` (if supplied), the Python
+      major.minor, and best-effort package versions.
+    * ``excludes`` -- the per-request / secret / volatile data explicitly NOT
+      measured (raw prompt, input_ids, generated tokens, mask secrets, recovered
+      logits, tokenizer output, temp outputs, logs, model weights).
+
+    The manifest never contains prompt text, token ids, mask secrets, or model
+    weights -- only file digests + public runtime identity. Hash it with
+    :func:`compute_runtime_hash_from_manifest`."""
+    base_path = Path(base) if base is not None else REPO_ROOT
+    selected = list(paths) if paths is not None \
+        else list(DEFAULT_TRUSTED_BOUNDARY_PATHS)
+
+    files: list[dict[str, Any]] = []
+    for p in _expand_paths(selected, base_path):
+        rel = _rel_path(p, base_path)
+        if p.is_file():
+            data = p.read_bytes()
+            files.append({"path": rel, "sha256": hashlib.sha256(data).hexdigest(),
+                          "size": len(data)})
+        else:
+            files.append({"path": rel, "sha256": None, "size": 0,
+                          "missing": True})
+    files.sort(key=lambda e: e["path"])
+
+    md = dict(metadata or {})
+    runtime_identity = {
+        "protocol_version": md.get("protocol_version", "8.5"),
+        "boundary_backend": md.get("boundary_backend"),
+        "allowed_gpu_backend": md.get("allowed_gpu_backend"),
+        "expected_mr_td": (md.get("expected_mr_td").lower()
+                           if md.get("expected_mr_td") else None),
+        "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "packages": _package_versions(),
+    }
+    # carry through any extra public identity keys the caller supplied
+    for k, v in md.items():
+        runtime_identity.setdefault(k, v)
+
+    return {
+        "kind": "trusted_boundary_manifest",
+        "manifest_version": "1",
+        "files": files,
+        "runtime_identity": runtime_identity,
+        "excludes": list(MANIFEST_EXCLUDES),
+    }
+
+
+def compute_runtime_hash_from_manifest(manifest: dict[str, Any]) -> str:
+    """64-byte SHA-512 hex over the canonicalised manifest (== report_data hex).
+
+    Canonicalisation is sorted-key, separator-tight JSON so the same manifest
+    always yields the same 128-hex-char digest on the TDX VM and in CI."""
+    canon = json.dumps(manifest, sort_keys=True, separators=(",", ":"),
+                       default=str).encode("utf-8")
+    return hashlib.sha512(canon).hexdigest()            # 64 bytes -> 128 hex
+
+
+def write_runtime_manifest(
+    path: str | Path,
+    paths: Iterable[str] | None = None,
+    metadata: dict[str, Any] | None = None,
+    *,
+    base: Path | str | None = None,
+) -> dict[str, Any]:
+    """Build + write the manifest as indented JSON; return the manifest dict."""
+    manifest = build_trusted_boundary_manifest(paths, metadata, base=base)
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
+    return manifest
+
+
+def write_runtime_hash(
+    path: str | Path,
+    paths: Iterable[str] | None = None,
+    metadata: dict[str, Any] | None = None,
+    *,
+    base: Path | str | None = None,
+) -> str:
+    """Build the manifest, compute the runtime hash, write the hex; return it."""
+    manifest = build_trusted_boundary_manifest(paths, metadata, base=base)
+    rh = compute_runtime_hash_from_manifest(manifest)
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(rh + "\n", encoding="utf-8")
+    return rh
 
 
 def _jwt_parts(evidence: dict[str, Any]) -> tuple[bool, int]:
@@ -162,31 +356,47 @@ def verify_evidence(
 
 
 def attest_boundary(
-    runtime_components: dict[str, Any],
+    runtime_components: dict[str, Any] | None = None,
     *,
+    runtime_hash: bytes | str | None = None,
     evidence: dict[str, Any] | str | None = None,
     expected_mr_td: str | None = None,
     tdx_guest_device: str = TDX_GUEST_DEVICE,
 ) -> AttestationEvidence:
-    """Attest the trusted boundary, binding ``runtime_components`` to the quote.
+    """Attest the trusted boundary, binding the runtime hash into the quote.
+
+    Provide the runtime hash one of two ways:
+
+    * ``runtime_hash`` -- a precomputed 64-byte digest (bytes or 128-char hex),
+      normally :func:`compute_runtime_hash_from_manifest` over the trusted-
+      boundary manifest (the preferred, code-binding recipe); or
+    * ``runtime_components`` -- a legacy config dict hashed via
+      :func:`compute_runtime_hash` (weaker; does not bind the code artifact).
+
+    Then:
 
     * ``evidence`` given (dict or path to JSON produced on the TDX VM) -> verify
-      it against the computed runtime hash (real, evidence-backed path).
+      it against the runtime hash (real, evidence-backed path).
     * no evidence, TDX guest device present -> report ``tdx`` available but mark
       that evidence was not supplied (quote not generated here).
     * otherwise -> ``simulated``: still report the runtime hash the boundary
       would bind, so deployment can be prepared/tested off-TDX.
 
     The runtime hash never depends on secrets; it is a public identity binding."""
-    runtime_hash = compute_runtime_hash(runtime_components)
-    rd_hex = runtime_report_data_hex(runtime_hash)
+    if runtime_hash is not None:
+        rh = (bytes.fromhex(runtime_hash) if isinstance(runtime_hash, str)
+              else bytes(runtime_hash))
+    elif runtime_components is not None:
+        rh = compute_runtime_hash(runtime_components)
+    else:
+        raise ValueError("provide runtime_hash or runtime_components")
+    rd_hex = runtime_report_data_hex(rh)
 
     if evidence is not None:
         if isinstance(evidence, str):
             evidence = json.loads(
-                __import__("pathlib").Path(evidence).read_text(encoding="utf-8"))
-        return verify_evidence(evidence, runtime_hash,
-                               expected_mr_td=expected_mr_td)
+                Path(evidence).read_text(encoding="utf-8"))
+        return verify_evidence(evidence, rh, expected_mr_td=expected_mr_td)
 
     device_present = False
     try:

@@ -18,9 +18,13 @@ from __future__ import annotations
 from pllo.protocol.attestation import (
     AttestationEvidence,
     attest_boundary,
+    build_trusted_boundary_manifest,
     compute_runtime_hash,
+    compute_runtime_hash_from_manifest,
     runtime_report_data_hex,
     verify_evidence,
+    write_runtime_hash,
+    write_runtime_manifest,
 )
 from pllo.protocol.gpu_worker import (
     GpuBackend,
@@ -53,9 +57,13 @@ from pllo.protocol.tee_gpu_messages import (
 __all__ = [
     "AttestationEvidence",
     "attest_boundary",
+    "build_trusted_boundary_manifest",
     "compute_runtime_hash",
+    "compute_runtime_hash_from_manifest",
     "runtime_report_data_hex",
     "verify_evidence",
+    "write_runtime_hash",
+    "write_runtime_manifest",
     "GpuBackend",
     "LocalGpuWorker",
     "MockGpuBackend",

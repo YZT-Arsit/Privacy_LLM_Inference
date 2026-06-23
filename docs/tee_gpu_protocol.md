@@ -106,22 +106,47 @@ binding** verifies (`expected_runtime_hash == report_data`).
 `attestation.py` reproduces the verification (it does **not** generate a quote —
 that is the deployment's attestation client):
 
-- `compute_runtime_hash(components)` — deterministic 64-byte SHA-512 over the
-  boundary's *public* identity/config (component name + version + boundary
-  config). No secrets, no prompt. This is what the boundary binds into the
-  quote's 64-byte `report_data`.
+**Runtime-hash recipe — the trusted-boundary manifest.** The runtime hash is
+SHA-512 over a canonical *manifest* that binds the attestation token to the
+actual boundary **code artifact**, not just a config string:
+
+- `build_trusted_boundary_manifest(paths, metadata)` →
+  - `files`: SHA-256 digest + size for each measured trusted-boundary source —
+    `src/pllo/protocol/{attestation,tee_gpu_messages,security_audit}.py`,
+    `src/pllo/tee/*.py`, `scripts/run_tee_gpu_protocol_demo.py` (repo-relative,
+    sorted);
+  - `runtime_identity`: `protocol_version`, `boundary_backend`,
+    `allowed_gpu_backend`, `expected_mr_td` (if supplied), Python major.minor,
+    best-effort package versions;
+  - `excludes`: the per-request / secret / volatile data explicitly **not**
+    measured — raw prompt, `input_ids`, generated tokens, recovered logits, mask
+    secrets, tokenizer output, temp outputs, logs, model weights.
+- `compute_runtime_hash_from_manifest(manifest)` → 64-byte SHA-512 hex (==
+  `report_data` hex). Sorted-key canonical JSON ⇒ identical on the VM and in CI.
+- `write_runtime_manifest(path)` / `write_runtime_hash(path)` — emit the manifest
+  JSON and the bound hash for the deployment's attestation client.
+- `compute_runtime_hash(components)` — the older config-dict recipe is kept for
+  back-compat but does **not** bind the code artifact; prefer the manifest.
+
+> Use the **same metadata** (notably `expected_mr_td`) when writing the hash and
+> when verifying — it is part of `runtime_identity`, so a different value yields a
+> different binding.
+
 - `verify_evidence(evidence, runtime_hash, expected_mr_td=...)` — checks
   `tee==tdx`, `debug==false`, a 3-part signed JWT is present, `report_data`
   equals the runtime hash, and (optionally) `mr_td` matches. Returns
   `AttestationEvidence`; `verified` is the conjunction.
-- `attest_boundary(...)` — with `--attestation-evidence <json>` (produced on the
-  VM) it verifies the real binding; on the TDX guest without evidence it reports
-  `tdx` available; off-TDX it degrades to `simulated` while still exposing the
-  runtime hash the boundary *would* bind, so deployment is testable in CI.
+- `attest_boundary(runtime_hash=...|runtime_components=..., evidence=...)` — with
+  `--attestation-evidence <json>` (produced on the VM) it verifies the real
+  binding; on the TDX guest without evidence it reports `tdx` available; off-TDX
+  it degrades to `simulated` while still exposing the runtime hash the boundary
+  *would* bind, so deployment is testable in CI.
 
 The demo adds an `attestation` block + `boundary_tee_type`, `boundary_attested`,
-`runtime_hash`, `runtime_hash_bound`, `mr_td`. `tee_used_on_gpu` stays `False`
-regardless — attestation covers the *boundary*, never the GPU worker.
+`runtime_hash`, `runtime_hash_bound`, `runtime_manifest_path`, `mr_td`, and the
+flags `--write-runtime-manifest` / `--write-runtime-hash`. `tee_used_on_gpu`
+stays `False` regardless — attestation covers the *boundary*, never the GPU
+worker.
 
 > The JWT signature / certificate chain is verified by the remote attestation
 > service; this module verifies the tee/debug/binding/`mr_td` *claims*. We do not

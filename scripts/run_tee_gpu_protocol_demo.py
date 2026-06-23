@@ -34,7 +34,13 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from dataclasses import asdict  # noqa: E402
 
-from pllo.protocol.attestation import attest_boundary  # noqa: E402
+from pllo.protocol.attestation import (  # noqa: E402
+    attest_boundary,
+    build_trusted_boundary_manifest,
+    compute_runtime_hash_from_manifest,
+    write_runtime_hash,
+    write_runtime_manifest,
+)
 from pllo.protocol.gpu_worker import LocalGpuWorker  # noqa: E402
 from pllo.protocol.orchestrator import run_protocol  # noqa: E402
 from pllo.protocol.security_audit import (  # noqa: E402
@@ -52,28 +58,30 @@ def _bool(s: str) -> bool:
     return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
-def boundary_runtime_components(boundary_backend: str, gpu_backend: str,
-                                hidden_size: int, vocab_size: int) -> dict:
-    """Public identity bound into the TDX quote's report_data (no secrets)."""
+def boundary_manifest_metadata(boundary_backend: str, gpu_backend: str,
+                               expected_mr_td: str | None) -> dict:
+    """Public runtime identity folded into the manifest (no secrets)."""
     return {
-        "component": "pllo-tee-boundary",
-        "stage": "8.5",
-        "version": "1",
+        "protocol_version": "8.5",
         "boundary_backend": boundary_backend,
-        "gpu_backend": gpu_backend,
-        "mask_mode": "signed_permutation",
-        "hidden_size": hidden_size,
-        "vocab_size": vocab_size,
+        "allowed_gpu_backend": gpu_backend,
+        "expected_mr_td": expected_mr_td,
     }
 
 
-def attach_attestation(report: dict, *, hidden_size: int, vocab_size: int,
-                       evidence: str | None, expected_mr_td: str | None) -> None:
-    """Attest the trusted boundary and fold the result into ``report``."""
-    components = boundary_runtime_components(
-        report["boundary_backend"], report["gpu_backend"], hidden_size,
-        vocab_size)
-    ev = attest_boundary(components, evidence=evidence,
+def attach_attestation(report: dict, *, evidence: str | None,
+                       expected_mr_td: str | None,
+                       manifest_path: str | None = None) -> None:
+    """Attest the trusted boundary (manifest recipe) and fold into ``report``.
+
+    The runtime hash is SHA-512 over the trusted-boundary manifest (source-file
+    digests + public runtime identity), which binds the attestation token to the
+    actual boundary code artifact rather than a config string."""
+    metadata = boundary_manifest_metadata(
+        report["boundary_backend"], report["gpu_backend"], expected_mr_td)
+    manifest = build_trusted_boundary_manifest(metadata=metadata)
+    runtime_hash = compute_runtime_hash_from_manifest(manifest)
+    ev = attest_boundary(runtime_hash=runtime_hash, evidence=evidence,
                          expected_mr_td=expected_mr_td)
     report["attestation"] = asdict(ev)
     report["boundary_tee_type"] = ev.tee_type
@@ -81,6 +89,8 @@ def attach_attestation(report: dict, *, hidden_size: int, vocab_size: int,
     report["runtime_hash"] = ev.runtime_hash_hex
     report["runtime_hash_bound"] = ev.runtime_hash_bound
     report["mr_td"] = ev.mr_td
+    report["runtime_manifest_path"] = manifest_path
+    report["runtime_manifest_file_count"] = len(manifest["files"])
 
 
 def build_report(prompt: str, boundary_backend: str, gpu_backend: str,
@@ -235,6 +245,8 @@ def _write_md(path: Path, r: dict) -> None:
             f"- quote_status: `{att['quote_status']}`",
             f"- runtime_hash: `{r['runtime_hash']}`",
             f"- runtime_hash_bound: {r['runtime_hash_bound']}",
+            f"- runtime_manifest_path: `{r.get('runtime_manifest_path')}` "
+            f"(files={r.get('runtime_manifest_file_count')})",
             f"- mr_td: `{r['mr_td']}`",
             f"- debug: {att['debug']}",
             f"- jwt_present: {att['jwt_present']} (parts={att['jwt_parts']})",
@@ -273,6 +285,10 @@ def main() -> int:
                          "(tee/mr_td/report_data/jwt); verifies the binding")
     ap.add_argument("--expected-mr-td", default=None,
                     help="expected mr_td to match against the evidence")
+    ap.add_argument("--write-runtime-manifest", default=None,
+                    help="write the trusted-boundary manifest JSON to this path")
+    ap.add_argument("--write-runtime-hash", default=None,
+                    help="write the runtime hash (hex) to this path")
     ap.add_argument("--output-json", default="outputs/tee_gpu_protocol.json")
     ap.add_argument("--output-md", default="outputs/tee_gpu_protocol.md")
     args = ap.parse_args()
@@ -291,10 +307,18 @@ def main() -> int:
             hidden_size=args.hidden_size, vocab_size=args.vocab_size,
             seq_len=args.seq_len, seed=args.seed)
 
-    attach_attestation(report, hidden_size=args.hidden_size,
-                       vocab_size=args.vocab_size,
-                       evidence=args.attestation_evidence,
-                       expected_mr_td=args.expected_mr_td)
+    # Write manifest / hash with the SAME metadata the attestation uses, so the
+    # written hash matches report["runtime_hash"].
+    md = boundary_manifest_metadata(args.boundary_backend, args.gpu_backend,
+                                    args.expected_mr_td)
+    if args.write_runtime_manifest:
+        write_runtime_manifest(args.write_runtime_manifest, metadata=md)
+    if args.write_runtime_hash:
+        write_runtime_hash(args.write_runtime_hash, metadata=md)
+
+    attach_attestation(report, evidence=args.attestation_evidence,
+                       expected_mr_td=args.expected_mr_td,
+                       manifest_path=args.write_runtime_manifest)
 
     if args.output_json:
         p = Path(args.output_json)
@@ -328,6 +352,8 @@ def main() -> int:
     print(f"runtime_hash={report['runtime_hash'][:32]}... "
           f"runtime_hash_bound={report['runtime_hash_bound']} "
           f"mr_td={report['mr_td']}")
+    print(f"runtime_manifest_path={report['runtime_manifest_path']} "
+          f"(files={report['runtime_manifest_file_count']})")
 
     if report["audit_performed"] and not report["audit_passed"]:
         print("\nDEMO FAILED (audit)")
