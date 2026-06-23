@@ -381,3 +381,56 @@ def test_alignment_and_theta_give_hf_logit_parity() -> None:
     assert int(la.argmax(-1).item()) == hf_top1          # aligned top1 == HF
     assert rell2(la, hf_logits) < 1e-3                    # aligned near-exact
     assert rell2(la, hf_logits) < rell2(ln, hf_logits)   # alignment is better
+
+
+# ---------------------------------------------------------------------------
+# Teacher-forced HF-prefix evaluation
+# ---------------------------------------------------------------------------
+
+
+def test_masked_prefill_full_logits_plain_masked_agree() -> None:
+    from pllo.hf_wrappers.qwen_memory_optimized import masked_prefill_full_logits
+    model, mc = _tiny_model(4)
+    ids = torch.randint(0, mc.vocab_size, (1, 16))
+    cfg = MemoryOptimizedConfig(num_layers=4, seq_len=16, max_new_tokens=1,
+                                device="cpu", dtype="float32",
+                                folding_dtype="float32",
+                                folded_weight_device="cpu",
+                                mlp_down_chunk_size=8, seed=7)
+    plain, masked = masked_prefill_full_logits(model, mc, ids, cfg)
+    assert plain.shape == masked.shape
+    assert plain.shape[1] == 16                       # full-sequence logits
+    # masked recovery reproduces the plain logits at every position
+    assert torch.equal(plain.argmax(-1), masked.argmax(-1))
+    assert (plain - masked).abs().max().item() < 1e-3
+
+
+def test_teacher_forced_eval_parity_and_topk(monkeypatch) -> None:
+    import sys
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import run_qwen7b_full_layer_masked_memory_optimized as SCRIPT
+    model, mc = _tiny_model(4)
+    ids = torch.randint(0, mc.vocab_size, (1, 20))
+    with torch.no_grad():
+        out = model.generate(ids, max_new_tokens=6, do_sample=False,
+                             num_beams=1, use_cache=True,
+                             pad_token_id=mc.eos_token_id)
+    hf_ref = out[0, ids.shape[1]:].tolist()
+    cfg = MemoryOptimizedConfig(num_layers=4, seq_len=ids.shape[1],
+                                max_new_tokens=6, device="cpu", dtype="float32",
+                                folding_dtype="float32",
+                                folded_weight_device="cpu",
+                                mlp_down_chunk_size=32, seed=7)
+    tf = SCRIPT.teacher_forced_eval(model, mc, ids, hf_ref, cfg,
+                                    debug_topk=True, topk=5)
+    assert tf["teacher_forced_steps_evaluated"] == len(hf_ref)
+    # under HF's prefix the internal plain + masked reproduce HF's next token
+    assert tf["teacher_forced_top1_match_rate_hf_masked"] == 1.0
+    assert tf["teacher_forced_top1_match_rate_hf_plain"] == 1.0
+    assert tf["teacher_forced_top1_match_rate_plain_masked"] == 1.0
+    assert tf["teacher_forced_max_logit_error_hf_masked"] < 1e-2
+    rows = tf["teacher_forced_topk_debug"]
+    assert len(rows) == len(hf_ref)
+    r0 = rows[0]
+    assert len(r0["hf_topk"]) == 5 and len(r0["masked_topk"]) == 5
+    assert "hf_top1_top2_margin" in r0 and "masked_top1_top2_margin" in r0

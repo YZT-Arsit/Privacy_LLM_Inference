@@ -29,6 +29,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from pllo.hf_wrappers.qwen_memory_optimized import (  # noqa: E402
     MemoryOptimizedConfig,
+    masked_prefill_full_logits,
     run_memory_optimized_masked,
 )
 
@@ -149,6 +150,69 @@ def compare_generations(hf_ids, plain_ids, masked_ids) -> dict:
     }
 
 
+def teacher_forced_eval(model, model_config, input_ids, hf_ref_ids, cfg,
+                        debug_topk: bool, topk: int) -> dict:
+    """Per-step next-token parity under HF's reference prefix.
+
+    Builds the teacher sequence ``prompt + HF_reference_tokens`` and compares,
+    at each generated position, the next-token logits of HF / internal-plain /
+    masked using the SAME prefix. One forward each (causal => position p sees
+    exactly ``prompt + ref[:t]``), so a single near-tie token cannot cascade as
+    in free-running greedy decode."""
+    import torch as _t
+    from dataclasses import replace
+    device = input_ids.device
+    L = int(input_ids.shape[1])
+    N = len(hf_ref_ids)
+    if N == 0:
+        return {"teacher_forced_steps_evaluated": 0}
+    ref = _t.tensor([list(hf_ref_ids)], dtype=_t.long, device=device)
+    teacher = _t.cat([input_ids, ref], dim=1)            # [1, L+N]
+    am = _t.ones_like(teacher)
+    with _t.no_grad():
+        hf_full = model(input_ids=teacher, attention_mask=am, use_cache=False,
+                        return_dict=True).logits          # [1, L+N, V]
+    tf_cfg = replace(cfg, seq_len=int(teacher.shape[1]), max_new_tokens=1)
+    plain_full, masked_full = masked_prefill_full_logits(
+        model, model_config, teacher, tf_cfg)
+
+    hp = hm = pm = 0
+    ep, em = [], []
+    rows = []
+    for t in range(N):
+        pos = L - 1 + t                                   # predicts ref[t]
+        hl, pl, ml = hf_full[0, pos], plain_full[0, pos], masked_full[0, pos]
+        h1, p1, m1 = int(hl.argmax()), int(pl.argmax()), int(ml.argmax())
+        hp += (h1 == p1); hm += (h1 == m1); pm += (p1 == m1)
+        ep.append(float((pl.float() - hl.float()).abs().max().item()))
+        em.append(float((ml.float() - hl.float()).abs().max().item()))
+        if debug_topk:
+            def _tk(x):
+                v, i = x.float().topk(min(topk, x.numel()))
+                margin = float((v[0] - v[1]).item()) if v.numel() > 1 else 0.0
+                return i.tolist(), round(margin, 5)
+            hti, hmar = _tk(hl); pti, pmar = _tk(pl); mti, mmar = _tk(ml)
+            rows.append({"step": t, "hf_top1": h1, "plain_top1": p1,
+                         "masked_top1": m1, "hf_topk": hti, "plain_topk": pti,
+                         "masked_topk": mti, "hf_top1_top2_margin": hmar,
+                         "plain_top1_top2_margin": pmar,
+                         "masked_top1_top2_margin": mmar,
+                         "hf_eq_masked": h1 == m1})
+    res = {
+        "teacher_forced_steps_evaluated": N,
+        "teacher_forced_top1_match_rate_hf_plain": round(hp / N, 6),
+        "teacher_forced_top1_match_rate_hf_masked": round(hm / N, 6),
+        "teacher_forced_top1_match_rate_plain_masked": round(pm / N, 6),
+        "teacher_forced_avg_logit_error_hf_plain": round(sum(ep) / N, 6),
+        "teacher_forced_max_logit_error_hf_plain": round(max(ep), 6),
+        "teacher_forced_avg_logit_error_hf_masked": round(sum(em) / N, 6),
+        "teacher_forced_max_logit_error_hf_masked": round(max(em), 6),
+    }
+    if debug_topk:
+        res["teacher_forced_topk_debug"] = rows
+    return res
+
+
 def _hf_generate(model, tokenizer, input_ids, attention_mask, max_new_tokens):
     """Official HF greedy generate on the SAME input_ids/attention_mask."""
     eos = getattr(tokenizer, "eos_token_id", None)
@@ -231,6 +295,13 @@ def main() -> int:
                     const=True, default=True)
     ap.add_argument("--compare-hf-generate", type=_str2bool, nargs="?",
                     const=True, default=True)
+    ap.add_argument("--teacher-force-hf-prefix", type=_str2bool, nargs="?",
+                    const=True, default=False,
+                    help="per-step next-token parity under HF's reference "
+                         "prefix (avoids free-running cascade after a near-tie)")
+    ap.add_argument("--debug-topk-margins", type=_str2bool, nargs="?",
+                    const=True, default=False)
+    ap.add_argument("--topk", type=int, default=5)
     ap.add_argument("--seed", type=int, default=2035)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--output-json",
@@ -308,6 +379,17 @@ def main() -> int:
         cmp = compare_generations(hf_ids, plain_ids, masked_ids)
         report.update(cmp)                           # sets metrics + status
         report["execution_status"] = run_status      # preserve exec status
+        # free-running (cascade-prone) metrics, kept separate from teacher-forced
+        report["free_running_sequence_exact_match"] = \
+            cmp["sequence_exact_match_hf_masked"]
+        report["free_running_token_match_rate"] = \
+            cmp["hf_vs_masked_token_match_rate"]
+
+        # ---- teacher-forced HF-prefix parity (per-step, no cascade) ------
+        if args.teacher_force_hf_prefix or args.debug_topk_margins:
+            tf = teacher_forced_eval(model, model_config, input_ids, hf_ids,
+                                     cfg, args.debug_topk_margins, args.topk)
+            report.update(tf)
     else:
         report["execution_status"] = run_status
 
@@ -353,6 +435,21 @@ def _write_md(path: Path, r: dict) -> None:
                  f"plain==masked **{r['sequence_exact_match_plain_masked']}**")
         L.append(f"- hf_text: `{(r.get('hf_generated_text') or '')[:160]!r}`")
         L.append(f"- masked_text: `{(r.get('masked_generated_text') or '')[:160]!r}`")
+    if "teacher_forced_steps_evaluated" in r:
+        L.append("")
+        L.append("## Teacher-forced HF-prefix parity (per-step, no cascade)")
+        L.append(f"- steps_evaluated: **{r.get('teacher_forced_steps_evaluated')}**")
+        L.append(f"- top1 match: hf_plain **"
+                 f"{r.get('teacher_forced_top1_match_rate_hf_plain')}** | "
+                 f"hf_masked **{r.get('teacher_forced_top1_match_rate_hf_masked')}**"
+                 f" | plain_masked **"
+                 f"{r.get('teacher_forced_top1_match_rate_plain_masked')}**")
+        L.append(f"- logit error (hf vs masked): avg **"
+                 f"{r.get('teacher_forced_avg_logit_error_hf_masked')}** max **"
+                 f"{r.get('teacher_forced_max_logit_error_hf_masked')}**")
+        L.append(f"- free-running: seq_exact **"
+                 f"{r.get('free_running_sequence_exact_match')}** token_rate **"
+                 f"{r.get('free_running_token_match_rate')}**")
     if r.get("status") == "stopped_oom":
         L.append(f"- OOM layer index: **{r.get('oom_layer_index')}**")
     L.append("")
@@ -375,6 +472,15 @@ def _write_csv(path: Path, r: dict) -> None:
         "plain_vs_masked_token_match_rate":
             r.get("plain_vs_masked_token_match_rate"),
         "sequence_exact_match_hf_masked": r.get("sequence_exact_match_hf_masked"),
+        "free_running_token_match_rate": r.get("free_running_token_match_rate"),
+        "teacher_forced_steps_evaluated":
+            r.get("teacher_forced_steps_evaluated"),
+        "teacher_forced_top1_match_rate_hf_masked":
+            r.get("teacher_forced_top1_match_rate_hf_masked"),
+        "teacher_forced_top1_match_rate_plain_masked":
+            r.get("teacher_forced_top1_match_rate_plain_masked"),
+        "teacher_forced_max_logit_error_hf_masked":
+            r.get("teacher_forced_max_logit_error_hf_masked"),
         "peak_memory_max_allocated_mb": (r.get("peak_memory") or {})
             .get("max_allocated_mb"),
     }

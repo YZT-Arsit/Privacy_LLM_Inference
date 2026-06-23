@@ -69,6 +69,7 @@ __all__ = [
     "chunked_folded_down_projection",
     "fold_layer_attention_and_up",
     "hf_rope_interleave_index",
+    "masked_prefill_full_logits",
     "run_memory_optimized_masked",
 ]
 
@@ -548,6 +549,80 @@ def run_memory_optimized_masked(
     )
     instr.empty_cache()
     return report
+
+
+def masked_prefill_full_logits(
+    model: Any, model_config: Any, input_ids: torch.Tensor,
+    config: MemoryOptimizedConfig,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Single streaming masked prefill over ``input_ids``; returns the
+    full-sequence ``(plain_logits, recovered_logits)`` of shape ``[B, T, V]``.
+
+    Used for teacher-forced parity (logits at every position under a fixed
+    prefix), so a single near-tie token cannot cascade as it does in
+    free-running greedy decode. No decode loop, no token sampling."""
+    compute_device = torch.device(config.device)
+    fold_device = torch.device(config.folded_weight_device)
+    fdtype = _resolve_dtype(config.folding_dtype)
+    chunk = config.mlp_down_chunk_size
+    base = _base_model(model)
+    n = len(base.layers) if config.num_layers is None else min(
+        int(config.num_layers), len(base.layers))
+    input_ids = input_ids.to(compute_device)
+    boundary = _extract_boundary(model, model_config, fdtype, compute_device)
+    bw = _boundary_weights(boundary)
+    eps = float(getattr(model_config, "rms_norm_eps", 1e-5))
+    layer_configs = [
+        infer_config_from_hf_layer(base.layers[i], model_config, fdtype,
+                                   str(fold_device)) for i in range(n)]
+    T = int(input_ids.shape[1])
+    skel_cfg = HFCausalLMSkeletonConfig(
+        model_family=str(getattr(model_config, "model_type", "qwen2")),
+        prefill_seq_len=T, decode_steps=0, max_layers=n, dtype=fdtype,
+        device=str(fold_device), seed=config.seed, mask_mode=config.mask_mode,
+        residual_mask_strategy=config.residual_mask_strategy,
+        mask_block_size=config.mask_block_size)
+    masks = generate_hf_causal_lm_masks(boundary, layer_configs, skel_cfg)
+    n0 = masks.residual_masks[0].to(compute_device)
+    cos, sin = build_rope_cache(T + 1, layer_configs[0].head_dim,
+                               layer_configs[0].rope_theta, fdtype,
+                               compute_device)
+    instr = MemoryInstrument(config.device)
+
+    h_plain = trusted_embedding_lookup(input_ids, boundary.embed_tokens_weight)
+    h_tilde = h_plain @ n0
+    for ell in range(n):
+        cfg_l = layer_configs[ell]
+        bm = masks.layer_block_masks[ell]
+        w = extract_hf_single_block_weights(base.layers[ell], fdtype,
+                                            str(fold_device))
+        if config.align_rope_to_hf:
+            w = align_qk_weights_to_hf_rope(w, cfg_l.num_heads,
+                                            cfg_l.num_key_value_heads,
+                                            cfg_l.head_dim)
+        wc = w if fold_device == compute_device else _block_to(w, compute_device)
+        cfg_c = _cfg_to(cfg_l, compute_device)
+        plain = hf_single_block_plain_prefill(h_plain, wc, cfg_c, cos, sin)
+        folded = fold_layer_attention_and_up(w, bm)
+        if fold_device != compute_device:
+            folded = _move_folded(folded, compute_device)
+        down_info = (w.down_proj_weight, bm["perm"], bm["n_res"],
+                     None if w.down_proj_bias is None
+                     else (w.down_proj_bias @ bm["n_res"]))
+        masked = _masked_block_prefill_chunked(h_tilde, folded, down_info,
+                                               cfg_c, cos, sin, chunk)
+        h_plain, h_tilde = plain["y"], masked["y_tilde"]
+        del w, wc, folded, down_info, plain, masked
+        if config.empty_cache_between_layers:
+            instr.empty_cache()
+    fn_plain = final_norm_lm_head_plain(h_plain, bw.final_norm_weight,
+                                        bw.lm_head_weight, eps)
+    mo = final_norm_lm_head_masked(
+        h_tilde, h_plain, bw, masks.residual_mask_inverses[-1].to(compute_device),
+        _vocab_to(masks.vocab_mask, compute_device), eps)
+    recovered = recover_vocab_logits(mo["logits_tilde"],
+                                     _vocab_to(masks.vocab_mask, compute_device))
+    return fn_plain["logits"], recovered
 
 
 # ---------------------------------------------------------------------------
