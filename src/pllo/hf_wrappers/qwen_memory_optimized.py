@@ -65,10 +65,54 @@ from pllo.ops.rope import build_rope_cache
 __all__ = [
     "MemoryInstrument",
     "MemoryOptimizedConfig",
+    "align_qk_weights_to_hf_rope",
     "chunked_folded_down_projection",
     "fold_layer_attention_and_up",
+    "hf_rope_interleave_index",
     "run_memory_optimized_masked",
 ]
+
+
+def hf_rope_interleave_index(num_heads: int, head_dim: int,
+                             device=None) -> torch.Tensor:
+    """Per-head gather index ``g`` converting HF half-split layout -> the
+    adjacent-pair layout, so adjacent-pair RoPE reproduces HF half-split RoPE.
+
+    Within a head: ``g[2i] = i`` and ``g[2i+1] = i + head_dim/2``."""
+    half = head_dim // 2
+    g = torch.empty(num_heads * head_dim, dtype=torch.long, device=device)
+    for h in range(num_heads):
+        b = h * head_dim
+        for i in range(half):
+            g[b + 2 * i] = b + i
+            g[b + 2 * i + 1] = b + half + i
+    return g
+
+
+def align_qk_weights_to_hf_rope(weights, num_heads: int, num_kv_heads: int,
+                                head_dim: int):
+    """Permute q_proj / k_proj output features (+ biases) so the adjacent-pair
+    RoPE used internally matches HuggingFace Qwen2's half-split RoPE.
+
+    Only q and k are permuted (RoPE acts on them); v / o / MLP are untouched.
+    The same permutation on q and k leaves attention scores invariant up to the
+    RoPE convention, so this makes the plaintext reference HF-faithful while
+    keeping the masked==plain invariant (masks are applied to the permuted q/k
+    and still commute with adjacent-pair RoPE)."""
+    from dataclasses import replace
+    gq = hf_rope_interleave_index(num_heads, head_dim,
+                                  weights.q_proj_weight.device)
+    gk = hf_rope_interleave_index(num_kv_heads, head_dim,
+                                  weights.k_proj_weight.device)
+    new = {
+        "q_proj_weight": weights.q_proj_weight.index_select(1, gq),
+        "k_proj_weight": weights.k_proj_weight.index_select(1, gk),
+        "q_proj_bias": None if weights.q_proj_bias is None
+        else weights.q_proj_bias.index_select(0, gq),
+        "k_proj_bias": None if weights.k_proj_bias is None
+        else weights.k_proj_bias.index_select(0, gk),
+    }
+    return replace(weights, **new)
 
 
 # ---------------------------------------------------------------------------
@@ -94,6 +138,9 @@ class MemoryOptimizedConfig:
     mask_block_size: int = 64
     seed: int = 2035
     empty_cache_between_layers: bool = True
+    # Permute q/k output features so the project's adjacent-pair RoPE reproduces
+    # HuggingFace Qwen2's half-split RoPE exactly (required for HF parity).
+    align_rope_to_hf: bool = True
 
 
 _DTYPE = {"float16": torch.float16, "fp16": torch.float16,
@@ -359,11 +406,19 @@ def run_memory_optimized_masked(
         "per_layer_memory": [],
     }
 
+    def _extract_layer(ell: int):
+        w = extract_hf_single_block_weights(base.layers[ell], fdtype,
+                                            str(fold_device))
+        if config.align_rope_to_hf:
+            cfg_l = layer_configs[ell]
+            w = align_qk_weights_to_hf_rope(
+                w, cfg_l.num_heads, cfg_l.num_key_value_heads, cfg_l.head_dim)
+        return w
+
     def run_layer_prefill(ell: int, h_plain, h_tilde):
         cfg_l = layer_configs[ell]
         bm = masks.layer_block_masks[ell]
-        w = extract_hf_single_block_weights(base.layers[ell], fdtype,
-                                            str(fold_device))
+        w = _extract_layer(ell)
         # plain reference (untrusted) -- weights on compute device
         wc = w if fold_device == compute_device else _block_to(w, compute_device)
         cfg_c = _cfg_to(cfg_l, compute_device)
@@ -444,8 +499,7 @@ def run_memory_optimized_masked(
         for ell in range(n):
             cfg_l = layer_configs[ell]
             bm = masks.layer_block_masks[ell]
-            w = extract_hf_single_block_weights(base.layers[ell], fdtype,
-                                                str(fold_device))
+            w = _extract_layer(ell)
             wc = w if fold_device == compute_device else _block_to(
                 w, compute_device)
             cfg_c = _cfg_to(cfg_l, compute_device)

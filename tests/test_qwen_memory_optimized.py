@@ -191,3 +191,193 @@ def test_gpu_pipeline_does_not_import_tee() -> None:
     assert not forbidden.search(script), "script imports pllo.tee"
     # neither references a TEE runtime symbol at all
     assert "pllo.tee" not in src and "pllo.tee" not in script
+
+
+# ---------------------------------------------------------------------------
+# HF-aligned prompt building, decode-start, and generation comparison (script)
+# ---------------------------------------------------------------------------
+
+
+import sys  # noqa: E402
+
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import run_qwen7b_full_layer_masked_memory_optimized as SCRIPT  # noqa: E402
+
+
+class _MockTok:
+    pad_token_id = 0
+    eos_token_id = 0
+
+    def apply_chat_template(self, messages, tokenize=False,
+                            add_generation_prompt=True):
+        return "CHAT:" + messages[0]["content"]
+
+    def __call__(self, text):
+        return {"input_ids": [(ord(c) % 200) + 1 for c in text]}
+
+    def decode(self, ids, skip_special_tokens=True):
+        return "txt"
+
+
+def test_short_prompt_keeps_real_length_no_pad() -> None:
+    tok = _MockTok()
+    chat = tok.apply_chat_template([{"role": "user", "content": "hi"}],
+                                   tokenize=False, add_generation_prompt=True)
+    expected = tok(chat)["input_ids"]
+    ids, mask, meta = SCRIPT.build_chat_inputs(
+        tok, ["hi"], max_prompt_len=128, use_chat_template=True, device="cpu")
+    assert list(ids.shape) == [1, len(expected)]
+    # the input_ids used are exactly the chat-template tokenization (so the HF
+    # baseline and the masked path consume identical input_ids)
+    assert ids[0].tolist() == expected
+    assert len(expected) < 128                      # short prompt
+    assert meta["requested_seq_len"] == 128
+    assert meta["effective_prompt_len"] == len(expected)
+    assert meta["real_prompt_len"] == len(expected)
+    assert meta["truncated"] is False
+    assert int(mask.sum().item()) == len(expected)  # no padding
+
+
+def test_decode_start_index_equals_real_prompt_len_not_seq_len() -> None:
+    tok = _MockTok()
+    _ids, _mask, meta = SCRIPT.build_chat_inputs(
+        tok, ["hello there"], max_prompt_len=128, use_chat_template=True,
+        device="cpu")
+    assert meta["decode_start_index"] == meta["effective_prompt_len"]
+    assert meta["decode_start_index"] != meta["requested_seq_len"]
+
+
+def test_long_prompt_truncates_deterministically() -> None:
+    tok = _MockTok()
+    chat = tok.apply_chat_template([{"role": "user", "content": "hello world"}],
+                                   tokenize=False, add_generation_prompt=True)
+    full = tok(chat)["input_ids"]
+    assert len(full) > 4
+    ids, mask, meta = SCRIPT.build_chat_inputs(
+        tok, ["hello world"], max_prompt_len=4, use_chat_template=True,
+        device="cpu")
+    assert list(ids.shape) == [1, 4]
+    assert ids[0].tolist() == full[:4]              # deterministic prefix
+    assert meta["truncated"] is True
+    assert meta["effective_prompt_len"] == 4
+    assert meta["decode_start_index"] == 4
+    assert meta["real_prompt_len"] == len(full)
+
+
+def test_compare_generations_status_ok() -> None:
+    cmp = SCRIPT.compare_generations([1, 2, 3], [1, 2, 3], [1, 2, 3])
+    assert cmp["status"] == "ok"
+    assert cmp["sequence_exact_match_hf_masked"] is True
+    assert cmp["hf_vs_masked_token_match_rate"] == 1.0
+
+
+def test_compare_generations_hf_mismatch() -> None:
+    # plain and masked agree, but neither matches official HF
+    cmp = SCRIPT.compare_generations([9, 9, 9], [1, 2, 3], [1, 2, 3])
+    assert cmp["status"] == "hf_mismatch"
+    assert cmp["sequence_exact_match_plain_masked"] is True
+    assert cmp["sequence_exact_match_hf_masked"] is False
+    assert cmp["plain_vs_masked_token_match_rate"] == 1.0
+
+
+def test_compare_generations_internal_mismatch() -> None:
+    cmp = SCRIPT.compare_generations([1, 2], [1, 2], [3, 4])
+    assert cmp["status"] == "internal_mismatch"
+    assert cmp["sequence_exact_match_plain_masked"] is False
+
+
+def test_script_does_not_import_tee() -> None:
+    import re
+    script_src = (REPO_ROOT / "scripts"
+                  / "run_qwen7b_full_layer_masked_memory_optimized.py").read_text(
+                      encoding="utf-8")
+    diag_src = (REPO_ROOT / "scripts"
+                / "diagnose_qwen_hf_parity.py").read_text(encoding="utf-8")
+    pat = re.compile(r"^\s*(?:import|from)\s+pllo\.tee\b", re.MULTILINE)
+    assert not pat.search(script_src) and "pllo.tee" not in script_src
+    assert not pat.search(diag_src) and "pllo.tee" not in diag_src
+    assert "tee_used" in script_src and "tee_used" in diag_src
+
+
+# ---------------------------------------------------------------------------
+# HF RoPE parity fixes: rope_theta reading + half-split alignment
+# ---------------------------------------------------------------------------
+
+
+def test_rope_theta_read_from_nested_config() -> None:
+    """transformers>=5 nests rope_theta in rope_parameters; infer must read the
+    real value (1e6 for Qwen2.5), not silently default to 10000."""
+    pytest.importorskip("transformers")
+    from transformers import Qwen2Config
+    from pllo.hf_wrappers.llama_qwen_single_block import _read_rope_theta
+    mc = Qwen2Config(hidden_size=256, num_attention_heads=2,
+                     num_key_value_heads=1, rope_theta=1000000.0)
+    assert _read_rope_theta(mc) == 1000000.0
+
+
+def test_hf_rope_alignment_matches_halfsplit_scores() -> None:
+    """adjacent-pair RoPE on the permuted q/k must reproduce HF half-split RoPE
+    attention scores exactly (the q.k dot is convention-invariant)."""
+    from pllo.hf_wrappers.qwen_memory_optimized import hf_rope_interleave_index
+    from pllo.ops.rope import apply_rope, build_rope_cache
+    torch.manual_seed(0)
+    T, hd, nh = 7, 8, 1
+    half = hd // 2
+    q = torch.randn(1, nh, T, hd, dtype=torch.float64)
+    k = torch.randn(1, nh, T, hd, dtype=torch.float64)
+
+    # HF half-split RoPE (cos = cat(freqs, freqs))
+    inv = 10000.0 ** (-(torch.arange(0, half, dtype=torch.float64) * 2) / hd)
+    t = torch.arange(T, dtype=torch.float64)
+    emb = torch.cat([torch.outer(t, inv)] * 2, dim=-1)
+    cos_hs, sin_hs = emb.cos(), emb.sin()
+
+    def halfsplit(x):
+        rot = torch.cat([-x[..., half:], x[..., :half]], dim=-1)
+        return x * cos_hs + rot * sin_hs
+
+    hs_scores = halfsplit(q) @ halfsplit(k).transpose(-2, -1)
+
+    # adjacent-pair RoPE on permuted q,k
+    p = hf_rope_interleave_index(nh, hd)        # length nh*hd == hd here
+    cos_adj, sin_adj = build_rope_cache(T, hd, 10000.0, torch.float64, "cpu")
+    qa = apply_rope(q.index_select(-1, p), cos_adj, sin_adj)
+    ka = apply_rope(k.index_select(-1, p), cos_adj, sin_adj)
+    adj_scores = qa @ ka.transpose(-2, -1)
+
+    assert torch.allclose(hs_scores, adj_scores, atol=1e-10)
+
+
+def test_alignment_and_theta_give_hf_logit_parity() -> None:
+    """With theta fix + RoPE alignment, the internal reference's next-token
+    logits match HF, and alignment is strictly better than without it."""
+    pytest.importorskip("transformers")
+    import diagnose_qwen_hf_parity as DIAG
+    from transformers import Qwen2Config, Qwen2ForCausalLM
+    torch.manual_seed(0)
+    mc = Qwen2Config(vocab_size=512, hidden_size=256, intermediate_size=512,
+                     num_hidden_layers=3, num_attention_heads=2,
+                     num_key_value_heads=1, max_position_embeddings=256,
+                     rms_norm_eps=1e-6, rope_theta=1000000.0,
+                     tie_word_embeddings=False)
+    model = Qwen2ForCausalLM(mc).eval()
+    ids = torch.randint(0, 512, (1, 48))
+    with torch.no_grad():
+        hf = model(input_ids=ids, use_cache=False, return_dict=True)
+    hf_logits = hf.logits[:, -1, :]
+    hf_top1 = int(hf_logits.argmax(-1).item())
+
+    def rell2(a, b):
+        return float(((a - b).float().pow(2).sum().sqrt()
+                      / b.float().pow(2).sum().sqrt()).item())
+
+    ref_a = DIAG.internal_reference(model, mc, ids, torch.float32, "cpu",
+                                    align=True)
+    ref_n = DIAG.internal_reference(model, mc, ids, torch.float32, "cpu",
+                                    align=False)
+    assert ref_a["rope_theta"] == 1000000.0              # theta fix applied
+    la = ref_a["logits"][:, -1, :]
+    ln = ref_n["logits"][:, -1, :]
+    assert int(la.argmax(-1).item()) == hf_top1          # aligned top1 == HF
+    assert rell2(la, hf_logits) < 1e-3                    # aligned near-exact
+    assert rell2(la, hf_logits) < rell2(ln, hf_logits)   # alignment is better

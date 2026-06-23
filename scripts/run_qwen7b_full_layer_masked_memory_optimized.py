@@ -1,13 +1,17 @@
-"""Qwen2.5-7B full-layer masked execution -- memory-optimized (Stage 8.4).
+"""Qwen2.5-7B full-layer masked execution -- memory-optimized + HF-aligned.
 
 Untrusted-GPU masked decoder pipeline. **No TEE is imported or used** here and
-no TEE execution is claimed; this script only runs the untrusted masked
+no TEE execution is claimed; this only runs the untrusted masked
 decoder/attention/MLP/KV/LM-head path with layerwise folded-weight streaming +
 chunked folded down-projection so all 28 decoder layers fit in memory.
 
-ModelScope cache only (local files); never Hugging Face remote download.
-Correctness is compared against the extracted-weight plaintext reference
-(top1_match_rate / max_abs_error / greedy_token_match).
+HF alignment (this revision): ``--seq-len`` is the MAX prompt length, not a
+forced length. The prompt is built with ``tokenizer.apply_chat_template`` (when
+``--use-chat-template true``), tokenized once, and the SAME ``input_ids`` /
+``attention_mask`` drive (a) the official ``AutoModelForCausalLM.generate``
+baseline, (b) the extracted-weight plaintext reference, and (c) the masked path.
+Decode starts at the real prompt length (``attention_mask.sum()``), never at a
+padded length. ModelScope cache only; never Hugging Face remote download.
 """
 
 from __future__ import annotations
@@ -35,44 +39,144 @@ def _str2bool(v: str | bool) -> bool:
     return str(v).lower() in ("1", "true", "yes", "y", "t")
 
 
-def _load_prompts(path: str | None, prompt: str | None) -> list[dict]:
+# ---------------------------------------------------------------------------
+# Prompt / input building (chat template, real length, no forced padding)
+# ---------------------------------------------------------------------------
+
+
+def load_raw_prompts(path: str | None, prompt: str | None) -> list[str]:
     if path:
-        rows = []
-        for i, line in enumerate(Path(path).read_text(encoding="utf-8")
-                                 .splitlines()):
+        out = []
+        for line in Path(path).read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if line:
-                rec = json.loads(line)
-                rows.append({"id": str(rec.get("id", f"p{i}")),
-                             "prompt": str(rec["prompt"])})
-        return rows
+                out.append(str(json.loads(line)["prompt"]))
+        return out
     if prompt:
-        return [{"id": "literal", "prompt": prompt}]
-    return [{"id": "default", "prompt": "Hello, please answer briefly:"}]
+        return [prompt]
+    return ["Hello, please answer briefly:"]
 
 
-def _build_input_ids(args, tokenizer, vocab_size: int) -> torch.Tensor:
-    """Tokenize prompts -> [B, seq_len] (truncate/pad). Dry-run uses random."""
-    if tokenizer is None:  # dry-run synthetic tokens
-        g = torch.Generator().manual_seed(args.seed)
-        return torch.randint(0, vocab_size, (args.batch_size, args.seq_len),
-                             generator=g)
-    prompts = _load_prompts(args.prompt_file, args.prompt)[:args.batch_size]
-    while len(prompts) < args.batch_size:
-        prompts.append(prompts[-1])
-    pad_id = (getattr(tokenizer, "pad_token_id", None)
-              or getattr(tokenizer, "eos_token_id", None) or 0)
-    rows = []
-    for rec in prompts:
-        ids = list(tokenizer(rec["prompt"])["input_ids"])[:args.seq_len]
-        if len(ids) < args.seq_len:
-            ids += [int(pad_id)] * (args.seq_len - len(ids))
-        rows.append(ids)
-    return torch.tensor(rows, dtype=torch.long)
+def build_chat_inputs(
+    tokenizer, raw_prompts: list[str], max_prompt_len: int,
+    use_chat_template: bool, device: str = "cpu",
+) -> tuple[torch.Tensor, torch.Tensor, dict]:
+    """Build ``input_ids`` / ``attention_mask`` from real prompts.
+
+    ``max_prompt_len`` is the MAXIMUM prompt length. Short prompts keep their
+    real length (no forced padding); long prompts are deterministically
+    truncated and flagged. ``decode_start_index`` is the real (effective) prompt
+    length, never a padded length. Batch>1 prompts of differing length are
+    right-padded to the common max with an explicit ``attention_mask``."""
+    chat_texts: list[str] = []
+    id_lists: list[list[int]] = []
+    for p in raw_prompts:
+        if use_chat_template and hasattr(tokenizer, "apply_chat_template"):
+            chat = tokenizer.apply_chat_template(
+                [{"role": "user", "content": p}], tokenize=False,
+                add_generation_prompt=True)
+        else:
+            chat = p
+        chat_texts.append(chat)
+        id_lists.append(list(tokenizer(chat)["input_ids"]))
+
+    real_lens = [len(x) for x in id_lists]
+    eff_lists, trunc_flags = [], []
+    for ids in id_lists:
+        if len(ids) > max_prompt_len:
+            eff_lists.append(ids[:max_prompt_len])
+            trunc_flags.append(True)
+        else:
+            eff_lists.append(ids)
+            trunc_flags.append(False)
+    effective_prompt_len = max(len(x) for x in eff_lists)
+
+    pad_id = int(getattr(tokenizer, "pad_token_id", None)
+                 or getattr(tokenizer, "eos_token_id", None) or 0)
+    rows, masks = [], []
+    for ids in eff_lists:
+        pad = effective_prompt_len - len(ids)
+        rows.append(ids + [pad_id] * pad)
+        masks.append([1] * len(ids) + [0] * pad)
+
+    input_ids = torch.tensor(rows, dtype=torch.long, device=device)
+    attention_mask = torch.tensor(masks, dtype=torch.long, device=device)
+    meta = {
+        "raw_prompt": raw_prompts[0] if len(raw_prompts) == 1 else raw_prompts,
+        "chat_template_input": chat_texts[0] if len(chat_texts) == 1
+        else chat_texts,
+        "requested_seq_len": int(max_prompt_len),
+        "real_prompt_len": int(real_lens[0]) if len(real_lens) == 1
+        else real_lens,
+        "effective_prompt_len": int(effective_prompt_len),
+        "decode_start_index": int(effective_prompt_len),
+        "truncated": bool(any(trunc_flags)),
+        "truncated_flags": trunc_flags,
+        "used_chat_template": bool(use_chat_template),
+        "pad_token_id": pad_id,
+    }
+    return input_ids, attention_mask, meta
+
+
+# ---------------------------------------------------------------------------
+# Generation comparison + status
+# ---------------------------------------------------------------------------
+
+
+def compare_generations(hf_ids, plain_ids, masked_ids) -> dict:
+    """Token-match metrics + status across HF / plain / masked generations."""
+    def rate(a, b):
+        n = min(len(a), len(b))
+        return (sum(1 for i in range(n) if a[i] == b[i]) / n) if n else 0.0
+
+    seq_hp = list(hf_ids) == list(plain_ids)
+    seq_hm = list(hf_ids) == list(masked_ids)
+    seq_pm = list(plain_ids) == list(masked_ids)
+    if seq_hp and seq_hm and seq_pm:
+        status = "ok"
+    elif seq_pm and not seq_hm:
+        status = "hf_mismatch"
+    else:
+        status = "internal_mismatch"
+    return {
+        "hf_vs_plain_token_match_rate": round(rate(hf_ids, plain_ids), 6),
+        "hf_vs_masked_token_match_rate": round(rate(hf_ids, masked_ids), 6),
+        "plain_vs_masked_token_match_rate": round(rate(plain_ids, masked_ids), 6),
+        "sequence_exact_match_hf_plain": seq_hp,
+        "sequence_exact_match_hf_masked": seq_hm,
+        "sequence_exact_match_plain_masked": seq_pm,
+        "status": status,
+    }
+
+
+def _hf_generate(model, tokenizer, input_ids, attention_mask, max_new_tokens):
+    """Official HF greedy generate on the SAME input_ids/attention_mask."""
+    eos = getattr(tokenizer, "eos_token_id", None)
+    with torch.no_grad():
+        out = model.generate(
+            input_ids, attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens, do_sample=False, num_beams=1,
+            use_cache=True, pad_token_id=eos)
+    new_ids = out[0, input_ids.shape[1]:].tolist()
+    text = tokenizer.decode(new_ids, skip_special_tokens=True)
+    return new_ids, text
+
+
+def _safe_decode(tokenizer, ids):
+    if tokenizer is None:
+        return None
+    try:
+        return tokenizer.decode(ids, skip_special_tokens=True)
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Model loading
+# ---------------------------------------------------------------------------
 
 
 def _load_model(args):
-    """Load a real checkpoint from a LOCAL path (ModelScope cache); no remote."""
     from transformers import AutoModelForCausalLM, AutoTokenizer
     dtype = {"float16": torch.float16, "bfloat16": torch.bfloat16}.get(
         args.dtype, torch.float16)
@@ -88,7 +192,6 @@ def _load_model(args):
 
 
 def _build_dry_run(args):
-    """Tiny random Qwen2 with the requested layer count -- NO Qwen checkpoint."""
     from pllo.hf_wrappers.hf_causal_lm_skeleton import (
         HFCausalLMSkeletonConfig, make_random_tiny_hf_causal_lm)
     skel = HFCausalLMSkeletonConfig(
@@ -100,15 +203,19 @@ def _build_dry_run(args):
     return model, mc, None
 
 
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--model-path", default=None,
-                    help="local checkpoint dir (ModelScope cache); not used "
-                         "with --dry-run")
+    ap.add_argument("--model-path", default=None)
     ap.add_argument("--prompt-file", default=None)
     ap.add_argument("--prompt", default=None)
     ap.add_argument("--batch-size", type=int, default=1)
-    ap.add_argument("--seq-len", type=int, default=64)
+    ap.add_argument("--seq-len", type=int, default=128,
+                    help="MAX prompt length (not a forced length)")
     ap.add_argument("--max-new-tokens", type=int, default=1)
     ap.add_argument("--num-layers", type=int, default=28)
     ap.add_argument("--layerwise-folding", type=_str2bool, nargs="?",
@@ -120,10 +227,12 @@ def main() -> int:
                     choices=["float16", "bfloat16"])
     ap.add_argument("--folding-dtype", default="float32")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--use-chat-template", type=_str2bool, nargs="?",
+                    const=True, default=True)
+    ap.add_argument("--compare-hf-generate", type=_str2bool, nargs="?",
+                    const=True, default=True)
     ap.add_argument("--seed", type=int, default=2035)
-    ap.add_argument("--dry-run", action="store_true",
-                    help="tiny synthetic model; validate 28-layer control flow "
-                         "without loading any Qwen checkpoint")
+    ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--output-json",
                     default="outputs/qwen7b_full_layer_memory_optimized.json")
     ap.add_argument("--output-md",
@@ -140,19 +249,67 @@ def main() -> int:
         model, model_config, tok = _load_model(args)
 
     vocab = int(getattr(model_config, "vocab_size", 256))
-    input_ids = _build_input_ids(args, tok, vocab)
 
+    # ---- inputs ----------------------------------------------------------
+    if args.dry_run or tok is None:
+        g = torch.Generator().manual_seed(args.seed)
+        input_ids = torch.randint(0, vocab, (args.batch_size, args.seq_len),
+                                  generator=g).to(args.device)
+        attention_mask = torch.ones_like(input_ids)
+        prompt_meta = {
+            "raw_prompt": None, "chat_template_input": None,
+            "requested_seq_len": args.seq_len,
+            "real_prompt_len": args.seq_len,
+            "effective_prompt_len": args.seq_len,
+            "decode_start_index": args.seq_len, "truncated": False,
+            "used_chat_template": False,
+        }
+        effective_len = args.seq_len
+    else:
+        raw = load_raw_prompts(args.prompt_file, args.prompt)[:args.batch_size]
+        input_ids, attention_mask, prompt_meta = build_chat_inputs(
+            tok, raw, args.seq_len, args.use_chat_template, args.device)
+        effective_len = prompt_meta["effective_prompt_len"]
+
+    # ---- masked + plaintext-reference run (decode starts at real length) --
     cfg = MemoryOptimizedConfig(
-        num_layers=args.num_layers, batch_size=args.batch_size,
-        seq_len=args.seq_len, max_new_tokens=args.max_new_tokens,
-        device=args.device, dtype=args.dtype, folding_dtype=args.folding_dtype,
+        num_layers=args.num_layers, batch_size=input_ids.shape[0],
+        seq_len=effective_len,                       # effective, NOT padded
+        max_new_tokens=args.max_new_tokens, device=args.device,
+        dtype=args.dtype, folding_dtype=args.folding_dtype,
         folded_weight_device=args.folded_weight_device,
         layerwise_folding=args.layerwise_folding,
         mlp_down_chunk_size=args.mlp_down_chunk_size, seed=args.seed)
-
     report = run_memory_optimized_masked(model, model_config, input_ids, cfg)
+
     report["dry_run"] = bool(args.dry_run)
+    report["tee_used"] = False
+    report.update({f"prompt_{k}" if k in ("status",) else k: v
+                   for k, v in prompt_meta.items()})
+    report["input_ids"] = input_ids.tolist()
+    report["attention_mask"] = attention_mask.tolist()
     report["input_ids_shape"] = list(input_ids.shape)
+
+    plain_ids = (report.get("generated_plain_tokens") or [[]])[0]
+    masked_ids = (report.get("generated_masked_tokens") or [[]])[0]
+    report["plain_generated_token_ids"] = plain_ids
+    report["masked_generated_token_ids"] = masked_ids
+    report["plain_generated_text"] = _safe_decode(tok, plain_ids)
+    report["masked_generated_text"] = _safe_decode(tok, masked_ids)
+
+    # ---- official HF baseline on the EXACT same inputs -------------------
+    run_status = report.get("status")
+    if (not args.dry_run and args.compare_hf_generate and tok is not None
+            and run_status == "ok"):
+        hf_ids, hf_text = _hf_generate(model, tok, input_ids, attention_mask,
+                                       args.max_new_tokens)
+        report["hf_generated_token_ids"] = hf_ids
+        report["hf_generated_text"] = hf_text
+        cmp = compare_generations(hf_ids, plain_ids, masked_ids)
+        report.update(cmp)                           # sets metrics + status
+        report["execution_status"] = run_status      # preserve exec status
+    else:
+        report["execution_status"] = run_status
 
     out_json = Path(args.output_json)
     out_json.parent.mkdir(parents=True, exist_ok=True)
@@ -162,63 +319,69 @@ def main() -> int:
     _write_csv(Path(args.output_csv), report)
 
     print(f"status={report['status']} "
-          f"executed_layers={report.get('executed_layers')} "
-          f"total_layers={report['total_layers']}")
-    if report["status"] == "ok":
-        print(f"top1_match_rate={report['top1_match_rate']} "
-              f"max_abs_error={report['max_abs_error']:.3e} "
-              f"greedy_token_match={report['greedy_token_match']}")
-        print(f"peak_memory={report.get('peak_memory')}")
-    else:
-        print(f"OOM at layer {report.get('oom_layer_index')}: "
-              f"{report.get('reason')}")
+          f"executed_layers={report.get('executed_layers')}/"
+          f"{report['total_layers']} "
+          f"effective_prompt_len={report.get('effective_prompt_len')} "
+          f"decode_start_index={report.get('decode_start_index')}")
+    if "hf_vs_masked_token_match_rate" in report:
+        print(f"hf_vs_plain={report['hf_vs_plain_token_match_rate']} "
+              f"hf_vs_masked={report['hf_vs_masked_token_match_rate']} "
+              f"plain_vs_masked={report['plain_vs_masked_token_match_rate']}")
     print(f"Wrote: {out_json}\nWrote: {args.output_md}\nWrote: {args.output_csv}")
     return 0 if report["status"] == "ok" else 1
 
 
 def _write_md(path: Path, r: dict) -> None:
-    L = ["# Qwen full-layer masked execution (memory-optimized)", ""]
+    L = ["# Qwen full-layer masked execution (memory-optimized, HF-aligned)", ""]
     L.append(f"- model_type: **{r.get('model_type')}** | dry_run: "
              f"**{r.get('dry_run')}** | TEE used: **{r.get('tee_used')}**")
     L.append(f"- executed_layers: **{r.get('executed_layers')}** / "
-             f"total_layers: **{r.get('total_layers')}** | status: "
-             f"**{r['status']}**")
-    cfg = r.get("config", {})
-    L.append(f"- batch={cfg.get('batch_size')} seq={cfg.get('seq_len')} "
-             f"max_new_tokens={cfg.get('max_new_tokens')} "
-             f"folded_weight_device={cfg.get('folded_weight_device')} "
-             f"mlp_down_chunk_size={cfg.get('mlp_down_chunk_size')} "
-             f"dtype={cfg.get('dtype')}")
-    if r["status"] == "ok":
-        L.append(f"- top1_match_rate: **{r['top1_match_rate']}** | "
-                 f"max_abs_error: **{r['max_abs_error']:.3e}** | "
-                 f"greedy_token_match: **{r['greedy_token_match']}**")
-        L.append(f"- peak_memory: `{r.get('peak_memory')}`")
-    else:
-        L.append(f"- OOM layer index: **{r.get('oom_layer_index')}** | reason: "
-                 f"`{r.get('reason')}`")
+             f"total_layers: **{r.get('total_layers')}** | exec status: "
+             f"**{r.get('execution_status', r.get('status'))}**")
+    L.append(f"- requested_seq_len: **{r.get('requested_seq_len')}** | "
+             f"real_prompt_len: **{r.get('real_prompt_len')}** | "
+             f"effective_prompt_len: **{r.get('effective_prompt_len')}** | "
+             f"decode_start_index: **{r.get('decode_start_index')}** | "
+             f"truncated: **{r.get('truncated')}**")
+    if "hf_vs_masked_token_match_rate" in r:
+        L.append(f"- **comparison status: {r['status']}**")
+        L.append(f"- hf_vs_plain: **{r['hf_vs_plain_token_match_rate']}** | "
+                 f"hf_vs_masked: **{r['hf_vs_masked_token_match_rate']}** | "
+                 f"plain_vs_masked: **{r['plain_vs_masked_token_match_rate']}**")
+        L.append(f"- exact: hf==plain **{r['sequence_exact_match_hf_plain']}** | "
+                 f"hf==masked **{r['sequence_exact_match_hf_masked']}** | "
+                 f"plain==masked **{r['sequence_exact_match_plain_masked']}**")
+        L.append(f"- hf_text: `{(r.get('hf_generated_text') or '')[:160]!r}`")
+        L.append(f"- masked_text: `{(r.get('masked_generated_text') or '')[:160]!r}`")
+    if r.get("status") == "stopped_oom":
+        L.append(f"- OOM layer index: **{r.get('oom_layer_index')}**")
     L.append("")
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
 def _write_csv(path: Path, r: dict) -> None:
-    rows = []
-    for m in r.get("per_layer_memory", []):
-        before = m.get("before") or {}
-        after = m.get("after") or {}
-        rows.append({
-            "layer": m["layer"], "phase": m["phase"],
-            "before_allocated_mb": before.get("allocated_mb"),
-            "after_allocated_mb": after.get("allocated_mb"),
-            "after_max_allocated_mb": after.get("max_allocated_mb"),
-            "after_reserved_mb": after.get("reserved_mb"),
-        })
-    cols = ["layer", "phase", "before_allocated_mb", "after_allocated_mb",
-            "after_max_allocated_mb", "after_reserved_mb"]
+    row = {
+        "model_type": r.get("model_type"),
+        "executed_layers": r.get("executed_layers"),
+        "total_layers": r.get("total_layers"),
+        "requested_seq_len": r.get("requested_seq_len"),
+        "real_prompt_len": r.get("real_prompt_len"),
+        "effective_prompt_len": r.get("effective_prompt_len"),
+        "decode_start_index": r.get("decode_start_index"),
+        "truncated": r.get("truncated"),
+        "status": r.get("status"),
+        "hf_vs_plain_token_match_rate": r.get("hf_vs_plain_token_match_rate"),
+        "hf_vs_masked_token_match_rate": r.get("hf_vs_masked_token_match_rate"),
+        "plain_vs_masked_token_match_rate":
+            r.get("plain_vs_masked_token_match_rate"),
+        "sequence_exact_match_hf_masked": r.get("sequence_exact_match_hf_masked"),
+        "peak_memory_max_allocated_mb": (r.get("peak_memory") or {})
+            .get("max_allocated_mb"),
+    }
     with open(path, "w", encoding="utf-8", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=cols)
+        w = csv.DictWriter(fh, fieldnames=list(row))
         w.writeheader()
-        w.writerows(rows)
+        w.writerow(row)
 
 
 if __name__ == "__main__":

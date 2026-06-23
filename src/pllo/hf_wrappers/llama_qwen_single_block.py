@@ -146,6 +146,24 @@ def _get(obj: Any, name: str, default: Any = None) -> Any:
     return default if val is None else val
 
 
+def _read_rope_theta(mc: Any, default: float = 10000.0) -> float:
+    """Read RoPE base/theta robustly across transformers versions.
+
+    transformers >=5 moved ``rope_theta`` into the nested ``rope_parameters`` /
+    ``rope_scaling`` dict (e.g. ``{"rope_theta": 1000000.0, "rope_type":
+    "default"}``); older versions exposed it as a top-level attribute. Missing
+    it silently defaults to 10000.0, which is WRONG for Qwen2.5 (1e6) and
+    corrupts every position -- so check the nested dicts first."""
+    if mc is None:
+        return default
+    for attr in ("rope_parameters", "rope_scaling"):
+        d = getattr(mc, attr, None)
+        if isinstance(d, dict) and d.get("rope_theta") is not None:
+            return float(d["rope_theta"])
+    v = getattr(mc, "rope_theta", None)
+    return float(v) if v is not None else default
+
+
 def infer_config_from_hf_layer(
     layer: Any, model_config: Any = None,
     dtype: torch.dtype = torch.float64, device: str = "cpu",
@@ -187,8 +205,7 @@ def infer_config_from_hf_layer(
 
     model_type = str(_get(mc, "model_type", "unknown_llama_qwen_like")) \
         if mc is not None else "unknown_llama_qwen_like"
-    rope_theta = float(_get(mc, "rope_theta", 10000.0)) if mc is not None \
-        else 10000.0
+    rope_theta = _read_rope_theta(mc)
     rms_eps = float(_get(mc, "rms_norm_eps", 1e-5)) if mc is not None else 1e-5
 
     return HFSingleBlockConfig(
