@@ -62,17 +62,30 @@ from pllo.ops.causal_lm_boundaries import (
     recover_vocab_logits,
     trusted_embedding_lookup,
 )
-from pllo.ops.gqa_attention import merge_heads, repeat_kv, split_heads
+from pllo.ops.gqa_attention import (
+    generate_gqa_rope_masks,
+    merge_heads,
+    repeat_kv,
+    split_heads,
+)
 from pllo.ops.llama_synthetic_block import rmsnorm_plain
 from pllo.ops.nonlinear_islands import rmsnorm_core, silu_reference
 from pllo.ops.rope import apply_rope, build_rope_cache
 
 __all__ = [
+    "MASK_SECURITY_NOTES",
     "HFCausalLMMaskBundle",
     "HFCausalLMSkeletonConfig",
     "HFCausalLMSkeletonWeights",
+    "apply_signed_permutation",
     "extract_hf_causal_lm_skeleton_weights",
     "generate_hf_causal_lm_masks",
+    "generate_hf_single_block_masks_scalable",
+    "invert_signed_permutation",
+    "make_block_orthogonal_mask",
+    "make_dense_orthogonal_mask_cpu_float32",
+    "make_residual_mask",
+    "signed_permutation_components",
     "has_transformers",
     "hf_causal_lm_masked_greedy_decode",
     "hf_causal_lm_masked_prefill",
@@ -105,6 +118,12 @@ class HFCausalLMSkeletonConfig:
     # sequence through RMSNorm (Stage 6.8), so true fidelity needs T_in = 0.
     # use_input_pad=True is allowed only as a synthetic stress option.
     use_input_pad: bool = False
+    # Residual-mask scalability knobs (Stage 8.2). Defaults reproduce the
+    # Stage 6.9 behavior (per-layer dense orthogonal masks) exactly.
+    mask_mode: str = "dense_orthogonal"   # signed_permutation|block_orthogonal|dense_orthogonal
+    residual_mask_strategy: str = "per_layer"   # "shared" | "per_layer"
+    mask_block_size: int = 64
+    allow_dense_large_mask: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -253,10 +272,16 @@ class HFCausalLMMaskBundle:
     vocab_mask: VocabLogitMask
     input_pad: torch.Tensor | None
     metadata: dict[str, Any] = field(default_factory=dict)
+    shared_residual_mask: bool = False
 
     def handoff(self, ell: int) -> torch.Tensor:
         """``T_ell = N_ell^{-1} @ N_{ell+1}`` (orthogonal change-of-basis)."""
         return self.residual_mask_inverses[ell] @ self.residual_masks[ell + 1]
+
+    def needs_handoff(self, ell: int) -> bool:
+        """A shared residual mask makes every handoff the identity, so the
+        online ``[H,H]`` GEMM can be skipped entirely."""
+        return not self.shared_residual_mask
 
 
 def _orthogonal(dim: int, dtype: torch.dtype, device: torch.device,
@@ -264,6 +289,196 @@ def _orthogonal(dim: int, dtype: torch.dtype, device: torch.device,
     q, _ = torch.linalg.qr(torch.randn(dim, dim, generator=g, dtype=dtype,
                                        device=device))
     return q
+
+
+# ---------------------------------------------------------------------------
+# Scalable residual masks (Stage 8.2): orthogonal + RMSNorm-compatible, but
+# cheaper to build than a dense HxH QR. All return a *dense* ``[H,H]`` matrix
+# (so the verified Stage 6.9 weight-folding APIs are reused unchanged) plus
+# its transpose-inverse; the win is in *generation* cost + the shared-mask
+# strategy, not in the one-time fold.
+# ---------------------------------------------------------------------------
+
+
+_DENSE_MASK_HIDDEN_LIMIT = 1024
+
+MASK_SECURITY_NOTES: dict[str, str] = {
+    "signed_permutation":
+        "signed_permutation is a (signed) permutation matrix: orthogonal and "
+        "RMSNorm-compatible, scalable to large hidden sizes, but WEAKER than "
+        "dense orthogonal masking (it permutes + flips coordinates without "
+        "mixing them).",
+    "block_orthogonal":
+        "block_orthogonal mixes coordinates within blocks (default size "
+        "{block}); stronger than signed_permutation, cheaper than a full "
+        "dense QR, still weaker than dense orthogonal masking.",
+    "dense_orthogonal":
+        "dense_orthogonal (full HxH QR) is the strongest here but is "
+        "memory/compute-heavy; intended for tiny / diagnostic models only.",
+}
+
+
+# CUDA QR ("geqrf_cuda") is NOT implemented for bf16/fp16, so any QR for a
+# low-precision target must run on CPU in float32 and then be cast/moved.
+_LOW_PRECISION = (torch.bfloat16, torch.float16)
+
+
+def _cpu_generator(g: torch.Generator) -> torch.Generator:
+    """A CPU generator with the same initial seed as ``g`` (so CPU-side QR /
+    randn is deterministic even when ``g`` lives on CUDA)."""
+    if g.device.type == "cpu":
+        return g
+    gc = torch.Generator(device="cpu")
+    gc.manual_seed(g.initial_seed())
+    return gc
+
+
+def signed_permutation_components(
+    hidden: int, g: torch.Generator,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Cheap, QR-free residual-mask representation: ``(perm, inv_perm, signs)``
+    on CPU (move as needed). ``signs`` are float32 ``+/-1``."""
+    gc = _cpu_generator(g)
+    perm = torch.randperm(hidden, generator=gc, device="cpu")
+    inv_perm = torch.argsort(perm)
+    signs = torch.where(
+        torch.rand(hidden, generator=gc, device="cpu") < 0.5,
+        torch.tensor(-1.0), torch.tensor(1.0)).to(torch.float32)
+    return perm, inv_perm, signs
+
+
+def apply_signed_permutation(
+    x: torch.Tensor, perm: torch.Tensor, signs: torch.Tensor,
+) -> torch.Tensor:
+    """``X_tilde[..., k] = X[..., perm[k]] * signs[k]`` (no dense matrix)."""
+    return x.index_select(-1, perm) * signs
+
+
+def invert_signed_permutation(
+    x_tilde: torch.Tensor, inv_perm: torch.Tensor, signs: torch.Tensor,
+) -> torch.Tensor:
+    """Undo :func:`apply_signed_permutation`."""
+    return (x_tilde * signs).index_select(-1, inv_perm)
+
+
+def make_dense_orthogonal_mask_cpu_float32(
+    hidden: int, g: torch.Generator,
+) -> torch.Tensor:
+    """Full HxH orthogonal mask via QR on **CPU float32** (never bf16 CUDA)."""
+    gc = _cpu_generator(g)
+    q, _ = torch.linalg.qr(
+        torch.randn(hidden, hidden, generator=gc, dtype=torch.float32,
+                    device="cpu"))
+    return q
+
+
+def make_block_orthogonal_mask(
+    hidden: int, block_size: int, target_dtype: torch.dtype,
+    target_device: torch.device, g: torch.Generator,
+) -> torch.Tensor:
+    """Block-diagonal orthogonal mask. QR runs on CPU float32 for
+    low-precision targets, then casts/moves; native otherwise."""
+    bs = max(1, min(block_size, hidden))
+    low = target_dtype in _LOW_PRECISION
+    qr_dtype = torch.float32 if low else target_dtype
+    qr_device = torch.device("cpu") if low else target_device
+    gen = _cpu_generator(g) if low else g
+    m = torch.zeros(hidden, hidden, dtype=qr_dtype, device=qr_device)
+    start = 0
+    while start < hidden:
+        d = min(bs, hidden - start)
+        q, _ = torch.linalg.qr(
+            torch.randn(d, d, generator=gen, dtype=qr_dtype, device=qr_device))
+        m[start:start + d, start:start + d] = q
+        start += d
+    return m.to(dtype=target_dtype, device=target_device)
+
+
+def make_residual_mask(
+    hidden: int, mode: str, dtype: torch.dtype, device: torch.device,
+    g: torch.Generator, *, block_size: int = 64,
+    allow_dense_large: bool = False,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Build a dense orthogonal ``[H,H]`` residual mask + its inverse, never
+    invoking bf16/fp16 CUDA QR (which is unimplemented).
+
+    ``signed_permutation``: QR-free; built from ``(perm, signs)``.
+    ``block_orthogonal`` / ``dense_orthogonal``: QR on CPU float32 for
+    low-precision targets, then cast/move (native for fp32/fp64)."""
+    device = torch.device(device)
+    if mode == "signed_permutation":
+        perm, _inv, signs = signed_permutation_components(hidden, g)
+        # Materialize the dense signed-permutation matrix from perm/signs
+        # (no QR): eye[:, perm] * signs -> M[perm[k], k] = signs[k].
+        eye = torch.eye(hidden, dtype=torch.float32, device="cpu")
+        m = (eye.index_select(1, perm) * signs).to(dtype=dtype, device=device)
+        return m, m.transpose(0, 1).contiguous()
+    if mode == "block_orthogonal":
+        m = make_block_orthogonal_mask(hidden, block_size, dtype, device, g)
+        return m, m.transpose(0, 1).contiguous()
+    if mode == "dense_orthogonal":
+        if hidden > _DENSE_MASK_HIDDEN_LIMIT and not allow_dense_large:
+            raise ValueError(
+                f"dense_orthogonal mask refused for hidden_size={hidden} > "
+                f"{_DENSE_MASK_HIDDEN_LIMIT}; pass allow_dense_large=True "
+                f"(or --allow-dense-large-mask) to override, or use "
+                f"mask_mode='signed_permutation'/'block_orthogonal'.")
+        if dtype in _LOW_PRECISION:
+            m = make_dense_orthogonal_mask_cpu_float32(hidden, g).to(
+                dtype=dtype, device=device)
+        else:
+            m = _orthogonal(hidden, dtype, device, g)
+        return m, m.transpose(0, 1).contiguous()
+    raise ValueError(f"unknown mask_mode {mode!r}")
+
+
+def _attn_masks_to(attn: dict[str, Any], dtype: torch.dtype,
+                   device: torch.device) -> dict[str, Any]:
+    """Cast float mask tensors to ``(dtype, device)``; keep index/scalar
+    fields. Used to move CPU-float32-built attention masks to the target."""
+    float_keys = ("key_masks", "key_mask_inverses", "value_masks",
+                  "value_mask_inverses", "q_masks")
+    out: dict[str, Any] = {}
+    for k, v in attn.items():
+        if k in float_keys:
+            out[k] = v.to(dtype=dtype, device=device)
+        elif k == "kv_index":
+            out[k] = v.to(device=device)
+        else:
+            out[k] = v
+    return out
+
+
+def generate_hf_single_block_masks_scalable(
+    config: HFSingleBlockConfig, seed: int, n_res: torch.Tensor,
+    n_res_inv: torch.Tensor,
+) -> dict[str, Any]:
+    """QR-free per-layer block masks for real checkpoints: RoPE/GQA attention
+    masks (Stage 6.4.1, no QR) + SwiGLU permutation, with the residual mask
+    supplied externally (so no dense bf16 CUDA QR is ever attempted).
+
+    Attention masks are built on CPU float32 then cast/moved for low-precision
+    targets (bf16/fp16); built natively for fp32/fp64 to preserve precision."""
+    target_dtype = config.dtype
+    target_device = torch.device(config.device)
+    low = target_dtype in _LOW_PRECISION
+    gen_dtype = torch.float32 if low else target_dtype
+    gen_device = torch.device("cpu") if low else target_device
+    g = torch.Generator(device=gen_device).manual_seed(seed)
+
+    attn = generate_gqa_rope_masks(
+        config.num_heads, config.num_key_value_heads, config.head_dim,
+        gen_dtype, gen_device, g, mask_family=config.mask_family)
+    perm = torch.randperm(config.intermediate_size, generator=g,
+                          device=gen_device).to(target_device)
+    if low:
+        attn = _attn_masks_to(attn, target_dtype, target_device)
+
+    return {
+        "n_res": n_res, "n_res_inv": n_res_inv, "attn": attn, "perm": perm,
+        "mask_family": config.mask_family,
+        "residual_mask_family": "external_scalable",
+    }
 
 
 def generate_hf_causal_lm_masks(
@@ -277,26 +492,42 @@ def generate_hf_causal_lm_masks(
     input pad. For real fidelity (default) ``input_pad`` is ``None``."""
     seed = config.seed if seed is None else seed
     mask_family = config.mask_family if mask_family is None else mask_family
+    mask_mode = getattr(config, "mask_mode", "dense_orthogonal")
+    strategy = getattr(config, "residual_mask_strategy", "per_layer")
+    block_size = getattr(config, "mask_block_size", 64)
+    allow_dense_large = getattr(config, "allow_dense_large_mask", False)
     cfg0 = layer_configs[0]
     dtype = cfg0.dtype
     device = torch.device(cfg0.device)
     hidden = cfg0.hidden_size
     n_layers = len(layer_configs)
+    shared = strategy == "shared"
 
     g = torch.Generator(device=device).manual_seed(seed)
-    residual_masks = [_orthogonal(hidden, dtype, device, g)
-                      for _ in range(n_layers + 1)]
-    residual_mask_inverses = [m.transpose(-2, -1).contiguous()
-                              for m in residual_masks]
+    if shared:
+        # One residual mask reused for every layer: each handoff is the
+        # identity, so the online [H,H] GEMM disappears entirely.
+        m, m_inv = make_residual_mask(
+            hidden, mask_mode, dtype, device, g, block_size=block_size,
+            allow_dense_large=allow_dense_large)
+        residual_masks = [m] * (n_layers + 1)
+        residual_mask_inverses = [m_inv] * (n_layers + 1)
+    else:
+        pairs = [make_residual_mask(
+            hidden, mask_mode, dtype, device, g, block_size=block_size,
+            allow_dense_large=allow_dense_large)
+            for _ in range(n_layers + 1)]
+        residual_masks = [p[0] for p in pairs]
+        residual_mask_inverses = [p[1] for p in pairs]
 
     layer_block_masks: list[dict[str, Any]] = []
     for ell in range(n_layers):
-        # Per-layer attention masks + SwiGLU permutation; its internal n_res
-        # is discarded and replaced by this layer's residual mask N_ell.
-        bm = generate_hf_single_block_masks(
-            layer_configs[ell], seed=seed + 101 * (ell + 1))
-        bm["n_res"] = residual_masks[ell]
-        bm["n_res_inv"] = residual_mask_inverses[ell]
+        # QR-free per-layer attention masks + SwiGLU permutation; the residual
+        # mask N_ell is supplied externally, so the old dense-QR n_res path
+        # (which crashes on bf16 CUDA) is never entered.
+        bm = generate_hf_single_block_masks_scalable(
+            layer_configs[ell], seed + 101 * (ell + 1),
+            residual_masks[ell], residual_mask_inverses[ell])
         layer_block_masks.append(bm)
 
     vocab_size = int(weights.lm_head_weight.shape[1])
@@ -307,18 +538,28 @@ def generate_hf_causal_lm_masks(
         input_pad = torch.randn(hidden, generator=g, dtype=dtype,
                                 device=device)
 
+    note = MASK_SECURITY_NOTES.get(mask_mode, "").format(block=block_size)
     return HFCausalLMMaskBundle(
         residual_masks=residual_masks,
         residual_mask_inverses=residual_mask_inverses,
         layer_block_masks=layer_block_masks, vocab_mask=vocab_mask,
-        input_pad=input_pad,
+        input_pad=input_pad, shared_residual_mask=shared,
         metadata={
-            "residual_mask_family": "orthogonal_per_layer",
+            "residual_mask_family": f"{mask_mode}_{strategy}",
+            "mask_mode": mask_mode,
+            "residual_mask_strategy": strategy,
+            "mask_block_size": block_size if mask_mode == "block_orthogonal"
+            else None,
+            "materialized_dense_from_signed_perm":
+                mask_mode == "signed_permutation",
+            "qr_free_residual_mask": mask_mode == "signed_permutation",
+            "mask_security_note": note,
             "mask_family": mask_family,
-            "handoff": "N_ell_to_N_ell_plus_1",
-            "handoff_transform": "orthogonal_change_of_basis_per_boundary",
-            "handoff_skip_term_needs_gemm": True,
-            "handoff_offline_fusable_except_skip": True,
+            "handoff": "identity_shared" if shared else "N_ell_to_N_ell_plus_1",
+            "handoff_transform": "none_shared_mask" if shared
+            else "orthogonal_change_of_basis_per_boundary",
+            "handoff_skip_term_needs_gemm": not shared,
+            "handoff_offline_fusable_except_skip": not shared,
             "used_input_pad": input_pad is not None,
         },
     )
@@ -556,7 +797,11 @@ def hf_causal_lm_masked_prefill(
         })
         caches_tilde.append(blk["cache"])
         # Handoff N_ell -> N_{ell+1} (one [H,H] GEMM on the masked state).
-        h_tilde = blk["y_tilde"] @ masks.handoff(ell)
+        # Skipped entirely for a shared residual mask (handoff == identity).
+        if masks.needs_handoff(ell):
+            h_tilde = blk["y_tilde"] @ masks.handoff(ell)
+        else:
+            h_tilde = blk["y_tilde"]
         hidden_tilde_by_layer.append(h_tilde)
 
     handoff_errs = [
@@ -682,7 +927,8 @@ def hf_causal_lm_masked_greedy_decode(
                 _apply_heads(dec_p["appended_value"],
                              attn_masks["value_masks"])))
             h_plain = dec_p["y"]
-            h_tilde = dec_m["y_tilde"] @ masks.handoff(ell)
+            h_tilde = (dec_m["y_tilde"] @ masks.handoff(ell)
+                       if masks.needs_handoff(ell) else dec_m["y_tilde"])
 
         final_hidden_err = _mx(h_tilde, h_plain @ masks.residual_masks[-1])
         fn_plain = final_norm_lm_head_plain(h_plain, bw.final_norm_weight,
