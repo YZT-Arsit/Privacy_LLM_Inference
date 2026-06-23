@@ -74,6 +74,7 @@ from pllo.ops.rope import apply_rope, build_rope_cache
 
 __all__ = [
     "MASK_SECURITY_NOTES",
+    "NEGATIVE_CONTROLS",
     "HFCausalLMMaskBundle",
     "HFCausalLMSkeletonConfig",
     "HFCausalLMSkeletonWeights",
@@ -132,6 +133,14 @@ class HFCausalLMSkeletonConfig:
     # precision (e.g. float32) to avoid bf16 inverse/scaling drift.
     folded_runtime_dtype: torch.dtype | None = None
     recovery_dtype: torch.dtype | None = None
+    # Negative controls (Stage 8.2 audit). "none" -> the verified masked path.
+    # "wrong_vocab_recovery" recovers masked logits with an intentionally wrong
+    # vocab permutation/scale (expected: tokens mismatch, large recovered err).
+    # "plaintext_weights_on_masked_hidden" feeds the masked hidden into the
+    # plain (folding-disabled) output head (expected: mismatch). Both are used
+    # to prove the masked path is actually exercised (and that breaking it
+    # breaks the result).
+    negative_control: str = "none"
 
 
 # ---------------------------------------------------------------------------
@@ -815,6 +824,57 @@ def _masked_output_boundary(
 
 
 # ---------------------------------------------------------------------------
+# Negative controls (Stage 8.2 audit)
+# ---------------------------------------------------------------------------
+
+NEGATIVE_CONTROLS = (
+    "none", "wrong_vocab_recovery", "plaintext_weights_on_masked_hidden",
+)
+
+
+def _wrong_vocab_mask(vm: VocabLogitMask, seed: int) -> VocabLogitMask:
+    """An intentionally WRONG vocab mask (independent random permutation +
+    scale). Its inverse does not invert the real masking, so recovering masked
+    logits with it scrambles the vocabulary -> token mismatch."""
+    vocab = int(vm.permutation.shape[0])
+    g = torch.Generator(device=vm.permutation.device).manual_seed(seed)
+    return make_vocab_logit_mask(vocab, vm.scale.dtype, vm.permutation.device, g)
+
+
+def _negative_control_recovered_logits(
+    negative_control: str, logits_tilde: torch.Tensor, h_tilde: torch.Tensor,
+    plain_logits: torch.Tensor, bw: CausalLMBoundaryWeights,
+    vm_rec: VocabLogitMask, eps: float, seed: int,
+) -> tuple[torch.Tensor, float]:
+    """Recover masked logits under the requested negative control.
+
+    Returns ``(recovered_logits, recovered_logits_max_abs_error_vs_plain)``.
+    For ``none`` this is the verified TEE recovery (error ~ 0); the negative
+    controls deliberately produce wrong logits (large error)."""
+    nc = negative_control or "none"
+    dt = plain_logits.dtype
+    if nc == "wrong_vocab_recovery":
+        wrong = _wrong_vocab_mask(vm_rec, seed)
+        rec = recover_vocab_logits(logits_tilde, wrong)
+    elif nc == "plaintext_weights_on_masked_hidden":
+        # Folding-disabled output path: treat the *masked* hidden as if it were
+        # plaintext and run the plain final-norm + LM head. No de-masking ->
+        # wrong logits.
+        fn = final_norm_lm_head_plain(
+            h_tilde.to(dt), bw.final_norm_weight.to(dt),
+            bw.lm_head_weight.to(dt), eps)
+        rec = fn["logits"]
+    elif nc == "none":
+        rec = recover_vocab_logits(logits_tilde, vm_rec)
+    else:
+        raise ValueError(f"unknown negative_control {negative_control!r}; "
+                         f"expected one of {NEGATIVE_CONTROLS}")
+    rec = rec.to(dt)
+    err = float((rec - plain_logits).abs().max().item())
+    return rec, err
+
+
+# ---------------------------------------------------------------------------
 # Masked full-model prefill
 # ---------------------------------------------------------------------------
 
@@ -913,13 +973,17 @@ def hf_causal_lm_masked_prefill(
         masks.vocab_mask, eps, rec_dtype)
     vm_rec = (masks.vocab_mask if rec_dtype is None
               else _cast_vocab_mask(masks.vocab_mask, rec_dtype))
-    recovered_logits = recover_vocab_logits(out["logits_tilde"], vm_rec)
+    nc = getattr(config, "negative_control", "none") or "none"
+    recovered_logits, nc_recovered_err = _negative_control_recovered_logits(
+        nc, out["logits_tilde"], h_L_tilde, out["logits_plain"], bw, vm_rec,
+        eps, config.seed + 777)
     next_token_from_masked = greedy_sample(recovered_logits[:, -1, :])
     greedy_match = float(
         (plain["next_token_plain"] == next_token_from_masked)
         .to(torch.float32).mean().item())
 
-    recovered_err = out["metrics"]["recovered_logits_max_abs_error"]
+    recovered_err = (out["metrics"]["recovered_logits_max_abs_error"]
+                     if nc == "none" else nc_recovered_err)
     diagnostics = _logit_diagnostics(
         out["logits_plain"], recovered_logits, recovered_err)
     diagnostics["embedding_boundary_max_abs_err"] = embedding_mask_err
@@ -942,6 +1006,7 @@ def hf_causal_lm_masked_prefill(
             out["metrics"]["masked_logits_max_abs_error"],
         "recovered_logits_max_abs_error": recovered_err,
         "greedy_token_match_rate": greedy_match,
+        "negative_control": nc,
         "diagnostics": diagnostics,
     }
     metrics["allclose"] = bool(
@@ -992,6 +1057,7 @@ def hf_causal_lm_masked_greedy_decode(
     rt_dtype = config.folded_runtime_dtype
     rec_dtype = config.recovery_dtype
     runtime_cast = rt_dtype is not None and rt_dtype != dtype
+    nc = getattr(config, "negative_control", "none") or "none"
 
     pre = hf_causal_lm_masked_prefill(input_ids, weights, layer_configs, masks,
                                       config)
@@ -1058,10 +1124,14 @@ def hf_causal_lm_masked_greedy_decode(
         vm_rec = (masks.vocab_mask if rec_dtype is None
                   else _cast_vocab_mask(masks.vocab_mask, rec_dtype))
         masked_logits_err = out["metrics"]["masked_logits_max_abs_error"]
-        recovered_logits_err = out["metrics"]["recovered_logits_max_abs_error"]
+        recovered_logits, nc_rec_err = _negative_control_recovered_logits(
+            nc, out["logits_tilde"], h_tilde, out["logits_plain"], bw, vm_rec,
+            eps, config.seed + 777)
+        recovered_logits_err = (
+            out["metrics"]["recovered_logits_max_abs_error"]
+            if nc == "none" else nc_rec_err)
         tok_plain = greedy_sample(fn_plain["logits"][:, -1, :])
-        tok_masked = greedy_sample(
-            recover_vocab_logits(out["logits_tilde"], vm_rec)[:, -1, :])
+        tok_masked = greedy_sample(recovered_logits[:, -1, :])
         step_metrics.append({
             "step": step, "position": position,
             "final_hidden_error": final_hidden_err,

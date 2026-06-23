@@ -1,0 +1,8 @@
+{"id": "en_privacy", "prompt": "Explain how a privacy-preserving language model service can answer a user's question without the GPU ever seeing the plaintext prompt or the recovered output tokens."}
+{"id": "en_numeric", "prompt": "When folding affine layer-norm scales and orthogonal masks into linear weights in float32 instead of bfloat16, why does numerical precision of the recovered logits matter, and how large can the max absolute error be before greedy tokens flip?"}
+{"id": "en_masking", "prompt": "Describe the masked/folded operator path: a trusted embedding boundary, signed-permutation residual masks shared across decoder blocks, folded QKV and MLP weights, a masked KV cache, and a masked LM head whose logits are recovered by an inverse vocabulary permutation."}
+{"id": "zh_privacy", "prompt": "请解释在隐私保护的大语言模型推理中,如何让 GPU 只看到被掩码后的隐藏状态和被掩码的 logits,而明文提示词、明文 logits 和采样得到的 token 始终只留在可信执行环境内部。"}
+{"id": "zh_tee_gpu", "prompt": "在可信执行环境(TEE)与 GPU 协同推理时,把哪些算子放进 TEE、把哪些放到 GPU 上执行,会带来怎样的性能与安全权衡?请讨论边界传输量、握手 GEMM 次数以及对吞吐的影响。"}
+{"id": "zh_side_channel", "prompt": "即使隐藏状态和 logits 都被正交掩码遮蔽,注意力分数和注意力概率在 GPU 上仍然可见,这会带来哪些侧信道泄露风险?共享残差掩码相比逐层掩码又弱在哪里?"}
+{"id": "code_reasoning", "prompt": "Write a Python function that takes a list of integers and returns the indices of the two numbers that add up to a given target, using a single-pass hash map. Include a docstring and a couple of doctest examples."}
+{"id": "reasoning", "prompt": "A train leaves city A at 9:00 traveling 60 km/h toward city B, 240 km away. Another train leaves city B at 10:00 traveling 90 km/h toward city A on the same track. At what clock time do they meet, and how far from city A? Show your reasoning step by step."}

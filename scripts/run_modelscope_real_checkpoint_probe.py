@@ -64,6 +64,28 @@ def _render_markdown(r: dict) -> str:
     w()
     w(f"> {r['required_statement']}")
     w()
+    if "audit" in r:
+        a = r["audit"]
+        w("## Audit")
+        w()
+        w(f"- input_source: **{a.get('input_source')}** | prompt_count: "
+          f"**{a.get('prompt_count')}** | input_ids_shape: "
+          f"`{a.get('input_ids_shape')}`")
+        w(f"- checkpoint_source: **{a.get('checkpoint_source')}** | "
+          f"hf_remote_download_used: **{a.get('hf_remote_download_used')}** | "
+          f"tokenizer_used: **{a.get('tokenizer_used')}**")
+        w(f"- layers: **{a.get('max_layers_executed')}/"
+          f"{a.get('num_hidden_layers_total')}** | masked path used: "
+          f"embed=**{a.get('used_masked_embedding_boundary')}** "
+          f"blocks=**{a.get('used_masked_decoder_blocks')}** "
+          f"qkv=**{a.get('used_folded_qkv')}** mlp=**{a.get('used_folded_mlp')}** "
+          f"kv=**{a.get('used_masked_kv_cache')}** "
+          f"lm_head=**{a.get('used_masked_lm_head')}** "
+          f"recovery=**{a.get('used_vocab_mask_recovery')}**")
+        w(f"- negative_control: **{r.get('negative_control')}** | "
+          f"expected_to_match: **{r.get('expected_to_match')}** | "
+          f"negative_control_passed: **{r.get('negative_control_passed')}**")
+        w()
     if "hf_baseline" in r:
         hb = r["hf_baseline"]
         w("## HF baseline (full model, greedy)")
@@ -173,6 +195,18 @@ def main() -> int:
                     choices=["shared", "per_layer"])
     ap.add_argument("--block-size", type=int, default=64)
     ap.add_argument("--allow-dense-large-mask", action="store_true")
+    ap.add_argument("--prompt", default=None,
+                    help="single literal prompt (tokenized with the real "
+                         "checkpoint tokenizer)")
+    ap.add_argument("--prompt-file", default=None,
+                    help="JSONL of {\"id\":..,\"prompt\":..}; tokenized with "
+                         "the real checkpoint tokenizer")
+    ap.add_argument("--include-prompts-in-report", action="store_true",
+                    help="store full prompt text in the report (default: only "
+                         "prompt ids + length stats)")
+    ap.add_argument("--negative-control", default="none",
+                    choices=["none", "wrong_vocab_recovery",
+                             "plaintext_weights_on_masked_hidden"])
     ap.add_argument("--no-hf-baseline", action="store_true")
     ap.add_argument("--max-report-mb", type=int, default=10)
     ap.add_argument("--seed", type=int, default=2035)
@@ -194,6 +228,9 @@ def main() -> int:
         block_size=args.block_size,
         allow_dense_large_mask=args.allow_dense_large_mask,
         run_hf_baseline=not args.no_hf_baseline,
+        prompt=args.prompt, prompt_file=args.prompt_file,
+        include_prompts_in_report=args.include_prompts_in_report,
+        negative_control=args.negative_control,
         max_report_mb=args.max_report_mb, seed=args.seed)
 
     report = run_modelscope_real_checkpoint_probe(cfg)
@@ -220,6 +257,9 @@ def main() -> int:
         print(f"token_match_rate_vs_extracted="
               f"{mr['token_match_rate_vs_extracted']} "
               f"recovered_logits_err={mr['recovered_logits_max_abs_error']:.2e}")
+        print(f"negative_control={report.get('negative_control')} "
+              f"expected_to_match={report.get('expected_to_match')} "
+              f"negative_control_passed={report.get('negative_control_passed')}")
     return 0 if report["status"] in ("ok",) or report["status"].startswith(
         "skipped") else 1
 

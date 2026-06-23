@@ -281,3 +281,208 @@ def test_report_has_attention_mask_explicit_field(monkeypatch) -> None:
         ModelScopeRealCheckpointProbeConfig(device="cpu"))
     assert r["attention_mask_explicit"] is True
     assert r["no_padding_assumption"] is True
+
+
+# ---------------------------------------------------------------------------
+# Audit / prompt-file / negative-control tests (Stage 8.2 audit)
+#
+# Run the *full* probe path (extraction -> masked decode -> audit) against a
+# tiny random Qwen2 + a deterministic fake tokenizer by monkeypatching the
+# ModelScope loader. CPU, float32; no network, no CUDA, no real checkpoint.
+# ---------------------------------------------------------------------------
+
+
+class _FakeTokenizer:
+    """Deterministic char-level tokenizer over a tiny vocab (no network)."""
+
+    pad_token_id = 0
+    eos_token_id = 0
+
+    def __init__(self, vocab: int) -> None:
+        self._vocab = vocab
+
+    def _ids(self, text: str) -> list[int]:
+        ids = [(ord(c) % (self._vocab - 1)) + 1 for c in text] or [1]
+        return ids
+
+    def __call__(self, text, return_tensors=None):
+        ids = self._ids(text)
+        if return_tensors == "pt":
+            return {"input_ids": torch.tensor([ids], dtype=torch.long)}
+        return {"input_ids": ids}
+
+    def decode(self, ids, skip_special_tokens=True):
+        return "x"
+
+
+def _patch_tiny_loaded(monkeypatch, *, total_layers: int = 2,
+                       vocab: int = 64):
+    """Monkeypatch the loader to return a tiny random Qwen2 + fake tokenizer."""
+    pytest.importorskip("transformers")
+    from pllo.hf_wrappers.hf_causal_lm_skeleton import (
+        HFCausalLMSkeletonConfig, make_random_tiny_hf_causal_lm)
+    skel = HFCausalLMSkeletonConfig(
+        model_family="qwen2", max_layers=total_layers, max_vocab_size=vocab,
+        dtype=torch.float32, device="cpu", seed=7)
+    model, _mc = make_random_tiny_hf_causal_lm(skel)
+    tok = _FakeTokenizer(int(model.config.vocab_size))
+
+    def _fake_load(model_id, cache_dir, dtype, device):
+        return {"status": "ok", "model": model, "tokenizer": tok,
+                "local_path": "/fake/modelscope_cache/" + model_id,
+                "moved_to_cuda": False}
+
+    monkeypatch.setattr(M, "load_modelscope_checkpoint", _fake_load)
+    monkeypatch.setattr(M, "has_modelscope", lambda: True)
+    monkeypatch.setattr(M, "has_transformers", lambda: True)
+    return model, tok
+
+
+def _tiny_cfg(**kw):
+    base = dict(device="cpu", dtype="float32", folding_dtype="float32",
+                folded_weight_runtime_dtype="float32", recovery_dtype="float32",
+                compare_dtype="float32", prefill_seq_len=8, decode_steps=2,
+                max_layers="1", mask_mode="signed_permutation",
+                residual_mask_strategy="shared")
+    base.update(kw)
+    return ModelScopeRealCheckpointProbeConfig(**base)
+
+
+def _write_prompt_file(tmp_path):
+    p = tmp_path / "prompts.jsonl"
+    rows = [
+        {"id": "en_privacy", "prompt": "How is my private data protected?"},
+        {"id": "zh_privacy", "prompt": "我的隐私数据如何被保护?"},
+        {"id": "code", "prompt": "def add(a, b):\n    return a + b"},
+    ]
+    p.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in rows),
+                 encoding="utf-8")
+    return p, rows
+
+
+AUDIT_REQUIRED_FIELDS = (
+    "model_id", "local_checkpoint_path", "checkpoint_source",
+    "hf_remote_download_used", "tokenizer_used", "input_source",
+    "prompt_count", "prefill_seq_len", "decode_steps", "input_ids_shape",
+    "attention_mask_explicit", "num_hidden_layers_total", "max_layers_executed",
+    "hidden_size", "intermediate_size", "num_attention_heads",
+    "num_key_value_heads", "vocab_size", "dtype", "folding_dtype",
+    "folded_weight_runtime_dtype", "recovery_dtype", "compare_dtype",
+    "mask_mode", "residual_mask_strategy", "used_extracted_weights",
+    "used_masked_embedding_boundary", "used_masked_decoder_blocks",
+    "used_folded_qkv", "used_folded_mlp", "used_masked_kv_cache",
+    "used_masked_lm_head", "used_vocab_mask_recovery", "hf_baseline_only",
+    "simulated_tee_only",
+)
+
+
+# 19.
+def test_audit_fields_present(monkeypatch) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    r = run_modelscope_real_checkpoint_probe(_tiny_cfg())
+    assert r["status"] == "ok"
+    audit = r["audit"]
+    for f in AUDIT_REQUIRED_FIELDS:
+        assert f in audit, f"missing audit field {f!r}"
+    # provenance / posture
+    assert audit["checkpoint_source"] == "ModelScope"
+    assert audit["hf_remote_download_used"] is False
+    assert audit["simulated_tee_only"] is True
+    assert audit["hf_baseline_only"] is False
+    # partial-layer probe: executed < total
+    assert audit["max_layers_executed"] == 1
+    assert audit["num_hidden_layers_total"] == 2
+    # the masked operator path actually ran
+    for k in ("used_extracted_weights", "used_masked_embedding_boundary",
+              "used_masked_decoder_blocks", "used_folded_qkv",
+              "used_folded_mlp", "used_masked_kv_cache", "used_masked_lm_head",
+              "used_vocab_mask_recovery"):
+        assert audit[k] is True, k
+    # normal run -> expected to match, and it does
+    assert r["negative_control"] == "none"
+    assert r["expected_to_match"] is True
+    assert r["negative_control_passed"] is True
+
+
+# 20.
+def test_prompt_file_tokenization_real_tokenizer_or_mock(monkeypatch,
+                                                         tmp_path) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    pf, rows = _write_prompt_file(tmp_path)
+    r = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=16))
+    assert r["status"] == "ok"
+    audit = r["audit"]
+    assert audit["input_source"] == "prompt_file"
+    assert audit["prompt_count"] == len(rows)
+    assert audit["tokenizer_used"] is True
+    # input_ids: [N prompts, prefill_seq_len]
+    assert audit["input_ids_shape"] == [len(rows), 16]
+    # length stats recorded; full prompt text NOT stored by default
+    stats = audit["tokenized_length_stats"]
+    assert stats["count"] == len(rows) and stats["max"] >= stats["min"]
+    text = json.dumps(r, default=str)
+    assert "How is my private data protected?" not in text
+    # prompt ids ARE stored
+    assert "prompt_ids" in r["input"] and len(r["input"]["prompt_ids"]) == 3
+    # include flag stores prompts
+    r2 = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=16,
+                  include_prompts_in_report=True))
+    assert "How is my private data protected?" in json.dumps(r2, default=str)
+
+
+# 21.
+def test_negative_control_wrong_vocab_recovery_fails(monkeypatch,
+                                                     tmp_path) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    pf, _ = _write_prompt_file(tmp_path)
+    r = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=16,
+                  negative_control="wrong_vocab_recovery"))
+    assert r["status"] == "ok"
+    assert r["negative_control"] == "wrong_vocab_recovery"
+    assert r["expected_to_match"] is False
+    mr = r["masked_runtime"]
+    # mismatch is the expected (passing) outcome
+    assert mr["token_match_rate_vs_extracted"] < 1.0
+    assert mr["recovered_logits_max_abs_error"] > 1e-3
+    assert r["negative_control_passed"] is True
+    assert r["audit"]["used_vocab_mask_recovery"] is False
+
+
+# 22.
+def test_negative_control_plaintext_weights_on_masked_hidden_fails(
+        monkeypatch, tmp_path) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    pf, _ = _write_prompt_file(tmp_path)
+    r = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=16,
+                  negative_control="plaintext_weights_on_masked_hidden"))
+    assert r["status"] == "ok"
+    assert r["negative_control"] == "plaintext_weights_on_masked_hidden"
+    assert r["expected_to_match"] is False
+    mr = r["masked_runtime"]
+    assert mr["token_match_rate_vs_extracted"] < 1.0
+    assert mr["recovered_logits_max_abs_error"] > 1e-3
+    assert r["negative_control_passed"] is True
+
+
+# 23.
+def test_attention_mask_explicit_for_prompt_file(monkeypatch,
+                                                 tmp_path) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    pf, rows = _write_prompt_file(tmp_path)
+    r = run_modelscope_real_checkpoint_probe(
+        _tiny_cfg(prompt_file=str(pf), prefill_seq_len=16))
+    audit = r["audit"]
+    assert audit["attention_mask_explicit"] is True
+    assert audit["attention_mask_shape"] == [len(rows), 16]
+    assert r["input"]["attention_mask_all_ones"] is True
+
+
+# 24.
+def test_unknown_negative_control_rejected(monkeypatch) -> None:
+    _patch_tiny_loaded(monkeypatch)
+    with pytest.raises(ValueError):
+        run_modelscope_real_checkpoint_probe(_tiny_cfg(negative_control="bogus"))

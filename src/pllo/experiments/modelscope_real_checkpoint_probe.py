@@ -20,14 +20,17 @@ scores remain GPU-visible. Reports are compact (no tensor dumps).
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import time
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 import torch
 
 from pllo.hf_wrappers.hf_causal_lm_skeleton import (
+    NEGATIVE_CONTROLS,
     HFCausalLMSkeletonConfig,
     extract_hf_causal_lm_skeleton_weights,
     generate_hf_causal_lm_masks,
@@ -42,7 +45,9 @@ __all__ = [
     "REQUIRED_STATEMENT",
     "build_attention_mask",
     "build_caveats",
+    "build_probe_inputs",
     "has_modelscope",
+    "load_prompts",
     "load_modelscope_checkpoint",
     "resolve_dtype",
     "run_modelscope_real_checkpoint_probe",
@@ -90,6 +95,14 @@ class ModelScopeRealCheckpointProbeConfig:
     write_tensor_dumps: bool = False
     max_report_mb: int = 10
     seed: int = 2035
+    # Real-input + audit knobs (Stage 8.2 audit). ``prompt_file`` (JSONL of
+    # ``{"id","prompt"}``) takes precedence over ``prompt`` (a single literal
+    # prompt); both are tokenized with the real ModelScope checkpoint tokenizer.
+    # With neither set the probe falls back to synthetic tokens.
+    prompt: str | None = None
+    prompt_file: str | None = None
+    include_prompts_in_report: bool = False
+    negative_control: str = "none"  # none|wrong_vocab_recovery|plaintext_weights_on_masked_hidden
 
 
 # ---------------------------------------------------------------------------
@@ -343,35 +356,219 @@ def _hf_baseline(model: Any, tokenizer: Any,
     }
 
 
-def _build_input_ids(tokenizer: Any, vocab: int,
-                     config: ModelScopeRealCheckpointProbeConfig,
-                     device: str) -> torch.Tensor:
-    """Deterministic input_ids of length prefill_seq_len (tokenized prompt,
-    padded/truncated). Token *content* does not affect masked-vs-plain
-    correctness."""
+def load_prompts(
+    config: ModelScopeRealCheckpointProbeConfig,
+) -> tuple[list[dict[str, str]], str]:
+    """Resolve the prompt source.
+
+    Returns ``(prompts, input_source)`` where ``prompts`` is a list of
+    ``{"id", "prompt"}`` dicts and ``input_source`` is one of
+    ``"prompt_file"`` / ``"literal_prompt"`` / ``"synthetic_tokens"``.
+    For ``synthetic_tokens`` the list is empty (no real text)."""
+    if config.prompt_file:
+        prompts: list[dict[str, str]] = []
+        path = Path(config.prompt_file)
+        with path.open("r", encoding="utf-8") as fh:
+            for i, line in enumerate(fh):
+                line = line.strip()
+                if not line:
+                    continue
+                rec = json.loads(line)
+                prompts.append({
+                    "id": str(rec.get("id", f"prompt_{i}")),
+                    "prompt": str(rec["prompt"]),
+                })
+        if not prompts:
+            raise ValueError(f"prompt-file {config.prompt_file!r} had no rows")
+        return prompts, "prompt_file"
+    if config.prompt:
+        return [{"id": "literal_0", "prompt": config.prompt}], "literal_prompt"
+    return [], "synthetic_tokens"
+
+
+def _tokenize_pad_truncate(
+    tokenizer: Any, prompts: list[dict[str, str]], t: int,
+    pad_id: int, vocab: int,
+) -> tuple[list[list[int]], list[list[int]]]:
+    """Tokenize each prompt with the real tokenizer, then truncate/pad to ``t``.
+
+    Returns ``(padded_ids, raw_ids)`` where ``raw_ids`` is the pre-pad/truncate
+    tokenization (for length stats) and ``padded_ids`` is exactly length ``t``."""
+    raw_ids: list[list[int]] = []
+    padded_ids: list[list[int]] = []
+    for rec in prompts:
+        ids = list(tokenizer(rec["prompt"])["input_ids"])
+        raw_ids.append(ids)
+        cut = ids[:t]
+        if len(cut) < t:
+            cut = cut + [pad_id] * (t - len(cut))
+        padded_ids.append([int(x) % vocab for x in cut])
+    return padded_ids, raw_ids
+
+
+def _length_stats(raw_ids: list[list[int]]) -> dict[str, Any]:
+    lens = [len(x) for x in raw_ids]
+    if not lens:
+        return {"count": 0}
+    return {
+        "count": len(lens), "min": min(lens), "max": max(lens),
+        "mean": round(sum(lens) / len(lens), 3),
+    }
+
+
+def build_probe_inputs(
+    tokenizer: Any, vocab: int,
+    config: ModelScopeRealCheckpointProbeConfig, device: str,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    """Build ``input_ids`` [N, prefill_seq_len] plus an input-audit dict.
+
+    ``prompt_file`` / ``prompt`` modes tokenize real text with the real
+    checkpoint tokenizer, pass an explicit all-ones attention mask, and
+    truncate/pad to ``prefill_seq_len``. Token *content* does not affect the
+    masked-vs-plain correctness invariant, but real prompts make the probe a
+    real-input experiment rather than a toy random-token one."""
     t = config.prefill_seq_len
-    ids: list[int] = []
+    prompts, input_source = load_prompts(config)
+    pad_id = 0
     if tokenizer is not None:
-        try:
-            ids = tokenizer(DEFAULT_PROMPT)["input_ids"]
-        except Exception:
-            ids = []
-    if len(ids) >= t:
-        ids = ids[:t]
+        pad_id = (getattr(tokenizer, "pad_token_id", None)
+                  or getattr(tokenizer, "eos_token_id", None) or 0)
+    pad_id = int(pad_id) % max(vocab, 1)
+
+    meta: dict[str, Any] = {"input_source": input_source}
+    if input_source == "synthetic_tokens" or tokenizer is None:
+        ids: list[int] = []
+        if tokenizer is not None:
+            try:
+                ids = list(tokenizer(DEFAULT_PROMPT)["input_ids"])
+            except Exception:
+                ids = []
+        raw_len = len(ids)
+        if len(ids) >= t:
+            ids = ids[:t]
+        else:
+            g = torch.Generator().manual_seed(config.seed)
+            pad = torch.randint(0, vocab, (t - len(ids),),
+                                generator=g).tolist()
+            ids = ids + pad
+        rows = [[int(x) % vocab for x in ids[:t]]]
+        meta.update({
+            "input_source": "synthetic_tokens",
+            "prompt_count": 1,
+            "tokenizer_used": False,
+            "synthetic_seed_prompt_token_len": raw_len,
+            "tokenized_length_stats": {"count": 1, "min": raw_len,
+                                       "max": raw_len, "mean": float(raw_len)},
+            "prompt_ids": rows,
+        })
     else:
-        g = torch.Generator().manual_seed(config.seed)
-        pad = torch.randint(0, vocab, (t - len(ids),), generator=g).tolist()
-        ids = ids + pad
-    out = torch.tensor([ids[:t]], dtype=torch.long)
+        rows, raw_ids = _tokenize_pad_truncate(
+            tokenizer, prompts, t, pad_id, vocab)
+        meta.update({
+            "prompt_count": len(prompts),
+            "tokenizer_used": True,
+            "prompt_pad_token_id": pad_id,
+            "tokenized_length_stats": _length_stats(raw_ids),
+            "prompt_ids": [r[:t] for r in raw_ids],  # raw (pre-pad) token ids
+        })
+        if config.include_prompts_in_report:
+            meta["prompts"] = prompts
+            meta["prompt_id_order"] = [p["id"] for p in prompts]
+        else:
+            meta["prompt_id_order"] = [p["id"] for p in prompts]
+
+    out = torch.tensor(rows, dtype=torch.long)
+    attention_mask = torch.ones_like(out, dtype=torch.long)
     if device == "cuda" and torch.cuda.is_available():
         out = out.to("cuda")
-    return out
+        attention_mask = attention_mask.to("cuda")
+    meta["input_ids_shape"] = list(out.shape)
+    meta["attention_mask_shape"] = list(attention_mask.shape)
+    meta["attention_mask_explicit"] = True
+    meta["attention_mask_all_ones"] = bool(
+        torch.equal(attention_mask, torch.ones_like(attention_mask)))
+    return out, meta
+
+
+def _build_audit(
+    config: ModelScopeRealCheckpointProbeConfig, model_config: Any,
+    dtype_names: dict[str, str], local_path: str, total_layers: int,
+    layers_executed: int, extract_meta: dict[str, Any],
+    mask_meta: dict[str, Any], input_meta: dict[str, Any],
+    masked_ran: bool, tokenizer_used: bool,
+) -> dict[str, Any]:
+    """Self-describing audit block: enough metadata to confirm a real
+    ModelScope checkpoint, a real masked/folded operator path, real inputs,
+    and the negative-control posture -- without any tensor dumps."""
+    def _cfg(name: str, default: Any = None) -> Any:
+        return getattr(model_config, name, default)
+
+    mask_mode = mask_meta.get("mask_mode", config.mask_mode)
+    audit: dict[str, Any] = {
+        # provenance
+        "model_id": config.model_id,
+        "local_checkpoint_path": local_path,
+        "checkpoint_source": "ModelScope",
+        "hf_remote_download_used": False,
+        "tokenizer_used": bool(tokenizer_used),
+        # inputs
+        "input_source": input_meta.get("input_source"),
+        "prompt_count": input_meta.get("prompt_count"),
+        "prefill_seq_len": config.prefill_seq_len,
+        "decode_steps": config.decode_steps,
+        "input_ids_shape": input_meta.get("input_ids_shape"),
+        "attention_mask_explicit": bool(
+            input_meta.get("attention_mask_explicit", False)),
+        "attention_mask_shape": input_meta.get("attention_mask_shape"),
+        "attention_mask_all_ones": input_meta.get("attention_mask_all_ones"),
+        "tokenized_length_stats": input_meta.get("tokenized_length_stats"),
+        # model shape
+        "num_hidden_layers_total": total_layers,
+        "max_layers_executed": layers_executed,
+        "hidden_size": int(_cfg("hidden_size", extract_meta.get("hidden_size",
+                                                                0))),
+        "intermediate_size": int(_cfg("intermediate_size", 0)),
+        "num_attention_heads": int(_cfg("num_attention_heads", 0)),
+        "num_key_value_heads": int(_cfg("num_key_value_heads",
+                                        _cfg("num_attention_heads", 0))),
+        "vocab_size": int(_cfg("vocab_size", extract_meta.get("vocab_size",
+                                                              0))),
+        # dtypes
+        "dtype": dtype_names["model"],
+        "folding_dtype": dtype_names["folding"],
+        "folded_weight_runtime_dtype": dtype_names["folded_weight_runtime"],
+        "recovery_dtype": dtype_names["recovery"],
+        "compare_dtype": dtype_names["compare"],
+        # masking
+        "mask_mode": mask_mode,
+        "residual_mask_strategy": mask_meta.get("residual_mask_strategy",
+                                                config.residual_mask_strategy),
+        # operator-path evidence: True only when the masked runtime actually ran
+        "used_extracted_weights": bool(masked_ran),
+        "used_masked_embedding_boundary": bool(masked_ran),
+        "used_masked_decoder_blocks": bool(masked_ran and layers_executed > 0),
+        "used_folded_qkv": bool(masked_ran and layers_executed > 0),
+        "used_folded_mlp": bool(masked_ran and layers_executed > 0),
+        "used_masked_kv_cache": bool(masked_ran and config.decode_steps > 0),
+        "used_masked_lm_head": bool(masked_ran),
+        "used_vocab_mask_recovery": bool(
+            masked_ran and config.negative_control != "wrong_vocab_recovery"),
+        "hf_baseline_only": False,
+        "simulated_tee_only": True,
+    }
+    if mask_mode == "block_orthogonal":
+        audit["block_size"] = config.block_size
+    return audit
 
 
 def run_modelscope_real_checkpoint_probe(
     config: ModelScopeRealCheckpointProbeConfig,
 ) -> dict[str, Any]:
     """Run the Stage 8.2 real-checkpoint probe. Compact report; no tensors."""
+    if config.negative_control not in NEGATIVE_CONTROLS:
+        raise ValueError(
+            f"unknown negative_control {config.negative_control!r}; expected "
+            f"one of {NEGATIVE_CONTROLS}")
     torch.manual_seed(config.seed)
     device = config.device
     env = _collect_environment(device)
@@ -455,7 +652,8 @@ def run_modelscope_real_checkpoint_probe(
         residual_mask_strategy=config.residual_mask_strategy,
         mask_block_size=config.block_size,
         allow_dense_large_mask=config.allow_dense_large_mask,
-        folded_runtime_dtype=folded_rt, recovery_dtype=recovery_dtype)
+        folded_runtime_dtype=folded_rt, recovery_dtype=recovery_dtype,
+        negative_control=config.negative_control)
 
     try:
         _reset_peak(device)
@@ -491,7 +689,8 @@ def run_modelscope_real_checkpoint_probe(
             masks.metadata["handoff_skip_term_needs_gemm"],
     }
 
-    input_ids = _build_input_ids(tokenizer, vocab, config, device)
+    input_ids, input_meta = build_probe_inputs(tokenizer, vocab, config, device)
+    report["input"] = input_meta
 
     # extracted plaintext reference latency (plain-only) -----------------
     if config.run_extracted_plain:
@@ -548,7 +747,44 @@ def run_modelscope_real_checkpoint_probe(
     report["boundary"] = _boundary_accounting(
         config, hidden, vocab, model_dtype, n_extracted,
         masks.shared_residual_mask)
+
+    # Audit section -------------------------------------------------------
+    masked_ran = "masked_runtime" in report
+    report["audit"] = _build_audit(
+        config, model_config,
+        {"model": _name(model_dtype), "folding": _name(folding_dtype),
+         "folded_weight_runtime": _name(runtime_dtype),
+         "recovery": _name(recovery_dtype),
+         "compare": _name(resolve_dtype(config.compare_dtype, device))},
+        loaded["local_path"], total_layers, n_extracted, extract_meta,
+        masks.metadata, input_meta, masked_ran, tokenizer is not None)
+
+    # Negative-control verdict -------------------------------------------
+    expected_to_match = config.negative_control == "none"
+    token_match = (report.get("masked_runtime", {})
+                   .get("token_match_rate_vs_extracted"))
+    recovered_err = (report.get("masked_runtime", {})
+                     .get("recovered_logits_max_abs_error"))
+    observed_match = token_match == 1.0 if token_match is not None else None
+    if observed_match is None:
+        nc_passed = None
+    else:
+        nc_passed = observed_match == expected_to_match
+    report["negative_control"] = config.negative_control
+    report["expected_to_match"] = expected_to_match
+    report["negative_control_passed"] = nc_passed
+    report["negative_control_detail"] = {
+        "observed_token_match": observed_match,
+        "token_match_rate_vs_extracted": token_match,
+        "recovered_logits_max_abs_error": recovered_err,
+    }
+
     report["caveats"] = build_caveats(config, partial)
+    if config.negative_control != "none":
+        report["caveats"].append(
+            f"negative_control={config.negative_control}: this run "
+            "INTENTIONALLY breaks the masked recovery path; mismatch is the "
+            "expected (passing) outcome.")
 
     # free GPU memory promptly
     del model, weights
