@@ -1,0 +1,58 @@
+% E5 final comparison tables (paper-ready)
+% Generated from prior experiment outputs; missing inputs are blank.
+
+\begin{table}[h]
+\centering
+\caption{Correctness across deployment stages}
+\begin{tabular}{lll}
+\hline
+Result & Pass & Source \\
+\hline
+H800 standalone E1 (no-LoRA generation) &  & e1\_json \\
+H800 standalone E2 (token scaling) &  & e2\_json \\
+H800 local package prefill (k=28) & yes & local\_prefill\_json \\
+H800 one-step logits & yes & local\_logits\_json \\
+H800 short decode (max\_new\_tokens=4) & yes & local\_decode\_json \\
+H800 remote HTTP decode scaling (E3) & yes & remote\_scaling\_json \\
+TDX-lite remote decode & yes & tdx\_lite\_json \\
+TDX-attested remote decode & yes & tdx\_attested\_json \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Deployment matrix}
+\begin{tabular}{lllllll}
+\hline
+Scenario & Boundary & Pkg loc & Needs ckpt & Needs 26GB & Attested & Tokens match \\
+\hline
+H800 local executable package & H800 (in-process) & H800 local disk & yes & yes & no & yes \\
+H800 remote HTTP decode (E3) & H800 process (client) & H800 worker & yes & no & no & yes \\
+TDX-lite remote decode & TDX guest (lite) & H800 worker & no & no & no & yes \\
+TDX-attested remote decode & TDX guest (attested) & H800 worker & no & no & yes & yes \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Security matrix}
+\begin{tabular}{lllll}
+\hline
+Asset & TDX vis & H800 vis & GPU vis & Protected \\
+\hline
+input\_ids & yes & no & no & yes \\
+prompt embeddings (plaintext) & yes & no & no & yes \\
+masked embeddings & yes & yes & yes & yes \\
+N\_0 / residual mask secrets & yes & no & no & yes \\
+vocab mask & yes & no & no & yes \\
+folded package (W\_tilde + folded head) & no & yes & yes & yes \\
+raw Qwen transformer weights & no & yes & yes & yes \\
+recovered logits & yes & no & no & yes \\
+sampled token ids & yes & no & no & yes \\
+KV cache & yes & yes & yes & yes \\
+boundary embedding artifact & yes & no & no & yes \\
+\hline
+\end{tabular}
+\end{table}

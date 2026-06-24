@@ -50,6 +50,8 @@ DEPLOYMENT_FILES = [
     "scripts/inspect_folded_package.py",
     "scripts/run_qwen7b_folded_package_load_probe.py",
     "scripts/run_tee_gpu_protocol_demo.py",
+    "src/pllo/experiments/e3_remote_decode_scaling.py",
+    "scripts/run_e3_remote_decode_scaling.py",
     "scripts/generate_tdx_attestation_evidence.py",   # runs on the TDX VM
     "scripts/write_tee_boundary_runtime_hash.py",
     "scripts/run_nonlinear_backend_microbench.py",
