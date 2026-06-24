@@ -73,3 +73,47 @@ def test_probe_consumes_existing_package(tmp_path) -> None:
     assert rc2 == 0
     assert r2["allclose"] is True
     assert r2["folded_package_valid"] is True
+
+
+def test_probe_consumes_package_built_by_build_script(tmp_path) -> None:
+    """Cross-script flow (the real H800 flow): the package is built by
+    build_qwen7b_folded_package.py and the probe CONSUMES it. The two scripts'
+    dry-run tiny models must be identical, else layer-0 weights differ and the
+    comparison fails -- this guards that parity."""
+    import importlib.util
+    import json
+    import sys
+    pkg = tmp_path / "built_pkg"
+
+    def _load(name, rel):
+        spec = importlib.util.spec_from_file_location(name, REPO_ROOT / rel)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        return m
+
+    builder = _load("buildpkg", "scripts/build_qwen7b_folded_package.py")
+    old = sys.argv
+    try:
+        sys.argv = ["prog", "--dry-run", "--output-dir", str(pkg),
+                    "--num-layers", "1", "--seed", "2035",
+                    "--write-manifest", "true"]
+        assert builder.main() == 0
+    finally:
+        sys.argv = old
+    assert (pkg / "manifest.json").exists()
+
+    probe = _load("probe", "scripts/run_qwen7b_folded_package_1layer_probe.py")
+    js = tmp_path / "probe.json"
+    try:
+        sys.argv = ["prog", "--dry-run", "--seq-len", "8",
+                    "--folded-package-path", str(pkg),
+                    "--output-json", str(js),
+                    "--output-md", str(tmp_path / "p.md")]
+        assert probe.main() == 0
+    finally:
+        sys.argv = old
+    r = json.loads(js.read_text())
+    assert r["allclose"] is True
+    assert r["max_abs_error"] == 0.0      # identical model + masks across scripts
+    assert r["worker_has_mask_secrets"] is False
+    assert r["leaked_secret_fields"] == []

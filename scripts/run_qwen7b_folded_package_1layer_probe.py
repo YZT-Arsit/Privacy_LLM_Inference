@@ -68,9 +68,13 @@ def _bool(s) -> bool:
 
 
 def _tiny_model():
+    # MUST match scripts/build_qwen7b_folded_package.py::_tiny_model EXACTLY
+    # (same num_hidden_layers etc.) so a dry-run package built there and consumed
+    # here uses the identical model -> identical layer-0 weights. Real runs pass
+    # the SAME --model-path to both, so this only matters for --dry-run parity.
     from transformers import Qwen2Config, Qwen2ForCausalLM
     mc = Qwen2Config(vocab_size=256, hidden_size=128, intermediate_size=256,
-                     num_hidden_layers=2, num_attention_heads=2,
+                     num_hidden_layers=4, num_attention_heads=2,
                      num_key_value_heads=1, max_position_embeddings=256,
                      rms_norm_eps=1e-6, rope_theta=1_000_000.0,
                      tie_word_embeddings=False)
@@ -160,15 +164,29 @@ def main() -> int:
     have_pkg = (pkg_dir / "manifest.json").exists() and not args.rebuild
     seed = _seed_from_manifest(pkg_dir, args.seed) if have_pkg else args.seed
 
-    # 1-layer masked session (same seed/config the package was built with).
+    # Consuming an existing package: the reference MUST be computed from the SAME
+    # model the package was folded from. Warn loudly on a model mismatch -- the
+    # masked input would not correspond to the package's folded weights.
+    if have_pkg:
+        man_model = getattr(load_manifest(pkg_dir), "model_path_or_id", None)
+        if man_model and args.model_path and man_model != args.model_path:
+            print("WARNING: --model-path (%s) != package model_path_or_id (%s); "
+                  "the 1-layer comparison is only valid against the model the "
+                  "package was built from." % (args.model_path, man_model))
+
+    li = args.layer_index
+    # Size the session to (layer_index + 1) layers. Each layer's masks are seeded
+    # independently (block mask seed = seed + 101*(ell+1); shared residual mask
+    # generated before the layer loop), so the masks at layer `li` are identical
+    # whether the session has li+1 or N layers -- this reproduces the masks the
+    # full N-layer package baked into its layer_{li} shard.
+    session_layers = li + 1
     cfg = MemoryOptimizedConfig(
-        num_layers=1, batch_size=1, seq_len=int(ids.shape[1]), max_new_tokens=1,
-        device=device, dtype=dtype, folding_dtype="float32",
+        num_layers=session_layers, batch_size=1, seq_len=int(ids.shape[1]),
+        max_new_tokens=1, device=device, dtype=dtype, folding_dtype="float32",
         folded_weight_device=args.folded_weight_device or device,
         mlp_down_chunk_size=args.mlp_down_chunk_size, seed=seed)
     session = MaskedQwenSession(model, mc, cfg)
-
-    li = args.layer_index
     h_tilde = session.mask_embeddings(ids)                 # boundary-masked input
 
     # in-process protected reference (has masks)

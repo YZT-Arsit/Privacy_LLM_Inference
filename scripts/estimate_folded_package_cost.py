@@ -10,6 +10,13 @@ The folded package holds the decoder-layer folded operators (q/k/v/o, gate/up,
 down) + the folded LM head. Embeddings stay trusted-side, so they are NOT in the
 package (raw model size is reported separately for context).
 
+IMPORTANT (size): the builder folds in ``--folding-dtype`` (float32 by default)
+for numerical fidelity and STORES the folded operators at that precision. So a
+bf16 model yields a float32 folded package about **2x** the bf16 parameter size
+(e.g. Qwen2.5-7B: ~13.2 GB if stored bf16, ~26.3 GB stored float32). This script
+sizes the package by the STORE dtype (``--folding-dtype``) and also reports the
+model-dtype figure for reference.
+
 Examples::
 
     # from an HF config (no weights loaded):
@@ -87,7 +94,11 @@ def main() -> int:
     ap.add_argument("--head-dim", default=None)
     ap.add_argument("--num-attention-heads", default=None)
     ap.add_argument("--num-layers", type=int, default=28)
-    ap.add_argument("--dtype", default="bfloat16")
+    ap.add_argument("--dtype", default="bfloat16",
+                    help="model load dtype (used for raw_model_size_gb)")
+    ap.add_argument("--folding-dtype", default="float32",
+                    help="precision the folded operators are STORED at (the "
+                         "builder defaults to float32 -> ~2x the bf16 size)")
     ap.add_argument("--package-dir", default=None,
                     help="if given, measure folded size from a built package")
     ap.add_argument("--fold-time-s", type=float, default=None)
@@ -99,7 +110,8 @@ def main() -> int:
     args = ap.parse_args()
 
     cfg = _maybe_config(args.model_path)
-    b = _dtype_bytes(args.dtype)
+    b = _dtype_bytes(args.dtype)                  # model dtype (raw size)
+    fb = _dtype_bytes(args.folding_dtype)         # store dtype (folded size)
     h = _dim(cfg, args, "hidden_size", "hidden_size", 3584)
     inter = _dim(cfg, args, "intermediate_size", "intermediate_size", 18944)
     vocab = _dim(cfg, args, "vocab_size", "vocab_size", 152064)
@@ -110,9 +122,10 @@ def main() -> int:
     num_layers = args.num_layers
 
     folded_params = _folded_param_count(h, inter, vocab, n_kv_dim, num_layers)
-    folded_bytes_est = folded_params * b
+    folded_bytes_est = folded_params * fb          # STORED at folding dtype
+    folded_bytes_if_model_dtype = folded_params * b
     # raw model also has embeddings (vocab*h) + small norms (context only)
-    raw_bytes_est = folded_bytes_est + vocab * h * b
+    raw_bytes_est = (folded_params + vocab * h) * b
 
     measured_gb = None
     if args.package_dir:
@@ -141,9 +154,17 @@ def main() -> int:
                  "vocab_size": vocab, "num_kv_dim": n_kv_dim,
                  "head_dim": head_dim},
         "raw_model_size_gb": round(raw_bytes_est / _GB, 4),
+        "folded_store_dtype": args.folding_dtype,
         "folded_weight_size_gb": round(folded_gb, 4),
+        "folded_weight_size_gb_estimated_store_dtype":
+            round(folded_bytes_est / _GB, 4),
+        "folded_weight_size_gb_if_model_dtype":
+            round(folded_bytes_if_model_dtype / _GB, 4),
         "folded_weight_size_source": "measured" if measured_gb is not None
         else "estimated",
+        "size_note": ("folded operators are stored at folding_dtype (%s); a bf16 "
+                      "model -> float32 folded package is ~2x the bf16 parameter "
+                      "size" % args.folding_dtype),
         "fold_time_s": args.fold_time_s,
         "disk_write_time_s": args.disk_write_time_s,
         "load_time_s": args.load_time_s,
@@ -166,7 +187,10 @@ def main() -> int:
     print(f"dtype={rep['dtype']} num_layers={num_layers} dims={rep['dims']}")
     print(f"raw_model_size_gb={rep['raw_model_size_gb']} "
           f"folded_weight_size_gb={rep['folded_weight_size_gb']} "
-          f"({rep['folded_weight_size_source']})")
+          f"({rep['folded_weight_size_source']}, store_dtype="
+          f"{rep['folded_store_dtype']})")
+    print(f"  (if stored at model dtype: "
+          f"{rep['folded_weight_size_gb_if_model_dtype']} GB)")
     print(f"transfer_size_gb={rep['transfer_size_gb']}")
     print(f"transfer_time_estimates_s={rep['transfer_time_estimates_s']}")
     print(f"one_time_setup_cost_s={rep['one_time_setup_cost_s']} "
