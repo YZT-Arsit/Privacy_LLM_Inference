@@ -355,6 +355,265 @@ def build_remote_qwen7b_probe_report(prompt: str, boundary_backend: str,
     }
 
 
+def _greedy_token(rec) -> int:
+    return int(rec.argmax(-1).item())
+
+
+def _trusted_ref_tokens(session, h_tilde, n_new: int, seq_len: int):
+    """Trusted in-process folded greedy decode (the reference the remote
+    package-backed path must reproduce). Uses the session's worker_prefill /
+    worker_decode + the trusted recover/sample -- masks never leave the boundary."""
+    import torch
+    toks = []
+    out = session.worker_prefill(h_tilde)
+    tok = _greedy_token(session.recover(out["logits_tilde"][:, -1, :]))
+    toks.append(tok)
+    kv, position = out["kv"], seq_len
+    for _ in range(n_new - 1):
+        x = session.mask_token_embedding(torch.tensor([tok]))
+        out = session.worker_decode(x, kv, position)
+        kv = out["kv"]
+        tok = _greedy_token(session.recover(out["logits_tilde"][:, -1, :]))
+        toks.append(tok)
+        position += 1
+    return toks
+
+
+def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
+    """Cross-machine package-backed prefill+decode against a **remote** folded-
+    package GPU worker.
+
+    The trusted boundary owns the model + masks: it tokenizes, masks the prompt
+    embeddings, computes the trusted in-process folded reference, then sends ONLY
+    masked embeddings + public model/RoPE metadata to the remote worker. The
+    worker loads the folded shards locally, executes package-backed prefill/decode
+    over the masked tensors (NO mask secrets, not a TEE), and returns masked
+    logits; the boundary recovers + samples. Generated tokens are compared to the
+    trusted reference. ``--dry-run`` uses a tiny model + tiny package on CPU."""
+    import time as _time
+
+    import numpy as np
+    import torch
+
+    from pllo.deployment import load_manifest, package_size_gb
+    from pllo.experiments.folded_probe_common import (
+        folded_exec_metadata, load_model_and_ids, seed_from_manifest)
+    from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession
+    from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig
+    from pllo.protocol.remote import RemoteGpuWorker
+    from pllo.protocol.security_audit import (
+        assert_no_gpu_visible_plaintext, assert_no_mask_secret_leak)
+    from pllo.protocol.tee_gpu_messages import (
+        BoundaryInitRequest, MaskedDecodeRequest, MaskedPrefillRequest,
+        ProtocolTrace)
+
+    if not args.folded_package_path:
+        raise SystemExit("--gpu-backend qwen7b_folded_package requires "
+                         "--folded-package-path")
+    dry_run = bool(getattr(args, "dry_run", False) or not args.model_path)
+    model, mc, ids, device, dtype = load_model_and_ids(args, dry_run)
+    n_new = int(args.max_new_tokens)
+
+    pkg_dir = Path(args.folded_package_path)
+    manifest = load_manifest(pkg_dir)
+    n = int(manifest.num_layers)
+    seed = seed_from_manifest(pkg_dir, args.seed)
+    if manifest.model_path_or_id and args.model_path and \
+            manifest.model_path_or_id != args.model_path:
+        print("WARNING: --model-path != package model_path_or_id (%s)."
+              % manifest.model_path_or_id)
+    seq_len = int(ids.shape[1])
+
+    cfg = MemoryOptimizedConfig(
+        num_layers=n, batch_size=1, seq_len=seq_len, max_new_tokens=n_new,
+        device=device, dtype=dtype, folding_dtype="float32",
+        folded_weight_device=device, seed=seed)
+    session = MaskedQwenSession(model, mc, cfg)
+    h_tilde = session.mask_embeddings(ids)                  # masked, trusted-built
+    vocab_size = int(getattr(mc, "vocab_size"))
+
+    # --- trusted in-process folded reference ---------------------------------
+    ref_tokens = _trusted_ref_tokens(session, h_tilde, n_new, seq_len)
+
+    # --- remote package-backed decode ----------------------------------------
+    meta = folded_exec_metadata(session, model_name=args.model_name,
+                                num_layers=n, seq_len=seq_len,
+                                max_new_tokens=n_new, vocab_size=vocab_size)
+    trace = ProtocolTrace(boundary_backend=args.boundary_backend,
+                          gpu_backend="qwen7b_folded_package",
+                          max_new_tokens=n_new, tee_used_on_gpu=False)
+    trace.trusted_bytes += int(ids.detach().to("cpu").numpy().nbytes)
+
+    def _record(direction, method, msg):
+        (trace.record_gpu_inbound if direction == "inbound"
+         else trace.record_gpu_outbound)(msg)
+
+    def _to_np(t):
+        return np.asarray(t.detach().to("cpu").float().numpy())
+
+    def _recover_token(masked_logits):
+        rec = session.recover(torch.as_tensor(np.asarray(masked_logits)).to(
+            session.compute_device, session.fdtype))
+        trace.trusted_bytes += int(np.asarray(rec.detach().to("cpu")).nbytes)
+        return _greedy_token(rec)
+
+    worker = RemoteGpuWorker(args.gpu_worker_url, "qwen7b_folded_package",
+                             recorder=_record)
+    _t0 = _time.perf_counter()
+    health = worker.health()
+    init_resp = worker.init(BoundaryInitRequest(
+        session_id="folded-0", hidden_size=int(getattr(mc, "hidden_size")),
+        vocab_size=vocab_size, num_layers=n, dtype=dtype,
+        gpu_backend="qwen7b_folded_package", folded_lm_head=None,
+        public_metadata=meta))
+    trace.tee_used_on_gpu = bool(init_resp.tee_used_on_gpu)
+    trace.bump_boundary("init")
+
+    pkg_tokens: list[int] = []
+    pre = worker.prefill(MaskedPrefillRequest(
+        session_id="folded-0", masked_embeddings=_to_np(h_tilde),
+        positions=list(range(seq_len)), batch_size=1, seq_len=seq_len))
+    trace.bump_boundary("prefill")
+    tok = _recover_token(pre.masked_logits)
+    pkg_tokens.append(tok)
+    position = seq_len
+    for step in range(n_new - 1):
+        x = session.mask_token_embedding(torch.tensor([tok]))
+        trace.bump_boundary("mask_token_embedding")
+        dec = worker.decode(MaskedDecodeRequest(
+            session_id="folded-0", masked_embedding=_to_np(x),
+            position=position, step=step + 1))
+        trace.bump_boundary("decode")
+        tok = _recover_token(dec.masked_logits)
+        pkg_tokens.append(tok)
+        position += 1
+    latency_s = _time.perf_counter() - _t0
+    # peak GPU memory is measured server-side; read it back over /health.
+    peak_mb = None
+    try:
+        peak_mb = worker.health().get("peak_gpu_memory_mb")
+    except Exception:                                        # noqa: BLE001
+        pass
+    worker.close()
+
+    # --- server's own view of the package (from the init notes) --------------
+    snotes: dict = {}
+    try:
+        snotes = json.loads(init_resp.notes)
+    except Exception:                                        # noqa: BLE001
+        pass
+
+    # --- audit the EXACT recorded GPU traffic --------------------------------
+    plaintext_fields, secret_fields, audit_passed = [], [], None
+    if run_audit:
+        plaintext_fields = assert_no_gpu_visible_plaintext(
+            trace, raw_prompt=args.prompt,
+            input_ids=ids.detach().to("cpu").numpy(),
+            generated_token_ids=np.asarray([pkg_tokens], dtype=np.int64)
+            if pkg_tokens else None, raise_on_fail=False)
+        secret_fields = assert_no_mask_secret_leak(trace, None,
+                                                   raise_on_fail=False)
+        audit_passed = bool(not plaintext_fields and not secret_fields
+                            and not trace.tee_used_on_gpu)
+
+    matches = sum(1 for a, b in zip(pkg_tokens, ref_tokens) if a == b)
+    token_match_rate = matches / max(1, len(ref_tokens))
+    tokens_exact_match = bool(pkg_tokens == ref_tokens)
+
+    report = {
+        "stage": "qwen7b_folded_remote_package_decode",
+        "mode": "boundary_client",
+        "dry_run": dry_run,
+        "model_name": args.model_name,
+        "gpu_worker_remote": True,
+        "gpu_worker_url": args.gpu_worker_url,
+        "server_health": health,
+        "gpu_backend": "qwen7b_folded_package",
+        "gpu_backend_server_reported": init_resp.gpu_backend,
+        "boundary_backend": args.boundary_backend,
+        "tee_used": False,
+        "tee_used_on_gpu": trace.tee_used_on_gpu,
+        "num_exec_layers": n, "num_package_layers": n,
+        "seq_len": seq_len, "dtype": dtype, "seed": seed,
+        "max_new_tokens": n_new,
+        "folded_package_path": str(pkg_dir),
+        "folded_package_loaded": bool(snotes.get("folded_package_loaded", False)),
+        "folded_package_valid": bool(snotes.get("folded_package_valid"))
+        if snotes.get("folded_package_valid") is not None else None,
+        "package_size_gb": round(package_size_gb(pkg_dir), 6),
+        "num_shards": snotes.get("num_shards"),
+        "manifest_hash": snotes.get("manifest_hash"),
+        "package_backed_prefill": True,
+        "package_backed_decode": True,
+        "reference_token_ids": ref_tokens,
+        "package_token_ids": pkg_tokens,
+        "tokens_exact_match": tokens_exact_match,
+        "token_match_rate": token_match_rate,
+        "worker_has_mask_secrets": bool(
+            snotes.get("worker_has_mask_secrets", False)),
+        "gpu_visible_plaintext_fields": plaintext_fields,
+        "leaked_secret_fields": secret_fields,
+        "audit_performed": run_audit,
+        "audit_passed": audit_passed,
+        "boundary_calls": trace.boundary_calls,
+        "gpu_calls": trace.gpu_calls,
+        "trusted_bytes": trace.trusted_bytes,
+        "gpu_bytes": trace.gpu_bytes,
+        "gpu_inbound_message_count": len(trace.gpu_inbound_messages),
+        "gpu_outbound_message_count": len(trace.gpu_outbound_messages),
+        "latency_s": latency_s,
+        "peak_gpu_memory_mb": peak_mb,
+        # Strict-deployment provisioning fields (folded-weight package).
+        "folded_weight_setup_required": True,
+        "folded_weight_source": "trusted_setup",
+        "worker_has_mask_secrets_claim": False,
+        "note": "cross-machine package-backed masked prefill+decode: the trusted "
+                "boundary sent only masked embeddings + public model/RoPE "
+                "metadata; the untrusted worker executed the folded shards (no "
+                "mask secrets, tee_used_on_gpu=False). TDX attestation is NOT "
+                "claimed by this run -- rerun the attested demo on TDX if the "
+                "measured trusted files changed.",
+    }
+    return report
+
+
+def _write_remote_folded_md(path: Path, r: dict) -> None:
+    L = ["# Cross-machine package-backed decode (%s)" % r["stage"], "",
+         "- model_name=`%s`  seq_len=%s  dtype=%s  seed=%s  max_new_tokens=%s"
+         % (r["model_name"], r["seq_len"], r["dtype"], r["seed"],
+            r["max_new_tokens"]),
+         "- gpu_worker_remote=%s  url=`%s`  gpu_backend=`%s`"
+         % (r["gpu_worker_remote"], r["gpu_worker_url"], r["gpu_backend"]),
+         "- folded_package_path=`%s`  num_shards=%s  package_size_gb=%s"
+         % (r["folded_package_path"], r["num_shards"], r["package_size_gb"]),
+         "- manifest_hash=`%s`" % r["manifest_hash"],
+         "- **folded_package_loaded=%s** **folded_package_valid=%s**"
+         % (r["folded_package_loaded"], r["folded_package_valid"]),
+         "- **package_backed_prefill=%s** **package_backed_decode=%s**"
+         % (r["package_backed_prefill"], r["package_backed_decode"]),
+         "- **worker_has_mask_secrets=%s** **tee_used_on_gpu=%s**"
+         % (r["worker_has_mask_secrets"], r["tee_used_on_gpu"]),
+         "", "## Generated tokens (remote package vs in-process reference)", "",
+         "- reference_token_ids=%s" % r["reference_token_ids"],
+         "- package_token_ids=%s" % r["package_token_ids"],
+         "- **tokens_exact_match=%s**  token_match_rate=%.4f"
+         % (r["tokens_exact_match"], r["token_match_rate"]),
+         "", "## Security audit + accounting", "",
+         "- audit_performed=%s  **audit_passed=%s**"
+         % (r["audit_performed"], r["audit_passed"]),
+         "- gpu_visible_plaintext_fields=%s  leaked_secret_fields=%s"
+         % (r["gpu_visible_plaintext_fields"] or "[]",
+            r["leaked_secret_fields"] or "[]"),
+         "- boundary_calls=`%s`  gpu_calls=`%s`"
+         % (r["boundary_calls"], r["gpu_calls"]),
+         "- trusted_bytes=%s  gpu_bytes=%s  latency_s=%s  peak_gpu_memory_mb=%s"
+         % (r["trusted_bytes"], r["gpu_bytes"], r["latency_s"],
+            r["peak_gpu_memory_mb"]),
+         "", "_%s_" % r["note"]]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(L) + "\n", encoding="utf-8")
+
+
 def _write_md(path: Path, r: dict) -> None:
     lines = [
         f"# TEE ↔ GPU protocol demo ({r['mode']})", "",
@@ -449,6 +708,9 @@ def main() -> int:
                     help="gpu_worker_server: bind port")
     ap.add_argument("--gpu-worker-url", default=None,
                     help="boundary_client: URL of the remote GPU worker server")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="qwen7b_folded_package boundary_client: tiny model + "
+                         "tiny package on CPU (never a paper result)")
     ap.add_argument("--audit", default="true")
     ap.add_argument("--attestation-evidence", default=None,
                     help="path to TDX attestation evidence JSON from the VM "
@@ -506,6 +768,52 @@ def main() -> int:
         if not args.gpu_worker_url:
             ap.error("--mode boundary_client requires --gpu-worker-url")
         gpu_worker_url = args.gpu_worker_url
+
+    # --- cross-machine package-backed prefill+decode (the executable folded
+    #     path over HTTP); self-contained, no TDX-attestation overclaim --------
+    if (args.mode == "boundary_client"
+            and args.gpu_backend == "qwen7b_folded_package"):
+        report = build_remote_folded_package_decode_report(args, _bool(args.audit))
+        if args.output_json:
+            p = Path(args.output_json)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(report, indent=2, default=str),
+                         encoding="utf-8")
+        if args.output_md:
+            _write_remote_folded_md(Path(args.output_md), report)
+        print("=== cross-machine package-backed decode (%s) ===" % report["stage"])
+        print("gpu_worker_remote=%s url=%s gpu_backend_server_reported=%s"
+              % (report["gpu_worker_remote"], report["gpu_worker_url"],
+                 report["gpu_backend_server_reported"]))
+        print("folded_package_loaded=%s folded_package_valid=%s "
+              "package_backed_prefill=%s package_backed_decode=%s"
+              % (report["folded_package_loaded"], report["folded_package_valid"],
+                 report["package_backed_prefill"], report["package_backed_decode"]))
+        print("worker_has_mask_secrets=%s tee_used_on_gpu=%s"
+              % (report["worker_has_mask_secrets"], report["tee_used_on_gpu"]))
+        print("reference_token_ids=%s" % report["reference_token_ids"])
+        print("package_token_ids  =%s" % report["package_token_ids"])
+        print("tokens_exact_match=%s token_match_rate=%.4f latency_s=%.3f "
+              "peak_gpu_memory_mb=%s"
+              % (report["tokens_exact_match"], report["token_match_rate"],
+                 report["latency_s"], report["peak_gpu_memory_mb"]))
+        print("boundary_calls=%s gpu_calls=%s trusted_bytes=%s gpu_bytes=%s"
+              % (report["boundary_calls"], report["gpu_calls"],
+                 report["trusted_bytes"], report["gpu_bytes"]))
+        print("gpu_visible_plaintext_fields=%s leaked_secret_fields=%s"
+              % (report["gpu_visible_plaintext_fields"] or "none",
+                 report["leaked_secret_fields"] or "none"))
+        print("audit_passed=%s" % report["audit_passed"])
+        ok = (report["folded_package_loaded"]
+              and report["tokens_exact_match"]
+              and not report["worker_has_mask_secrets"]
+              and not report["tee_used_on_gpu"]
+              and not report["leaked_secret_fields"]
+              and not report["gpu_visible_plaintext_fields"]
+              and report["audit_passed"] is not False)
+        print("\nREMOTE PACKAGE-BACKED DECODE %s"
+              % ("PASSED" if ok else "FAILED"))
+        return 0 if ok else 1
 
     if gpu_worker_url is not None and args.gpu_backend == "qwen7b":
         # Cross-machine: real /health + /init + audit + attestation probe vs the

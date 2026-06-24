@@ -60,6 +60,43 @@ def load_model_and_ids(args, dry_run: bool):
     return model, model.config, ids.to(args.device), args.device, args.dtype
 
 
+def folded_exec_metadata(session, *, model_name: str, num_layers: int,
+                         seq_len: int, max_new_tokens: int, vocab_size: int
+                         ) -> dict:
+    """PUBLIC model + RoPE metadata a remote folded-package worker needs to
+    rebuild its per-layer config + RoPE caches and execute the folded shards.
+
+    Contains ONLY public hyper-parameters (head counts, head_dim, RoPE theta,
+    rms_norm_eps, biases, mask_family, dtype, sizes). It deliberately omits the
+    seed and every mask secret -- the worker reconstructs the deterministic
+    public artifacts (config + cos/sin) and never the masks."""
+    cfg0 = session.layer_configs[0]
+    fold_dtype = {torch.float32: "float32", torch.float64: "float64",
+                  torch.bfloat16: "bfloat16", torch.float16: "float16"}.get(
+        getattr(session, "fdtype", torch.float32), "float32")
+    rope_max_pos = int(seq_len) + max(0, int(max_new_tokens) - 1) + 1
+    return {
+        "model_name": str(model_name),
+        "model_type": str(cfg0.model_type),
+        "hidden_size": int(cfg0.hidden_size),
+        "intermediate_size": int(cfg0.intermediate_size),
+        "num_heads": int(cfg0.num_heads),
+        "num_key_value_heads": int(cfg0.num_key_value_heads),
+        "head_dim": int(cfg0.head_dim),
+        "rope_theta": float(cfg0.rope_theta),
+        "rms_norm_eps": float(session.eps),
+        "attention_bias": bool(cfg0.attention_bias),
+        "mlp_bias": bool(cfg0.mlp_bias),
+        "mask_family": str(cfg0.mask_family),
+        "fold_dtype": fold_dtype,
+        "rope_max_pos": rope_max_pos,
+        "num_layers": int(num_layers),
+        "vocab_size": int(vocab_size),
+        "seq_len": int(seq_len),
+        "max_new_tokens": int(max_new_tokens),
+    }
+
+
 def seed_from_manifest(pkg_dir, default: int) -> int:
     """Parse the seed from a package manifest's mask_schedule_id
     (``<sched>-seed<seed>-n<n>``) so a probe's reference masks match the package."""

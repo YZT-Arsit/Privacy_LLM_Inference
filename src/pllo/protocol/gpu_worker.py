@@ -291,6 +291,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         self.worker_has_mask_secrets = False
         self._kv: Any = None
         self._exec_layers: int | None = None
+        # public exec context (rebuilt from init public_metadata; NO mask secrets)
+        self._public: dict[str, Any] = {}
+        self._exec_ctx: Any = None        # (cfg0, cos, sin)
+        self._eps: float | None = None
+        self._num_layers: int | None = None
+        self._fdtype: Any = None
+        self.peak_gpu_memory_mb: float | None = None
 
     def init(self, req: BoundaryInitRequest) -> BoundaryInitResponse:
         from pllo.deployment import (
@@ -300,6 +307,11 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             verify_package,
         )
         self._session_id = req.session_id
+        # Public metadata only (model dims + RoPE config); the worker rebuilds its
+        # per-layer config + RoPE caches from it and NEVER receives mask secrets.
+        self._public = dict(req.public_metadata or {})
+        self._exec_ctx = None
+        self._kv = None
         if not self.folded_package_path:
             raise RuntimeError("qwen7b_folded_package worker needs "
                                "folded_package_path")
@@ -318,6 +330,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         self.folded_package_loaded = True
         notes = json.dumps({
             "folded_package_loaded": True,
+            "folded_package_valid": bool(self.package_valid)
+            if self.package_valid is not None else None,
             "folded_package_path": self.folded_package_path,
             "folded_package_size_gb": self.folded_package_size_gb,
             "manifest_hash": self.manifest_hash, "num_shards": self.num_shards,
@@ -335,7 +349,70 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "manifest_hash": self.manifest_hash, "num_shards": self.num_shards,
                 "package_valid": self.package_valid,
                 "worker_has_mask_secrets": self.worker_has_mask_secrets,
+                "peak_gpu_memory_mb": self.peak_gpu_memory_mb,
                 "tee_used_on_gpu": False}
+
+    def _ensure_exec_context(self):
+        """Rebuild the PUBLIC per-layer config + RoPE caches from the init
+        metadata so the folded shards can be executed remotely. None of these are
+        mask secrets: the per-layer block config (head counts, head_dim, RoPE
+        theta, rms_norm_eps, biases, mask_family) and the deterministic RoPE
+        cos/sin caches are public artifacts -- the masks stay on the boundary."""
+        if self._exec_ctx is not None:
+            return self._exec_ctx
+        meta = self._public or {}
+        required = ("hidden_size", "intermediate_size", "num_heads",
+                    "num_key_value_heads", "head_dim", "rope_theta",
+                    "rms_norm_eps", "num_layers", "rope_max_pos")
+        missing = [k for k in required if meta.get(k) is None]
+        if missing:
+            raise RuntimeError(
+                "qwen7b_folded_package remote exec needs public model/RoPE "
+                "metadata in the init request public_metadata; missing %s "
+                "(required: %s). No mask secrets are ever required."
+                % (missing, list(required)))
+        import torch
+        from pllo.hf_wrappers.llama_qwen_single_block import HFSingleBlockConfig
+        from pllo.ops.rope import build_rope_cache
+        fdtype = {"float32": torch.float32, "float64": torch.float64,
+                  "bfloat16": torch.bfloat16, "float16": torch.float16}.get(
+            str(meta.get("fold_dtype", "float32")), torch.float32)
+        cfg0 = HFSingleBlockConfig(
+            model_type=str(meta.get("model_type", "qwen2")),
+            hidden_size=int(meta["hidden_size"]),
+            intermediate_size=int(meta["intermediate_size"]),
+            num_heads=int(meta["num_heads"]),
+            num_key_value_heads=int(meta["num_key_value_heads"]),
+            head_dim=int(meta["head_dim"]),
+            rope_theta=float(meta["rope_theta"]),
+            rms_norm_eps=float(meta["rms_norm_eps"]),
+            attention_bias=bool(meta.get("attention_bias", False)),
+            mlp_bias=bool(meta.get("mlp_bias", False)),
+            mask_family=str(meta.get("mask_family", "pairwise_complex_scaling")),
+            dtype=fdtype, device=str(self.device))
+        cos, sin = build_rope_cache(int(meta["rope_max_pos"]), cfg0.head_dim,
+                                    cfg0.rope_theta, fdtype, self.device)
+        self._eps = float(meta["rms_norm_eps"])
+        self._num_layers = int(meta["num_layers"])
+        self._fdtype = fdtype
+        self._exec_ctx = (cfg0, cos, sin)
+        return self._exec_ctx
+
+    def _track_peak(self) -> None:
+        try:
+            import torch
+            if torch.cuda.is_available():
+                self.peak_gpu_memory_mb = float(
+                    torch.cuda.max_memory_allocated() / (1024 ** 2))
+        except Exception:                                    # noqa: BLE001
+            pass
+
+    def _masked_last_logits(self, h_tilde: Any):
+        """Apply the folded head, return last-position MASKED logits as numpy."""
+        import numpy as np
+        logits_tilde = self.run_head(h_tilde, float(self._eps))    # [B, T, V]
+        last = logits_tilde[:, -1, :]
+        return np.asarray(last.detach().to("cpu").float().numpy())
 
     def run_single_layer_prefill(self, x_tilde: Any, layer_index: int,
                                  config: Any, cos: Any, sin: Any,
@@ -396,16 +473,43 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         return out
 
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
-        raise NotImplementedError(
-            "HTTP /prefill needs the public per-layer config + RoPE caches on the "
-            "wire; not yet transported. The EXECUTABLE package-backed path is "
-            "run_prefill()/run_head()/run_decode() (in-process worker), proven in "
-            "the folded-package prefill/onestep/decode probes + "
-            "tests/test_folded_package_prefill_exec.py.")
+        """Remote package-backed prefill: stream all folded layers over the masked
+        embeddings, apply the folded head, return MASKED last-position logits.
+
+        The worker rebuilds the public per-layer config + RoPE caches from the
+        init metadata (``_ensure_exec_context``); it holds NO mask secrets and is
+        NOT a TEE. The boundary keeps the masks + recovers/samples."""
+        import torch
+        import numpy as np
+        if not self.folded_package_loaded:
+            raise RuntimeError("call init() to load the folded package first")
+        cfg0, cos, sin = self._ensure_exec_context()
+        h_tilde = torch.as_tensor(np.asarray(req.masked_embeddings)).to(
+            self.device, self._fdtype)
+        out = self.run_prefill(h_tilde, int(self._num_layers), cfg0, cos, sin,
+                               float(self._eps))            # stores masked KV
+        masked = self._masked_last_logits(out["y_tilde"])
+        self._track_peak()
+        return MaskedPrefillResponse(
+            session_id=req.session_id, masked_logits=masked,
+            kv_cache_len=int(h_tilde.shape[1]))
 
     def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
-        raise NotImplementedError(
-            "HTTP /decode not wired (see prefill); use run_decode().")
+        """Remote package-backed one-token decode over the folded layers, threading
+        the masked KV cache held on the worker. Returns MASKED next-token logits."""
+        import torch
+        import numpy as np
+        cfg0, cos, sin = self._ensure_exec_context()
+        x_tilde = torch.as_tensor(np.asarray(req.masked_embedding)).to(
+            self.device, self._fdtype)
+        out = self.run_decode(x_tilde, int(req.position), cfg0, cos, sin,
+                              float(self._eps),
+                              num_exec_layers=int(self._num_layers))
+        masked = self._masked_last_logits(out["y_tilde"])
+        self._track_peak()
+        return MaskedDecodeResponse(
+            session_id=req.session_id, masked_logits=masked,
+            kv_cache_len=int(req.position) + 1)
 
 
 def make_gpu_backend(name: str, **kwargs: Any) -> GpuBackend:

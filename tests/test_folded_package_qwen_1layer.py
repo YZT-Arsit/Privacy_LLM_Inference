@@ -109,7 +109,11 @@ def test_worker_1layer_prefill_matches_in_process(tmp_path) -> None:
     assert torch.allclose(out["y_tilde"], ref, atol=1e-5, rtol=1e-4)
 
 
-def test_full_decode_still_todo(tmp_path) -> None:
+def test_prefill_requires_public_exec_metadata(tmp_path) -> None:
+    """HTTP /prefill is now wired (see tests/test_folded_package_remote_exec.py),
+    but it needs the PUBLIC per-layer config + RoPE metadata in the init request's
+    public_metadata. Init without it -> a clear RuntimeError naming the missing
+    fields (never a silent run, and never asking for a mask secret)."""
     model, mc = _tiny()
     session, _ = _session(model, mc, n_layers=1)
     pkg = _build_1layer_package(tmp_path, session)
@@ -117,9 +121,11 @@ def test_full_decode_still_todo(tmp_path) -> None:
                                             device="cpu", dtype="float32")
     backend.init(BoundaryInitRequest(
         session_id="s", hidden_size=128, vocab_size=256, num_layers=1,
-        dtype="float32", gpu_backend="qwen7b_folded_package"))
+        dtype="float32", gpu_backend="qwen7b_folded_package"))  # no exec metadata
     from pllo.protocol.tee_gpu_messages import MaskedPrefillRequest
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(RuntimeError) as ei:
         backend.prefill(MaskedPrefillRequest(
             session_id="s", masked_embeddings=[[0.0] * 128], positions=[0],
             batch_size=1, seq_len=1))
+    assert "public" in str(ei.value).lower()
+    assert "mask secrets are ever required" in str(ei.value).lower()

@@ -160,7 +160,9 @@ def test_writer_rejects_forbidden_tensor_names(tmp_path) -> None:
 
 def test_folded_package_worker_loads_without_masks(tmp_path) -> None:
     """The untrusted worker loads + verifies a folded package on init, reports it
-    holds no mask secrets, and (for now) raises a clear TODO for full decode."""
+    holds no mask secrets, and refuses package-backed prefill until the PUBLIC
+    exec metadata is supplied (it never asks for a mask secret). The wired
+    HTTP prefill/decode path is covered in test_folded_package_remote_exec.py."""
     from pllo.protocol.gpu_worker import Qwen7BFoldedPackageGpuBackend
     from pllo.protocol.tee_gpu_messages import (
         BoundaryInitRequest,
@@ -179,8 +181,10 @@ def test_folded_package_worker_loads_without_masks(tmp_path) -> None:
     assert d["worker_has_mask_secrets"] is False
     assert d["package_valid"] is True
     assert d["manifest_hash"] == compute_manifest_hash(load_manifest(pkg))
-    # full masked decode from package shards is a documented TODO for now
-    with pytest.raises(NotImplementedError):
+    # package-backed prefill needs the PUBLIC exec metadata in init; without it
+    # the worker raises a clear RuntimeError (never asks for a mask secret).
+    with pytest.raises(RuntimeError) as ei:
         backend.prefill(MaskedPrefillRequest(
             session_id="s", masked_embeddings=[[0.0] * 8],
             positions=[0], batch_size=1, seq_len=1))
+    assert "mask secrets are ever required" in str(ei.value).lower()

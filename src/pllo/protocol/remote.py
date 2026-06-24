@@ -112,7 +112,10 @@ class _Handler(BaseHTTPRequestHandler):
             srv = self.server
             self._send_json(200, {
                 "status": "ok", "gpu_backend": srv.gpu_backend_name,
-                "tee_used_on_gpu": False})
+                "tee_used_on_gpu": False,
+                # measured server-side by compute backends; None until any run
+                "peak_gpu_memory_mb": getattr(
+                    srv.backend, "peak_gpu_memory_mb", None)})
         else:
             self._send_json(404, {"error": "not_found", "path": self.path})
 
