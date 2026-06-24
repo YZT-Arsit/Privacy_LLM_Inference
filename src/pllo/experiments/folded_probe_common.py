@@ -97,6 +97,85 @@ def folded_exec_metadata(session, *, model_name: str, num_layers: int,
     }
 
 
+def folded_exec_metadata_from_meta(meta: dict, *, seq_len: int,
+                                   max_new_tokens: int) -> dict:
+    """Build the PUBLIC worker exec metadata from a boundary-artifact meta dict
+    (the lite/TDX path, where there is no full session). Copies the public config
+    fields, adds the runtime-derived ``rope_max_pos`` / ``seq_len`` /
+    ``max_new_tokens``, and DROPS the trusted-only ``seed``."""
+    rope_max_pos = int(seq_len) + max(0, int(max_new_tokens) - 1) + 1
+    out = {
+        "model_name": str(meta.get("model_name", "unknown")),
+        "model_type": str(meta.get("model_type", "qwen2")),
+        "hidden_size": int(meta["hidden_size"]),
+        "intermediate_size": int(meta["intermediate_size"]),
+        "num_heads": int(meta["num_heads"]),
+        "num_key_value_heads": int(meta["num_key_value_heads"]),
+        "head_dim": int(meta["head_dim"]),
+        "rope_theta": float(meta["rope_theta"]),
+        "rms_norm_eps": float(meta["rms_norm_eps"]),
+        "attention_bias": bool(meta.get("attention_bias", False)),
+        "mlp_bias": bool(meta.get("mlp_bias", False)),
+        "mask_family": str(meta.get("mask_family", "pairwise_complex_scaling")),
+        "fold_dtype": str(meta.get("fold_dtype", "float32")),
+        "rope_max_pos": rope_max_pos,
+        "num_layers": int(meta["num_layers"]),
+        "vocab_size": int(meta["vocab_size"]),
+        "seq_len": int(seq_len),
+        "max_new_tokens": int(max_new_tokens),
+    }
+    assert "seed" not in out, "exec metadata must never carry the mask seed"
+    return out
+
+
+class LiteBoundary:
+    """Lightweight trusted boundary for TDX-lite remote package-backed decode.
+
+    Holds ONLY the small trusted material from a boundary embedding artifact (the
+    embedding table + shared residual mask ``N_0`` + vocab mask) -- NOT the full
+    Qwen checkpoint, NOT the 26GB folded package. It can embed+mask the prompt /
+    each sampled token and recover masked logits, which is everything the boundary
+    needs to drive a remote folded-package worker. The masks are trusted-only and
+    never leave this object (only masked embeddings cross to the GPU)."""
+
+    def __init__(self, embed_weight, n0, vocab_mask, meta: dict,
+                 device: str = "cpu", fdtype=None) -> None:
+        self.compute_device = torch.device(device)
+        self.fdtype = fdtype if fdtype is not None else torch.float32
+        self.embed = embed_weight.to(self.compute_device, self.fdtype)
+        self._n0 = n0.to(self.compute_device, self.fdtype)
+        self._vocab_mask = vocab_mask
+        self.meta = dict(meta)
+        self.eps = float(meta["rms_norm_eps"])
+
+    @classmethod
+    def from_artifact(cls, art_dir, *, device: str = "cpu", fdtype=None):
+        from pllo.deployment.embedding_artifact import load_embedding_artifact
+        fdt = fdtype if fdtype is not None else torch.float32
+        embed, n0, vocab_mask, meta = load_embedding_artifact(
+            art_dir, device=device, fdtype=fdt)
+        return cls(embed, n0, vocab_mask, meta, device=device, fdtype=fdt)
+
+    def mask_embeddings(self, input_ids):
+        from pllo.ops.causal_lm_boundaries import trusted_embedding_lookup
+        x = trusted_embedding_lookup(input_ids.to(self.compute_device),
+                                     self.embed)
+        return x @ self._n0
+
+    def mask_token_embedding(self, token_ids):
+        from pllo.ops.causal_lm_boundaries import trusted_embedding_lookup
+        ids = token_ids.reshape(-1, 1).to(self.compute_device)
+        return trusted_embedding_lookup(ids, self.embed) @ self._n0
+
+    def recover(self, logits_tilde):
+        from pllo.ops.causal_lm_boundaries import recover_vocab_logits
+        return recover_vocab_logits(logits_tilde, self._vocab_mask)
+
+    def exec_metadata(self, *, seq_len: int, max_new_tokens: int) -> dict:
+        return folded_exec_metadata_from_meta(
+            self.meta, seq_len=seq_len, max_new_tokens=max_new_tokens)
+
+
 def seed_from_manifest(pkg_dir, default: int) -> int:
     """Parse the seed from a package manifest's mask_schedule_id
     (``<sched>-seed<seed>-n<n>``) so a probe's reference masks match the package."""

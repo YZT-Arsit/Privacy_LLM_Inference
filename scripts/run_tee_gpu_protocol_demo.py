@@ -395,11 +395,9 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
     import numpy as np
     import torch
 
-    from pllo.deployment import load_manifest, package_size_gb
     from pllo.experiments.folded_probe_common import (
-        folded_exec_metadata, load_model_and_ids, seed_from_manifest)
-    from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession
-    from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig
+        LiteBoundary, folded_exec_metadata, load_model_and_ids,
+        seed_from_manifest)
     from pllo.protocol.remote import RemoteGpuWorker
     from pllo.protocol.security_audit import (
         assert_no_gpu_visible_plaintext, assert_no_mask_secret_leak)
@@ -407,38 +405,70 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
         BoundaryInitRequest, MaskedDecodeRequest, MaskedPrefillRequest,
         ProtocolTrace)
 
-    if not args.folded_package_path:
-        raise SystemExit("--gpu-backend qwen7b_folded_package requires "
-                         "--folded-package-path")
-    dry_run = bool(getattr(args, "dry_run", False) or not args.model_path)
-    model, mc, ids, device, dtype = load_model_and_ids(args, dry_run)
     n_new = int(args.max_new_tokens)
+    expected = _parse_int_csv(getattr(args, "expected_token_ids", None))
+    lite = bool(_bool(getattr(args, "skip_reference", "false"))
+                or _bool(getattr(args, "boundary_lite", "false"))
+                or (getattr(args, "embedding_path", None) and not args.model_path))
+    pkg_dir = Path(args.folded_package_path) if args.folded_package_path else None
+    ref_tokens = None
+    art_size_gb = None
 
-    pkg_dir = Path(args.folded_package_path)
-    manifest = load_manifest(pkg_dir)
-    n = int(manifest.num_layers)
-    seed = seed_from_manifest(pkg_dir, args.seed)
-    if manifest.model_path_or_id and args.model_path and \
-            manifest.model_path_or_id != args.model_path:
-        print("WARNING: --model-path != package model_path_or_id (%s)."
-              % manifest.model_path_or_id)
-    seq_len = int(ids.shape[1])
+    if lite:
+        # TDX-friendly: NO full Qwen model, NO local folded package. Load only the
+        # small trusted boundary artifact (embedding table + N_0 + vocab mask) and
+        # the trusted input ids; the worker holds + verifies the folded package.
+        if not args.embedding_path:
+            raise SystemExit("lite / --skip-reference mode requires "
+                             "--embedding-path (the trusted boundary embedding "
+                             "artifact built by build_qwen7b_embedding_artifact.py)")
+        from pllo.deployment.embedding_artifact import embedding_artifact_size_gb
+        boundary = LiteBoundary.from_artifact(args.embedding_path,
+                                              device=args.device)
+        meta = boundary.meta
+        n = int(meta["num_layers"])
+        vocab_size = int(meta["vocab_size"])
+        seed = int(meta["seed"]) if meta.get("seed") is not None else None
+        ids = _resolve_input_ids(args, vocab_size)     # trusted; never sent to GPU
+        device, dtype = args.device, args.dtype
+        seq_len = int(ids.shape[1])
+        exec_meta = boundary.exec_metadata(seq_len=seq_len, max_new_tokens=n_new)
+        h_tilde = boundary.mask_embeddings(ids)
+        dry_run = bool(getattr(args, "dry_run", False))
+        art_size_gb = round(embedding_artifact_size_gb(args.embedding_path), 6)
+    else:
+        # H800 reference mode: full session owns model + masks + in-process folded
+        # reference (kept intact). Requires --folded-package-path for the manifest.
+        if not args.folded_package_path:
+            raise SystemExit("non-lite mode requires --folded-package-path (the "
+                             "in-process folded reference reads its manifest); "
+                             "use --skip-reference for the TDX-lite path")
+        from pllo.deployment import load_manifest
+        from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession
+        from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig
+        dry_run = bool(getattr(args, "dry_run", False) or not args.model_path)
+        model, mc, ids, device, dtype = load_model_and_ids(args, dry_run)
+        manifest = load_manifest(pkg_dir)
+        n = int(manifest.num_layers)
+        seed = seed_from_manifest(pkg_dir, args.seed)
+        if manifest.model_path_or_id and args.model_path and \
+                manifest.model_path_or_id != args.model_path:
+            print("WARNING: --model-path != package model_path_or_id (%s)."
+                  % manifest.model_path_or_id)
+        seq_len = int(ids.shape[1])
+        cfg = MemoryOptimizedConfig(
+            num_layers=n, batch_size=1, seq_len=seq_len, max_new_tokens=n_new,
+            device=device, dtype=dtype, folding_dtype="float32",
+            folded_weight_device=device, seed=seed)
+        boundary = MaskedQwenSession(model, mc, cfg)
+        vocab_size = int(getattr(mc, "vocab_size"))
+        h_tilde = boundary.mask_embeddings(ids)
+        ref_tokens = _trusted_ref_tokens(boundary, h_tilde, n_new, seq_len)
+        exec_meta = folded_exec_metadata(
+            boundary, model_name=args.model_name, num_layers=n, seq_len=seq_len,
+            max_new_tokens=n_new, vocab_size=vocab_size)
 
-    cfg = MemoryOptimizedConfig(
-        num_layers=n, batch_size=1, seq_len=seq_len, max_new_tokens=n_new,
-        device=device, dtype=dtype, folding_dtype="float32",
-        folded_weight_device=device, seed=seed)
-    session = MaskedQwenSession(model, mc, cfg)
-    h_tilde = session.mask_embeddings(ids)                  # masked, trusted-built
-    vocab_size = int(getattr(mc, "vocab_size"))
-
-    # --- trusted in-process folded reference ---------------------------------
-    ref_tokens = _trusted_ref_tokens(session, h_tilde, n_new, seq_len)
-
-    # --- remote package-backed decode ----------------------------------------
-    meta = folded_exec_metadata(session, model_name=args.model_name,
-                                num_layers=n, seq_len=seq_len,
-                                max_new_tokens=n_new, vocab_size=vocab_size)
+    # --- remote package-backed decode (shared loop) --------------------------
     trace = ProtocolTrace(boundary_backend=args.boundary_backend,
                           gpu_backend="qwen7b_folded_package",
                           max_new_tokens=n_new, tee_used_on_gpu=False)
@@ -452,8 +482,8 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
         return np.asarray(t.detach().to("cpu").float().numpy())
 
     def _recover_token(masked_logits):
-        rec = session.recover(torch.as_tensor(np.asarray(masked_logits)).to(
-            session.compute_device, session.fdtype))
+        rec = boundary.recover(torch.as_tensor(np.asarray(masked_logits)).to(
+            boundary.compute_device, boundary.fdtype))
         trace.trusted_bytes += int(np.asarray(rec.detach().to("cpu")).nbytes)
         return _greedy_token(rec)
 
@@ -462,10 +492,10 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
     _t0 = _time.perf_counter()
     health = worker.health()
     init_resp = worker.init(BoundaryInitRequest(
-        session_id="folded-0", hidden_size=int(getattr(mc, "hidden_size")),
+        session_id="folded-0", hidden_size=int(exec_meta["hidden_size"]),
         vocab_size=vocab_size, num_layers=n, dtype=dtype,
         gpu_backend="qwen7b_folded_package", folded_lm_head=None,
-        public_metadata=meta))
+        public_metadata=exec_meta))
     trace.tee_used_on_gpu = bool(init_resp.tee_used_on_gpu)
     trace.bump_boundary("init")
 
@@ -478,7 +508,7 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
     pkg_tokens.append(tok)
     position = seq_len
     for step in range(n_new - 1):
-        x = session.mask_token_embedding(torch.tensor([tok]))
+        x = boundary.mask_token_embedding(torch.tensor([tok]))
         trace.bump_boundary("mask_token_embedding")
         dec = worker.decode(MaskedDecodeRequest(
             session_id="folded-0", masked_embedding=_to_np(x),
@@ -516,13 +546,41 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
         audit_passed = bool(not plaintext_fields and not secret_fields
                             and not trace.tee_used_on_gpu)
 
-    matches = sum(1 for a, b in zip(pkg_tokens, ref_tokens) if a == b)
-    token_match_rate = matches / max(1, len(ref_tokens))
-    tokens_exact_match = bool(pkg_tokens == ref_tokens)
+    # --- correctness: expected ids (if provided) else in-process reference ----
+    if expected is not None:
+        reference_for_report = expected
+        reference_basis = "expected_token_ids"
+        denom = expected
+    elif ref_tokens is not None:
+        reference_for_report = ref_tokens
+        reference_basis = "in_process_folded_reference"
+        denom = ref_tokens
+    else:
+        reference_for_report = None
+        reference_basis = "none"
+        denom = None
+    if denom is not None:
+        matches = sum(1 for a, b in zip(pkg_tokens, denom) if a == b)
+        token_match_rate = matches / max(1, len(denom))
+        tokens_exact_match = bool(pkg_tokens == list(denom))
+    else:
+        token_match_rate = None
+        tokens_exact_match = None
+    # cross-check both when available (full reference run that also got expected)
+    ref_vs_expected_match = (None if (expected is None or ref_tokens is None)
+                             else bool(list(ref_tokens) == list(expected)))
+
+    pkg_size_gb = snotes.get("folded_package_size_gb")
+    if pkg_size_gb is None and pkg_dir is not None and pkg_dir.exists():
+        from pllo.deployment import package_size_gb
+        pkg_size_gb = round(package_size_gb(pkg_dir), 6)
+    pkg_path_report = (str(pkg_dir) if pkg_dir is not None
+                       else snotes.get("folded_package_path"))
 
     report = {
         "stage": "qwen7b_folded_remote_package_decode",
         "mode": "boundary_client",
+        "boundary_mode": "lite" if lite else "full_reference",
         "dry_run": dry_run,
         "model_name": args.model_name,
         "gpu_worker_remote": True,
@@ -536,19 +594,27 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
         "num_exec_layers": n, "num_package_layers": n,
         "seq_len": seq_len, "dtype": dtype, "seed": seed,
         "max_new_tokens": n_new,
-        "folded_package_path": str(pkg_dir),
+        "folded_package_path": pkg_path_report,
+        "embedding_artifact_path": args.embedding_path if lite else None,
+        "embedding_artifact_size_gb": art_size_gb,
         "folded_package_loaded": bool(snotes.get("folded_package_loaded", False)),
         "folded_package_valid": bool(snotes.get("folded_package_valid"))
         if snotes.get("folded_package_valid") is not None else None,
-        "package_size_gb": round(package_size_gb(pkg_dir), 6),
+        "package_size_gb": pkg_size_gb,
         "num_shards": snotes.get("num_shards"),
         "manifest_hash": snotes.get("manifest_hash"),
         "package_backed_prefill": True,
         "package_backed_decode": True,
-        "reference_token_ids": ref_tokens,
+        "reference_basis": reference_basis,
+        "reference_token_ids": reference_for_report,
+        "expected_token_ids": expected,
+        "ref_vs_expected_match": ref_vs_expected_match,
         "package_token_ids": pkg_tokens,
         "tokens_exact_match": tokens_exact_match,
         "token_match_rate": token_match_rate,
+        # trusted-only echo of the input ids so a later run can REPLAY them via
+        # --input-ids-file (stays in the report file; never on the GPU channel).
+        "input_ids": ids.detach().to("cpu").reshape(-1).tolist(),
         "worker_has_mask_secrets": bool(
             snotes.get("worker_has_mask_secrets", False)),
         "gpu_visible_plaintext_fields": plaintext_fields,
@@ -570,11 +636,59 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
         "note": "cross-machine package-backed masked prefill+decode: the trusted "
                 "boundary sent only masked embeddings + public model/RoPE "
                 "metadata; the untrusted worker executed the folded shards (no "
-                "mask secrets, tee_used_on_gpu=False). TDX attestation is NOT "
-                "claimed by this run -- rerun the attested demo on TDX if the "
-                "measured trusted files changed.",
+                "mask secrets, tee_used_on_gpu=False). In lite mode the boundary "
+                "holds only the small embedding artifact (no full model, no "
+                "26GB package). TDX attestation is NOT claimed by this run -- "
+                "rerun the attested demo on TDX if the measured trusted files "
+                "changed.",
     }
     return report
+
+
+def _parse_int_csv(s):
+    if s is None:
+        return None
+    if isinstance(s, (list, tuple)):
+        return [int(x) for x in s]
+    parts = [p for p in str(s).replace(" ", "").split(",") if p != ""]
+    return [int(p) for p in parts] if parts else None
+
+
+def _resolve_input_ids(args, vocab_size: int):
+    """Trusted input ids for the lite boundary (NEVER sent to the GPU).
+
+    Source order: explicit ``--input-ids`` > ``--input-ids-file`` (JSON with an
+    ``input_ids`` field; e.g. a prior reference run's output) > ``--tokenizer-path``
+    (+ ``--prompt``) > deterministic dry-run ids. Errors if none is available."""
+    import torch
+    seq_len = int(args.seq_len)
+    if getattr(args, "input_ids", None):
+        ids = _parse_int_csv(args.input_ids) or [1]
+        return torch.tensor([ids[:seq_len]], dtype=torch.long)
+    if getattr(args, "input_ids_file", None):
+        data = json.loads(Path(args.input_ids_file).read_text(encoding="utf-8"))
+        raw = data.get("input_ids") if isinstance(data, dict) else data
+        if raw and isinstance(raw[0], list):
+            raw = raw[0]
+        return torch.tensor([[int(x) for x in raw][:seq_len]], dtype=torch.long)
+    if getattr(args, "tokenizer_path", None):
+        from transformers import AutoTokenizer
+        tok = AutoTokenizer.from_pretrained(
+            args.tokenizer_path, trust_remote_code=True, local_files_only=True)
+        text = args.prompt
+        if _bool(getattr(args, "use_chat_template", "true")):
+            text = tok.apply_chat_template(
+                [{"role": "user", "content": args.prompt}], tokenize=False,
+                add_generation_prompt=True)
+        ids = tok(text, return_tensors="pt")["input_ids"][:, :seq_len]
+        return ids.to(torch.long)
+    if getattr(args, "dry_run", False):
+        g = torch.Generator().manual_seed(int(args.seed))
+        return torch.randint(0, vocab_size, (1, min(seq_len, 8)), generator=g)
+    raise SystemExit(
+        "lite mode needs a trusted input source: --input-ids, --input-ids-file "
+        "(e.g. a prior reference run's output JSON), or --tokenizer-path "
+        "(+ --prompt). These stay trusted-side; the GPU never sees input ids.")
 
 
 def _write_remote_folded_md(path: Path, r: dict) -> None:
@@ -593,11 +707,20 @@ def _write_remote_folded_md(path: Path, r: dict) -> None:
          % (r["package_backed_prefill"], r["package_backed_decode"]),
          "- **worker_has_mask_secrets=%s** **tee_used_on_gpu=%s**"
          % (r["worker_has_mask_secrets"], r["tee_used_on_gpu"]),
-         "", "## Generated tokens (remote package vs in-process reference)", "",
-         "- reference_token_ids=%s" % r["reference_token_ids"],
+         "- boundary_mode=**%s**  embedding_artifact_path=`%s` (%s GB)"
+         % (r["boundary_mode"], r.get("embedding_artifact_path"),
+            r.get("embedding_artifact_size_gb")),
+         "", "## Generated tokens (remote package vs %s)" % r["reference_basis"],
+         "",
+         "- reference_basis=%s  reference_token_ids=%s"
+         % (r["reference_basis"], r["reference_token_ids"]),
+         "- expected_token_ids=%s  ref_vs_expected_match=%s"
+         % (r.get("expected_token_ids"), r.get("ref_vs_expected_match")),
          "- package_token_ids=%s" % r["package_token_ids"],
-         "- **tokens_exact_match=%s**  token_match_rate=%.4f"
-         % (r["tokens_exact_match"], r["token_match_rate"]),
+         "- **tokens_exact_match=%s**  token_match_rate=%s"
+         % (r["tokens_exact_match"],
+            "n/a" if r["token_match_rate"] is None
+            else ("%.4f" % r["token_match_rate"])),
          "", "## Security audit + accounting", "",
          "- audit_performed=%s  **audit_passed=%s**"
          % (r["audit_performed"], r["audit_passed"]),
@@ -687,6 +810,28 @@ def main() -> int:
                     choices=["mock", "qwen7b", "qwen7b_folded_package"])
     ap.add_argument("--folded-package-path", default=None,
                     help="qwen7b_folded_package: local folded-weight package dir")
+    # TDX-friendly lite boundary (no full model / no local 26GB package)
+    ap.add_argument("--embedding-path", default=None,
+                    help="qwen7b_folded_package lite: trusted boundary embedding "
+                         "artifact dir (embed table + N_0 + vocab mask)")
+    ap.add_argument("--skip-reference", default="false",
+                    help="qwen7b_folded_package: skip the in-process folded "
+                         "reference (TDX-lite). Requires --embedding-path; "
+                         "correctness checked vs --expected-token-ids if given")
+    ap.add_argument("--boundary-lite", default="false",
+                    help="alias for --skip-reference (TDX-lite boundary)")
+    ap.add_argument("--expected-token-ids", default=None,
+                    help="comma-separated token ids from a prior reference run; "
+                         "package tokens are compared against them (lite mode)")
+    ap.add_argument("--input-ids", default=None,
+                    help="lite: comma-separated trusted input ids (never sent to "
+                         "the GPU)")
+    ap.add_argument("--input-ids-file", default=None,
+                    help="lite: JSON file with an 'input_ids' field (e.g. a prior "
+                         "reference run's output JSON) to replay")
+    ap.add_argument("--tokenizer-path", default=None,
+                    help="lite: tokenizer dir to tokenize --prompt locally "
+                         "(small; no full model needed)")
     ap.add_argument("--prompt", default="Explain why privacy matters in LLMs.")
     ap.add_argument("--max-new-tokens", type=int, default=8)
     ap.add_argument("--hidden-size", type=int, default=128)
@@ -789,13 +934,18 @@ def main() -> int:
               "package_backed_prefill=%s package_backed_decode=%s"
               % (report["folded_package_loaded"], report["folded_package_valid"],
                  report["package_backed_prefill"], report["package_backed_decode"]))
-        print("worker_has_mask_secrets=%s tee_used_on_gpu=%s"
-              % (report["worker_has_mask_secrets"], report["tee_used_on_gpu"]))
-        print("reference_token_ids=%s" % report["reference_token_ids"])
+        print("boundary_mode=%s worker_has_mask_secrets=%s tee_used_on_gpu=%s"
+              % (report["boundary_mode"], report["worker_has_mask_secrets"],
+                 report["tee_used_on_gpu"]))
+        print("reference_basis=%s reference_token_ids=%s expected_token_ids=%s"
+              % (report["reference_basis"], report["reference_token_ids"],
+                 report["expected_token_ids"]))
         print("package_token_ids  =%s" % report["package_token_ids"])
-        print("tokens_exact_match=%s token_match_rate=%.4f latency_s=%.3f "
+        _tmr = ("n/a" if report["token_match_rate"] is None
+                else ("%.4f" % report["token_match_rate"]))
+        print("tokens_exact_match=%s token_match_rate=%s latency_s=%.3f "
               "peak_gpu_memory_mb=%s"
-              % (report["tokens_exact_match"], report["token_match_rate"],
+              % (report["tokens_exact_match"], _tmr,
                  report["latency_s"], report["peak_gpu_memory_mb"]))
         print("boundary_calls=%s gpu_calls=%s trusted_bytes=%s gpu_bytes=%s"
               % (report["boundary_calls"], report["gpu_calls"],
@@ -804,8 +954,15 @@ def main() -> int:
               % (report["gpu_visible_plaintext_fields"] or "none",
                  report["leaked_secret_fields"] or "none"))
         print("audit_passed=%s" % report["audit_passed"])
+        # tokens_exact_match must be True when a reference/expected basis exists;
+        # if neither was provided (tokens_exact_match is None) the security +
+        # protocol invariants still gate success (correctness reported, not gated).
+        toks_ok = (report["tokens_exact_match"] is not False)
+        if report["tokens_exact_match"] is None:
+            print("NOTE: no --expected-token-ids / reference; correctness not "
+                  "gated (security + protocol invariants still checked).")
         ok = (report["folded_package_loaded"]
-              and report["tokens_exact_match"]
+              and toks_ok
               and not report["worker_has_mask_secrets"]
               and not report["tee_used_on_gpu"]
               and not report["leaked_secret_fields"]

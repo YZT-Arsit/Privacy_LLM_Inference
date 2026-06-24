@@ -42,7 +42,9 @@ DEPLOYMENT_FILES = [
     # folded-weight provisioning may run in the TDX trusted-setup env
     "src/pllo/deployment/folded_package.py",
     "src/pllo/deployment/folded_package_manifest.py",
+    "src/pllo/deployment/embedding_artifact.py",
     "scripts/build_qwen7b_folded_package.py",
+    "scripts/build_qwen7b_embedding_artifact.py",
     "scripts/verify_folded_package.py",
     "scripts/estimate_folded_package_cost.py",
     "scripts/inspect_folded_package.py",
