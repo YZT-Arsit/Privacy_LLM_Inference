@@ -277,12 +277,24 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
 
     def __init__(self, folded_package_path: str | None = None,
                  device: str = "cuda", dtype: str = "bfloat16",
-                 verify_on_init: bool = True, **_ignored: Any) -> None:
+                 verify_on_init: bool = True,
+                 folded_lora_package_path: str | None = None,
+                 **_ignored: Any) -> None:
         self.folded_package_path = folded_package_path
+        self.folded_lora_package_path = folded_lora_package_path
         self.device = device
         self.dtype = dtype
         self.verify_on_init = bool(verify_on_init)
         self._session_id: str | None = None
+        # folded-LoRA state (optional; the no-LoRA path leaves these defaults)
+        self.lora_enabled = bool(folded_lora_package_path)
+        self.folded_lora_loaded = False
+        self.folded_lora_valid: bool | None = None
+        self.lora_rank: int | None = None
+        self.lora_alpha: float | None = None
+        self.lora_target_modules: Any = None
+        self.lora_adapter_hash: str | None = None
+        self.worker_has_raw_lora = False
         self.folded_package_loaded = False
         self.folded_package_size_gb: float | None = None
         self.manifest_hash: str | None = None
@@ -328,6 +340,30 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         # the package, by construction + verification, carries no mask secrets
         self.worker_has_mask_secrets = bool(manifest.contains_mask_secrets)
         self.folded_package_loaded = True
+
+        # optional private folded-LoRA package (no raw A/B, no masks)
+        if self.folded_lora_package_path:
+            from pllo.deployment.lora_folded_package import (
+                load_lora_meta,
+                verify_lora_folded_package,
+            )
+            lrep = verify_lora_folded_package(
+                self.folded_lora_package_path,
+                base_manifest_hash=self.manifest_hash if self.verify_on_init
+                else None)
+            self.folded_lora_valid = bool(lrep["lora_package_valid"])
+            if self.verify_on_init and not self.folded_lora_valid:
+                raise RuntimeError("folded-LoRA package failed verification: "
+                                   "%s" % lrep)
+            lmeta = load_lora_meta(self.folded_lora_package_path)
+            self.lora_rank = lmeta.get("rank")
+            self.lora_alpha = lmeta.get("alpha")
+            self.lora_target_modules = lmeta.get("target_modules")
+            self.lora_adapter_hash = lmeta.get("adapter_hash")
+            self.worker_has_raw_lora = bool(lmeta.get("contains_raw_lora", False))
+            self.lora_enabled = True
+            self.folded_lora_loaded = True
+
         notes = json.dumps({
             "folded_package_loaded": True,
             "folded_package_valid": bool(self.package_valid)
@@ -336,6 +372,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             "folded_package_size_gb": self.folded_package_size_gb,
             "manifest_hash": self.manifest_hash, "num_shards": self.num_shards,
             "worker_has_mask_secrets": self.worker_has_mask_secrets,
+            "lora_enabled": self.lora_enabled,
+            "folded_lora_loaded": self.folded_lora_loaded,
+            "folded_lora_valid": self.folded_lora_valid,
+            "lora_rank": self.lora_rank, "lora_alpha": self.lora_alpha,
+            "lora_target_modules": self.lora_target_modules,
+            "lora_adapter_hash": self.lora_adapter_hash,
+            "worker_has_raw_lora": self.worker_has_raw_lora,
             "tee_used_on_gpu": False})
         return BoundaryInitResponse(
             session_id=req.session_id, ok=True, gpu_backend=self.name,
@@ -349,6 +392,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "manifest_hash": self.manifest_hash, "num_shards": self.num_shards,
                 "package_valid": self.package_valid,
                 "worker_has_mask_secrets": self.worker_has_mask_secrets,
+                "lora_enabled": self.lora_enabled,
+                "folded_lora_loaded": self.folded_lora_loaded,
+                "folded_lora_valid": self.folded_lora_valid,
+                "folded_lora_package_path": self.folded_lora_package_path,
+                "lora_rank": self.lora_rank, "lora_alpha": self.lora_alpha,
+                "lora_target_modules": self.lora_target_modules,
+                "worker_has_raw_lora": self.worker_has_raw_lora,
                 "peak_gpu_memory_mb": self.peak_gpu_memory_mb,
                 "tee_used_on_gpu": False}
 
@@ -444,7 +494,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         if not self.folded_package_loaded:
             raise RuntimeError("call init() to load the folded package first")
         out = apply_folded_prefill(h_tilde, self.folded_package_path,
-                                   int(num_exec_layers), config, cos, sin, eps)
+                                   int(num_exec_layers), config, cos, sin, eps,
+                                   lora_package_dir=self.folded_lora_package_path)
         self._kv = out["kv"]
         self._exec_layers = int(num_exec_layers)
         return out
@@ -468,7 +519,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 else getattr(self, "_exec_layers", len(self._kv)))
         out = apply_folded_decode(x_next_tilde, self.folded_package_path,
                                   self._kv, int(position), k, config, cos, sin,
-                                  eps)
+                                  eps,
+                                  lora_package_dir=self.folded_lora_package_path)
         self._kv = out["kv"]
         return out
 

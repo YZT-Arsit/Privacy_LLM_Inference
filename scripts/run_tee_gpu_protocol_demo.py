@@ -617,6 +617,16 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
         "input_ids": ids.detach().to("cpu").reshape(-1).tolist(),
         "worker_has_mask_secrets": bool(
             snotes.get("worker_has_mask_secrets", False)),
+        # private folded-LoRA metadata (from the worker init notes; all default
+        # to no-LoRA values so the no-LoRA report schema is unchanged)
+        "lora_enabled": bool(snotes.get("lora_enabled", False)),
+        "folded_lora_loaded": bool(snotes.get("folded_lora_loaded", False)),
+        "folded_lora_valid": snotes.get("folded_lora_valid"),
+        "lora_rank": snotes.get("lora_rank"),
+        "lora_alpha": snotes.get("lora_alpha"),
+        "lora_target_modules": snotes.get("lora_target_modules"),
+        "lora_adapter_hash": snotes.get("lora_adapter_hash"),
+        "worker_has_raw_lora": bool(snotes.get("worker_has_raw_lora", False)),
         "gpu_visible_plaintext_fields": plaintext_fields,
         "leaked_secret_fields": secret_fields,
         "audit_performed": run_audit,
@@ -710,6 +720,12 @@ def _write_remote_folded_md(path: Path, r: dict) -> None:
          "- boundary_mode=**%s**  embedding_artifact_path=`%s` (%s GB)"
          % (r["boundary_mode"], r.get("embedding_artifact_path"),
             r.get("embedding_artifact_size_gb")),
+         "- lora_enabled=%s folded_lora_loaded=%s folded_lora_valid=%s "
+         "worker_has_raw_lora=%s (rank=%s alpha=%s modules=%s)"
+         % (r.get("lora_enabled"), r.get("folded_lora_loaded"),
+            r.get("folded_lora_valid"), r.get("worker_has_raw_lora"),
+            r.get("lora_rank"), r.get("lora_alpha"),
+            r.get("lora_target_modules")),
          "", "## Generated tokens (remote package vs %s)" % r["reference_basis"],
          "",
          "- reference_basis=%s  reference_token_ids=%s"
@@ -810,6 +826,9 @@ def main() -> int:
                     choices=["mock", "qwen7b", "qwen7b_folded_package"])
     ap.add_argument("--folded-package-path", default=None,
                     help="qwen7b_folded_package: local folded-weight package dir")
+    ap.add_argument("--folded-lora-package-path", default=None,
+                    help="qwen7b_folded_package: private folded-LoRA package dir "
+                         "(worker merges it; never holds raw A/B or masks)")
     # TDX-friendly lite boundary (no full model / no local 26GB package)
     ap.add_argument("--embedding-path", default=None,
                     help="qwen7b_folded_package lite: trusted boundary embedding "
@@ -884,7 +903,9 @@ def main() -> int:
                               "num_layers": args.num_layers}
         elif args.gpu_backend == "qwen7b_folded_package":
             backend_kwargs = {"folded_package_path": args.folded_package_path,
-                              "device": args.device, "dtype": args.dtype}
+                              "device": args.device, "dtype": args.dtype,
+                              "folded_lora_package_path":
+                                  args.folded_lora_package_path}
         run_gpu_worker_server(args.listen_host, args.listen_port,
                               args.gpu_backend, backend_kwargs, _bool(args.audit))
         return 0
@@ -919,6 +940,21 @@ def main() -> int:
     if (args.mode == "boundary_client"
             and args.gpu_backend == "qwen7b_folded_package"):
         report = build_remote_folded_package_decode_report(args, _bool(args.audit))
+        # Optional TDX attestation: only attached when evidence is supplied, so
+        # the default folded run still makes NO attestation claim. The folded-LoRA
+        # metadata already in `report` is thereby covered by the attested run.
+        if args.attestation_evidence:
+            if args.write_runtime_manifest:
+                write_runtime_manifest(args.write_runtime_manifest, metadata=md)
+            if args.write_runtime_hash:
+                write_runtime_hash(args.write_runtime_hash, metadata=md)
+            attach_attestation(report, evidence=args.attestation_evidence,
+                               expected_mr_td=args.expected_mr_td,
+                               manifest_path=args.write_runtime_manifest)
+            print("attestation: boundary_attested=%s runtime_hash_bound=%s "
+                  "mr_td=%s" % (report.get("boundary_attested"),
+                                report.get("runtime_hash_bound"),
+                                report.get("mr_td")))
         if args.output_json:
             p = Path(args.output_json)
             p.parent.mkdir(parents=True, exist_ok=True)
@@ -937,6 +973,12 @@ def main() -> int:
         print("boundary_mode=%s worker_has_mask_secrets=%s tee_used_on_gpu=%s"
               % (report["boundary_mode"], report["worker_has_mask_secrets"],
                  report["tee_used_on_gpu"]))
+        if report.get("lora_enabled"):
+            print("lora_enabled=True folded_lora_loaded=%s folded_lora_valid=%s "
+                  "worker_has_raw_lora=%s rank=%s alpha=%s target_modules=%s"
+                  % (report["folded_lora_loaded"], report["folded_lora_valid"],
+                     report["worker_has_raw_lora"], report["lora_rank"],
+                     report["lora_alpha"], report["lora_target_modules"]))
         print("reference_basis=%s reference_token_ids=%s expected_token_ids=%s"
               % (report["reference_basis"], report["reference_token_ids"],
                  report["expected_token_ids"]))

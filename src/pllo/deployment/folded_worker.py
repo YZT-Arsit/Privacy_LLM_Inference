@@ -140,17 +140,39 @@ def apply_folded_layer_decode(x_next_tilde: torch.Tensor,
                       "value_tilde": a["value_full"]}}
 
 
+def _maybe_merge_lora(lt: dict, lora_package_dir, ell: int) -> dict:
+    """If a folded-LoRA package is provided, merge its layer-``ell`` operators
+    into the base folded layer dict (``W_tilde += a_tilde @ b_tilde``). The worker
+    never receives raw A/B or masks -- only the folded ``*_tilde`` operators."""
+    if lora_package_dir is None:
+        return lt
+    from pllo.deployment.lora_folded_package import (
+        load_folded_lora_layer,
+        merge_folded_lora,
+    )
+    try:
+        fl = load_folded_lora_layer(lora_package_dir, ell)
+    except FileNotFoundError:
+        return lt                                    # this layer has no LoRA
+    return merge_folded_lora(lt, fl)
+
+
 def apply_folded_prefill(h_tilde: torch.Tensor, package_dir, num_exec_layers: int,
                          config: Any, cos: torch.Tensor, sin: torch.Tensor,
                          eps: float, *, layer_configs=None,
-                         empty_cache: bool = True) -> dict[str, Any]:
+                         empty_cache: bool = True,
+                         lora_package_dir=None) -> dict[str, Any]:
     """Stream the first ``num_exec_layers`` folded layers from the package over
     masked ``h_tilde`` (no masks on the worker). Returns the masked hidden after
-    those layers + the per-layer masked KV. One shard is resident at a time."""
+    those layers + the per-layer masked KV. One shard is resident at a time.
+
+    ``lora_package_dir`` (optional) merges a folded-LoRA package per layer; the
+    no-LoRA path is unchanged (default ``None``)."""
     h = h_tilde
     kv: list[dict[str, Any]] = []
     for ell in range(num_exec_layers):
-        lt = load_folded_layer(package_dir, ell)
+        lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
+                               lora_package_dir, ell)
         cfg = layer_configs[ell] if layer_configs is not None else config
         out = apply_folded_layer_prefill(h, lt, cfg, cos, sin, eps)
         h = out["y_tilde"]
@@ -164,15 +186,17 @@ def apply_folded_prefill(h_tilde: torch.Tensor, package_dir, num_exec_layers: in
 def apply_folded_decode(x_next_tilde: torch.Tensor, package_dir, kv: list,
                         position: int, num_exec_layers: int, config: Any,
                         cos: torch.Tensor, sin: torch.Tensor, eps: float, *,
-                        layer_configs=None, empty_cache: bool = True
-                        ) -> dict[str, Any]:
+                        layer_configs=None, empty_cache: bool = True,
+                        lora_package_dir=None) -> dict[str, Any]:
     """Stream a one-token masked decode over ``num_exec_layers`` folded layers
     from the package, threading the per-layer masked KV. Returns the masked hidden
-    + updated KV."""
+    + updated KV. ``lora_package_dir`` (optional) merges a folded-LoRA package per
+    layer; the no-LoRA path is unchanged (default ``None``)."""
     h = x_next_tilde
     new_kv: list[dict[str, Any]] = []
     for ell in range(num_exec_layers):
-        lt = load_folded_layer(package_dir, ell)
+        lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
+                               lora_package_dir, ell)
         cfg = layer_configs[ell] if layer_configs is not None else config
         out = apply_folded_layer_decode(h, lt, kv[ell], position, cfg, cos, sin,
                                         eps)
