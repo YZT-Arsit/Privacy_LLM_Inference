@@ -124,6 +124,10 @@ class NonlinearBackend(ABC):
     name: str = "abstract"
     # one of: "trusted_boundary" | "not_formally_claimed" | "under_discussion"
     security_status: str = "not_formally_claimed"
+    # paper-facing claim status (E3): "established" | "under_discussion".
+    # Amulet stays "under_discussion" until the advisor confirms the formal
+    # security boundary; no security is proven here.
+    security_claim_status: str = "under_discussion"
     security_note: str = ""
 
     @abstractmethod
@@ -162,4 +166,5 @@ class NonlinearBackend(ABC):
 
     def describe(self) -> dict[str, Any]:
         return {"backend": self.name, "security_status": self.security_status,
+                "security_claim_status": self.security_claim_status,
                 "security_note": self.security_note, "ops": list(OP_NAMES)}

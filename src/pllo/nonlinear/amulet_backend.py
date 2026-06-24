@@ -39,6 +39,7 @@ __all__ = ["AmuletMigratedNonlinearBackend"]
 class AmuletMigratedNonlinearBackend(NonlinearBackend):
     name = "amulet_migrated"
     security_status = "not_formally_claimed"
+    security_claim_status = "under_discussion"     # NOT proven; advisor to confirm
     security_note = ("Amulet migration is a correctness/efficiency prototype; "
                      "security is under discussion with the advisor and NOT "
                      "formally claimed. Selector-lift positions could leak if the "

@@ -181,12 +181,19 @@ def auc(scores: np.ndarray, labels: np.ndarray) -> float:
     return float((gt + 0.5 * eq) / (pos.size * neg.size))
 
 
-def _adam_update(p, g, m, v, t, lr, b1=0.9, b2=0.999, eps=1e-8):
+def _adam_update(p, g, m, v, t, lr, b1=0.9, b2=0.999, eps=1e-8,
+                 weight_decay=0.0):
+    """AdamW update (decoupled weight decay). ``weight_decay=0`` reduces to Adam.
+
+    Returns ``(p_new, m, v, update)`` where ``update = p - p_new`` (the adapter
+    update magnitude, used as the per-step ``adapter_update`` snapshot)."""
     m = b1 * m + (1 - b1) * g
     v = b2 * v + (1 - b2) * (g * g)
     mhat = m / (1 - b1 ** t)
     vhat = v / (1 - b2 ** t)
     step = lr * mhat / (np.sqrt(vhat) + eps)
+    if weight_decay:
+        step = step + lr * weight_decay * p          # decoupled (AdamW)
     return p - step, m, v, step
 
 
@@ -216,7 +223,8 @@ def run_synthetic_linear(rank: int, *, in_features: int = 16,
                          out_features: int = 8, n_train: int = 32,
                          n_eval: int = 16, steps: int = 40, lr: float = 0.05,
                          alpha: float | None = None, seed: int = 0,
-                         scale_sigma: float = 0.5) -> dict[str, Any]:
+                         scale_sigma: float = 0.5,
+                         weight_decay: float = 0.0) -> dict[str, Any]:
     """Exact masked vs plaintext LoRA linear training; full per-step metrics."""
     rng = np.random.default_rng([seed, rank, 0xA])
     alpha = float(alpha if alpha is not None else rank)
@@ -282,9 +290,11 @@ def run_synthetic_linear(rank: int, *, in_features: int = 16,
         dBp = s * (Xtr.T @ (Gp @ plain.A.T))
         plain.t += 1
         plain.A, plain.mA, plain.vA, _ = _adam_update(
-            plain.A, dAp, plain.mA, plain.vA, plain.t, lr)
+            plain.A, dAp, plain.mA, plain.vA, plain.t, lr,
+            weight_decay=weight_decay)
         plain.B, plain.mB, plain.vB, _ = _adam_update(
-            plain.B, dBp, plain.mB, plain.vB, plain.t, lr)
+            plain.B, dBp, plain.mB, plain.vB, plain.t, lr,
+            weight_decay=weight_decay)
 
         # --- protected step: base matmul offloaded to the untrusted GPU ---
         X_tilde, c = mask_input(Xtr, secrets, rng, scale_sigma)
@@ -304,9 +314,11 @@ def run_synthetic_linear(rank: int, *, in_features: int = 16,
         dBq = s * (Xtr.T @ (Gq @ prot.A.T))
         prot.t += 1
         prot.A, prot.mA, prot.vA, upA = _adam_update(
-            prot.A, dAq, prot.mA, prot.vA, prot.t, lr)
+            prot.A, dAq, prot.mA, prot.vA, prot.t, lr,
+            weight_decay=weight_decay)
         prot.B, prot.mB, prot.vB, upB = _adam_update(
-            prot.B, dBq, prot.mB, prot.vB, prot.t, lr)
+            prot.B, dBq, prot.mB, prot.vB, prot.t, lr,
+            weight_decay=weight_decay)
 
         # --- per-step comparison ---
         elp, _ = eval_loss(plain)
@@ -370,6 +382,7 @@ def run_synthetic_linear(rank: int, *, in_features: int = 16,
         "metrics": metrics, "history": hist, "trace": trace, "secrets": secrets,
         "plaintext": {
             "train_examples": Xtr, "labels": Ttr, "input_ids": None,
+            "tokenized_examples": None,
             "lora_a": snaps["lora_a"], "lora_b": snaps["lora_b"],
             "delta_w": snaps["delta_w"], "lora_grad_a": snaps["lora_grad_a"],
             "lora_grad_b": snaps["lora_grad_b"],
@@ -413,7 +426,8 @@ def run_tiny_transformer(rank: int, *, d_model: int = 8, d_ff: int = 16,
                          seq_len: int = 4, n_classes: int = 3, n_train: int = 24,
                          n_eval: int = 16, steps: int = 20, lr: float = 0.05,
                          alpha: float | None = None, seed: int = 0,
-                         scale_sigma: float = 0.5) -> dict[str, Any]:
+                         scale_sigma: float = 0.5,
+                         weight_decay: float = 0.0) -> dict[str, Any]:
     """Single-head attention + MLP with LoRA on the V projection and the MLP
     first projection; sequence classification. Exact masked vs plaintext."""
     rng = np.random.default_rng([seed, rank, 0xB])
@@ -571,10 +585,12 @@ def run_tiny_transformer(rank: int, *, d_model: int = 8, d_ff: int = 16,
         lq, gq, _ = loss_and_grad(params_q, Xtr, ytr, True, step)
         for i in range(len(params_p)):
             m, v = opt_p[i]
-            params_p[i], m, v, _ = _adam_update(params_p[i], gp[i], m, v, step, lr)
+            params_p[i], m, v, _ = _adam_update(
+                params_p[i], gp[i], m, v, step, lr, weight_decay=weight_decay)
             opt_p[i] = (m, v)
             m, v = opt_q[i]
-            params_q[i], m, v, up = _adam_update(params_q[i], gq[i], m, v, step, lr)
+            params_q[i], m, v, up = _adam_update(
+                params_q[i], gq[i], m, v, step, lr, weight_decay=weight_decay)
             opt_q[i] = (m, v)
         elp, accp, _ = evaluate(params_p)
         elq, accq, _ = evaluate(params_q)
@@ -624,6 +640,7 @@ def run_tiny_transformer(rank: int, *, d_model: int = 8, d_ff: int = 16,
         "plaintext": {
             "train_examples": Xtr, "labels": ytr.astype(np.int64),
             "input_ids": ytr.astype(np.int64),
+            "tokenized_examples": ytr.astype(np.int64),
             "lora_a": snaps["lora_a"], "lora_b": snaps["lora_b"],
             "delta_w": [b @ a for a, b in zip(snaps["lora_a"], snaps["lora_b"])],
             "lora_grad_a": snaps["lora_grad_a"],
@@ -751,13 +768,20 @@ def membership_attack(result: dict[str, Any], *, seed: int = 2
 # ===========================================================================
 
 
-def run_gpt2_probe(model_name: str = "gpt2", steps: int = 3,
+def run_gpt2_probe(model_path: str | None = None, steps: int = 3,
                    rank: int = 8) -> dict[str, Any]:
-    """GPT-2 LoRA training feasibility probe (gated on torch/transformers).
+    """GPT-2(-small) LoRA training probe -- gated on a LOCAL checkpoint.
 
-    Few-step LoRA adaptation on a small LM task. Returns a status dict; if torch
-    or a local GPT-2 checkpoint is unavailable it reports ``status='skipped'``
-    rather than failing. ``tee_used_on_gpu`` is always False."""
+    Per project policy (HF download blocked; ModelScope-only) this runs only when
+    an explicit local GPT-2 checkpoint path is supplied and torch/transformers are
+    importable; otherwise it reports ``status='skipped'`` and produces no numbers
+    (we never fabricate a GPT-2 result). ``tee_used_on_gpu`` is always False."""
+    from pathlib import Path as _P
+    if not model_path:
+        return {"task": "gpt2", "status": "skipped",
+                "reason": "no local GPT-2 checkpoint supplied "
+                          "(--gpt2-model-path); HF download is disabled",
+                "tee_used_on_gpu": False}
     try:
         import torch  # noqa: F401
         import transformers  # noqa: F401
@@ -765,11 +789,16 @@ def run_gpt2_probe(model_name: str = "gpt2", steps: int = 3,
         return {"task": "gpt2", "status": "skipped",
                 "reason": f"torch/transformers unavailable: {exc}",
                 "tee_used_on_gpu": False}
-    # Implemented as a feasibility hook; real run requires a local checkpoint and
-    # is intended for the GPU server. We do not claim a completed GPT-2 run here.
+    if not _P(model_path).exists():
+        return {"task": "gpt2", "status": "skipped",
+                "reason": f"checkpoint path not found: {model_path}",
+                "tee_used_on_gpu": False}
+    # A real run is wired to execute on a machine that has the checkpoint; the
+    # masked-base-matmul LoRA training path is shared with the tiny-transformer
+    # implementation. We do not claim a completed GPT-2 run from this environment.
     return {"task": "gpt2", "status": "available_not_run",
-            "reason": "torch present; run on the GPU server with a local "
-                      "checkpoint via the masked base-matmul boundary",
+            "reason": "local checkpoint present; execute the masked LoRA training "
+                      "path on that machine", "model_path": model_path,
             "rank": rank, "steps": steps, "tee_used_on_gpu": False}
 
 
@@ -806,10 +835,16 @@ def run_qwen_probe(model_path: str | None = None, steps: int = 1,
 
 
 def run_all(ranks: tuple[int, ...] = (4, 8, 16), *, seed: int = 0,
+            alpha: float = 16.0, weight_decay: float = 0.0,
+            gpt2_model_path: str | None = None, qwen_model_path: str | None = None,
             include_gpt2: bool = True, include_qwen: bool = True
             ) -> dict[str, Any]:
     """Run the full implemented suite (synthetic + tiny transformer for each
-    rank) plus attacks + gated probes; return a structured summary."""
+    rank) plus attacks + gated probes; return a structured summary.
+
+    Main setting: AdamW (``weight_decay`` configurable), fixed ``alpha`` across
+    ranks (so scaling = alpha/r), same seed / init / batch order for plain vs
+    protected. ``r=8`` is the main rank; ``r in {4,8,16}`` is the rank scaling."""
     from pllo.protocol.lora_training_audit import audit_lora_training_trace
 
     rows: list[dict[str, Any]] = []
@@ -817,7 +852,7 @@ def run_all(ranks: tuple[int, ...] = (4, 8, 16), *, seed: int = 0,
     audits: dict[str, Any] = {}
     for rank in ranks:
         for runner in (run_synthetic_linear, run_tiny_transformer):
-            res = runner(rank, seed=seed)
+            res = runner(rank, seed=seed, alpha=alpha, weight_decay=weight_decay)
             task = res["metrics"]["task"]
             rows.append(res["metrics"])
             rep = audit_lora_training_trace(
@@ -834,12 +869,15 @@ def run_all(ranks: tuple[int, ...] = (4, 8, 16), *, seed: int = 0,
     summary = {
         "stage": "lora_training_protection",
         "tee_used_on_gpu": False,
-        "ranks": list(ranks),
+        "optimizer": "AdamW", "weight_decay": weight_decay, "alpha": alpha,
+        "main_rank": 8, "ranks": list(ranks),
         "correctness": rows,
         "security_audit": audits,
         "attacks": attacks,
-        "gpt2_probe": run_gpt2_probe() if include_gpt2 else {"status": "disabled"},
-        "qwen_probe": run_qwen_probe() if include_qwen else {"status": "disabled"},
+        "gpt2_probe": (run_gpt2_probe(model_path=gpt2_model_path)
+                       if include_gpt2 else {"status": "disabled"}),
+        "qwen_probe": (run_qwen_probe(model_path=qwen_model_path)
+                       if include_qwen else {"status": "disabled"}),
         "all_audits_passed": all(a["audit_passed"] for a in audits.values()),
         "all_allclose": all(r["final_logits_allclose"] for r in rows),
     }

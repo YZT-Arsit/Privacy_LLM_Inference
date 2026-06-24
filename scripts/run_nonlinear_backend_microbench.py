@@ -43,6 +43,7 @@ from pllo.nonlinear.backends import (  # noqa: E402
 )
 from pllo.nonlinear.registry import (  # noqa: E402
     available_backends,
+    backend_security_claim_status,
     backend_security_status,
     make_nonlinear_backend,
 )
@@ -145,6 +146,7 @@ def run(backend_names, shapes, dtypes, iters, seed, lift_k):
                         "latency_ms": latency_ms,
                         "tee_used_on_gpu": res.tee_used_on_gpu,
                         "security_status": backend.security_status,
+                        "security_claim_status": backend.security_claim_status,
                     })
     return rows
 
@@ -159,12 +161,14 @@ def _write_csv(path: Path, rows: list[dict]) -> None:
         w.writerows(rows)
 
 
-def _write_md(path: Path, rows, sec) -> None:
+def _write_md(path: Path, rows, sec, claim) -> None:
     L = ["# Nonlinear backend microbench (Line A vs Line B)", "",
-         "Security status (NOT a proof; Amulet under discussion):",
-         f"- current: `{sec['current']}`",
-         f"- amulet_migrated: `{sec['amulet_migrated']}` "
-         "(security **not_formally_claimed**)", "",
+         "Security claim status (NOT a proof; Amulet under discussion):",
+         f"- current: status=`{sec['current']}` "
+         f"claim=`{claim['current']}`",
+         f"- amulet_migrated: status=`{sec['amulet_migrated']}` "
+         f"claim=`{claim['amulet_migrated']}` "
+         "(security **under_discussion / not proven**)", "",
          "| op | backend | shape | dtype | max_abs | rel_l2 | cosine | top1 | "
          "trusted_calls | trusted_bytes | gpu_bytes | latency_ms | tee_gpu |",
          "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -202,22 +206,25 @@ def main() -> int:
     dtypes = [d.strip() for d in args.dtypes.split(",") if d.strip()]
     rows = run(names, shapes, dtypes, args.iters, args.seed, args.lift_k)
     sec = backend_security_status()
+    claim = backend_security_claim_status()
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     summary = {"stage": "nonlinear_backend_microbench",
                "backends": names, "security_status": sec,
-               "amulet_security_claim": "not_formally_claimed (under_discussion)",
+               "security_claim_status": claim,
+               "amulet_security_claim": "under_discussion (not proven)",
                "tee_used_on_gpu": False, "rows": rows}
     (out / "nonlinear_backend_microbench.json").write_text(
         json.dumps(summary, indent=2, default=str), encoding="utf-8")
     _write_csv(out / "nonlinear_backend_microbench.csv", rows)
-    _write_md(out / "nonlinear_backend_microbench.md", rows, sec)
+    _write_md(out / "nonlinear_backend_microbench.md", rows, sec, claim)
 
     print("=== nonlinear backend microbench ===")
     print(f"backends={names} shapes={shapes} dtypes={dtypes} iters={args.iters}")
     print(f"security_status={sec}")
-    print(f"amulet_security_claim=not_formally_claimed (under_discussion)")
+    print(f"security_claim_status={claim}")
+    print(f"amulet_security_claim=under_discussion (not proven)")
     hdr = (f"{'op':10} {'backend':16} {'shape':10} {'dtype':8} {'max_abs':>10} "
            f"{'cos':>9} {'tcalls':>6} {'tbytes':>9} {'gpu_bytes':>10} {'ms':>8}")
     print(hdr)

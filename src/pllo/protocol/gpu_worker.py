@@ -123,48 +123,134 @@ class MockGpuBackend(GpuBackend):
 
 
 class Qwen7BGpuBackend(GpuBackend):
-    """Lazy-torch adapter for the real masked Qwen pipeline (GPU server only).
+    """Masked Qwen worker over the protocol, backed by ``MaskedQwenSession``.
 
-    Construction is numpy-only (no torch import) so the class can be imported and
-    audited in a CPU/test environment. A real ``prefill``/``decode`` requires
-    CUDA + a ModelScope checkpoint and the Stage 8.4 masked pipeline; that path
-    is intended to run on the GPU server. ``tee_used`` is always ``False``."""
+    Runs the validated Stage 8.4 masked decoder on the untrusted GPU. It consumes
+    only the masked hidden ``h_tilde`` (``MaskedPrefill/Decode`` payloads) + public
+    metadata and returns **masked logits** ``logits_tilde``; it never sees the raw
+    prompt, input ids, plaintext hidden, recovered logits, or sampled tokens. The
+    decoder / attention / MLP / KV cache / LM head all run here, **never in a TEE**
+    (``tee_used = False``).
+
+    torch is imported lazily. The real Qwen2.5-7B path needs CUDA + a local
+    checkpoint (``model_path``); for tests a tiny model can be injected directly
+    via ``model`` / ``model_config``. Masked KV cache is kept on the worker; the
+    boundary keeps the masks + does embedding/recovery/sampling."""
 
     name = "qwen7b"
     tee_used = False
 
     def __init__(self, model_path: str | None = None,
-                 device: str = "cuda", dtype: str = "bfloat16") -> None:
+                 device: str = "cuda", dtype: str = "bfloat16",
+                 seq_len: int = 128, num_layers: int = 28,
+                 model: Any = None, model_config: Any = None,
+                 folded_weight_device: str | None = None,
+                 mlp_down_chunk_size: int = 512, seed: int = 2035) -> None:
         self.model_path = model_path
         self.device = device
         self.dtype = dtype
-        self._session: str | None = None
+        self.seq_len = int(seq_len)
+        self.num_layers = int(num_layers)
+        self.folded_weight_device = folded_weight_device or device
+        self.mlp_down_chunk_size = int(mlp_down_chunk_size)
+        self.seed = int(seed)
+        self._session_id: str | None = None
         self._public: dict[str, Any] = {}
+        self._model = model
+        self._model_config = model_config
+        self._sess: Any = None
+        self._kv: Any = None
+        self.peak_gpu_memory_mb: float | None = None
+
+    # -- lazy model load + session build (untrusted compute) ------------------
+    def _ensure_session(self):
+        if self._sess is not None:
+            return self._sess
+        from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession
+        from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig
+        if self._model is None:
+            if not self.model_path:
+                raise RuntimeError(
+                    "qwen7b worker needs a local checkpoint (model_path) or an "
+                    "injected model; none provided")
+            from transformers import AutoModelForCausalLM  # lazy
+            import torch
+            dt = {"bfloat16": torch.bfloat16, "float16": torch.float16,
+                  "float32": torch.float32}.get(self.dtype, torch.bfloat16)
+            self._model = AutoModelForCausalLM.from_pretrained(
+                self.model_path, dtype=dt, device_map=self.device,
+                trust_remote_code=True, local_files_only=True).eval()
+            self._model_config = self._model.config
+        cfg = MemoryOptimizedConfig(
+            num_layers=self.num_layers, batch_size=1, seq_len=self.seq_len,
+            max_new_tokens=max(1, int(self._public.get("max_new_tokens", 64))),
+            device=self.device, dtype=self.dtype, folding_dtype="float32",
+            folded_weight_device=self.folded_weight_device,
+            mlp_down_chunk_size=self.mlp_down_chunk_size, seed=self.seed)
+        self._sess = MaskedQwenSession(self._model, self._model_config, cfg)
+        return self._sess
 
     def init(self, req: BoundaryInitRequest) -> BoundaryInitResponse:
-        self._session = req.session_id
+        self._session_id = req.session_id
         self._public = dict(req.public_metadata)
+        self._kv = None
         return BoundaryInitResponse(
             session_id=req.session_id, ok=True, gpu_backend=self.name,
             tee_used_on_gpu=False,
-            notes="qwen7b masked pipeline runs on the untrusted GPU; not a TEE")
+            notes="qwen7b masked decoder runs on the untrusted GPU; not a TEE")
 
     def describe(self) -> dict[str, Any]:
         return {"backend": self.name, "tee_used": self.tee_used,
                 "model_path": self.model_path, "device": self.device,
-                "dtype": self.dtype}
+                "dtype": self.dtype, "seq_len": self.seq_len,
+                "num_layers": self.num_layers,
+                "peak_gpu_memory_mb": self.peak_gpu_memory_mb}
 
-    def _require_pipeline(self):  # pragma: no cover - GPU server only
-        raise NotImplementedError(
-            "Qwen7BGpuBackend.prefill/decode requires CUDA + a ModelScope "
-            "checkpoint + the Stage 8.4 masked pipeline; run on the GPU server. "
-            "The mock backend exercises the protocol/audit locally.")
+    def _to_torch(self, arr):
+        import torch
+        import numpy as np
+        t = arr if isinstance(arr, torch.Tensor) else torch.as_tensor(
+            np.asarray(arr))
+        return t
 
-    def prefill(self, req: MaskedPrefillRequest):  # pragma: no cover
-        self._require_pipeline()
+    def _masked_logits_out(self, logits_tilde):
+        import numpy as np
+        return np.asarray(logits_tilde.detach().to("cpu").float().numpy())
 
-    def decode(self, req: MaskedDecodeRequest):  # pragma: no cover
-        self._require_pipeline()
+    def _track_peak(self):
+        try:
+            import torch
+            if torch.cuda.is_available():
+                self.peak_gpu_memory_mb = float(
+                    torch.cuda.max_memory_allocated() / (1024 ** 2))
+        except Exception:
+            pass
+
+    def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
+        sess = self._ensure_session()
+        h_tilde = self._to_torch(req.masked_embeddings).to(
+            sess.compute_device, sess.fdtype)
+        out = sess.worker_prefill(h_tilde)             # masked logits [B,T,V]
+        self._kv = out["kv"]
+        self._track_peak()
+        last = out["logits_tilde"][:, -1, :]           # masked next-token logits
+        return MaskedPrefillResponse(
+            session_id=req.session_id,
+            masked_logits=self._masked_logits_out(last),
+            kv_cache_len=int(h_tilde.shape[1]))
+
+    def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
+        sess = self._ensure_session()
+        x_tilde = self._to_torch(req.masked_embedding).to(
+            sess.compute_device, sess.fdtype)
+        out = sess.worker_decode(x_tilde, self._kv, int(req.position))
+        self._kv = out["kv"]
+        self._track_peak()
+        last = out["logits_tilde"][:, -1, :]
+        return MaskedDecodeResponse(
+            session_id=req.session_id,
+            masked_logits=self._masked_logits_out(last),
+            kv_cache_len=int(req.position) + 1)
 
 
 def make_gpu_backend(name: str, **kwargs: Any) -> GpuBackend:

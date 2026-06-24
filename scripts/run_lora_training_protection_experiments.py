@@ -108,13 +108,25 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--ranks", default="4,8,16")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--alpha", type=float, default=16.0,
+                    help="fixed LoRA alpha across ranks (main setting 16 or 32)")
+    ap.add_argument("--weight-decay", type=float, default=0.0,
+                    help="AdamW decoupled weight decay")
+    ap.add_argument("--gpt2-model-path", default=None,
+                    help="local GPT-2 checkpoint (skipped if absent)")
+    ap.add_argument("--qwen-model-path", default=None,
+                    help="local Qwen2.5-7B checkpoint for the one/few-step probe")
     ap.add_argument("--output-dir", default="outputs")
     ap.add_argument("--no-gpt2", action="store_true")
     ap.add_argument("--no-qwen", action="store_true")
     args = ap.parse_args()
 
     ranks = tuple(int(x) for x in args.ranks.split(",") if x.strip())
-    summary = run_all(ranks, seed=args.seed, include_gpt2=not args.no_gpt2,
+    summary = run_all(ranks, seed=args.seed, alpha=args.alpha,
+                      weight_decay=args.weight_decay,
+                      gpt2_model_path=args.gpt2_model_path,
+                      qwen_model_path=args.qwen_model_path,
+                      include_gpt2=not args.no_gpt2,
                       include_qwen=not args.no_qwen)
 
     out = Path(args.output_dir)

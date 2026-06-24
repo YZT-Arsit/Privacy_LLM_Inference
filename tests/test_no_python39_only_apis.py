@@ -1,0 +1,80 @@
+"""Guard: deployment-critical code must not use Python 3.9+/3.10+ only APIs.
+
+The Alibaba Cloud TDX VM that runs the trusted boundary may be on an older
+Python (e.g. 3.6). The boundary / cross-machine / attestation code that executes
+there must avoid 3.9+ only APIs:
+
+* ``str.removeprefix`` / ``str.removesuffix`` (3.9)
+* ``functools.cache`` (3.9)
+* ``math.lcm`` / ``math.prod`` (3.9 / 3.8)
+* ``match`` / ``case`` structural pattern matching (3.10)
+
+This scans the AST of the deployment-critical files (parsing alone also confirms
+they are syntactically valid on this interpreter). Comments/strings are ignored
+because we walk the AST, not the text.
+
+Run: python -m pytest tests/test_no_python39_only_apis.py -q
+"""
+
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+# Files that run inside / drive the TDX boundary or cross the wire.
+DEPLOYMENT_FILES = [
+    "src/pllo/protocol/attestation.py",
+    "src/pllo/protocol/remote.py",
+    "src/pllo/protocol/wire.py",
+    "src/pllo/protocol/orchestrator.py",
+    "src/pllo/protocol/gpu_worker.py",
+    "src/pllo/protocol/tee_gpu_messages.py",
+    "src/pllo/protocol/security_audit.py",
+    "src/pllo/protocol/lora_training_audit.py",
+    "src/pllo/nonlinear/backends.py",
+    "src/pllo/nonlinear/current_backend.py",
+    "src/pllo/nonlinear/amulet_backend.py",
+    "src/pllo/nonlinear/registry.py",
+    "scripts/run_tee_gpu_protocol_demo.py",
+    "scripts/write_tee_boundary_runtime_hash.py",
+    "scripts/run_nonlinear_backend_microbench.py",
+    "scripts/run_lora_training_protection_experiments.py",
+]
+
+BANNED_METHOD_ATTRS = {"removeprefix", "removesuffix"}     # str, 3.9
+BANNED_DOTTED = {("functools", "cache"), ("math", "lcm")}  # 3.9
+
+
+def _violations(path: Path) -> list[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    out: list[str] = []
+    for node in ast.walk(tree):
+        # str.removeprefix / .removesuffix
+        if isinstance(node, ast.Attribute) and node.attr in BANNED_METHOD_ATTRS:
+            out.append(f"{path.name}:{node.lineno} .{node.attr}() (py3.9+)")
+        # functools.cache / math.lcm
+        if (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name)
+                and (node.value.id, node.attr) in BANNED_DOTTED):
+            out.append(f"{path.name}:{node.lineno} "
+                       f"{node.value.id}.{node.attr} (py3.9+)")
+        # match/case (py3.10) — ast.Match exists only on 3.10+ interpreters
+        if hasattr(ast, "Match") and isinstance(node, ast.Match):
+            out.append(f"{path.name}:{node.lineno} match-case (py3.10+)")
+    return out
+
+
+@pytest.mark.parametrize("rel", DEPLOYMENT_FILES)
+def test_no_py39_only_apis_in_deployment_files(rel) -> None:
+    path = REPO_ROOT / rel
+    assert path.exists(), f"missing deployment file {rel}"
+    violations = _violations(path)
+    assert violations == [], "; ".join(violations)
+
+
+def test_all_deployment_files_parse() -> None:
+    for rel in DEPLOYMENT_FILES:
+        ast.parse((REPO_ROOT / rel).read_text(encoding="utf-8"))

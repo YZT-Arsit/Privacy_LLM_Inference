@@ -380,7 +380,9 @@ def verify_evidence(
     mr_td = evidence.get("mr_td")
     report_data = evidence.get("report_data")
     if isinstance(report_data, str):
-        report_data = report_data.lower().removeprefix("0x")
+        report_data = report_data.lower()
+        if report_data.startswith("0x"):       # py3.6-safe (no str.removeprefix)
+            report_data = report_data[2:]
     jwt_present, jwt_parts = _jwt_parts(evidence)
 
     bound = (report_data == rd_hex) if isinstance(report_data, str) else None

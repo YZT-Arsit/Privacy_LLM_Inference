@@ -40,11 +40,20 @@ __all__ = [
 ]
 
 # Names that must NEVER appear in a request body crossing to the GPU worker.
+# Covers both generation-stage and LoRA-training-stage plaintext/secret fields.
 FORBIDDEN_WIRE_FIELDS = frozenset({
+    # generation-stage
     "raw_prompt", "prompt", "input_ids", "input_id", "generated_token_ids",
-    "generated_tokens", "recovered_logits", "mask_secret", "mask_secrets",
-    "tokenizer_output", "mask_handles", "handles", "residual_perm",
-    "vocab_perm", "vocab_scale", "residual_signs", "seed",
+    "generated_tokens", "recovered_logits", "tokenizer_output",
+    # training-stage (LoRA)
+    "labels", "label", "train_examples", "training_examples",
+    "tokenized_examples", "plain_hidden", "lora_a", "lora_b", "delta_w",
+    "lora_grad_a", "lora_grad_b", "grad_a", "grad_b", "optimizer_state",
+    "adam_m", "adam_v", "adapter_update",
+    # mask secrets
+    "mask_secret", "mask_secrets", "mask_handles", "handles", "residual_perm",
+    "residual_inv_perm", "in_perm", "in_signs", "vocab_perm", "out_perm",
+    "vocab_scale", "out_scale", "residual_signs", "seed",
 })
 
 # Path -> message class expected in the request body.

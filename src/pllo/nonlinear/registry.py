@@ -47,3 +47,12 @@ def make_nonlinear_backend(name: str, **kwargs: Any) -> NonlinearBackend:
 def backend_security_status() -> dict[str, str]:
     """Map backend name -> declared security status (for reports)."""
     return {name: cls.security_status for name, cls in NONLINEAR_BACKENDS.items()}
+
+
+def backend_security_claim_status() -> dict[str, str]:
+    """Map backend name -> paper-facing security_claim_status (E3).
+
+    ``amulet_migrated`` is ``under_discussion`` until the advisor confirms the
+    formal security boundary; no security is proven here."""
+    return {name: cls.security_claim_status
+            for name, cls in NONLINEAR_BACKENDS.items()}

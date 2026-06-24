@@ -93,9 +93,12 @@ def attach_attestation(report: dict, *, evidence: str | None,
 
 def build_report(prompt: str, boundary_backend: str, gpu_backend: str,
                  max_new_tokens: int, run_audit: bool, **run_kwargs) -> dict:
+    import time as _time
+    _t0 = _time.perf_counter()
     out = run_protocol(prompt, boundary_backend=boundary_backend,
                        gpu_backend=gpu_backend, max_new_tokens=max_new_tokens,
                        **run_kwargs)
+    latency_s = _time.perf_counter() - _t0
     trace = out["trace"]
 
     plaintext_fields: list[str] = []
@@ -126,6 +129,10 @@ def build_report(prompt: str, boundary_backend: str, gpu_backend: str,
         "tee_used_on_gpu": trace.tee_used_on_gpu,
         "gpu_worker_remote": gpu_worker_remote,
         "gpu_worker_url": out.get("gpu_worker_url"),
+        "latency_s": latency_s,
+        # peak GPU memory is measured server-side by the qwen7b worker; the mock
+        # backend uses no GPU so it is None here.
+        "peak_gpu_memory_mb": out.get("peak_gpu_memory_mb"),
         "boundary_backend": boundary_backend,
         # client-intended backend (drives the runtime-hash metadata, so it must
         # match the preflight); the server's own report is kept separately.
@@ -320,7 +327,9 @@ def main() -> int:
         backend_kwargs = {}
         if args.gpu_backend == "qwen7b":
             backend_kwargs = {"model_path": args.model_path,
-                              "device": args.device, "dtype": args.dtype}
+                              "device": args.device, "dtype": args.dtype,
+                              "seq_len": args.seq_len,
+                              "num_layers": args.num_layers}
         run_gpu_worker_server(args.listen_host, args.listen_port,
                               args.gpu_backend, backend_kwargs, _bool(args.audit))
         return 0
@@ -394,6 +403,8 @@ def main() -> int:
               f"gpu_backend_server_reported="
               f"{report.get('gpu_backend_server_reported')}")
     print(f"tee_used_on_gpu={report['tee_used_on_gpu']}")
+    print(f"latency_s={report.get('latency_s'):.4f} "
+          f"peak_gpu_memory_mb={report.get('peak_gpu_memory_mb')}")
     print(f"boundary_calls={report['boundary_calls']}")
     print(f"gpu_calls={report['gpu_calls']}")
     print(f"trusted_bytes={report['trusted_bytes']} "

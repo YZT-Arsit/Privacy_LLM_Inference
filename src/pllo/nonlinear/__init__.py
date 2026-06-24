@@ -22,6 +22,7 @@ from pllo.nonlinear.current_backend import CurrentNonlinearBackend
 from pllo.nonlinear.registry import (
     NONLINEAR_BACKENDS,
     available_backends,
+    backend_security_claim_status,
     backend_security_status,
     make_nonlinear_backend,
 )
@@ -35,6 +36,7 @@ __all__ = [
     "AmuletMigratedNonlinearBackend",
     "NONLINEAR_BACKENDS",
     "available_backends",
+    "backend_security_claim_status",
     "backend_security_status",
     "make_nonlinear_backend",
 ]

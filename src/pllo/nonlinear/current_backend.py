@@ -24,6 +24,7 @@ __all__ = ["CurrentNonlinearBackend"]
 class CurrentNonlinearBackend(NonlinearBackend):
     name = "current"
     security_status = "trusted_boundary"
+    security_claim_status = "established"          # existing TEE-boundary design
     security_note = ("Nonlinearity evaluated inside the trusted boundary "
                      "(trusted island / trusted shortcut); security rests on the "
                      "established TEE-boundary design, not on a new construction.")

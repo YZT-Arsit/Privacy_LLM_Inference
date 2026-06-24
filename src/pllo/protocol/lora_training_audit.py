@@ -113,6 +113,7 @@ class LoRATrainingAuditReport:
     gpu_visible_train_examples: bool
     gpu_visible_labels: bool
     gpu_visible_input_ids: bool
+    gpu_visible_tokenized_examples: bool
     gpu_visible_lora_a: bool
     gpu_visible_lora_b: bool
     gpu_visible_delta_w: bool
@@ -279,6 +280,7 @@ def audit_lora_training_trace(
         gpu_visible_train_examples=vis("train_examples"),
         gpu_visible_labels=vis("labels"),
         gpu_visible_input_ids=vis("input_ids"),
+        gpu_visible_tokenized_examples=vis("tokenized_examples"),
         gpu_visible_lora_a=vis("lora_a"),
         gpu_visible_lora_b=vis("lora_b"),
         gpu_visible_delta_w=vis("delta_w"),
@@ -295,7 +297,8 @@ def audit_lora_training_trace(
     )
     visible_any = any([
         report.gpu_visible_train_examples, report.gpu_visible_labels,
-        report.gpu_visible_input_ids, report.gpu_visible_lora_a,
+        report.gpu_visible_input_ids, report.gpu_visible_tokenized_examples,
+        report.gpu_visible_lora_a,
         report.gpu_visible_lora_b, report.gpu_visible_delta_w,
         report.gpu_visible_lora_grad_a, report.gpu_visible_lora_grad_b,
         report.gpu_visible_optimizer_state, report.gpu_visible_adapter_update,

@@ -22,6 +22,7 @@ from pllo.nonlinear.backends import (
 )
 from pllo.nonlinear.registry import (
     available_backends,
+    backend_security_claim_status,
     backend_security_status,
     make_nonlinear_backend,
 )
@@ -133,6 +134,15 @@ def test_security_status_amulet_not_claimed() -> None:
     assert "not" in amulet.security_note.lower()
     # explicit: no proven-secure claim for amulet
     assert amulet.security_status in {"not_formally_claimed", "under_discussion"}
+
+
+def test_security_claim_status_amulet_under_discussion() -> None:
+    claim = backend_security_claim_status()
+    assert claim["amulet_migrated"] == "under_discussion"
+    assert claim["current"] == "established"
+    # describe() surfaces the paper-facing claim status
+    assert make_nonlinear_backend("amulet_migrated").describe()[
+        "security_claim_status"] == "under_discussion"
 
 
 def test_amulet_lift_k_validation() -> None:
