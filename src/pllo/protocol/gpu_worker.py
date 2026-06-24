@@ -335,12 +335,33 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "worker_has_mask_secrets": self.worker_has_mask_secrets,
                 "tee_used_on_gpu": False}
 
+    def run_single_layer_prefill(self, x_tilde: Any, layer_index: int,
+                                 config: Any, cos: Any, sin: Any,
+                                 eps: float) -> dict[str, Any]:
+        """Load ONE folded layer from the package and run its masked prefill.
+
+        The worker holds NO masks: the down projection is pre-folded in the
+        package and attention/MLP use the folded ``*_tilde`` operators directly.
+        This is the incremental step toward full shard-streamed decode; it matches
+        the in-process folded path (see tests/test_folded_package_qwen_1layer.py).
+        ``config``/``cos``/``sin`` are public artifacts supplied by the boundary."""
+        from pllo.deployment.folded_worker import (
+            apply_folded_layer_prefill,
+            load_folded_layer,
+        )
+        if not self.folded_package_loaded:
+            raise RuntimeError("call init() to load the folded package first")
+        layer_tensors = load_folded_layer(self.folded_package_path, layer_index)
+        return apply_folded_layer_prefill(x_tilde, layer_tensors, config, cos,
+                                          sin, eps)
+
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
         raise NotImplementedError(
             "TODO: full masked prefill from folded-package shards. The folded "
-            "operators are loaded + verified (init probe); shard-streamed "
-            "28-layer decode is not yet wired. Tiny end-to-end equivalence is "
-            "proven in tests/test_folded_package_tiny.py.")
+            "operators load + verify on init, and single-layer masked prefill "
+            "from the package is implemented + tested "
+            "(run_single_layer_prefill; tests/test_folded_package_qwen_1layer.py). "
+            "Full 28-layer shard-streamed prefill/decode is not yet wired.")
 
     def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
         raise NotImplementedError(

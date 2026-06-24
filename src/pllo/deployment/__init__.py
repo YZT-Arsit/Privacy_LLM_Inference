@@ -38,6 +38,11 @@ from pllo.deployment.folded_package_manifest import (
     write_manifest,
 )
 
+# NOTE: ``folded_worker`` (worker-side, imports torch + the masked kernels) is
+# intentionally NOT imported here, so ``import pllo.deployment`` stays light for
+# the stdlib-only manifest/verify path. Import it directly:
+#     from pllo.deployment.folded_worker import apply_folded_layer_prefill
+
 __all__ = [
     "FORBIDDEN_PACKAGE_SUBSTRINGS",
     "FoldedPackageWriter",
