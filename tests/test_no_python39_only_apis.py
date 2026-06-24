@@ -46,6 +46,7 @@ DEPLOYMENT_FILES = [
     "scripts/verify_folded_package.py",
     "scripts/estimate_folded_package_cost.py",
     "scripts/run_tee_gpu_protocol_demo.py",
+    "scripts/generate_tdx_attestation_evidence.py",   # runs on the TDX VM
     "scripts/write_tee_boundary_runtime_hash.py",
     "scripts/run_nonlinear_backend_microbench.py",
     "scripts/run_lora_training_protection_experiments.py",
