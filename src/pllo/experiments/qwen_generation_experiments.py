@@ -23,6 +23,7 @@ paper result).
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import replace
 from typing import Any
 
@@ -38,9 +39,52 @@ __all__ = [
     "protocol_accounting",
     "topk_overlap",
     "teacher_forced_block",
+    "build_context_fields",
+    "ones_attention_mask",
     "run_e1_nolora",
     "run_e2_token_scaling",
 ]
+
+
+def _prompt_hash(prompt_text: str | None) -> str:
+    return hashlib.sha256((prompt_text or "").encode("utf-8")).hexdigest()[:16]
+
+
+def ones_attention_mask(input_ids: torch.Tensor) -> torch.Tensor:
+    """All-ones attention mask for an unpadded sequence (kills the HF
+    ``pad_token_id == eos_token_id`` warning without changing positions)."""
+    return torch.ones(input_ids.shape[:2], dtype=torch.long,
+                      device=input_ids.device)
+
+
+def build_context_fields(*, seq_len_requested: int, effective_prompt_len: int,
+                         pad_to_seq_len: bool, padded_seq_len: int | None,
+                         decode_start_index: int, attention_mask_used: bool,
+                         dtype: str, model_name: str | None,
+                         model_path: str | None, prompt_text: str | None,
+                         dry_run: bool) -> dict[str, Any]:
+    """Unambiguous context configuration stamped into every E1/E2 report.
+
+    ``seq_len_requested`` is the ``--seq-len`` budget; ``effective_prompt_len`` is
+    the real token count actually fed to the masked path; ``padded_seq_len`` is
+    set only in fixed-padded mode; ``decode_start_index`` is where decoding begins
+    (always the number of real prompt tokens). The masked/plain compute never sees
+    padding -- padding lives only on the HF reference paths (with attention_mask)."""
+    return {
+        "seq_len_requested": int(seq_len_requested),
+        "effective_prompt_len": int(effective_prompt_len),
+        "padded_seq_len": (int(padded_seq_len)
+                           if padded_seq_len is not None else None),
+        "pad_to_seq_len": bool(pad_to_seq_len),
+        "decode_start_index": int(decode_start_index),
+        "attention_mask_used": bool(attention_mask_used),
+        "context_mode": "fixed_padded" if pad_to_seq_len else "natural_prompt",
+        "dtype": dtype,
+        "model_name": model_name,
+        "model_path": model_path,
+        "prompt_sha256_16": _prompt_hash(prompt_text),
+        "dry_run": bool(dry_run),
+    }
 
 _DT_BYTES = {"float16": 2, "bf16": 2, "bfloat16": 2, "fp16": 2,
              "float32": 4, "fp32": 4}
@@ -99,17 +143,35 @@ def _err_stats(a: torch.Tensor, b: torch.Tensor) -> dict[str, float]:
 
 def teacher_forced_block(model: Any, mc: Any, prompt_ids: torch.Tensor,
                          ref_ids: torch.Tensor, cfg: MemoryOptimizedConfig,
-                         topk: int = 5) -> dict[str, Any]:
+                         topk: int = 5,
+                         prompt_attention_mask: torch.Tensor | None = None
+                         ) -> dict[str, Any]:
     """Per-step top-1 agreement + top-k overlap + logits errors under a fixed
-    prefix (HF reference tokens). Avoids free-running cascade."""
+    prefix (HF reference tokens). Avoids free-running cascade.
+
+    HF / plain / masked are compared on the SAME real-token teacher sequence
+    (``cat(real_prompt, ref)``); the masked path never sees padding. The HF
+    forward is given an explicit ``attention_mask`` (real prompt tokens are all
+    real -> ones) so it matches the masked/plain prefix semantics exactly and
+    raises no ``pad_token_id == eos_token_id`` warning."""
     device = torch.device(cfg.device)
-    teacher = torch.cat([prompt_ids, ref_ids], dim=1).to(device)
+    prompt_ids = prompt_ids.to(device)
+    ref_ids = ref_ids.to(device)
+    teacher = torch.cat([prompt_ids, ref_ids], dim=1)
     L = int(prompt_ids.shape[1])
     N = int(ref_ids.shape[1])
+    if prompt_attention_mask is None:
+        prompt_attention_mask = ones_attention_mask(prompt_ids)
+    teacher_mask = torch.cat(
+        [prompt_attention_mask.to(device),
+         torch.ones((prompt_ids.shape[0], N), dtype=torch.long, device=device)],
+        dim=1)
     tf_cfg = replace(cfg, seq_len=int(teacher.shape[1]), max_new_tokens=1)
     plain_logits, recovered = masked_prefill_full_logits(model, mc, teacher, tf_cfg)
     with torch.no_grad():
-        hf_logits = model(input_ids=teacher).logits.to(plain_logits.dtype)
+        hf_logits = model(input_ids=teacher,
+                          attention_mask=teacher_mask).logits.to(
+                              plain_logits.dtype)
 
     hp = hm = pm = 0
     em_max = em_mean = em_l2 = 0.0
@@ -146,9 +208,15 @@ def teacher_forced_block(model: Any, mc: Any, prompt_ids: torch.Tensor,
 
 
 def _hf_generate(model, input_ids, max_new_tokens, *, do_sample, temperature=0.7,
-                 top_p=0.9, seed=0):
+                 top_p=0.9, seed=0, attention_mask=None):
+    """HF greedy/sample generation. An ``attention_mask`` is ALWAYS passed (built
+    as all-ones for an unpadded input if not given) so no ``pad_token_id ==
+    eos_token_id`` warning is emitted and padded inputs are handled correctly."""
     import torch as _t
+    if attention_mask is None:
+        attention_mask = ones_attention_mask(input_ids)
     kw = dict(max_new_tokens=max_new_tokens, do_sample=do_sample, num_beams=1,
+              attention_mask=attention_mask,
               pad_token_id=getattr(model.config, "eos_token_id", None))
     if do_sample:
         _t.manual_seed(seed)
@@ -161,11 +229,28 @@ def _hf_generate(model, input_ids, max_new_tokens, *, do_sample, temperature=0.7
 def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
                   cfg: MemoryOptimizedConfig, *, modes=("greedy", "teacher_forced",
                   "sampling"), topk: int = 5, temperature: float = 0.7,
-                  top_p: float = 0.9, sample_seed: int = 0) -> dict[str, Any]:
-    """Run the E1 no-LoRA masked-generation experiment for the given input."""
+                  top_p: float = 0.9, sample_seed: int = 0,
+                  attention_mask: torch.Tensor | None = None,
+                  context: dict[str, Any] | None = None,
+                  padded_input_ids: torch.Tensor | None = None,
+                  padded_attention_mask: torch.Tensor | None = None
+                  ) -> dict[str, Any]:
+    """Run the E1 no-LoRA masked-generation experiment for the given input.
+
+    ``input_ids`` are the REAL (unpadded) prompt tokens the masked/plain/HF paths
+    all share. ``attention_mask`` (all-ones if omitted) is passed to every HF
+    path. If ``padded_input_ids``/``padded_attention_mask`` are given (fixed-padded
+    mode), a padding-invariance check confirms HF padded+mask greedy generation
+    yields the same tokens as the unpadded run -- i.e. padding does not affect the
+    result. ``context`` (from :func:`build_context_fields`) is merged in so the
+    report states seq_len_requested / effective_prompt_len / padded_seq_len /
+    decode_start_index / attention_mask_used unambiguously."""
     import time
     device = torch.device(cfg.device)
     input_ids = input_ids.to(device)
+    if attention_mask is None:
+        attention_mask = ones_attention_mask(input_ids)
+    attention_mask = attention_mask.to(device)
     H = int(mc.hidden_size)
     V = int(mc.vocab_size)
     T = int(input_ids.shape[1])
@@ -175,7 +260,8 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
     report: dict[str, Any] = {
         "stage": "E1_nolora_qwen_generation",
         "model_type": str(getattr(mc, "model_type", "qwen2")),
-        "batch_size": int(input_ids.shape[0]), "seq_len": T,
+        "batch_size": int(input_ids.shape[0]),
+        "seq_len": T,                          # back-compat == effective_prompt_len
         "max_new_tokens": N, "num_layers": cfg.num_layers, "dtype": cfg.dtype,
         "tee_used_on_gpu": False,
         "gpu_visible_plaintext_fields": [], "leaked_secret_fields": [],
@@ -184,6 +270,29 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
         "peak_gpu_memory_mb": None,
         "modes": {},
     }
+    # explicit, unambiguous context (overrides any ambiguous seq_len reading)
+    if context is None:
+        context = build_context_fields(
+            seq_len_requested=T, effective_prompt_len=T, pad_to_seq_len=False,
+            padded_seq_len=None, decode_start_index=T, attention_mask_used=True,
+            dtype=cfg.dtype, model_name=None, model_path=None, prompt_text=None,
+            dry_run=False)
+    report.update(context)
+    report["seq_len"] = int(context["effective_prompt_len"])
+
+    # --- padding-invariance check (fixed-padded mode only) -----------------
+    if padded_input_ids is not None:
+        pimask = (padded_attention_mask if padded_attention_mask is not None
+                  else ones_attention_mask(padded_input_ids)).to(device)
+        real_new = _hf_generate(model, input_ids, N, do_sample=False,
+                                attention_mask=attention_mask)
+        pad_new = _hf_generate(model, padded_input_ids.to(device), N,
+                               do_sample=False, attention_mask=pimask)
+        m = min(real_new.shape[1], pad_new.shape[1])
+        match = (float((real_new[:, :m] == pad_new[:, :m]).float().mean())
+                 if m else 0.0)
+        report["padding_invariance_hf_token_match_rate"] = match
+        report["padding_invariance_ok"] = bool(match == 1.0)
 
     # --- greedy (deterministic exact comparison) ---------------------------
     if "greedy" in modes:
@@ -191,7 +300,8 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
         gcfg = replace(cfg, seq_len=T, max_new_tokens=N)
         masked_rep = run_memory_optimized_masked(model, mc, input_ids, gcfg)
         latency = time.perf_counter() - t0
-        hf_new = _hf_generate(model, input_ids, N, do_sample=False)
+        hf_new = _hf_generate(model, input_ids, N, do_sample=False,
+                              attention_mask=attention_mask)
         masked_tokens = masked_rep.get("generated_masked_tokens")
         seq_exact = None
         if masked_tokens is not None:
@@ -216,8 +326,10 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
     # --- teacher-forced (main long-horizon correctness) -------------------
     if "teacher_forced" in modes:
         t0 = time.perf_counter()
-        ref = _hf_generate(model, input_ids, N, do_sample=False)
-        tf = teacher_forced_block(model, mc, input_ids, ref, cfg, topk=topk)
+        ref = _hf_generate(model, input_ids, N, do_sample=False,
+                           attention_mask=attention_mask)
+        tf = teacher_forced_block(model, mc, input_ids, ref, cfg, topk=topk,
+                                  prompt_attention_mask=attention_mask)
         tf["latency_s"] = time.perf_counter() - t0
         report["modes"]["teacher_forced"] = tf
 
@@ -225,8 +337,10 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
     if "sampling" in modes:
         t0 = time.perf_counter()
         sref = _hf_generate(model, input_ids, N, do_sample=True,
-                            temperature=temperature, top_p=top_p, seed=sample_seed)
-        stf = teacher_forced_block(model, mc, input_ids, sref, cfg, topk=topk)
+                            temperature=temperature, top_p=top_p, seed=sample_seed,
+                            attention_mask=attention_mask)
+        stf = teacher_forced_block(model, mc, input_ids, sref, cfg, topk=topk,
+                                   prompt_attention_mask=attention_mask)
         report["modes"]["sampling"] = {
             "generation_completion_tokens": int(sref.shape[1]),
             "temperature": temperature, "top_p": top_p, "seed": sample_seed,
@@ -243,13 +357,31 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
 def run_e2_token_scaling(model: Any, mc: Any, input_ids: torch.Tensor,
                          cfg: MemoryOptimizedConfig,
                          token_grid=(1, 8, 16, 32, 64), *,
-                         modes=("greedy", "teacher_forced"), topk: int = 5
+                         modes=("greedy", "teacher_forced"), topk: int = 5,
+                         attention_mask: torch.Tensor | None = None,
+                         context: dict[str, Any] | None = None,
+                         padded_input_ids: torch.Tensor | None = None,
+                         padded_attention_mask: torch.Tensor | None = None
                          ) -> dict[str, Any]:
-    """Fixed model/prompt/seq_len; sweep ``max_new_tokens`` over ``token_grid``."""
+    """Fixed model/prompt/seq_len; sweep ``max_new_tokens`` over ``token_grid``.
+
+    Same fixed context as E1 (real unpadded prompt for the masked path, explicit
+    context fields, attention_mask on every HF path)."""
+    # context field keys to copy onto each flat row for unambiguous tables
+    ctx_keys = ("seq_len_requested", "effective_prompt_len", "padded_seq_len",
+                "pad_to_seq_len", "decode_start_index", "attention_mask_used",
+                "context_mode", "model_name", "model_path", "prompt_sha256_16",
+                "dry_run")
     rows = []
     for nt in token_grid:
         ecfg = replace(cfg, max_new_tokens=int(nt))
-        r = run_e1_nolora(model, mc, input_ids, ecfg, modes=modes, topk=topk)
+        # padding-invariance is a per-context property, not per-token-count;
+        # run it once (on the first grid point) to avoid redundant generation.
+        pii = padded_input_ids if nt == token_grid[0] else None
+        r = run_e1_nolora(model, mc, input_ids, ecfg, modes=modes, topk=topk,
+                          attention_mask=attention_mask, context=context,
+                          padded_input_ids=pii,
+                          padded_attention_mask=padded_attention_mask)
         flat = {
             "max_new_tokens": int(nt), "seq_len": r["seq_len"],
             "dtype": r["dtype"], "num_layers": r["num_layers"],
@@ -258,6 +390,12 @@ def run_e2_token_scaling(model: Any, mc: Any, input_ids: torch.Tensor,
             "boundary_calls": r["boundary_calls"],
             "peak_gpu_memory_mb": r["peak_gpu_memory_mb"],
         }
+        for k in ctx_keys:
+            if k in r:
+                flat[k] = r[k]
+        if "padding_invariance_hf_token_match_rate" in r:
+            flat["padding_invariance_hf_token_match_rate"] = \
+                r["padding_invariance_hf_token_match_rate"]
         if "greedy" in r["modes"]:
             g = r["modes"]["greedy"]
             flat["greedy_plain_vs_masked_token_match_rate"] = \
@@ -272,5 +410,8 @@ def run_e2_token_scaling(model: Any, mc: Any, input_ids: torch.Tensor,
             flat["tf_logits_max_abs_error"] = tf["logits_max_abs_error"]
             flat["tf_topk_overlap"] = tf["topk_overlap"]
         rows.append(flat)
-    return {"stage": "E2_token_scaling", "token_grid": list(token_grid),
-            "tee_used_on_gpu": False, "rows": rows}
+    out = {"stage": "E2_token_scaling", "token_grid": list(token_grid),
+           "tee_used_on_gpu": False, "rows": rows}
+    if context is not None:
+        out.update({k: context[k] for k in ctx_keys if k in context})
+    return out

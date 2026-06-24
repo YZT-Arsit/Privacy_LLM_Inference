@@ -33,12 +33,57 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import torch  # noqa: E402
 
-from pllo.experiments.qwen_generation_experiments import run_e1_nolora  # noqa: E402
+from pllo.experiments.qwen_generation_experiments import (  # noqa: E402
+    build_context_fields,
+    run_e1_nolora,
+)
 from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig  # noqa: E402
 
 
 def _bool(s) -> bool:
     return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _pad_id(tok, mc) -> int:
+    """Resolve a padding token id (tokenizer pad -> eos -> 0)."""
+    if tok is not None and getattr(tok, "pad_token_id", None) is not None:
+        return int(tok.pad_token_id)
+    eos = getattr(mc, "eos_token_id", None)
+    if isinstance(eos, (list, tuple)):
+        eos = eos[0] if eos else None
+    return int(eos) if eos is not None else 0
+
+
+def _build_context_inputs(args, real_ids, tok, mc, prompt_text, device, dtype,
+                          dry_run):
+    """Build the real attention mask, optional left-padded inputs, and the
+    unambiguous context dict for E1/E2. The masked/plain path always consumes the
+    REAL (unpadded) tokens; padding lives only on the HF reference paths."""
+    pad_to = _bool(args.pad_to_seq_len)
+    eff_len = int(real_ids.shape[1])
+    attn_mask = torch.ones((real_ids.shape[0], eff_len), dtype=torch.long)
+    padded_ids = padded_mask = None
+    padded_seq_len = None
+    if pad_to:
+        target = int(args.seq_len)
+        if eff_len < target:
+            pad_n = target - eff_len
+            pad_block = torch.full((real_ids.shape[0], pad_n), _pad_id(tok, mc),
+                                   dtype=real_ids.dtype, device=real_ids.device)
+            padded_ids = torch.cat([pad_block, real_ids], dim=1)   # left pad
+            padded_mask = torch.cat(
+                [torch.zeros((real_ids.shape[0], pad_n), dtype=torch.long),
+                 attn_mask], dim=1)
+            padded_seq_len = target
+        else:                                  # prompt already >= budget
+            padded_ids, padded_mask, padded_seq_len = real_ids, attn_mask, eff_len
+    context = build_context_fields(
+        seq_len_requested=int(args.seq_len), effective_prompt_len=eff_len,
+        pad_to_seq_len=pad_to, padded_seq_len=padded_seq_len,
+        decode_start_index=eff_len, attention_mask_used=True, dtype=dtype,
+        model_name=args.model_name, model_path=args.model_path,
+        prompt_text=prompt_text, dry_run=dry_run)
+    return attn_mask, padded_ids, padded_mask, context
 
 
 def _tiny_model():
@@ -72,15 +117,23 @@ def _load_real(args):
         text = prompt
     enc = tok(text, return_tensors="pt")
     input_ids = enc["input_ids"][:, :args.seq_len].to(args.device)
-    return model, model.config, input_ids
+    return model, model.config, input_ids, tok, prompt
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--model-path", default=None)
+    ap.add_argument("--model-name", default="Qwen2.5-7B-Instruct",
+                    help="public model name stamped into the report")
     ap.add_argument("--prompt", default="Explain why privacy matters in LLMs.")
     ap.add_argument("--prompt-file", default=None)
-    ap.add_argument("--seq-len", type=int, default=128)
+    ap.add_argument("--seq-len", type=int, default=128,
+                    help="seq_len_requested: max prompt budget (natural mode) or "
+                         "fixed context length (with --pad-to-seq-len true)")
+    ap.add_argument("--pad-to-seq-len", default="false",
+                    help="false: seq_len is a max prompt budget (natural mode); "
+                         "true: left-pad the prompt to seq_len (fixed padded "
+                         "context) and validate padding-invariance")
     ap.add_argument("--max-new-tokens", type=int, default=64)
     ap.add_argument("--num-layers", type=int, default=28)
     ap.add_argument("--dtype", default="bfloat16")
@@ -99,20 +152,23 @@ def main() -> int:
     args = ap.parse_args()
     modes = tuple(m.strip() for m in args.modes.split(",") if m.strip())
 
-    if args.dry_run or not args.model_path:
+    dry_run = bool(args.dry_run or not args.model_path)
+    if dry_run:
         if not args.dry_run:
             print("NOTE: no --model-path; running --dry-run tiny model (NOT a "
                   "paper result).")
-        model, mc, input_ids = (*_tiny_model(),
-                                torch.randint(0, 256, (1, min(args.seq_len, 8))))
-        device = "cpu"
+        model, mc = _tiny_model()
+        input_ids = torch.randint(0, 256, (1, min(args.seq_len, 8)))
+        tok, prompt_text = None, args.prompt
+        device, dtype = "cpu", "float32"
         num_layers = mc.num_hidden_layers
-        dtype = "float32"
     else:
-        model, mc, input_ids = _load_real(args)
-        device = args.device
+        model, mc, input_ids, tok, prompt_text = _load_real(args)
+        device, dtype = args.device, args.dtype
         num_layers = min(args.num_layers, mc.num_hidden_layers)
-        dtype = args.dtype
+
+    attn_mask, padded_ids, padded_mask, context = _build_context_inputs(
+        args, input_ids, tok, mc, prompt_text, device, dtype, dry_run)
 
     cfg = MemoryOptimizedConfig(
         num_layers=num_layers, batch_size=1, seq_len=int(input_ids.shape[1]),
@@ -123,9 +179,9 @@ def main() -> int:
 
     report = run_e1_nolora(model, mc, input_ids, cfg, modes=modes, topk=args.topk,
                            temperature=args.temperature, top_p=args.top_p,
-                           sample_seed=args.sample_seed)
-    report["dry_run"] = bool(args.dry_run or not args.model_path)
-    report["model_path"] = args.model_path
+                           sample_seed=args.sample_seed, attention_mask=attn_mask,
+                           context=context, padded_input_ids=padded_ids,
+                           padded_attention_mask=padded_mask)
 
     if args.output_json:
         p = Path(args.output_json)
@@ -135,9 +191,20 @@ def main() -> int:
         _write_md(Path(args.output_md), report)
 
     print(f"=== E1 no-LoRA Qwen generation (dry_run={report['dry_run']}) ===")
-    print(f"seq_len={report['seq_len']} max_new_tokens={report['max_new_tokens']} "
+    print(f"model_name={report['model_name']} context_mode={report['context_mode']} "
+          f"prompt_sha256_16={report['prompt_sha256_16']}")
+    print(f"seq_len_requested={report['seq_len_requested']} "
+          f"effective_prompt_len={report['effective_prompt_len']} "
+          f"padded_seq_len={report['padded_seq_len']} "
+          f"decode_start_index={report['decode_start_index']} "
+          f"attention_mask_used={report['attention_mask_used']}")
+    print(f"max_new_tokens={report['max_new_tokens']} "
           f"num_layers={report['num_layers']} dtype={report['dtype']} "
           f"tee_used_on_gpu={report['tee_used_on_gpu']}")
+    if "padding_invariance_hf_token_match_rate" in report:
+        print(f"padding_invariance_hf_token_match_rate="
+              f"{report['padding_invariance_hf_token_match_rate']} "
+              f"(ok={report.get('padding_invariance_ok')})")
     if "teacher_forced" in report["modes"]:
         tf = report["modes"]["teacher_forced"]
         print(f"teacher_forced: hf_plain={tf['teacher_forced_top1_match_rate_hf_plain']:.4f} "
@@ -158,9 +225,22 @@ def main() -> int:
 
 def _write_md(path: Path, r: dict) -> None:
     L = [f"# E1 no-LoRA Qwen2.5-7B masked generation (dry_run={r.get('dry_run')})",
-         "", f"- seq_len={r['seq_len']} max_new_tokens={r['max_new_tokens']} "
-         f"num_layers={r['num_layers']} dtype={r['dtype']}",
-         f"- **tee_used_on_gpu={r['tee_used_on_gpu']}**  "
+         "",
+         f"- model_name=`{r.get('model_name')}`  model_path=`{r.get('model_path')}`",
+         f"- context_mode=**{r.get('context_mode')}**  "
+         f"prompt_sha256_16=`{r.get('prompt_sha256_16')}`",
+         f"- seq_len_requested={r.get('seq_len_requested')}  "
+         f"effective_prompt_len={r.get('effective_prompt_len')}  "
+         f"padded_seq_len={r.get('padded_seq_len')}  "
+         f"decode_start_index={r.get('decode_start_index')}  "
+         f"attention_mask_used={r.get('attention_mask_used')}",
+         f"- max_new_tokens={r['max_new_tokens']} "
+         f"num_layers={r['num_layers']} dtype={r['dtype']}"]
+    if "padding_invariance_hf_token_match_rate" in r:
+        L.append(f"- padding_invariance_hf_token_match_rate="
+                 f"{r['padding_invariance_hf_token_match_rate']} "
+                 f"(ok={r.get('padding_invariance_ok')})")
+    L += [f"- **tee_used_on_gpu={r['tee_used_on_gpu']}**  "
          f"gpu_visible_plaintext_fields={r['gpu_visible_plaintext_fields'] or '[]'}  "
          f"leaked_secret_fields={r['leaked_secret_fields'] or '[]'}",
          f"- trusted_bytes={r['trusted_bytes']:,}  gpu_bytes={r['gpu_bytes']:,}  "

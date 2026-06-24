@@ -31,6 +31,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 import torch  # noqa: E402
 
 from pllo.experiments.qwen_generation_experiments import (  # noqa: E402
+    build_context_fields,
     run_e2_token_scaling,
 )
 from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig  # noqa: E402
@@ -38,6 +39,45 @@ from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig  # noqa
 
 def _bool(s) -> bool:
     return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _pad_id(tok, mc) -> int:
+    if tok is not None and getattr(tok, "pad_token_id", None) is not None:
+        return int(tok.pad_token_id)
+    eos = getattr(mc, "eos_token_id", None)
+    if isinstance(eos, (list, tuple)):
+        eos = eos[0] if eos else None
+    return int(eos) if eos is not None else 0
+
+
+def _build_context_inputs(args, real_ids, tok, mc, prompt_text, dtype, dry_run):
+    """Real attention mask + optional left-padded inputs + unambiguous context.
+    The masked/plain path always consumes the REAL (unpadded) tokens."""
+    pad_to = _bool(args.pad_to_seq_len)
+    eff_len = int(real_ids.shape[1])
+    attn_mask = torch.ones((real_ids.shape[0], eff_len), dtype=torch.long)
+    padded_ids = padded_mask = None
+    padded_seq_len = None
+    if pad_to:
+        target = int(args.seq_len)
+        if eff_len < target:
+            pad_n = target - eff_len
+            pad_block = torch.full((real_ids.shape[0], pad_n), _pad_id(tok, mc),
+                                   dtype=real_ids.dtype, device=real_ids.device)
+            padded_ids = torch.cat([pad_block, real_ids], dim=1)
+            padded_mask = torch.cat(
+                [torch.zeros((real_ids.shape[0], pad_n), dtype=torch.long),
+                 attn_mask], dim=1)
+            padded_seq_len = target
+        else:
+            padded_ids, padded_mask, padded_seq_len = real_ids, attn_mask, eff_len
+    context = build_context_fields(
+        seq_len_requested=int(args.seq_len), effective_prompt_len=eff_len,
+        pad_to_seq_len=pad_to, padded_seq_len=padded_seq_len,
+        decode_start_index=eff_len, attention_mask_used=True, dtype=dtype,
+        model_name=args.model_name, model_path=args.model_path,
+        prompt_text=prompt_text, dry_run=dry_run)
+    return attn_mask, padded_ids, padded_mask, context
 
 
 def _tiny_model():
@@ -70,15 +110,23 @@ def _load_real(args):
     else:
         text = prompt
     enc = tok(text, return_tensors="pt")
-    return model, model.config, enc["input_ids"][:, :args.seq_len].to(args.device)
+    return (model, model.config,
+            enc["input_ids"][:, :args.seq_len].to(args.device), tok, prompt)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--model-path", default=None)
+    ap.add_argument("--model-name", default="Qwen2.5-7B-Instruct",
+                    help="public model name stamped into the report")
     ap.add_argument("--prompt", default="Explain why privacy matters in LLMs.")
     ap.add_argument("--prompt-file", default=None)
-    ap.add_argument("--seq-len", type=int, default=128)
+    ap.add_argument("--seq-len", type=int, default=128,
+                    help="seq_len_requested: max prompt budget (natural mode) or "
+                         "fixed context length (with --pad-to-seq-len true)")
+    ap.add_argument("--pad-to-seq-len", default="false",
+                    help="false: seq_len is a max prompt budget; true: left-pad "
+                         "to seq_len (fixed padded context) + validate invariance")
     ap.add_argument("--token-grid", default="1,8,16,32,64")
     ap.add_argument("--num-layers", type=int, default=28)
     ap.add_argument("--dtype", default="bfloat16")
@@ -95,18 +143,23 @@ def main() -> int:
     grid = tuple(int(x) for x in args.token_grid.split(",") if x.strip())
     modes = tuple(m.strip() for m in args.modes.split(",") if m.strip())
 
-    if args.dry_run or not args.model_path:
+    dry_run = bool(args.dry_run or not args.model_path)
+    if dry_run:
         if not args.dry_run:
             print("NOTE: no --model-path; running --dry-run tiny model (NOT a "
                   "paper result).")
         model, mc = _tiny_model()
         input_ids = torch.randint(0, 256, (1, min(args.seq_len, 8)))
+        tok, prompt_text = None, args.prompt
         device, dtype = "cpu", "float32"
         num_layers = mc.num_hidden_layers
     else:
-        model, mc, input_ids = _load_real(args)
+        model, mc, input_ids, tok, prompt_text = _load_real(args)
         device, dtype = args.device, args.dtype
         num_layers = min(args.num_layers, mc.num_hidden_layers)
+
+    attn_mask, padded_ids, padded_mask, context = _build_context_inputs(
+        args, input_ids, tok, mc, prompt_text, dtype, dry_run)
 
     cfg = MemoryOptimizedConfig(
         num_layers=num_layers, batch_size=1, seq_len=int(input_ids.shape[1]),
@@ -115,9 +168,12 @@ def main() -> int:
         mlp_down_chunk_size=args.mlp_down_chunk_size)
 
     out = run_e2_token_scaling(model, mc, input_ids, cfg, token_grid=grid,
-                               modes=modes, topk=args.topk)
-    out["dry_run"] = bool(args.dry_run or not args.model_path)
-    out["seq_len"] = int(input_ids.shape[1])
+                               modes=modes, topk=args.topk,
+                               attention_mask=attn_mask, context=context,
+                               padded_input_ids=padded_ids,
+                               padded_attention_mask=padded_mask)
+    out["dry_run"] = dry_run
+    out["seq_len"] = int(context["effective_prompt_len"])
 
     if args.output_json:
         p = Path(args.output_json)
@@ -138,8 +194,16 @@ def main() -> int:
 
 def _write_md(path: Path, out: dict) -> None:
     L = [f"# E2 no-LoRA Qwen2.5-7B token scaling (dry_run={out.get('dry_run')})",
-         "", f"seq_len={out.get('seq_len')} grid={out['token_grid']} "
-         f"tee_used_on_gpu={out['tee_used_on_gpu']}", "",
+         "",
+         f"- model_name=`{out.get('model_name')}`  "
+         f"context_mode=**{out.get('context_mode')}**  "
+         f"prompt_sha256_16=`{out.get('prompt_sha256_16')}`",
+         f"- seq_len_requested={out.get('seq_len_requested')}  "
+         f"effective_prompt_len={out.get('effective_prompt_len')}  "
+         f"padded_seq_len={out.get('padded_seq_len')}  "
+         f"decode_start_index={out.get('decode_start_index')}  "
+         f"attention_mask_used={out.get('attention_mask_used')}",
+         f"- grid={out['token_grid']}  tee_used_on_gpu={out['tee_used_on_gpu']}", "",
          "| max_new_tokens | tf_top1_hf_masked | tf_top1_plain_masked | "
          "greedy match | tf_logits_max_abs | tf_topk_overlap | latency_s | "
          "peak_gpu_mb | trusted_bytes | gpu_bytes |",
