@@ -186,3 +186,24 @@ any edit to a measured boundary file yields a new hash — re-bind the quote.
 > The JWT signature / certificate chain is verified by the remote attestation
 > service; this module verifies the tee/debug/binding/`mr_td` *claims*. We do not
 > re-verify the signature locally.
+
+## 7. Validated TDX run (mock GPU backend)
+
+The protocol has been run with the trusted boundary inside a **real Intel TDX
+guest on Alibaba Cloud**, attested end-to-end, driving the **mock** GPU worker:
+
+- `audit_passed=True`, `boundary_tee_type=tdx`, `boundary_attested=True`,
+  `runtime_hash_bound=True`, `tee_used_on_gpu=False`.
+- `gpu_visible_plaintext_fields=[]`, `leaked_secret_fields=[]`.
+- `boundary_calls={'embed_and_mask': 4, 'recover_logits': 4, 'sample': 4}`,
+  `trusted_bytes=32128`, `gpu_bytes=1063680`.
+- `mr_td=e0199499…ab2568a`; `report_data` equals the bound `runtime_hash`.
+
+**Scope / limitations (important).** This attested run uses the mock GPU backend
+(a numpy identity decoder), so it validates the *boundary protocol, masking,
+recovery, and audit* — not a transformer. Full **Qwen2.5-7B** masked execution is
+evaluated **separately on H800 with `tee_used=False`** (an untrusted-GPU
+evaluation); it did **not** run inside TDX. A cross-machine TDX-boundary +
+H800-worker end-to-end run has **not** been completed yet. Full details and the
+gap-closing plan are in
+[`tee_protocol_experiment_summary.md`](tee_protocol_experiment_summary.md).
