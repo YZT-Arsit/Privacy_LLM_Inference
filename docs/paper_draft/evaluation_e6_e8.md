@@ -84,12 +84,42 @@ outputs, (3) cost (folded-LoRA size, setup time, decode latency overhead vs
 no-LoRA, memory overhead), (4) training prototype (loss before/after, update
 correctness, limitations). Missing inputs are reported as not-provided.
 
+## Real-run orchestration (H800 / TDX)
+
+The expensive real runs are made cheap + reproducible by a one-command pipeline
+and a set of helpers (all dry-run validated; no real H800/TDX run was performed):
+
+| tool | role |
+| --- | --- |
+| `scripts/run_e6_lora_real_h800_pipeline.py` | builds + verifies the folded-LoRA package, runs the H800 local + remote LoRA probes (start-or-check the worker), optionally emits TDX-lite replay inputs, and writes ONE consolidated JSON/MD (`--plan-only` prints the exact command plan first) |
+| `scripts/create_tiny_hf_lora_fixture.py` | a tiny PEFT-style adapter fixture so the real `load_hf_lora_adapter` path is exercised without a download |
+| `scripts/validate_lora_effect.py` | guards against a silently-unmerged adapter (LoRA tokens identical to no-LoRA ⇒ warning) |
+| `scripts/prepare_tdx_lora_lite_inputs.py` | turns an H800 reference into TDX-lite replay `input_ids` + expected tokens + artifact hashes + `run_tdx_lora_lite_decode.sh` (no model / base package / raw LoRA on the TDX side) |
+| `scripts/check_tdx_measurement_coverage.py` | fails if the boundary import closure includes a trusted-side module not measured into the runtime hash |
+| `scripts/package_final_artifacts.py` | bundles all no-LoRA + LoRA outputs, runtime-hash/evidence, and package manifests into one tarball with per-file hashes |
+
+The TDX-lite boundary surface (`folded_probe_common`, `embedding_artifact`,
+`causal_lm_boundaries`, `remote`, `wire`, `nonlinear_islands`,
+`mitigation_bundles`) is now measured into the attestation runtime hash; the
+private LoRA adds **no** new boundary file (folding/merging runs on the worker).
+The full server procedure is in
+[`docs/runbooks/REAL_H800_TDX_LORA_RUNBOOK.md`](../runbooks/REAL_H800_TDX_LORA_RUNBOOK.md).
+
+The real HF/PEFT adapter is built with
+`build_qwen7b_lora_folded_package.py --raw-lora-adapter-path <dir>
+--adapter-format hf_peft` (rank/alpha/target_modules are read from
+`adapter_config.json`).
+
 ## Examples + testing
 
 `outputs/examples_e6_e8/` holds generated example artifacts (local probe, training
 probe, E8 report). Tests (no H800/TDX/CUDA/checkpoint): `tests/test_lora_folded_e6.py`
 (folding math, build/verify, local probe, remote live-worker decode, no-LoRA
 backward compat) and `tests/test_lora_private_training_e7_e8.py` (E7 update + audit,
-E8 tables + missing-not-assumed + leak-flips-cross-check). All new trusted-side
-LoRA scripts/modules are in the Python-3.6 API scan. No real H800/TDX runs were
-performed; real runs are deferred.
+E8 tables + missing-not-assumed + leak-flips-cross-check),
+`tests/test_lora_hf_adapter_fixture.py` (real PEFT-layout loader + folding vs
+reference), and `tests/test_e6_lora_real_pipeline.py` (pipeline command plan,
+validate_lora_effect, TDX-lite prep, measurement-coverage gap detection, artifact
+packaging with missing inputs). All new trusted-side LoRA scripts/modules are in
+the Python-3.6 API scan. No real H800/TDX runs were performed; real runs are
+deferred (see the runbook).

@@ -14,14 +14,19 @@ contains_*=False, trusted_setup=True).
 result). The base session seed is taken from the base package manifest so the
 folded LoRA lands in the base package's masked basis.
 
-Example::
+Real HF/PEFT adapter (``adapter_model.safetensors`` + ``adapter_config.json``)::
 
     python scripts/build_qwen7b_lora_folded_package.py \\
         --model-path /root/.../Qwen2___5-7B-Instruct \\
         --base-folded-package-path /root/.../qwen7b_folded_full \\
-        --adapter-path /root/.../my_lora_adapter \\
+        --raw-lora-adapter-path /path/to/adapter --adapter-format hf_peft \\
         --target-modules q_proj,k_proj,v_proj,o_proj --rank 8 --alpha 16 \\
-        --output-dir /root/.../qwen7b_lora_folded
+        --output-dir /root/.../qwen7b_lora_folded \\
+        --output-json outputs/qwen7b_lora_folded_build.json
+
+``--adapter-path`` remains a backward-compatible alias of
+``--raw-lora-adapter-path``. ``--dry-run`` uses the tiny base + a synthetic
+adapter (never a paper result).
 """
 
 from __future__ import annotations
@@ -41,6 +46,7 @@ from pllo.deployment.lora_folded_package import (  # noqa: E402
     DEFAULT_TARGET_MODULES,
     build_lora_folded_package,
     load_hf_lora_adapter,
+    read_hf_adapter_config,
     synthetic_lora_adapter,
 )
 from pllo.experiments.folded_probe_common import seed_from_manifest, tiny_model  # noqa: E402
@@ -60,6 +66,11 @@ def main() -> int:
                     help="base package (for seed + base_package_manifest_hash)")
     ap.add_argument("--adapter-path", default=None,
                     help="raw LoRA adapter dir; omit for --dry-run synthetic")
+    ap.add_argument("--raw-lora-adapter-path", default=None,
+                    help="alias of --adapter-path (real HF/PEFT adapter dir)")
+    ap.add_argument("--adapter-format", default="hf_peft",
+                    choices=["hf_peft", "auto"],
+                    help="raw adapter on-disk format (only hf_peft supported)")
     ap.add_argument("--target-modules", default=",".join(DEFAULT_TARGET_MODULES))
     ap.add_argument("--rank", type=int, default=8)
     ap.add_argument("--alpha", type=float, default=16.0)
@@ -73,10 +84,33 @@ def main() -> int:
     ap.add_argument("--synthetic-scale", type=float, default=0.02)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--output-dir", required=True)
+    ap.add_argument("--output-json", default=None,
+                    help="write the build report JSON to this path (for pipelines)")
     args = ap.parse_args()
 
     dry_run = bool(args.dry_run or not args.model_path)
     target_modules = _csv(args.target_modules)
+    adapter_path = args.raw_lora_adapter_path or args.adapter_path
+    rank, alpha = args.rank, args.alpha
+
+    # Real adapter: rank/alpha/target_modules MUST match the adapter, so read them
+    # from adapter_config.json (public hyper-params) and override the CLI defaults.
+    if adapter_path:
+        try:
+            acfg = read_hf_adapter_config(adapter_path)
+            if acfg["rank"]:
+                if acfg["rank"] != rank or float(acfg["alpha"]) != float(alpha):
+                    print("NOTE: using adapter_config.json rank=%s alpha=%s "
+                          "(CLI rank=%s alpha=%s)" % (acfg["rank"], acfg["alpha"],
+                                                      rank, alpha))
+                rank, alpha = acfg["rank"], acfg["alpha"]
+            if acfg["target_modules"]:
+                target_modules = acfg["target_modules"]
+                print("NOTE: using adapter_config.json target_modules=%s"
+                      % target_modules)
+        except Exception as exc:                            # noqa: BLE001
+            print("WARNING: could not read adapter_config.json (%s); using CLI "
+                  "rank/alpha/target_modules" % exc)
 
     seed = args.seed
     base_manifest_hash = None
@@ -113,17 +147,19 @@ def main() -> int:
         folded_weight_device=device, seed=seed)
     session = MaskedQwenSession(model, mc, cfg)
 
-    if args.adapter_path:
-        lora = load_hf_lora_adapter(args.adapter_path, mc, session.n,
+    if adapter_path:
+        if args.adapter_format not in ("hf_peft", "auto"):
+            raise SystemExit("unsupported --adapter-format %r" % args.adapter_format)
+        lora = load_hf_lora_adapter(adapter_path, mc, session.n,
                                     target_modules)
     else:
-        lora = synthetic_lora_adapter(mc, session.n, target_modules, args.rank,
+        lora = synthetic_lora_adapter(mc, session.n, target_modules, rank,
                                       seed=rank_seed, scale=args.synthetic_scale)
 
     t0 = time.perf_counter()
     report = build_lora_folded_package(
         args.output_dir, session=session, lora=lora,
-        target_modules=target_modules, rank=args.rank, alpha=args.alpha,
+        target_modules=target_modules, rank=rank, alpha=alpha,
         rank_seed=rank_seed, base_manifest_hash=base_manifest_hash,
         model_name=args.model_name,
         created_by="trusted_setup" if not dry_run else "test")
@@ -131,6 +167,19 @@ def main() -> int:
     report["dry_run"] = dry_run
     report["seed"] = seed
     report["num_layers"] = session.n
+    report["stage"] = "qwen7b_lora_folded_build"
+    report["adapter_source"] = ("hf_peft" if adapter_path else "synthetic")
+    report["lora_package_built"] = True
+    # surface the package's no-secret guarantees at the top level (the meta sidecar
+    # carries the same flags) so pipelines/validators do not have to open the dir.
+    for k in ("contains_raw_lora", "contains_optimizer_state",
+              "contains_training_data", "contains_mask_secrets"):
+        report[k] = bool(report["meta"][k])
+
+    if args.output_json:
+        p = Path(args.output_json)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
 
     print(json.dumps({k: v for k, v in report.items() if k != "meta"}, indent=2,
                      default=str))

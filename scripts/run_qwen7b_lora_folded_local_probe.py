@@ -231,6 +231,9 @@ def main() -> int:
         "relative_l2_error": ll2, "top1_match": top1, "topk": args.topk,
         "topk_overlap": ov, "next_token_match": top1,
         "reference_token_ids": ref_tokens, "package_token_ids": pkg_tokens,
+        # trusted-only echo of the input ids so the remote TDX-lite probe can
+        # REPLAY the exact same prompt (stays in the report file; never on GPU).
+        "input_ids": ids.detach().to("cpu").reshape(-1).tolist(),
         "tokens_exact_match": tokens_exact_match,
         "token_match_rate": (sum(1 for a, b in zip(pkg_tokens, ref_tokens)
                                  if a == b) / max(1, len(ref_tokens))),

@@ -38,9 +38,9 @@ from typing import Any
 __all__ = [
     "DEFAULT_TARGET_MODULES", "MODULE_TO_WKEY", "ALL_TARGET_MODULES",
     "lora_scaling", "synthetic_lora_adapter", "load_hf_lora_adapter",
-    "rank_mask", "fold_lora_for_layer", "merge_folded_lora",
-    "adapter_hash", "build_lora_folded_package", "load_lora_meta",
-    "load_folded_lora_layer", "verify_lora_folded_package",
+    "read_hf_adapter_config", "rank_mask", "fold_lora_for_layer",
+    "merge_folded_lora", "adapter_hash", "build_lora_folded_package",
+    "load_lora_meta", "load_folded_lora_layer", "verify_lora_folded_package",
     "apply_lora_to_model", "LORA_FOLD_FORMULA",
 ]
 
@@ -100,6 +100,30 @@ def synthetic_lora_adapter(mc, num_layers: int, target_modules, rank: int,
             b = torch.randn(rank, dout, generator=g) * scale
             out[ell][m] = (a, b)
     return out
+
+
+def read_hf_adapter_config(adapter_path) -> dict:
+    """Parse a PEFT ``adapter_config.json``: rank ``r``, ``lora_alpha``, and the
+    LoRA ``target_modules`` (intersected with the modules we can fold). Returns
+    ``{"rank", "alpha", "scaling", "target_modules", "raw_target_modules"}``.
+    Only public hyper-parameters are read -- never the adapter tensors here."""
+    p = Path(adapter_path)
+    cfg_file = p / "adapter_config.json" if p.is_dir() else p
+    cfg = json.loads(Path(cfg_file).read_text(encoding="utf-8"))
+    rank = int(cfg.get("r", cfg.get("rank", 0)) or 0)
+    alpha = float(cfg.get("lora_alpha", cfg.get("alpha", rank)) or rank)
+    raw_tm = cfg.get("target_modules") or []
+    if isinstance(raw_tm, str):
+        raw_tm = [raw_tm]
+    # keep only the projection names this folder knows how to fold, preserving the
+    # canonical ALL_TARGET_MODULES order for determinism.
+    foldable = [m for m in ALL_TARGET_MODULES
+                if any(m == t or t.endswith(m) for t in raw_tm)]
+    return {
+        "rank": rank, "alpha": alpha,
+        "scaling": lora_scaling(alpha, rank) if rank else None,
+        "target_modules": foldable, "raw_target_modules": list(raw_tm),
+    }
 
 
 def load_hf_lora_adapter(adapter_path, mc, num_layers: int, target_modules,

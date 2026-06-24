@@ -35,6 +35,12 @@ DEPLOYMENT_FILES = [
     "src/pllo/protocol/tee_gpu_messages.py",
     "src/pllo/protocol/security_audit.py",
     "src/pllo/protocol/lora_training_audit.py",
+    # TDX-lite boundary runtime surface now measured into the attestation hash
+    # (must stay py3.6-safe -- it runs inside the TD).
+    "src/pllo/experiments/folded_probe_common.py",
+    "src/pllo/ops/causal_lm_boundaries.py",
+    "src/pllo/ops/nonlinear_islands.py",
+    "src/pllo/ops/mitigation_bundles.py",
     "src/pllo/nonlinear/backends.py",
     "src/pllo/nonlinear/current_backend.py",
     "src/pllo/nonlinear/amulet_backend.py",
@@ -52,6 +58,9 @@ DEPLOYMENT_FILES = [
     "scripts/run_qwen7b_lora_folded_local_probe.py",
     "scripts/run_qwen7b_lora_folded_remote_decode_probe.py",
     "scripts/run_lora_private_training_tiny_probe.py",
+    # TDX-side LoRA helpers (may run on the older-Python TDX VM)
+    "scripts/prepare_tdx_lora_lite_inputs.py",
+    "scripts/check_tdx_measurement_coverage.py",
     "scripts/verify_folded_package.py",
     "scripts/estimate_folded_package_cost.py",
     "scripts/inspect_folded_package.py",

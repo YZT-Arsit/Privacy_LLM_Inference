@@ -61,11 +61,30 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # The trusted-boundary / protocol code measured into the runtime hash. Globs are
 # expanded relative to the manifest base (repo root by default); __pycache__ is
 # never matched by the *.py glob. Override via ``build_trusted_boundary_manifest``.
+#
+# This MUST cover every trusted-side source file the boundary process loads at
+# runtime -- including the TDX-lite boundary used by the (no-LoRA and LoRA)
+# package-backed decode path. ``scripts/check_tdx_measurement_coverage.py``
+# recomputes the boundary's first-party import closure and fails if any
+# boundary-imported module here is unmeasured. Worker-only / trusted-setup files
+# (gpu_worker, folded_worker, lora_folded_package, the folded-package writer, full
+# hf_wrappers) are intentionally excluded: they run on the untrusted GPU host or
+# the offline trusted-setup box, NOT inside the TD. The private folded LoRA adds
+# NO new boundary file -- folding/merging happens on the worker -- so the LoRA
+# attested path measures exactly this same set.
 DEFAULT_TRUSTED_BOUNDARY_PATHS: tuple[str, ...] = (
     "src/pllo/protocol/attestation.py",
     "src/pllo/protocol/tee_gpu_messages.py",
     "src/pllo/protocol/security_audit.py",
+    "src/pllo/protocol/wire.py",
+    "src/pllo/protocol/remote.py",
     "src/pllo/tee/*.py",
+    # TDX-lite boundary runtime surface (embed+mask / recover / RPC drive):
+    "src/pllo/experiments/folded_probe_common.py",
+    "src/pllo/deployment/embedding_artifact.py",
+    "src/pllo/ops/causal_lm_boundaries.py",
+    "src/pllo/ops/nonlinear_islands.py",
+    "src/pllo/ops/mitigation_bundles.py",
     "scripts/run_tee_gpu_protocol_demo.py",
 )
 
