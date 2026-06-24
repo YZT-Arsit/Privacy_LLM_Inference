@@ -46,7 +46,7 @@ from pllo.protocol.attestation import (  # noqa: E402
 )
 from pllo.protocol.gpu_worker import LocalGpuWorker  # noqa: E402
 from pllo.protocol.orchestrator import run_protocol  # noqa: E402
-from pllo.protocol.remote import run_gpu_worker_server  # noqa: E402
+from pllo.protocol.remote import RemoteGpuWorker, run_gpu_worker_server  # noqa: E402
 from pllo.protocol.security_audit import (  # noqa: E402
     assert_no_gpu_visible_plaintext,
     assert_no_mask_secret_leak,
@@ -230,6 +230,123 @@ def build_qwen7b_probe_report(prompt: str, boundary_backend: str,
     }
 
 
+# Three-way scope distinction the paper must keep separate (see
+# docs/cross_machine_security_scope.md). Stamped into every cross-machine report
+# so a reader never confuses standalone compute with the attested deployment.
+_COMPUTE_CORRECTNESS_SOURCE = (
+    "standalone H800 E1/E2 (run_qwen7b_e1_nolora_generation.py / "
+    "run_qwen7b_e2_token_scaling.py) validates full Qwen2.5-7B masked compute "
+    "correctness, generation behaviour, and token scaling")
+_SECURITY_BOUNDARY_SOURCE = (
+    "cross-machine mock end-to-end (real attestation + wire-field rejection + "
+    "masked-tensor-only traffic + audit) plus the qwen7b /init handshake plus "
+    "TDX boundary attestation validates the attested trusted boundary driving a "
+    "remote untrusted GPU worker")
+_CONNECTIVITY_NOTE = (
+    "cross-machine connectivity is the deployment setting for the attested "
+    "protocol, not a contribution")
+
+
+def _annotate_cross_machine_scope(report: dict, *, model_name: str,
+                                  cross_machine_compute: str,
+                                  limitations: str) -> None:
+    """Stamp the three-way scope fields onto a cross-machine report so the
+    standalone compute result and the attested deployment are never conflated."""
+    report["model_name"] = model_name
+    report["cross_machine_compute"] = cross_machine_compute  # end_to_end|probe_only
+    report["compute_correctness_source"] = _COMPUTE_CORRECTNESS_SOURCE
+    report["security_boundary_source"] = _SECURITY_BOUNDARY_SOURCE
+    report["connectivity_note"] = _CONNECTIVITY_NOTE
+    report["limitations"] = limitations
+    # Qwen-specific correctness metrics live in standalone E1/E2; surface the
+    # keys here (None unless a Qwen reference is driven cross-machine) so the
+    # report schema is stable. "if implemented" per the experiment spec.
+    report.setdefault("teacher_forced_top1_match_rate", None)
+    report.setdefault("plain_vs_masked_token_match_rate", None)
+
+
+def build_remote_qwen7b_probe_report(prompt: str, boundary_backend: str,
+                                     max_new_tokens: int, run_audit: bool,
+                                     gpu_worker_url: str, *, model_name: str,
+                                     seq_len: int, num_layers: int,
+                                     dtype: str) -> dict:
+    """Cross-machine init + audit probe against a **remote** qwen7b GPU worker.
+
+    Performs the real ``/health`` + ``/init`` handshake to the H800 worker over
+    HTTP, confirms the server reports ``tee_used_on_gpu=False``, and audits the
+    init traffic (only masked/public metadata crosses -- no folded head, no
+    plaintext, no secret). The full Qwen2.5-7B masked prefill/decode is validated
+    standalone (E1/E2): a *private* cross-machine masked decode would require
+    shipping folded layer weights to the worker (which must never hold the
+    masks), impractical over JSON HTTP -- so this is a protocol/attestation/audit
+    probe, not an end-to-end compute run. ``--gpu-backend mock`` runs the full
+    boundary<->worker decode end-to-end cross-machine."""
+    import time as _time
+    trace = ProtocolTrace(boundary_backend=boundary_backend,
+                          gpu_backend="qwen7b", max_new_tokens=max_new_tokens,
+                          tee_used_on_gpu=False)
+
+    def _record(direction, method, msg):
+        (trace.record_gpu_inbound if direction == "inbound"
+         else trace.record_gpu_outbound)(msg)
+
+    worker = RemoteGpuWorker(gpu_worker_url, "qwen7b", recorder=_record)
+    _t0 = _time.perf_counter()
+    health = worker.health()                                   # GET /health
+    init_req = BoundaryInitRequest(
+        session_id="sess-0", hidden_size=3584, vocab_size=152064,
+        num_layers=num_layers, dtype=dtype, gpu_backend="qwen7b",
+        folded_lm_head=None,
+        public_metadata={"model": model_name, "seq_len": seq_len,
+                         "max_new_tokens": max_new_tokens,
+                         "note": "masked prefill/decode runs on the GPU server"})
+    init_resp = worker.init(init_req)                          # POST /init
+    latency_s = _time.perf_counter() - _t0
+    trace.tee_used_on_gpu = bool(init_resp.tee_used_on_gpu)
+    worker.close()
+
+    plaintext_fields, secret_fields, audit_passed = [], [], None
+    if run_audit:
+        plaintext_fields = assert_no_gpu_visible_plaintext(
+            trace, raw_prompt=prompt, raise_on_fail=False)
+        secret_fields = assert_no_mask_secret_leak(trace, None,
+                                                   raise_on_fail=False)
+        audit_passed = bool(not plaintext_fields and not secret_fields
+                            and not trace.tee_used_on_gpu)
+
+    return {
+        "stage": "tee_gpu_protocol_demo",
+        "mode": "boundary_client",
+        "tee_used": False,
+        "tee_used_on_gpu": trace.tee_used_on_gpu,
+        "gpu_worker_remote": True,
+        "gpu_worker_url": gpu_worker_url,
+        "qwen7b_probe_only": True,
+        "server_health": health,
+        "boundary_backend": boundary_backend,
+        "gpu_backend": "qwen7b",
+        "gpu_backend_server_reported": init_resp.gpu_backend,
+        "max_new_tokens": max_new_tokens,
+        "latency_s": latency_s,
+        "peak_gpu_memory_mb": None,   # no compute on a probe; measured in E1/E2
+        "boundary_calls": trace.boundary_calls,
+        "gpu_calls": trace.gpu_calls,
+        "trusted_bytes": trace.trusted_bytes,
+        "gpu_bytes": trace.gpu_bytes,
+        "gpu_inbound_message_count": len(trace.gpu_inbound_messages),
+        "gpu_outbound_message_count": len(trace.gpu_outbound_messages),
+        "gpu_visible_plaintext_fields": plaintext_fields,
+        "leaked_secret_fields": secret_fields,
+        "wrong_mask_control": {},
+        "recovered_tokens": [],
+        "tokens_match_plaintext_reference": None,
+        "audit_performed": run_audit,
+        "audit_passed": audit_passed,
+        "note": "cross-machine qwen7b init/attestation/audit probe; full masked "
+                "compute validated standalone (E1/E2).",
+    }
+
+
 def _write_md(path: Path, r: dict) -> None:
     lines = [
         f"# TEE ↔ GPU protocol demo ({r['mode']})", "",
@@ -267,6 +384,22 @@ def _write_md(path: Path, r: dict) -> None:
             f"- jwt_present: {att['jwt_present']} (parts={att['jwt_parts']})",
             f"- mr_td_match: {att['mr_td_match']}",
         ]
+    if "cross_machine_compute" in r:
+        lines += [
+            "", "## Cross-machine scope (keep these separate)", "",
+            f"- model_name: `{r.get('model_name')}`",
+            f"- cross_machine_compute: **{r.get('cross_machine_compute')}**",
+            f"- gpu_worker_remote: {r.get('gpu_worker_remote')} "
+            f"(`{r.get('gpu_worker_url')}`)",
+            f"- teacher_forced_top1_match_rate: "
+            f"{r.get('teacher_forced_top1_match_rate')}",
+            f"- plain_vs_masked_token_match_rate: "
+            f"{r.get('plain_vs_masked_token_match_rate')}",
+            f"- compute correctness: {r.get('compute_correctness_source')}",
+            f"- security boundary: {r.get('security_boundary_source')}",
+            f"- connectivity: {r.get('connectivity_note')}",
+            f"- **limitations**: {r.get('limitations')}",
+        ]
     lines += [
         "",
         "_The GPU worker received only masked embeddings + public metadata + "
@@ -295,6 +428,8 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=4242)
     ap.add_argument("--model-path", default=None,
                     help="qwen7b checkpoint (GPU server); probe-only locally")
+    ap.add_argument("--model-name", default="Qwen2.5-7B-Instruct",
+                    help="public model name stamped into cross-machine reports")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--dtype", default="bfloat16")
     # cross-machine transport
@@ -359,7 +494,27 @@ def main() -> int:
             ap.error("--mode boundary_client requires --gpu-worker-url")
         gpu_worker_url = args.gpu_worker_url
 
-    if args.gpu_backend == "qwen7b" and gpu_worker_url is None:
+    if gpu_worker_url is not None and args.gpu_backend == "qwen7b":
+        # Cross-machine: real /health + /init + audit + attestation probe vs the
+        # remote H800 worker. Full masked compute is validated standalone (E1/E2).
+        print("NOTE: cross-machine --gpu-backend qwen7b runs an init/attestation/"
+              "audit probe against the remote worker; full Qwen2.5-7B masked "
+              "compute is validated standalone (E1/E2). --gpu-backend mock runs "
+              "the full boundary<->worker decode end-to-end cross-machine.")
+        report = build_remote_qwen7b_probe_report(
+            args.prompt, args.boundary_backend, args.max_new_tokens,
+            _bool(args.audit), gpu_worker_url, model_name=args.model_name,
+            seq_len=args.seq_len, num_layers=args.num_layers, dtype=args.dtype)
+        _annotate_cross_machine_scope(
+            report, model_name=args.model_name,
+            cross_machine_compute="probe_only",
+            limitations=(
+                "private cross-machine qwen7b masked decode would require "
+                "shipping folded layer weights to the worker (which must never "
+                "hold the masks); impractical over JSON HTTP. The masked compute "
+                "is therefore validated standalone (E1/E2); this run validates "
+                "the attested protocol boundary + init handshake + audit only"))
+    elif args.gpu_backend == "qwen7b" and gpu_worker_url is None:
         print("NOTE: --gpu-backend qwen7b runs masked prefill/decode on the GPU "
               "server (CUDA + checkpoint). Locally this is an init-only "
               "protocol/audit probe; --gpu-backend mock runs end-to-end.")
@@ -373,6 +528,14 @@ def main() -> int:
             hidden_size=args.hidden_size, vocab_size=args.vocab_size,
             seq_len=args.seq_len, seed=args.seed,
             gpu_worker_url=gpu_worker_url)
+        if gpu_worker_url is not None:        # mock end-to-end cross-machine
+            _annotate_cross_machine_scope(
+                report, model_name="mock-identity",
+                cross_machine_compute="end_to_end",
+                limitations=("none for the boundary security claim: the mock "
+                             "identity decoder validates the full cross-machine "
+                             "attested protocol + audit end-to-end; Qwen compute "
+                             "correctness is the standalone E1/E2 result"))
 
     # Write manifest / hash with the SAME metadata the attestation uses, so the
     # written hash matches report["runtime_hash"] / expected_runtime_hash.

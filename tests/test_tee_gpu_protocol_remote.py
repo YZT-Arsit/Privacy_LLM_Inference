@@ -156,6 +156,14 @@ def test_attestation_fields_preserved_in_boundary_client_report(
     assert report["mr_td"] == REAL_MR_TD
 
 
+def _load_demo():
+    spec = importlib.util.spec_from_file_location(
+        "rtgpd", REPO_ROOT / "scripts" / "run_tee_gpu_protocol_demo.py")
+    demo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(demo)
+    return demo
+
+
 # 5.
 def test_qwen7b_worker_reports_tee_used_false(qwen_server) -> None:
     url, srv = qwen_server
@@ -172,3 +180,62 @@ def test_qwen7b_worker_reports_tee_used_false(qwen_server) -> None:
     assert resp.tee_used_on_gpu is False
     assert resp.gpu_backend == "qwen7b"
     client.close()
+
+
+# 6. cross-machine mock end-to-end report carries the three-way scope fields
+def test_boundary_client_mock_report_has_scope_fields(mock_server) -> None:
+    demo = _load_demo()
+    report = demo.build_report(
+        PROMPT, "simulated", "mock", 4, True, hidden_size=64, vocab_size=500,
+        seq_len=8, seed=99991, gpu_worker_url=mock_server)
+    demo._annotate_cross_machine_scope(
+        report, model_name="mock-identity", cross_machine_compute="end_to_end",
+        limitations="none")
+    assert report["cross_machine_compute"] == "end_to_end"
+    assert report["gpu_worker_remote"] is True
+    assert report["tee_used_on_gpu"] is False
+    # required schema keys present (even if None for the mock identity decoder)
+    for k in ("model_name", "compute_correctness_source",
+              "security_boundary_source", "connectivity_note", "limitations",
+              "teacher_forced_top1_match_rate", "plain_vs_masked_token_match_rate",
+              "latency_s", "trusted_bytes", "gpu_bytes", "boundary_calls"):
+        assert k in report
+
+
+# 7. cross-machine qwen7b init/audit probe against a REMOTE worker (no torch)
+def test_boundary_client_qwen7b_remote_probe(qwen_server, tmp_path) -> None:
+    url, srv = qwen_server
+    demo = _load_demo()
+    report = demo.build_remote_qwen7b_probe_report(
+        PROMPT, "process", 64, True, url, model_name="Qwen2.5-7B-Instruct",
+        seq_len=128, num_layers=28, dtype="bfloat16")
+    assert report["mode"] == "boundary_client"
+    assert report["qwen7b_probe_only"] is True
+    assert report["gpu_worker_remote"] is True
+    assert report["gpu_worker_url"] == url
+    assert report["tee_used_on_gpu"] is False
+    assert report["gpu_backend_server_reported"] == "qwen7b"
+    # init traffic crossed (no arrays -> gpu_bytes==0) but carried no secret
+    assert report["gpu_inbound_message_count"] >= 1
+    assert report["gpu_calls"].get("BoundaryInitRequest") == 1
+    assert report["gpu_visible_plaintext_fields"] == []
+    assert report["leaked_secret_fields"] == []
+    assert report["audit_passed"] is True
+    assert report["tokens_match_plaintext_reference"] is None  # probe, not compute
+    # full scope annotation + attestation fold-in (TDX evidence bound)
+    demo._annotate_cross_machine_scope(
+        report, model_name="Qwen2.5-7B-Instruct",
+        cross_machine_compute="probe_only", limitations="folded-weight shipping")
+    md = boundary_manifest_metadata("process", "qwen7b", REAL_MR_TD)
+    rh = boundary_runtime_hash(metadata=md)
+    ev = {"tee": "tdx", "tdx": {"td_attributes": {"debug": False}},
+          "mr_td": REAL_MR_TD, "report_data": rh, "jwt": "a.b.c"}
+    ev_path = tmp_path / "evidence.json"
+    ev_path.write_text(json.dumps(ev), encoding="utf-8")
+    demo.attach_attestation(report, evidence=str(ev_path),
+                            expected_mr_td=REAL_MR_TD)
+    assert report["boundary_tee_type"] == "tdx"
+    assert report["boundary_attested"] is True
+    assert report["runtime_hash_bound"] is True
+    assert report["model_name"] == "Qwen2.5-7B-Instruct"
+    assert report["cross_machine_compute"] == "probe_only"
