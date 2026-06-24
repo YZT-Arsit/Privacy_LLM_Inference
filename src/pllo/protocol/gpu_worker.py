@@ -289,6 +289,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         self.num_shards: int | None = None
         self.package_valid: bool | None = None
         self.worker_has_mask_secrets = False
+        self._kv: Any = None
+        self._exec_layers: int | None = None
 
     def init(self, req: BoundaryInitRequest) -> BoundaryInitResponse:
         from pllo.deployment import (
@@ -355,17 +357,55 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         return apply_folded_layer_prefill(x_tilde, layer_tensors, config, cos,
                                           sin, eps)
 
+    def run_prefill(self, h_tilde: Any, num_exec_layers: int, config: Any,
+                    cos: Any, sin: Any, eps: float) -> dict[str, Any]:
+        """Execute ``num_exec_layers`` folded layers from the package over masked
+        ``h_tilde`` (no masks on the worker). Stores the masked KV; returns the
+        masked hidden + KV. ``config``/``cos``/``sin`` are public artifacts from
+        the boundary. Tested in tests/test_folded_package_prefill_exec.py."""
+        from pllo.deployment.folded_worker import apply_folded_prefill
+        if not self.folded_package_loaded:
+            raise RuntimeError("call init() to load the folded package first")
+        out = apply_folded_prefill(h_tilde, self.folded_package_path,
+                                   int(num_exec_layers), config, cos, sin, eps)
+        self._kv = out["kv"]
+        self._exec_layers = int(num_exec_layers)
+        return out
+
+    def run_head(self, h_tilde: Any, eps: float) -> Any:
+        """Masked logits from the package's folded head (no masks)."""
+        from pllo.deployment.folded_worker import apply_folded_head
+        if not self.folded_package_loaded:
+            raise RuntimeError("call init() to load the folded package first")
+        return apply_folded_head(h_tilde, self.folded_package_path, eps)
+
+    def run_decode(self, x_next_tilde: Any, position: int, config: Any,
+                   cos: Any, sin: Any, eps: float,
+                   num_exec_layers: int | None = None) -> dict[str, Any]:
+        """One-token masked decode over the package's folded layers, threading the
+        masked KV from the preceding prefill/decode."""
+        from pllo.deployment.folded_worker import apply_folded_decode
+        if getattr(self, "_kv", None) is None:
+            raise RuntimeError("run_prefill() must populate the KV cache first")
+        k = int(num_exec_layers if num_exec_layers is not None
+                else getattr(self, "_exec_layers", len(self._kv)))
+        out = apply_folded_decode(x_next_tilde, self.folded_package_path,
+                                  self._kv, int(position), k, config, cos, sin,
+                                  eps)
+        self._kv = out["kv"]
+        return out
+
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
         raise NotImplementedError(
-            "TODO: full masked prefill from folded-package shards. The folded "
-            "operators load + verify on init, and single-layer masked prefill "
-            "from the package is implemented + tested "
-            "(run_single_layer_prefill; tests/test_folded_package_qwen_1layer.py). "
-            "Full 28-layer shard-streamed prefill/decode is not yet wired.")
+            "HTTP /prefill needs the public per-layer config + RoPE caches on the "
+            "wire; not yet transported. The EXECUTABLE package-backed path is "
+            "run_prefill()/run_head()/run_decode() (in-process worker), proven in "
+            "the folded-package prefill/onestep/decode probes + "
+            "tests/test_folded_package_prefill_exec.py.")
 
     def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
         raise NotImplementedError(
-            "TODO: full masked decode from folded-package shards (see prefill).")
+            "HTTP /decode not wired (see prefill); use run_decode().")
 
 
 def make_gpu_backend(name: str, **kwargs: Any) -> GpuBackend:

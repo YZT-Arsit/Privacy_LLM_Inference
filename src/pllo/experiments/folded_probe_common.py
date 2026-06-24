@@ -1,0 +1,94 @@
+"""Shared helpers for the folded-package execution probes.
+
+Centralises model loading + tokenisation, the seed-from-manifest parse, and error
+statistics so the prefill / one-step-logits / decode probes stay consistent. The
+tiny dry-run model MUST match ``build_qwen7b_folded_package.py::_tiny_model`` so a
+dry-run package built there and consumed by a probe uses the identical model.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import torch
+
+
+def tiny_model():
+    """Tiny random Qwen2 -- MUST match build_qwen7b_folded_package.py::_tiny_model."""
+    from transformers import Qwen2Config, Qwen2ForCausalLM
+    mc = Qwen2Config(vocab_size=256, hidden_size=128, intermediate_size=256,
+                     num_hidden_layers=4, num_attention_heads=2,
+                     num_key_value_heads=1, max_position_embeddings=256,
+                     rms_norm_eps=1e-6, rope_theta=1_000_000.0,
+                     tie_word_embeddings=False)
+    torch.manual_seed(0)
+    return Qwen2ForCausalLM(mc).eval(), mc
+
+
+def _bool(s) -> bool:
+    return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def load_model_and_ids(args, dry_run: bool):
+    """Return (model, model_config, input_ids, device, dtype).
+
+    Real path: load the HF checkpoint + tokenizer (optional chat template),
+    truncate to ``--seq-len``. Dry-run: tiny random Qwen2 on CPU with a short
+    random prompt (never a paper result)."""
+    if dry_run:
+        if not getattr(args, "dry_run", False):
+            print("NOTE: no --model-path; running --dry-run tiny model (NOT a "
+                  "paper result).")
+        model, mc = tiny_model()
+        ids = torch.randint(0, mc.vocab_size, (1, min(args.seq_len, 8)))
+        return model, mc, ids, "cpu", "float32"
+
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    dt = {"bfloat16": torch.bfloat16, "float16": torch.float16,
+          "float32": torch.float32}.get(args.dtype, torch.bfloat16)
+    tok = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True,
+                                        local_files_only=True)
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model_path, dtype=dt, device_map=args.device,
+        trust_remote_code=True, local_files_only=True).eval()
+    text = args.prompt
+    if _bool(getattr(args, "use_chat_template", "true")):
+        text = tok.apply_chat_template([{"role": "user", "content": args.prompt}],
+                                       tokenize=False, add_generation_prompt=True)
+    ids = tok(text, return_tensors="pt")["input_ids"][:, :args.seq_len]
+    return model, model.config, ids.to(args.device), args.device, args.dtype
+
+
+def seed_from_manifest(pkg_dir, default: int) -> int:
+    """Parse the seed from a package manifest's mask_schedule_id
+    (``<sched>-seed<seed>-n<n>``) so a probe's reference masks match the package."""
+    try:
+        from pllo.deployment import load_manifest
+        sid = load_manifest(pkg_dir).mask_schedule_id or ""
+        if "-seed" in sid:
+            return int(sid.split("-seed", 1)[1].split("-", 1)[0])
+    except Exception:                                    # noqa: BLE001
+        pass
+    return int(default)
+
+
+def err_stats(a: torch.Tensor, b: torch.Tensor):
+    """(max_abs, mean_abs, relative_l2) between two tensors (float)."""
+    a = a.reshape(-1).float()
+    b = b.reshape(-1).float()
+    diff = a - b
+    denom = float(torch.linalg.norm(b)) or 1.0
+    return (float(diff.abs().max()), float(diff.abs().mean()),
+            float(torch.linalg.norm(diff) / denom))
+
+
+def topk_overlap(a_logits: torch.Tensor, b_logits: torch.Tensor,
+                 k: int = 5) -> float:
+    """Mean per-row top-k index overlap |A∩B|/k."""
+    k = min(k, a_logits.shape[-1])
+    ta = a_logits.topk(k, dim=-1).indices.reshape(-1, k)
+    tb = b_logits.topk(k, dim=-1).indices.reshape(-1, k)
+    ov = [len(set(ta[i].tolist()) & set(tb[i].tolist())) / k
+          for i in range(ta.shape[0])]
+    return float(sum(ov) / len(ov)) if ov else 0.0
