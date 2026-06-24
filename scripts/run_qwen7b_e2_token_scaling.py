@@ -204,18 +204,22 @@ def _write_md(path: Path, out: dict) -> None:
          f"decode_start_index={out.get('decode_start_index')}  "
          f"attention_mask_used={out.get('attention_mask_used')}",
          f"- grid={out['token_grid']}  tee_used_on_gpu={out['tee_used_on_gpu']}", "",
-         "| max_new_tokens | tf_top1_hf_masked | tf_top1_plain_masked | "
-         "greedy match | tf_logits_max_abs | tf_topk_overlap | latency_s | "
-         "peak_gpu_mb | trusted_bytes | gpu_bytes |",
-         "|---|---|---|---|---|---|---|---|---|---|"]
+         "| max_new_tokens | tf_top1_hf_plain | tf_top1_hf_masked | "
+         "tf_top1_plain_masked | plain_vs_masked_token_match_rate | topk_overlap "
+         "| logits_max_abs_error | logits_mean_abs_error | logits_relative_l2_error "
+         "| latency_s | peak_gpu_memory_mb | trusted_bytes | gpu_bytes |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in out["rows"]:
         L.append(
-            f"| {r['max_new_tokens']} | {r.get('tf_top1_hf_masked')} | "
-            f"{r.get('tf_top1_plain_masked')} | "
-            f"{r.get('greedy_plain_vs_masked_token_match_rate')} | "
-            f"{r.get('tf_logits_max_abs_error')} | {r.get('tf_topk_overlap')} | "
-            f"{r.get('greedy_latency_s')} | {r['peak_gpu_memory_mb']} | "
-            f"{r['trusted_bytes']} | {r['gpu_bytes']} |")
+            f"| {r['max_new_tokens']} | "
+            f"{r.get('teacher_forced_top1_match_rate_hf_plain')} | "
+            f"{r.get('teacher_forced_top1_match_rate_hf_masked')} | "
+            f"{r.get('teacher_forced_top1_match_rate_plain_masked')} | "
+            f"{r.get('plain_vs_masked_token_match_rate')} | "
+            f"{r.get('topk_overlap')} | {r.get('logits_max_abs_error')} | "
+            f"{r.get('logits_mean_abs_error')} | "
+            f"{r.get('logits_relative_l2_error')} | {r.get('latency_s')} | "
+            f"{r['peak_gpu_memory_mb']} | {r['trusted_bytes']} | {r['gpu_bytes']} |")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
 

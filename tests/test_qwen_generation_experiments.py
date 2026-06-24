@@ -194,6 +194,81 @@ def test_pad_mode_padding_invariance_holds() -> None:
     assert r["padding_invariance_ok"] is True
 
 
+_E1_FLAT_METRICS = (
+    "teacher_forced_top1_match_rate_hf_plain",
+    "teacher_forced_top1_match_rate_hf_masked",
+    "teacher_forced_top1_match_rate_plain_masked",
+    "plain_vs_masked_token_match_rate", "topk_overlap",
+    "logits_max_abs_error", "logits_mean_abs_error",
+    "logits_relative_l2_error", "latency_s",
+)
+# every field each E2 row must expose (presence); a subset must be non-None when
+# the contributing mode ran.
+_E2_ROW_FIELDS = (
+    "max_new_tokens", "seq_len_requested", "effective_prompt_len",
+    "padded_seq_len", "decode_start_index", "attention_mask_used",
+    "teacher_forced_top1_match_rate_hf_plain",
+    "teacher_forced_top1_match_rate_hf_masked",
+    "teacher_forced_top1_match_rate_plain_masked",
+    "plain_vs_masked_token_match_rate", "topk_overlap", "logits_max_abs_error",
+    "logits_mean_abs_error", "logits_relative_l2_error", "latency_s",
+    "peak_gpu_memory_mb", "trusted_bytes", "gpu_bytes", "boundary_calls",
+    "gpu_visible_plaintext_fields", "leaked_secret_fields", "tee_used_on_gpu",
+)
+
+
+def _json_roundtrip(obj):
+    import json
+    return json.loads(json.dumps(obj, default=str))
+
+
+def test_e1_json_top_level_paper_metrics_not_none() -> None:
+    """E1 JSON top-level paper-critical metrics are populated (not None) when the
+    contributing modes ran -- this is the schema fix the paper reader needs."""
+    model, mc = _tiny()
+    cfg = _cfg(mc, seq_len=6, n=3)
+    ids = torch.randint(0, mc.vocab_size, (1, 6))
+    r = _json_roundtrip(run_e1_nolora(
+        model, mc, ids, cfg, modes=("greedy", "teacher_forced"), topk=3))
+    for k in _E1_FLAT_METRICS:
+        assert r.get(k) is not None, f"E1 top-level {k} is None"
+    # nested detail retained
+    assert "teacher_forced" in r["modes"] and "greedy" in r["modes"]
+    assert r["latency_s"] == r["greedy_latency_s"]   # latency == greedy gen time
+
+
+def test_e1_metric_none_only_when_mode_absent() -> None:
+    """Greedy-only: plain_vs_masked is populated; teacher-forced fields are None
+    (None is meaningful = mode not run, not a dropped value)."""
+    model, mc = _tiny()
+    cfg = _cfg(mc, seq_len=6, n=3)
+    ids = torch.randint(0, mc.vocab_size, (1, 6))
+    r = _json_roundtrip(run_e1_nolora(model, mc, ids, cfg, modes=("greedy",),
+                                      topk=3))
+    assert r["plain_vs_masked_token_match_rate"] is not None
+    assert r["latency_s"] is not None
+    assert r["teacher_forced_top1_match_rate_hf_plain"] is None
+    assert r["topk_overlap"] is None
+
+
+def test_e2_rows_expose_flattened_fields() -> None:
+    model, mc = _tiny()
+    cfg = _cfg(mc, seq_len=6, n=1)
+    ids = torch.randint(0, mc.vocab_size, (1, 6))
+    out = _json_roundtrip(run_e2_token_scaling(
+        model, mc, ids, cfg, token_grid=(1, 4),
+        modes=("greedy", "teacher_forced"), topk=3))
+    assert [row["max_new_tokens"] for row in out["rows"]] == [1, 4]
+    for row in out["rows"]:
+        for k in _E2_ROW_FIELDS:
+            assert k in row, f"E2 row missing {k}"
+        # metrics from modes that ran must be populated
+        for k in _E1_FLAT_METRICS:
+            assert row[k] is not None, f"E2 row {k} is None"
+        assert row["tee_used_on_gpu"] is False
+        assert row["gpu_visible_plaintext_fields"] == []
+
+
 def test_teacher_forced_same_prefix_semantics_across_hf_plain_masked() -> None:
     """HF, plain, and masked are scored on the SAME real-token prefix; with exact
     masking and a tiny fp model all three agree at top-1."""

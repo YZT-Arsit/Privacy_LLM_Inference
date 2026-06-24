@@ -41,6 +41,7 @@ __all__ = [
     "teacher_forced_block",
     "build_context_fields",
     "ones_attention_mask",
+    "PAPER_METRIC_FIELDS",
     "run_e1_nolora",
     "run_e2_token_scaling",
 ]
@@ -226,6 +227,66 @@ def _hf_generate(model, input_ids, max_new_tokens, *, do_sample, temperature=0.7
     return out[:, input_ids.shape[1]:]                      # only new tokens
 
 
+#: paper-critical metric fields flattened to the top level of every E1 report and
+#: every E2 row (None when the contributing mode was not run).
+PAPER_METRIC_FIELDS = (
+    "teacher_forced_top1_match_rate_hf_plain",
+    "teacher_forced_top1_match_rate_hf_masked",
+    "teacher_forced_top1_match_rate_plain_masked",
+    "teacher_forced_steps_evaluated",
+    "topk_overlap",
+    "logits_max_abs_error",
+    "logits_mean_abs_error",
+    "logits_relative_l2_error",
+    "plain_vs_masked_token_match_rate",
+    "sequence_exact_match_hf_masked",
+    "latency_s",
+    "greedy_latency_s",
+    "teacher_forced_latency_s",
+    "sampling_latency_s",
+)
+
+
+def _flatten_paper_metrics(report: dict[str, Any]) -> dict[str, Any]:
+    """Pull the paper-critical metrics out of ``report["modes"]`` to the top level.
+
+    Teacher-forced top-1 agreements + top-k overlap + logits errors come from the
+    teacher-forced block; ``plain_vs_masked_token_match_rate`` /
+    ``sequence_exact_match_hf_masked`` from greedy. ``latency_s`` is the greedy
+    (full-generation) latency when greedy ran, else teacher-forced, else sampling.
+    All fields are ``None`` when the contributing mode was not run."""
+    modes = report.get("modes", {})
+    tf = modes.get("teacher_forced") or {}
+    g = modes.get("greedy") or {}
+    s = modes.get("sampling") or {}
+    latency = g.get("latency_s")
+    if latency is None:
+        latency = tf.get("latency_s")
+    if latency is None:
+        latency = s.get("latency_s")
+    return {
+        "teacher_forced_top1_match_rate_hf_plain":
+            tf.get("teacher_forced_top1_match_rate_hf_plain"),
+        "teacher_forced_top1_match_rate_hf_masked":
+            tf.get("teacher_forced_top1_match_rate_hf_masked"),
+        "teacher_forced_top1_match_rate_plain_masked":
+            tf.get("teacher_forced_top1_match_rate_plain_masked"),
+        "teacher_forced_steps_evaluated":
+            tf.get("teacher_forced_steps_evaluated"),
+        "topk_overlap": tf.get("topk_overlap"),
+        "logits_max_abs_error": tf.get("logits_max_abs_error"),
+        "logits_mean_abs_error": tf.get("logits_mean_abs_error"),
+        "logits_relative_l2_error": tf.get("logits_relative_l2_error"),
+        "plain_vs_masked_token_match_rate":
+            g.get("plain_vs_masked_token_match_rate"),
+        "sequence_exact_match_hf_masked": g.get("sequence_exact_match_hf_masked"),
+        "greedy_latency_s": g.get("latency_s"),
+        "teacher_forced_latency_s": tf.get("latency_s"),
+        "sampling_latency_s": s.get("latency_s"),
+        "latency_s": latency,
+    }
+
+
 def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
                   cfg: MemoryOptimizedConfig, *, modes=("greedy", "teacher_forced",
                   "sampling"), topk: int = 5, temperature: float = 0.7,
@@ -351,6 +412,9 @@ def run_e1_nolora(model: Any, mc: Any, input_ids: torch.Tensor,
                 stf["teacher_forced_top1_match_rate_hf_masked"],
             "latency_s": time.perf_counter() - t0,
         }
+
+    # flatten paper-critical metrics to the top level (nested modes{} retained)
+    report.update(_flatten_paper_metrics(report))
     return report
 
 
@@ -389,26 +453,26 @@ def run_e2_token_scaling(model: Any, mc: Any, input_ids: torch.Tensor,
             "trusted_bytes": r["trusted_bytes"], "gpu_bytes": r["gpu_bytes"],
             "boundary_calls": r["boundary_calls"],
             "peak_gpu_memory_mb": r["peak_gpu_memory_mb"],
+            "gpu_visible_plaintext_fields": r["gpu_visible_plaintext_fields"],
+            "leaked_secret_fields": r["leaked_secret_fields"],
         }
         for k in ctx_keys:
             if k in r:
                 flat[k] = r[k]
+        # full flattened paper-critical metrics (same field names as E1 top-level)
+        for k in PAPER_METRIC_FIELDS:
+            flat[k] = r.get(k)
         if "padding_invariance_hf_token_match_rate" in r:
             flat["padding_invariance_hf_token_match_rate"] = \
                 r["padding_invariance_hf_token_match_rate"]
-        if "greedy" in r["modes"]:
-            g = r["modes"]["greedy"]
-            flat["greedy_plain_vs_masked_token_match_rate"] = \
-                g["plain_vs_masked_token_match_rate"]
-            flat["greedy_latency_s"] = g["latency_s"]
-        if "teacher_forced" in r["modes"]:
-            tf = r["modes"]["teacher_forced"]
-            flat["tf_top1_hf_masked"] = \
-                tf["teacher_forced_top1_match_rate_hf_masked"]
-            flat["tf_top1_plain_masked"] = \
-                tf["teacher_forced_top1_match_rate_plain_masked"]
-            flat["tf_logits_max_abs_error"] = tf["logits_max_abs_error"]
-            flat["tf_topk_overlap"] = tf["topk_overlap"]
+        # legacy aliases (kept for back-compat with older readers/tables)
+        flat["greedy_plain_vs_masked_token_match_rate"] = \
+            r.get("plain_vs_masked_token_match_rate")
+        flat["tf_top1_hf_masked"] = r.get("teacher_forced_top1_match_rate_hf_masked")
+        flat["tf_top1_plain_masked"] = \
+            r.get("teacher_forced_top1_match_rate_plain_masked")
+        flat["tf_logits_max_abs_error"] = r.get("logits_max_abs_error")
+        flat["tf_topk_overlap"] = r.get("topk_overlap")
         rows.append(flat)
     out = {"stage": "E2_token_scaling", "token_grid": list(token_grid),
            "tee_used_on_gpu": False, "rows": rows}

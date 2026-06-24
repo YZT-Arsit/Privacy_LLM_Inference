@@ -246,6 +246,20 @@ def _write_md(path: Path, r: dict) -> None:
          f"- trusted_bytes={r['trusted_bytes']:,}  gpu_bytes={r['gpu_bytes']:,}  "
          f"peak_gpu_memory_mb={r['peak_gpu_memory_mb']}",
          f"- boundary_calls=`{r['boundary_calls']}`", ""]
+    # flattened paper-critical metrics (same field names as the JSON top level)
+    L += ["## Paper-critical metrics (flattened top-level)", "",
+          "| field | value |", "|---|---|"]
+    for k in ("teacher_forced_top1_match_rate_hf_plain",
+              "teacher_forced_top1_match_rate_hf_masked",
+              "teacher_forced_top1_match_rate_plain_masked",
+              "plain_vs_masked_token_match_rate", "topk_overlap",
+              "logits_max_abs_error", "logits_mean_abs_error",
+              "logits_relative_l2_error", "latency_s", "greedy_latency_s",
+              "teacher_forced_latency_s", "peak_gpu_memory_mb", "trusted_bytes",
+              "gpu_bytes", "tee_used_on_gpu"):
+        L.append(f"| {k} | {r.get(k)} |")
+    L.append("")
+
     tf = r["modes"].get("teacher_forced")
     if tf:
         L += ["## Teacher-forced (main long-horizon correctness)", "",
