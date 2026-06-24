@@ -187,6 +187,48 @@ any edit to a measured boundary file yields a new hash — re-bind the quote.
 > service; this module verifies the tee/debug/binding/`mr_td` *claims*. We do not
 > re-verify the signature locally.
 
+## 8. Cross-machine modes (HTTP transport)
+
+The demo supports three modes. `local_two_process` (default) keeps both halves on
+one host (boundary in a spawn process, GPU worker in another). The two
+cross-machine modes split them over HTTP:
+
+```bash
+# On the untrusted H800/GPU server (no plaintext ever leaves the boundary):
+python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
+    --listen-host 0.0.0.0 --listen-port 18080 --gpu-backend mock --audit true
+#   exposes /health /init /prefill /decode; reports tee_used_on_gpu=false;
+#   REJECTS (HTTP 400) any request body containing raw_prompt / input_ids /
+#   generated_token_ids / recovered_logits / mask_secret / tokenizer_output.
+
+# On the Alibaba Cloud TDX VM (trusted boundary):
+python scripts/run_tee_gpu_protocol_demo.py --mode boundary_client \
+    --boundary-backend process --gpu-worker-url http://<host>:18080 \
+    --max-new-tokens 4 --audit true \
+    --attestation-evidence evidence.json --expected-mr-td <mr_td> \
+    --output-json out.json --output-md out.md
+```
+
+The boundary client owns the raw prompt, `input_ids`, generated tokens, recovered
+logits, and mask secrets; it sends **only** masked tensors + public metadata
+(serialised by `pllo.protocol.wire`, numpy-as-base64) to the remote worker, then
+runs the same security audit over the recorded remote traffic. The boundary
+client imports **no** model/qwen code. The `boundary_client` report adds
+`gpu_worker_remote=true` and `gpu_worker_url` to all the usual fields
+(`audit_passed`, `boundary_tee_type`, `boundary_attested`, `runtime_hash_bound`,
+`gpu_visible_plaintext_fields`, `leaked_secret_fields`, `boundary_calls`,
+`trusted_bytes`, `gpu_bytes`, `tee_used_on_gpu=false`).
+
+Use the **same** boundary metadata flags (`--boundary-backend`, `--gpu-backend`,
+`--expected-mr-td`) for `--print-runtime-hash-only` and for `boundary_client`, so
+the runtime hash bound into the quote matches the one verified at run time (§7).
+
+> **Validated over localhost HTTP with the mock backend** (two processes,
+> `audit_passed=True`, no plaintext/secret on the wire, `tee_used_on_gpu=false`).
+> A real cross-machine run with the boundary in the TDX guest and the H800 worker
+> running masked Qwen2.5-7B has **not** been completed yet — see
+> [`tee_protocol_experiment_summary.md`](tee_protocol_experiment_summary.md).
+
 ## 7. Validated TDX run (mock GPU backend)
 
 The protocol has been run with the trusted boundary inside a **real Intel TDX

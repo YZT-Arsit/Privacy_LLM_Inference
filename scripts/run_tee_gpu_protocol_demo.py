@@ -46,6 +46,7 @@ from pllo.protocol.attestation import (  # noqa: E402
 )
 from pllo.protocol.gpu_worker import LocalGpuWorker  # noqa: E402
 from pllo.protocol.orchestrator import run_protocol  # noqa: E402
+from pllo.protocol.remote import run_gpu_worker_server  # noqa: E402
 from pllo.protocol.security_audit import (  # noqa: E402
     assert_no_gpu_visible_plaintext,
     assert_no_mask_secret_leak,
@@ -116,13 +117,21 @@ def build_report(prompt: str, boundary_backend: str, gpu_backend: str,
             and not wrong_mask.get("findings")
             and not trace.tee_used_on_gpu)
 
+    gpu_worker_remote = bool(out.get("gpu_worker_remote"))
+    init_resp = out.get("init_response")
     report = {
         "stage": "tee_gpu_protocol_demo",
-        "mode": "local_two_process",
+        "mode": "boundary_client" if gpu_worker_remote else "local_two_process",
         "tee_used": False,                     # nothing of ours runs in a TEE here
         "tee_used_on_gpu": trace.tee_used_on_gpu,
+        "gpu_worker_remote": gpu_worker_remote,
+        "gpu_worker_url": out.get("gpu_worker_url"),
         "boundary_backend": boundary_backend,
+        # client-intended backend (drives the runtime-hash metadata, so it must
+        # match the preflight); the server's own report is kept separately.
         "gpu_backend": gpu_backend,
+        "gpu_backend_server_reported": (init_resp.gpu_backend
+                                        if init_resp is not None else None),
         "max_new_tokens": max_new_tokens,
         "boundary_calls": trace.boundary_calls,
         "gpu_calls": trace.gpu_calls,
@@ -263,7 +272,8 @@ def _write_md(path: Path, r: dict) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--mode", default="local_two_process",
-                    choices=["local_two_process"])
+                    choices=["local_two_process", "gpu_worker_server",
+                             "boundary_client"])
     ap.add_argument("--boundary-backend", default="process",
                     choices=["process", "simulated"])
     ap.add_argument("--gpu-backend", default="mock",
@@ -273,11 +283,20 @@ def main() -> int:
     ap.add_argument("--hidden-size", type=int, default=128)
     ap.add_argument("--vocab-size", type=int, default=2000)
     ap.add_argument("--seq-len", type=int, default=12)
+    ap.add_argument("--num-layers", type=int, default=1,
+                    help="public num_layers metadata sent to the GPU worker")
     ap.add_argument("--seed", type=int, default=4242)
     ap.add_argument("--model-path", default=None,
                     help="qwen7b checkpoint (GPU server); probe-only locally")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--dtype", default="bfloat16")
+    # cross-machine transport
+    ap.add_argument("--listen-host", default="0.0.0.0",
+                    help="gpu_worker_server: bind host")
+    ap.add_argument("--listen-port", type=int, default=18080,
+                    help="gpu_worker_server: bind port")
+    ap.add_argument("--gpu-worker-url", default=None,
+                    help="boundary_client: URL of the remote GPU worker server")
     ap.add_argument("--audit", default="true")
     ap.add_argument("--attestation-evidence", default=None,
                     help="path to TDX attestation evidence JSON from the VM "
@@ -295,6 +314,16 @@ def main() -> int:
     ap.add_argument("--output-json", default="outputs/tee_gpu_protocol.json")
     ap.add_argument("--output-md", default="outputs/tee_gpu_protocol.md")
     args = ap.parse_args()
+
+    # --- gpu_worker_server: run the untrusted HTTP worker (blocking) ----------
+    if args.mode == "gpu_worker_server":
+        backend_kwargs = {}
+        if args.gpu_backend == "qwen7b":
+            backend_kwargs = {"model_path": args.model_path,
+                              "device": args.device, "dtype": args.dtype}
+        run_gpu_worker_server(args.listen_host, args.listen_port,
+                              args.gpu_backend, backend_kwargs, _bool(args.audit))
+        return 0
 
     # --- preflight: read off the exact hash to bind into report_data ---------
     md = boundary_manifest_metadata(args.boundary_backend, args.gpu_backend,
@@ -315,7 +344,13 @@ def main() -> int:
               "demo with the SAME flags + --attestation-evidence", file=sys.stderr)
         return 0
 
-    if args.gpu_backend == "qwen7b":
+    gpu_worker_url = None
+    if args.mode == "boundary_client":
+        if not args.gpu_worker_url:
+            ap.error("--mode boundary_client requires --gpu-worker-url")
+        gpu_worker_url = args.gpu_worker_url
+
+    if args.gpu_backend == "qwen7b" and gpu_worker_url is None:
         print("NOTE: --gpu-backend qwen7b runs masked prefill/decode on the GPU "
               "server (CUDA + checkpoint). Locally this is an init-only "
               "protocol/audit probe; --gpu-backend mock runs end-to-end.")
@@ -327,7 +362,8 @@ def main() -> int:
             args.prompt, args.boundary_backend, args.gpu_backend,
             args.max_new_tokens, _bool(args.audit),
             hidden_size=args.hidden_size, vocab_size=args.vocab_size,
-            seq_len=args.seq_len, seed=args.seed)
+            seq_len=args.seq_len, seed=args.seed,
+            gpu_worker_url=gpu_worker_url)
 
     # Write manifest / hash with the SAME metadata the attestation uses, so the
     # written hash matches report["runtime_hash"] / expected_runtime_hash.
@@ -349,10 +385,14 @@ def main() -> int:
         p.parent.mkdir(parents=True, exist_ok=True)
         _write_md(p, report)
 
-    print("=== TEE ↔ GPU protocol demo ===")
+    print(f"=== TEE ↔ GPU protocol demo ({report['mode']}) ===")
     print(f"boundary_backend={report['boundary_backend']} "
           f"gpu_backend={report['gpu_backend']} "
           f"max_new_tokens={report['max_new_tokens']}")
+    if report.get("gpu_worker_remote"):
+        print(f"gpu_worker_remote=True gpu_worker_url={report['gpu_worker_url']} "
+              f"gpu_backend_server_reported="
+              f"{report.get('gpu_backend_server_reported')}")
     print(f"tee_used_on_gpu={report['tee_used_on_gpu']}")
     print(f"boundary_calls={report['boundary_calls']}")
     print(f"gpu_calls={report['gpu_calls']}")

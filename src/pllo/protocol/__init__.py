@@ -41,6 +41,17 @@ from pllo.protocol.orchestrator import (
     run_protocol,
     trusted_tokenize,
 )
+from pllo.protocol.remote import (
+    FORBIDDEN_WIRE_FIELDS,
+    GpuWorkerServer,
+    RemoteGpuWorker,
+    forbidden_fields_in_payload,
+    run_gpu_worker_server,
+)
+from pllo.protocol.wire import (
+    decode_message,
+    encode_message,
+)
 from pllo.protocol.security_audit import (
     assert_no_gpu_visible_plaintext,
     assert_no_mask_secret_leak,
@@ -78,6 +89,13 @@ __all__ = [
     "fold_lm_head",
     "run_protocol",
     "trusted_tokenize",
+    "FORBIDDEN_WIRE_FIELDS",
+    "GpuWorkerServer",
+    "RemoteGpuWorker",
+    "forbidden_fields_in_payload",
+    "run_gpu_worker_server",
+    "decode_message",
+    "encode_message",
     "assert_no_gpu_visible_plaintext",
     "assert_no_mask_secret_leak",
     "assert_wrong_mask_recovery_fails",

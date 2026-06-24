@@ -90,17 +90,32 @@ worker:
    untrusted-GPU evaluation.
 3. **Qwen2.5-7B did NOT run inside TDX.** No transformer, decoder, attention,
    MLP, KV cache, or LM head runs in the TEE — by design.
-4. **Cross-machine end-to-end NOT completed.** A combined deployment with the
-   trusted boundary inside the Alibaba Cloud TDX guest driving an H800 GPU worker
-   running masked Qwen2.5-7B over this protocol has **not** been run yet. The two
-   halves are validated independently: (a) the attested boundary + mock worker
-   above, and (b) the H800 masked-Qwen evaluation.
+4. **Cross-machine transport implemented; full TDX+H800+Qwen run NOT completed.**
+   The cross-machine protocol modes now exist (`gpu_worker_server` /
+   `boundary_client` over stdlib HTTP) and are **validated over localhost with the
+   mock backend** (two processes, `audit_passed=True`, no plaintext/secret on the
+   wire, `tee_used_on_gpu=false`, forbidden-field rejection enforced server-side).
+   A combined deployment with the trusted boundary inside the Alibaba Cloud TDX
+   guest driving an H800 GPU worker running **masked Qwen2.5-7B** over this
+   protocol has **not** been run yet. The pieces are validated independently:
+   (a) the attested boundary + mock worker, (b) the cross-machine HTTP transport
+   (mock, localhost), and (c) the H800 masked-Qwen evaluation (`tee_used=False`).
 
 ## 6. What would close the gap
 
-Run `run_tee_gpu_protocol_demo.py --gpu-backend qwen7b` with the boundary inside
-the TDX guest and the GPU worker on the H800 (masked Qwen2.5-7B pipeline), keeping
-`tee_used_on_gpu=False`, and confirm the same audit
-(`gpu_visible_plaintext_fields=[]`, `leaked_secret_fields=[]`) plus
-`runtime_hash_bound=True` on that combined run. Until then, no cross-machine
-TDX+H800 end-to-end is claimed.
+The transport is now in place (`--mode gpu_worker_server` on the H800,
+`--mode boundary_client --gpu-worker-url ...` in the TDX guest; see
+[`tee_gpu_protocol.md`](tee_gpu_protocol.md) §8). To close the remaining gap:
+
+1. Start `--mode gpu_worker_server --gpu-backend qwen7b` on the H800 and bridge
+   the masked Qwen2.5-7B pipeline so the worker consumes only masked protocol
+   messages (the current `qwen7b` backend serves `/health` + `/init` with
+   `tee_used_on_gpu=false`; masked prefill/decode over the protocol is the
+   outstanding piece).
+2. Run `--mode boundary_client` inside the TDX guest with valid attestation
+   evidence, and confirm on that combined run: `runtime_hash_bound=True`,
+   `boundary_attested=True`, `gpu_visible_plaintext_fields=[]`,
+   `leaked_secret_fields=[]`, `tee_used_on_gpu=False`.
+
+Until that combined run is executed, no cross-machine TDX+H800 end-to-end with
+Qwen2.5-7B is claimed.

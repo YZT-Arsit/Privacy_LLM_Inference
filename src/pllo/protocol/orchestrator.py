@@ -104,6 +104,7 @@ def run_protocol(
     seq_len: int = 12,
     dtype: str = "float32",
     gpu_kwargs: dict[str, Any] | None = None,
+    gpu_worker_url: str | None = None,
 ) -> dict[str, Any]:
     """Run the trusted/untrusted decode protocol and return trace + correctness.
 
@@ -111,7 +112,11 @@ def run_protocol(
     reference (for the audit's value checks), the recovered tokens, mask handles
     (trusted-only, for the secret-leak audit), and a wrong-mask control sample.
     Only ``gpu_backend == 'mock'`` runs end-to-end here; ``qwen7b`` requires the
-    GPU server."""
+    GPU server.
+
+    If ``gpu_worker_url`` is given, the GPU worker is a **remote** HTTP server
+    (cross-machine); otherwise a local spawn-process worker is used. Either way
+    the boundary sends only masked tensors + public metadata."""
     np_dtype = np.dtype(dtype)
     cfg = TEEConfig(hidden_size=hidden_size, vocab_size=vocab_size, seed=seed,
                     backend=boundary_backend, dtype=dtype)
@@ -143,7 +148,12 @@ def run_protocol(
             trace.record_gpu_outbound(msg)
 
     boundary = make_runtime(cfg)                           # process/simulated
-    worker = LocalGpuWorker(gpu_backend, dict(gpu_kwargs or {}), recorder=_record)
+    if gpu_worker_url:
+        from pllo.protocol.remote import RemoteGpuWorker    # stdlib client only
+        worker = RemoteGpuWorker(gpu_worker_url, gpu_backend, recorder=_record)
+    else:
+        worker = LocalGpuWorker(gpu_backend, dict(gpu_kwargs or {}),
+                                recorder=_record)
     recovered_responses: list[RecoveredTokenResponse] = []
     recovered_tokens: list[list[int]] = []
     masked_logits_first = None
@@ -224,4 +234,6 @@ def run_protocol(
         "tokens_match_reference": bool(
             np.array_equal(gen, ref_tokens)) if recovered_tokens else False,
         "init_response": init_resp,
+        "gpu_worker_remote": bool(gpu_worker_url),
+        "gpu_worker_url": gpu_worker_url,
     }
