@@ -25,6 +25,7 @@ numpy + standard library only (torch is imported lazily by the qwen backend).
 
 from __future__ import annotations
 
+import json
 import multiprocessing as mp
 from abc import ABC, abstractmethod
 from typing import Any
@@ -44,6 +45,7 @@ __all__ = [
     "GpuBackend",
     "MockGpuBackend",
     "Qwen7BGpuBackend",
+    "Qwen7BFoldedPackageGpuBackend",
     "make_gpu_backend",
     "LocalGpuWorker",
 ]
@@ -253,12 +255,108 @@ class Qwen7BGpuBackend(GpuBackend):
             kv_cache_len=int(req.position) + 1)
 
 
+class Qwen7BFoldedPackageGpuBackend(GpuBackend):
+    """Untrusted worker that loads PRE-FOLDED weights from a local package.
+
+    This is the strict cross-machine deployment backend: the trusted setup phase
+    (``scripts/build_qwen7b_folded_package.py``) wrote folded operators
+    ``W_tilde = N_in^{-1} W N_out`` to disk; this worker loads them locally and
+    would compute over masked runtime tensors **without ever holding the masks**
+    (``worker_has_mask_secrets = False``). The base model ``W`` is public, so the
+    folded weights are not chiefly hiding ``W`` -- they let the GPU operate on
+    masked activations without learning ``N_in``/``N_out``. ``tee_used = False``.
+
+    ``init`` loads + verifies the package manifest (a fast load/attestation
+    probe). The full masked prefill/decode over package shards is a documented
+    TODO -- the tiny end-to-end equivalence is proven in
+    ``tests/test_folded_package_tiny.py``; wiring 28-layer shard-streamed decode
+    is the remaining work."""
+
+    name = "qwen7b_folded_package"
+    tee_used = False
+
+    def __init__(self, folded_package_path: str | None = None,
+                 device: str = "cuda", dtype: str = "bfloat16",
+                 verify_on_init: bool = True, **_ignored: Any) -> None:
+        self.folded_package_path = folded_package_path
+        self.device = device
+        self.dtype = dtype
+        self.verify_on_init = bool(verify_on_init)
+        self._session_id: str | None = None
+        self.folded_package_loaded = False
+        self.folded_package_size_gb: float | None = None
+        self.manifest_hash: str | None = None
+        self.num_shards: int | None = None
+        self.package_valid: bool | None = None
+        self.worker_has_mask_secrets = False
+
+    def init(self, req: BoundaryInitRequest) -> BoundaryInitResponse:
+        from pllo.deployment import (
+            compute_manifest_hash,
+            load_manifest,
+            package_size_gb,
+            verify_package,
+        )
+        self._session_id = req.session_id
+        if not self.folded_package_path:
+            raise RuntimeError("qwen7b_folded_package worker needs "
+                               "folded_package_path")
+        manifest = load_manifest(self.folded_package_path)
+        self.manifest_hash = compute_manifest_hash(manifest)
+        self.num_shards = manifest.num_shards
+        self.folded_package_size_gb = round(
+            package_size_gb(self.folded_package_path), 6)
+        if self.verify_on_init:
+            rep = verify_package(self.folded_package_path)
+            self.package_valid = bool(rep["package_valid"])
+            if not self.package_valid:
+                raise RuntimeError(f"folded package failed verification: {rep}")
+        # the package, by construction + verification, carries no mask secrets
+        self.worker_has_mask_secrets = bool(manifest.contains_mask_secrets)
+        self.folded_package_loaded = True
+        notes = json.dumps({
+            "folded_package_loaded": True,
+            "folded_package_path": self.folded_package_path,
+            "folded_package_size_gb": self.folded_package_size_gb,
+            "manifest_hash": self.manifest_hash, "num_shards": self.num_shards,
+            "worker_has_mask_secrets": self.worker_has_mask_secrets,
+            "tee_used_on_gpu": False})
+        return BoundaryInitResponse(
+            session_id=req.session_id, ok=True, gpu_backend=self.name,
+            tee_used_on_gpu=False, notes=notes)
+
+    def describe(self) -> dict[str, Any]:
+        return {"backend": self.name, "tee_used": self.tee_used,
+                "folded_package_path": self.folded_package_path,
+                "folded_package_loaded": self.folded_package_loaded,
+                "folded_package_size_gb": self.folded_package_size_gb,
+                "manifest_hash": self.manifest_hash, "num_shards": self.num_shards,
+                "package_valid": self.package_valid,
+                "worker_has_mask_secrets": self.worker_has_mask_secrets,
+                "tee_used_on_gpu": False}
+
+    def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
+        raise NotImplementedError(
+            "TODO: full masked prefill from folded-package shards. The folded "
+            "operators are loaded + verified (init probe); shard-streamed "
+            "28-layer decode is not yet wired. Tiny end-to-end equivalence is "
+            "proven in tests/test_folded_package_tiny.py.")
+
+    def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
+        raise NotImplementedError(
+            "TODO: full masked decode from folded-package shards (see prefill).")
+
+
 def make_gpu_backend(name: str, **kwargs: Any) -> GpuBackend:
     if name == "mock":
         return MockGpuBackend()
     if name == "qwen7b":
         return Qwen7BGpuBackend(**kwargs)
-    raise ValueError(f"unknown gpu backend {name!r}; expected 'mock' or 'qwen7b'")
+    if name == "qwen7b_folded_package":
+        return Qwen7BFoldedPackageGpuBackend(**kwargs)
+    raise ValueError(
+        f"unknown gpu backend {name!r}; expected 'mock', 'qwen7b', or "
+        f"'qwen7b_folded_package'")
 
 
 # ---------------------------------------------------------------------------

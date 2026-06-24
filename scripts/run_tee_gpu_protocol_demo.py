@@ -342,8 +342,16 @@ def build_remote_qwen7b_probe_report(prompt: str, boundary_backend: str,
         "tokens_match_plaintext_reference": None,
         "audit_performed": run_audit,
         "audit_passed": audit_passed,
+        # H. folded-weight provisioning fields (strict cross-machine deployment)
+        "folded_weight_setup_required": True,
+        "folded_weight_source": "trusted_setup",
+        "folded_weight_transfer_required": True,
+        "worker_has_mask_secrets": False,
         "note": "cross-machine qwen7b init/attestation/audit probe; full masked "
-                "compute validated standalone (E1/E2).",
+                "compute validated standalone (E1/E2). Strict private cross-"
+                "machine decode uses a provisioned folded-weight package "
+                "(scripts/build_qwen7b_folded_package.py, gpu-backend "
+                "qwen7b_folded_package).",
     }
 
 
@@ -417,7 +425,9 @@ def main() -> int:
     ap.add_argument("--boundary-backend", default="process",
                     choices=["process", "simulated"])
     ap.add_argument("--gpu-backend", default="mock",
-                    choices=["mock", "qwen7b"])
+                    choices=["mock", "qwen7b", "qwen7b_folded_package"])
+    ap.add_argument("--folded-package-path", default=None,
+                    help="qwen7b_folded_package: local folded-weight package dir")
     ap.add_argument("--prompt", default="Explain why privacy matters in LLMs.")
     ap.add_argument("--max-new-tokens", type=int, default=8)
     ap.add_argument("--hidden-size", type=int, default=128)
@@ -465,6 +475,9 @@ def main() -> int:
                               "device": args.device, "dtype": args.dtype,
                               "seq_len": args.seq_len,
                               "num_layers": args.num_layers}
+        elif args.gpu_backend == "qwen7b_folded_package":
+            backend_kwargs = {"folded_package_path": args.folded_package_path,
+                              "device": args.device, "dtype": args.dtype}
         run_gpu_worker_server(args.listen_host, args.listen_port,
                               args.gpu_backend, backend_kwargs, _bool(args.audit))
         return 0

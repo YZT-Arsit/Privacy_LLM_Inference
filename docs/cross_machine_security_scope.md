@@ -13,6 +13,10 @@ compute correctness, generation behaviour, and token scaling** on the H800.
 
 - This is the **main compute result**. Fixed config: bs=1, seq_len=128,
   max_new_tokens=64 (E1) and the {1,8,16,32,64} sweep (E2), 28/28 layers, bf16.
+  It validates the full Qwen2.5-7B masked/folded compute correctness + scaling
+  **assuming the folded operators are available** (in-process the folds are
+  streamed; in strict deployment they come from a provisioned folded package —
+  see §2).
 - Headline correctness for bf16 is **teacher-forced top-1 agreement** and
   **plain-vs-masked token match**, plus logits errors and top-k overlap. (Long
   free-running greedy may diverge after a near-tie; that is expected, not a
@@ -36,22 +40,55 @@ boundary driving a remote untrusted GPU worker**.
   audit of the init traffic (only masked/public metadata crosses). The full
   Qwen2.5-7B masked prefill/decode is the standalone E1/E2 result (claim 1).
 
-### Why qwen7b cross-machine is a probe, not end-to-end
+### Why qwen7b cross-machine is a probe — and the folded-package path that fixes it
 
 A **private** cross-machine masked Qwen decode requires the untrusted worker to
-hold the **folded layer weights** (`W_tilde = N^{-1} W M`) while **never** seeing
-the masks `N`, `M`. Producing the masked logits from `h_tilde` + folded weights
-alone is mask-free, but folding needs the masks, so the trusted boundary must
-fold offline and **ship the folded weights** to the worker. For Qwen2.5-7B that
-is ~14 GB (bf16) of folded tensors — impractical over the stdlib JSON HTTP
-transport. The alternative (worker holds the plaintext model + reconstructs the
-masks from a shared seed) is functionally runnable but **not private** — the
-worker could unmask — so it is deliberately **not** offered as a security run.
+hold the **folded operators** (`W_tilde = N_in^{-1} W N_out`) while **never**
+seeing the masks `N_in`, `N_out`. Producing the masked logits from `h_tilde` +
+folded weights alone is mask-free, but folding needs the masks, so a **trusted
+setup phase** must fold offline and **provision the folded weights** to the
+worker. For Qwen2.5-7B that is ~14 GB (bf16) of folded tensors — impractical to
+stream over the JSON HTTP message transport per request, but perfectly fine as a
+one-time, file-level **package** written once and loaded locally by the worker.
+The naive alternative (worker holds the plaintext model + reconstructs the masks
+from a shared seed) is functionally runnable but **not private** — the worker
+could unmask — so it is deliberately **not** offered as a security run.
 
-Therefore the masked compute is validated standalone (claim 1) and the attested
-boundary is validated with the mock end-to-end run + the qwen7b init probe +
-TDX attestation (claim 2). This split is reported explicitly in every run; it is
-the sanctioned fallback when full cross-machine 64-token qwen7b is too heavy.
+**Folded-package provisioning (implemented — `pllo.deployment`).** Trusted setup
+(`scripts/build_qwen7b_folded_package.py`, runs in TDX) reads the public base
+model + an internally-generated mask schedule, streams the folded operators to a
+sharded on-disk **package** (`safetensors` + a manifest), and writes **no mask
+secrets**. The worker backend `--gpu-backend qwen7b_folded_package` loads + verifies
+the package locally (`worker_has_mask_secrets=false`, `tee_used_on_gpu=false`).
+`scripts/verify_folded_package.py` checks the manifest + per-shard hashes + that
+no forbidden (mask/plaintext/raw-LoRA/optimizer) tensor names appear;
+`scripts/estimate_folded_package_cost.py` reports the ~14 GB size, file-level
+transfer time at several bandwidths, and the per-session amortized setup cost.
+
+**This provisioning is a one-time setup/provisioning cost — NOT a per-token or
+per-request cost.** Online decode reuses the provisioned folded weights and never
+refolds or resends the base model. The tiny end-to-end equivalence (worker with
+folded weights only == in-process protected path == plaintext reference) is
+proven in `tests/test_folded_package_tiny.py`; wiring the full 28-layer
+shard-streamed decode on the worker is the remaining TODO (the worker `init`
+load/verify probe is in place today).
+
+Until that decode is wired, the masked compute is validated standalone (claim 1)
+and the attested boundary is validated with the mock end-to-end run + the qwen7b
+init probe + TDX attestation (claim 2). This split is reported explicitly in
+every run; it is the sanctioned fallback when full cross-machine 64-token qwen7b
+is too heavy.
+
+### LoRA handling (package format anticipates it)
+
+The base folded `W` is generated once and reused. For LoRA **inference**, a
+folded LoRA A/B package (`package_type=lora_adapter`) is generated once after the
+adapter is fixed; decode reuses folded `W` + folded LoRA. For LoRA **training**,
+folded `W` stays fixed and raw A/B + gradients + optimizer state stay
+**trusted-side**; after each optimizer step the trusted side regenerates only the
+folded LoRA A/B package — it does **not** resend folded base `W`. (Full LoRA
+training is out of scope for this step; the manifest `package_type` already
+distinguishes the two package kinds.)
 
 ## 3. Connectivity is not a contribution
 

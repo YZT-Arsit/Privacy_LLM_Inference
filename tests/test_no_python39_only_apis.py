@@ -39,6 +39,12 @@ DEPLOYMENT_FILES = [
     "src/pllo/nonlinear/current_backend.py",
     "src/pllo/nonlinear/amulet_backend.py",
     "src/pllo/nonlinear/registry.py",
+    # folded-weight provisioning may run in the TDX trusted-setup env
+    "src/pllo/deployment/folded_package.py",
+    "src/pllo/deployment/folded_package_manifest.py",
+    "scripts/build_qwen7b_folded_package.py",
+    "scripts/verify_folded_package.py",
+    "scripts/estimate_folded_package_cost.py",
     "scripts/run_tee_gpu_protocol_demo.py",
     "scripts/write_tee_boundary_runtime_hash.py",
     "scripts/run_nonlinear_backend_microbench.py",

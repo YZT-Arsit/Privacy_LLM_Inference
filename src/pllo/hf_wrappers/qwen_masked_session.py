@@ -161,6 +161,26 @@ class MaskedQwenSession:
     def _final_head(self, h_tilde: torch.Tensor) -> torch.Tensor:
         return rmsnorm_core(h_tilde, self.eps) @ self._w_lm_tilde
 
+    # -- folded-package export (trusted setup) -------------------------------
+    def export_folded_layer_tensors(self, ell: int) -> dict[str, torch.Tensor]:
+        """Folded operators for ONE layer as a name->tensor dict, for the folded
+        weight package. Contains ONLY folded operators (``*_tilde``): attention
+        q/k/v/o, MLP gate/up, and the fully-folded down projection
+        ``wdown_tilde = down[perm] @ n_res``. The masks (``perm``/``n_res``) are
+        used to compute these but are NEVER part of the output."""
+        folded, down_info, _ = self._folded_layer(ell)
+        down_w, perm, n_res, bdown_tilde = down_info
+        out = {k: v for k, v in folded.items() if isinstance(v, torch.Tensor)}
+        out["wdown_tilde"] = down_w.index_select(0, perm) @ n_res
+        if bdown_tilde is not None:
+            out["bdown_tilde"] = bdown_tilde
+        return out
+
+    def export_folded_head_tensors(self) -> dict[str, torch.Tensor]:
+        """Folded final-norm + LM-head operator (with the vocab mask baked in)
+        as ``{"w_lm_tilde": ...}`` -- the only head artifact the worker needs."""
+        return {"w_lm_tilde": self._w_lm_tilde}
+
     def worker_prefill(self, h_tilde: torch.Tensor) -> dict[str, Any]:
         """Masked prefill: ``h_tilde`` -> masked logits ``[B, T, V]`` + masked KV."""
         h = h_tilde.to(self.compute_device)
