@@ -1,39 +1,43 @@
 """Plaintext Qwen vs folded-package generation correctness diagnostic.
 
 The folded remote path (masked embeddings -> untrusted folded shards -> recovered
-logits) is supposed to reproduce the PLAINTEXT Qwen forward exactly (the masking
-algebra is exact; only float error remains). When folded generation degrades
-(repetition / lost instruction-following) the question is whether the FOLDED PATH
-ITSELF has diverged from plaintext Qwen -- not resident-vs-non-resident (that was
-already shown bit-exact). This tool answers it.
+logits) is supposed to reproduce the PLAINTEXT Qwen forward. When folded FREE
+generation degrades (repetition / lost instruction-following) while teacher-forced
+per-step logits still match, the bug is autoregressive-state divergence, not
+per-step fidelity. This tool separates those and -- critically -- first proves its
+own plaintext reference REPRODUCES ``run_ifeval_generation.py --backend
+plaintext_local`` before drawing any folded conclusion.
 
-It drives, under an IDENTICAL setup (same tokenizer, chat template, system
-message, prompt, seq_len, dtype, device, greedy decoding):
+Pipeline:
 
-* the **plaintext** HF Qwen forward (free-running greedy) -> the reference token
-  sequence + per-step plaintext logits;
-* the **folded package** path (boundary masks the embeddings, the package executes
-  folded layers + folded head over masked tensors, the boundary recovers logits),
-  **teacher-forced on the plaintext greedy tokens** so every step is conditioned on
-  the SAME context -> a clean per-step plaintext-vs-folded logits comparison that
-  localises the FIRST divergent step (step 0 = prefill/template/embedding/first
-  layer/head; step >=1 = KV append / decode RoPE / per-step obfuscation domain);
-* optionally the **resident** and **non-resident** folded backends, compared to
-  each other (``--compare-nonresident``) to re-confirm residency is not the cause.
+1. **Plaintext reproduction gate.** The authoritative plaintext reference is the
+   SAME code ``run_ifeval_generation.py`` uses: ``build_predictor("plaintext_local")
+   .generate(prompt)`` on the raw ``prompt`` (no chat template re-applied -- the
+   IFEval JSONL prompt is already rendered; ifeval tokenises it raw). The tool's
+   own step-by-step plaintext path (manual incremental greedy, needed for per-step
+   logits) is compared TOKENWISE to that authoritative output. If they differ,
+   ``plaintext_reproduction_passed=false`` and EVERY folded correctness conclusion
+   is BLOCKED (``correctness_blocked_by_plaintext_reproduction_mismatch=true``).
 
-Per step it reports plaintext/folded top1 token id+text, top1_match, top5_overlap,
-max/mean/relative logit error; per pair it reports the resident-vs-non-resident
-error + ``resident_weight_mutated`` / ``resident_dtype_mismatch``.
+2. **Folded comparison** (only once reproduction passes), ``--rollout-mode``:
+   * ``teacher_forcing`` (default): folded fed the plaintext greedy tokens ->
+     per-step plaintext-vs-folded logits / top1 (pure per-step fidelity);
+   * ``free_running``: plaintext and folded EACH advance their own greedy token
+     through their own KV -> ``first_free_running_divergent_step`` (the real
+     generation fork);
+   * ``both``: run both; if teacher-forcing matches but free-running forks ->
+     ``suspected_root_cause="autoregressive state divergence or generation-state
+     mismatch"``.
 
-Masking + recovery use a seed-matched ``MaskedQwenSession`` (the same masks the
-package was folded against); NO mask / inverse / pad / PRG seed / schedule secret /
-raw LoRA / plaintext hidden state / plaintext logits ever crosses to the package.
-The debug report emits ONLY scalar metrics, token ids, token text, and
-shape/dtype/device metadata -- never a secret tensor. The threat model is
-unchanged; pad is never disabled to make correctness pass.
+3. Resident vs non-resident folded re-check (``--compare-nonresident``).
 
-``--dry-run`` uses the tiny random Qwen2 on CPU (never a paper result); a real run
-needs ``--model-path`` + ``--folded-package-path``.
+Masking + recovery use a seed-matched ``MaskedQwenSession`` (the masks the package
+was folded against); NO mask / inverse / pad / PRG seed / schedule secret / raw
+LoRA / plaintext hidden / KV / logits tensor crosses to the package or is written
+to the report. The report emits ONLY scalar metrics, token ids, token text, and
+shape/dtype/device metadata. Threat model unchanged; pad is never disabled.
+
+``--dry-run`` uses the tiny random Qwen2 on CPU (never a paper result).
 
 # ---- server example only (run on the GPU server; NOT executed locally) ----
 # python scripts/compare_plaintext_folded_generation_correctness.py \
@@ -41,14 +45,16 @@ needs ``--model-path`` + ``--folded-package-path``.
 #   --folded-package-path /root/autodl-tmp/privacy_llm_packages/qwen7b_folded_full_current_seq1024 \
 #   --embedding-path /root/autodl-tmp/privacy_llm_packages/qwen7b_boundary_artifact_current \
 #   --input-jsonl /root/autodl-tmp/datasets/privacy_llm_benchmarks/converted/ifeval_prompts.jsonl \
-#   --seq-len 1024 --max-steps 16 --dtype bfloat16 --device cuda \
-#   --use-chat-template --resident-folded-weights --compare-nonresident \
-#   --output-json outputs/debug/plaintext_vs_folded_correctness_seq1024_steps16.json
+#   --seq-len 1024 --max-steps 64 --dtype bfloat16 --device cuda \
+#   --verify-plaintext-reproduction --rollout-mode both \
+#   --resident-folded-weights --compare-nonresident \
+#   --output-json outputs/debug/plaintext_vs_folded_correctness_seq1024_steps64.json
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -68,14 +74,12 @@ def _load_script(name, rel):
 # ---- pure comparison helpers (unit-tested directly; numpy 1-D logit rows) ----
 
 def _np_err(a, b):
-    """(max_abs, mean_abs) between two 1-D numpy arrays, in float64."""
     import numpy as np
     diff = np.abs(np.asarray(a, dtype="float64") - np.asarray(b, dtype="float64"))
     return (float(diff.max()), float(diff.mean())) if diff.size else (0.0, 0.0)
 
 
 def _np_rel(a, b):
-    """Relative L2 error ||a-b|| / ||b|| between two 1-D numpy arrays."""
     import numpy as np
     aa = np.asarray(a, dtype="float64")
     bb = np.asarray(b, dtype="float64")
@@ -87,7 +91,25 @@ def _np_topk(a, k):
     import numpy as np
     arr = np.asarray(a).reshape(-1)
     k = min(k, arr.shape[0])
-    return set(np.argsort(-arr)[:k].tolist())
+    return [int(i) for i in np.argsort(-arr)[:k].tolist()]
+
+
+def _first_divergent_tokens(a_tokens, b_tokens):
+    """First index where two token-id lists differ (over the common prefix)."""
+    n = min(len(a_tokens), len(b_tokens))
+    for i in range(n):
+        if a_tokens[i] != b_tokens[i]:
+            return i
+    if len(a_tokens) != len(b_tokens):
+        return n            # one is a strict prefix of the other
+    return None
+
+
+def _token_match_rate(a_tokens, b_tokens):
+    n = min(len(a_tokens), len(b_tokens))
+    if not n:
+        return 0.0
+    return sum(1 for i in range(n) if a_tokens[i] == b_tokens[i]) / n
 
 
 def _compare_logit_steps(plain_list, folded_list, *, topk, atol, rtol,
@@ -97,7 +119,7 @@ def _compare_logit_steps(plain_list, folded_list, *, topk, atol, rtol,
     Robust to per-step shape / dtype mismatch (records the flags, marks the step
     divergent, skips the numeric error for that step). Returns (rows, summary)
     where ``summary`` carries ``first_divergent_step`` (first step whose argmax
-    differs OR whose shape mismatches) + aggregate error/match-rate fields."""
+    differs OR whose shape mismatches) + aggregate error / match-rate fields."""
     import numpy as np
     rows = []
     first_divergent = None
@@ -112,33 +134,34 @@ def _compare_logit_steps(plain_list, folded_list, *, topk, atol, rtol,
         shape_match = bool(pa.shape == fa.shape)
         dtype_match = bool(np.asarray(plain_list[i]).dtype
                            == np.asarray(folded_list[i]).dtype)
+        p_top1 = int(pa.argmax()) if pa.size else None
+        f_top1 = int(fa.argmax()) if fa.size else None
         row = {
             "step_id": i,
-            "plaintext_top1_token_id": int(pa.argmax()) if pa.size else None,
-            "folded_top1_token_id": int(fa.argmax()) if fa.size else None,
-            "shape_match": shape_match,
-            "dtype_match": dtype_match,
-            "top1_match": None, "top5_overlap": None,
+            "plaintext_token_id": p_top1, "folded_token_id": f_top1,
+            "plaintext_top1_token_id": p_top1, "folded_top1_token_id": f_top1,
+            "shape_match": shape_match, "dtype_match": dtype_match,
+            "token_match": None, "top1_match": None,
+            "plaintext_top5": None, "folded_top5": None, "top5_overlap": None,
             "max_abs_logit_err": None, "mean_abs_logit_err": None,
             "relative_logit_err": None, "allclose_atol_rtol": None,
+            "plaintext_token_text": (id_to_text(p_top1) if id_to_text else None),
+            "folded_token_text": (id_to_text(f_top1) if id_to_text else None),
         }
-        if id_to_text is not None:
-            row["plaintext_top1_text"] = (id_to_text(row["plaintext_top1_token_id"])
-                                          if pa.size else None)
-            row["folded_top1_text"] = (id_to_text(row["folded_top1_token_id"])
-                                       if fa.size else None)
-        else:
-            row["plaintext_top1_text"] = None
-            row["folded_top1_text"] = None
+        row["plaintext_top1_text"] = row["plaintext_token_text"]
+        row["folded_top1_text"] = row["folded_token_text"]
         if not shape_match:
-            row["top1_match"] = False
+            row["token_match"] = row["top1_match"] = False
             if first_divergent is None:
                 first_divergent = i
             rows.append(row)
             continue
-        t1 = bool(row["plaintext_top1_token_id"] == row["folded_top1_token_id"])
-        row["top1_match"] = t1
-        row["top5_overlap"] = (len(_np_topk(pa, topk) & _np_topk(fa, topk))
+        t1 = bool(p_top1 == f_top1)
+        row["token_match"] = row["top1_match"] = t1
+        row["plaintext_top5"] = _np_topk(pa, topk)
+        row["folded_top5"] = _np_topk(fa, topk)
+        row["top5_overlap"] = (len(set(row["plaintext_top5"])
+                                   & set(row["folded_top5"]))
                                / max(1, min(topk, pa.shape[0])))
         mx, mn = _np_err(pa, fa)
         row["max_abs_logit_err"] = mx
@@ -154,8 +177,9 @@ def _compare_logit_steps(plain_list, folded_list, *, topk, atol, rtol,
             first_divergent = i
         rows.append(row)
     fd_text = None
-    if first_divergent is not None and id_to_text is not None:
-        fd_text = rows[first_divergent].get("plaintext_top1_text")
+    if first_divergent is not None and id_to_text is not None \
+            and first_divergent < len(rows):
+        fd_text = rows[first_divergent].get("plaintext_token_text")
     summary = {
         "steps_compared": n,
         "first_divergent_step": first_divergent,
@@ -168,41 +192,49 @@ def _compare_logit_steps(plain_list, folded_list, *, topk, atol, rtol,
     return rows, summary
 
 
-def _suspected_root_cause(first_divergent_step, *, resident_diverged):
-    """Heuristic localisation hint for the report (honest, coarse)."""
-    if resident_diverged:
-        return ("resident_cache: resident vs non-resident folded logits diverge "
-                "-> resident weight mutation / dict aliasing / dtype")
-    if first_divergent_step is None:
+def _suspected_root_cause(step, *, prefix):
+    """Heuristic localisation hint for a divergent step (honest, coarse)."""
+    if step is None:
         return None
-    if first_divergent_step == 0:
-        return ("prefill_path (step 0): chat_template / tokenization / input "
-                "embedding artifact / position_ids / causal mask / RoPE / first "
-                "folded layer (QKV/attn/MLP) / folded LM-head inverse")
-    return ("decode_path (step %d): KV cache append / KV mask-domain transition / "
-            "decode position_ids+RoPE / per-step fresh obfuscation domain / cache "
-            "reuse of a stale domain" % first_divergent_step)
+    if step == 0:
+        return ("%s (step 0): chat_template / tokenization / input embedding "
+                "artifact / position_ids / causal mask / RoPE / first folded "
+                "layer (QKV/attn/MLP) / folded LM-head inverse" % prefix)
+    return ("%s (step %d): KV cache append / KV mask-domain transition / decode "
+            "position_ids+RoPE / per-step fresh obfuscation domain / cache reuse "
+            "of a stale domain" % (prefix, step))
 
 
 # ---- plaintext + folded per-step collectors --------------------------------
 
-def _plaintext_greedy(model, ids, max_steps, device):
-    """Free-running greedy plaintext forward. Returns (logit_rows, top1_tokens),
-    each list length ``max_steps`` (prefill last-token logits, then decode steps).
-    ``logit_rows`` are float32 cpu numpy [V]."""
+def _manual_plaintext_steps(model, ids, attn, max_steps, eos_id):
+    """Manual incremental greedy plaintext decode (so we get per-step logits).
+
+    Mirrors ``model.generate(do_sample=False, num_beams=1, attention_mask=...,
+    use_cache=True)``: argmax each step, thread KV + a grown attention mask, stop
+    at eos. Returns (logit_rows [float32 cpu numpy V], token_ids)."""
     import numpy as np
     import torch
     rows, toks = [], []
+    cur_attn = attn
     with torch.no_grad():
-        o = model(input_ids=ids, use_cache=True)
+        o = model(input_ids=ids, attention_mask=cur_attn, use_cache=True)
         lg = o.logits[:, -1, :].float().to("cpu")
         rows.append(np.asarray(lg[0].numpy()))
         t = int(lg.argmax(-1).item())
         toks.append(t)
         past = o.past_key_values
         for _ in range(max_steps - 1):
-            nxt = torch.tensor([[t]], device=device)
-            o = model(input_ids=nxt, past_key_values=past, use_cache=True)
+            if eos_id is not None and t == eos_id:
+                break
+            nxt = torch.tensor([[t]], device=ids.device)
+            if cur_attn is not None:
+                cur_attn = torch.cat(
+                    [cur_attn, torch.ones((cur_attn.shape[0], 1),
+                                          dtype=cur_attn.dtype,
+                                          device=cur_attn.device)], dim=1)
+            o = model(input_ids=nxt, attention_mask=cur_attn,
+                      past_key_values=past, use_cache=True)
             lg = o.logits[:, -1, :].float().to("cpu")
             rows.append(np.asarray(lg[0].numpy()))
             t = int(lg.argmax(-1).item())
@@ -211,28 +243,96 @@ def _plaintext_greedy(model, ids, max_steps, device):
     return rows, toks
 
 
-def _folded_recovered(backend, session, h_tilde, fed_tokens, max_steps, seq_len,
-                      n_layers, cfg0):
-    """Folded-package recovered logits, TEACHER-FORCED on ``fed_tokens`` (the
-    plaintext greedy sequence) so each step shares the plaintext context. Returns
-    a list of float32 cpu numpy [V] rows (prefill last-token, then decode steps).
-    The boundary owns masking + recovery; the package only executes folded ops."""
+def _raw_greedy_generate(model, ids, attn, max_steps, eos_id):
+    """``model.generate`` greedy with generation-config logit processors
+    NEUTRALISED (repetition_penalty=1.0, no_repeat_ngram_size=0). This is the
+    apples-to-apples plaintext baseline for a RAW-argmax decoder (which is what the
+    folded path and ``_manual_plaintext_steps`` do). Comparing the authoritative
+    ifeval output against THIS isolates a generation-config effect (e.g. Qwen's
+    repetition_penalty) from a real encoding/decode bug. Returns token ids."""
+    import torch
+    kw = dict(max_new_tokens=max_steps, do_sample=False, num_beams=1,
+              pad_token_id=eos_id, repetition_penalty=1.0, no_repeat_ngram_size=0)
+    with torch.no_grad():
+        out = (model.generate(ids, attention_mask=attn, **kw) if attn is not None
+               else model.generate(ids, **kw))
+    return [int(t) for t in out[0, ids.shape[1]:].tolist()]
+
+
+def _folded_steps(backend, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
+                  *, fed_tokens=None, eos_id=None):
+    """Folded-package recovered logits, step by step. ``fed_tokens`` -> TEACHER
+    FORCING (feed the given plaintext tokens); ``None`` -> FREE RUNNING (feed the
+    folded path's own greedy token). The boundary owns masking + recovery; the
+    package only executes folded ops over masked tensors. Returns (logit_rows
+    [float32 cpu numpy V], token_ids)."""
     import numpy as np
     import torch
     pre = backend.run_prefill(h_tilde, n_layers, cfg0, session._cos, session._sin,
                               session.eps)
     rec = session.recover(backend.run_head(pre["y_tilde"], session.eps)[:, -1, :])
-    rows = [np.asarray(rec[0].detach().to("cpu").float().numpy())]
+    row = np.asarray(rec[0].detach().to("cpu").float().numpy())
+    rows, toks = [row], [int(row.argmax())]
+    t = toks[0]
     position = seq_len
     for step in range(max_steps - 1):
-        x = session.mask_token_embedding(torch.tensor([fed_tokens[step]]))
+        if fed_tokens is not None:
+            if step >= len(fed_tokens):
+                break
+            feed = int(fed_tokens[step])
+        else:
+            if eos_id is not None and t == eos_id:
+                break
+            feed = t
+        x = session.mask_token_embedding(torch.tensor([feed]))
         dec = backend.run_decode(x, position, cfg0, session._cos, session._sin,
                                  session.eps, num_exec_layers=n_layers)
         rec = session.recover(
             backend.run_head(dec["y_tilde"], session.eps)[:, -1, :])
-        rows.append(np.asarray(rec[0].detach().to("cpu").float().numpy()))
+        row = np.asarray(rec[0].detach().to("cpu").float().numpy())
+        rows.append(row)
+        t = int(row.argmax())
+        toks.append(t)
         position += 1
-    return rows
+    return rows, toks
+
+
+class _TinyPlaintextPredictor:
+    """Dry-run stand-in for ``_PlaintextLocalPredictor`` (tiny CPU Qwen2, fixed
+    synthetic prompt ids). Same surface the diagnostic uses: ``_encode`` /
+    ``_model`` / ``_tok`` / ``generate`` / ``max_new_tokens``."""
+
+    backend = "plaintext_local_dry"
+
+    def __init__(self, model, mc, ids, max_new_tokens):
+        self._model = model
+        self.mc = mc
+        self._tok = None
+        self._ids = ids
+        self.max_new_tokens = int(max_new_tokens)
+        self.model_name = "tiny-dry"
+
+    def _encode(self, prompt):
+        return self._ids, None
+
+    def generate(self, prompt):
+        import torch
+        ids, _ = self._encode(prompt)
+        with torch.no_grad():
+            out = self._model.generate(
+                ids, max_new_tokens=self.max_new_tokens, do_sample=False,
+                num_beams=1, pad_token_id=getattr(self.mc, "eos_token_id", None))
+        new = out[0, ids.shape[1]:]
+        return {"text": None, "token_ids": [int(t) for t in new.tolist()]}
+
+
+def _decode_text(tok, token_ids):
+    if tok is None or not token_ids:
+        return None
+    try:
+        return tok.decode(token_ids, skip_special_tokens=True)
+    except Exception:                                        # noqa: BLE001
+        return None
 
 
 def main() -> int:
@@ -241,14 +341,16 @@ def main() -> int:
     ap.add_argument("--model-name", default="Qwen2.5-7B-Instruct")
     ap.add_argument("--prompt", default="Explain why privacy matters in LLMs.")
     ap.add_argument("--system-message", default=None)
-    ap.add_argument("--use-chat-template", action="store_true", default=False)
+    ap.add_argument("--use-chat-template", action="store_true", default=False,
+                    help="recorded only; the IFEval JSONL prompt is already "
+                    "rendered and ifeval tokenises it raw -> we do NOT re-apply a "
+                    "template (matching run_ifeval_generation.py)")
     ap.add_argument("--input-jsonl", default=None,
-                    help="optional JSONL of prompts; the FIRST record's "
-                    "prompt/instruction/text field is used (overrides --prompt)")
+                    help="JSONL of prompts (raw ex['prompt'], loaded exactly like "
+                    "run_ifeval_generation.py); --example-index selects one")
+    ap.add_argument("--example-index", type=int, default=0)
     ap.add_argument("--folded-package-path", default=None)
-    ap.add_argument("--embedding-path", default=None,
-                    help="boundary embedding artifact (recorded; masking uses a "
-                    "seed-matched MaskedQwenSession derived from the model)")
+    ap.add_argument("--embedding-path", default=None)
     ap.add_argument("--dry-run", action="store_true", default=False)
     ap.add_argument("--num-layers", type=int, default=4, help="dry-run only")
     ap.add_argument("--seq-len", type=int, default=128)
@@ -262,35 +364,47 @@ def main() -> int:
     ap.add_argument("--topk", type=int, default=5)
     ap.add_argument("--atol", type=float, default=1e-2)
     ap.add_argument("--rtol", type=float, default=1e-2)
+    ap.add_argument("--rollout-mode", default="teacher_forcing",
+                    choices=["teacher_forcing", "free_running", "both"])
+    ap.add_argument("--verify-plaintext-reproduction", action="store_true",
+                    default=False, help="always on internally; flag documents "
+                    "intent + ensures the authoritative path runs")
     ap.add_argument("--resident-folded-weights", action="store_true",
                     default=False)
-    ap.add_argument("--compare-nonresident", action="store_true", default=False,
-                    help="also run the non-resident backend and compare resident "
-                    "vs non-resident folded logits")
+    ap.add_argument("--compare-nonresident", action="store_true", default=False)
     ap.add_argument("--require-real", action="store_true", default=False)
     # TEST-ONLY fault injectors (validate the detectors; never use in real runs)
     ap.add_argument("--inject-folded-divergence-step", type=int, default=None,
-                    help="TEST: corrupt the folded logits at this step to confirm "
-                    "first_divergent_step detection")
+                    help="TEST: corrupt the teacher-forced folded logits at step K")
+    ap.add_argument("--inject-free-divergence-step", type=int, default=None,
+                    help="TEST: corrupt the folded FREE token at step K")
     ap.add_argument("--inject-resident-divergence", action="store_true",
-                    default=False, help="TEST: corrupt the resident folded logits "
-                    "to confirm resident-vs-non-resident detection")
+                    default=False)
+    ap.add_argument("--inject-plaintext-repro-mismatch", action="store_true",
+                    default=False, help="TEST: corrupt the manual plaintext token "
+                    "0 to confirm the reproduction gate blocks correctness")
+    ap.add_argument("--inject-authoritative-processor-divergence",
+                    action="store_true", default=False,
+                    help="TEST: perturb ONLY the authoritative tokens (simulating "
+                    "a generation-config processor) to confirm the tool attributes "
+                    "it to generation config, not an encoding bug")
     ap.add_argument("--output-json", required=True)
     args = ap.parse_args()
 
-    # ---- prompt source ----
+    # ---- prompt source (loaded exactly like run_ifeval_generation.py) ----
     if args.input_jsonl and Path(args.input_jsonl).exists():
+        rows_in = []
         with open(args.input_jsonl, encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if not line:
+            for i, ln in enumerate(fh):
+                ln = ln.strip()
+                if not ln:
                     continue
-                rec = json.loads(line)
-                for key in ("prompt", "instruction", "text", "input", "question"):
-                    if isinstance(rec.get(key), str) and rec[key].strip():
-                        args.prompt = rec[key]
-                        break
-                break
+                ex = json.loads(ln)
+                if str(ex.get("prompt", "")).strip():
+                    rows_in.append(ex)
+        if rows_in:
+            idx = max(0, min(args.example_index, len(rows_in) - 1))
+            args.prompt = str(rows_in[idx]["prompt"])
 
     dry_run = bool(args.dry_run or not args.model_path)
     if args.require_real and dry_run:
@@ -304,8 +418,7 @@ def main() -> int:
     import torch
 
     from pllo.deployment import load_manifest, verify_package
-    from pllo.experiments.folded_probe_common import (
-        load_model_and_ids, seed_from_manifest)
+    from pllo.experiments.folded_probe_common import seed_from_manifest, tiny_model
     from pllo.experiments.nonlinear_designs import normalize_nonlinear_backend
     from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession
     from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig, _cfg_to
@@ -329,38 +442,102 @@ def main() -> int:
         if not args.embedding_path:
             args.embedding_path = str(art_path)
 
-    # ---- identical setup: tokenizer / chat template / prompt / ids ----
-    tok = None
-    args.use_chat_template = "true" if args.use_chat_template else "false"
-    # MaskedQwenSession masking dtype follows the package fold dtype; the chat
-    # template / system message are applied to BOTH paths identically below.
-    if not dry_run:
-        from transformers import AutoTokenizer
-        tok = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True,
-                                            local_files_only=True)
-    model, mc, ids, device, dtype = load_model_and_ids(args, dry_run)
-    # apply system message by re-tokenising with the chat template if requested
-    if (not dry_run) and tok is not None and args.system_message \
-            and args.use_chat_template == "true":
-        msgs = [{"role": "system", "content": args.system_message},
-                {"role": "user", "content": args.prompt}]
-        text = tok.apply_chat_template(msgs, tokenize=False,
-                                       add_generation_prompt=True)
-        ids = tok(text, return_tensors="pt")["input_ids"][:, :args.seq_len].to(device)
-
-    seq_len = int(ids.shape[1])
     max_steps = max(1, int(args.max_steps))
 
+    # ---- AUTHORITATIVE plaintext path == run_ifeval_generation.py's ----
+    if dry_run:
+        model, mc = tiny_model()
+        device = "cpu"
+        ids = torch.randint(0, mc.vocab_size, (1, min(args.seq_len, 8)))
+        attn = None
+        predictor = _TinyPlaintextPredictor(model, mc, ids, max_steps)
+        tok = None
+        eos_id = getattr(mc, "eos_token_id", None)
+    else:
+        from pllo.benchmarks.real_predictors import build_predictor
+        predictor = build_predictor(
+            "plaintext_local", model_path=args.model_path,
+            model_name=args.model_name, seq_len=args.seq_len,
+            max_new_tokens=max_steps, dtype=args.dtype, device=args.device)
+        model, mc = predictor._model, predictor._model.config
+        tok = predictor._tok
+        device = args.device
+        ids, attn = predictor._encode(args.prompt)
+        eos_id = getattr(tok, "eos_token_id", None)
+
+    seq_len = int(ids.shape[1])
+
+    # (A) authoritative generation (the literal ifeval plaintext_local call)
+    a_gen = predictor.generate(args.prompt)
+    a_tokens = list(a_gen.get("token_ids") or [])
+    if args.inject_authoritative_processor_divergence and a_tokens:
+        a_tokens = list(a_tokens)
+        a_tokens[0] = int(a_tokens[0]) + 1   # TEST: simulate a processor effect
+    a_text = a_gen.get("text")
+    if (a_text is None or args.inject_authoritative_processor_divergence) \
+            and tok is not None:
+        a_text = _decode_text(tok, a_tokens)
+
+    # (A_raw) raw-greedy reference (generation-config processors neutralised) ->
+    # isolates a generation-config effect from an encoding/decode bug.
+    a_raw_tokens = _raw_greedy_generate(model, ids, attn, max_steps, eos_id)
+
+    # (B) the tool's own step-by-step plaintext (raw argmax; for per-step logits)
+    plain_rows, b_tokens = _manual_plaintext_steps(model, ids, attn, max_steps,
+                                                   eos_id)
+    if args.inject_plaintext_repro_mismatch and b_tokens:
+        b_tokens = list(b_tokens)
+        b_tokens[0] = int(b_tokens[0]) + 1            # TEST: force a repro mismatch
+
+    # reproduction gate: B must reproduce A (the ifeval baseline) tokenwise
+    cmp_len = len(a_tokens)
+    repro_first_div = _first_divergent_tokens(a_tokens, b_tokens[:cmp_len]) \
+        if cmp_len else None
+    plaintext_reproduction_passed = bool(cmp_len > 0 and repro_first_div is None)
+    # is the tool's raw decode itself faithful to a raw model.generate?
+    raw_len = len(a_raw_tokens)
+    manual_reproduces_raw_greedy = bool(
+        raw_len > 0 and _first_divergent_tokens(a_raw_tokens,
+                                                b_tokens[:raw_len]) is None)
+    # does the ifeval baseline apply generation-config processors (the likely
+    # cause of folded repetition: baseline penalises repeats, folded argmax does
+    # not)? True when authoritative != raw-greedy.
+    authoritative_uses_generation_processors = bool(
+        _first_divergent_tokens(a_tokens, a_raw_tokens) is not None)
+
+    def _prefix_text(token_ids):
+        return _decode_text(tok, list(token_ids)[:80])
+
+    chat_tmpl = getattr(tok, "chat_template", None) if tok is not None else None
+    chat_sha = (hashlib.sha256(chat_tmpl.encode("utf-8")).hexdigest()
+                if isinstance(chat_tmpl, str) and chat_tmpl else None)
+    gen_cfg = getattr(model, "generation_config", None)
+    do_sample = bool(getattr(gen_cfg, "do_sample", False)) if gen_cfg else False
+    gen_summary = {
+        "do_sample": False, "num_beams": 1, "use_cache": True,
+        "max_new_tokens": max_steps,
+        "pad_token_id": eos_id,
+        "eos_token_id": eos_id,
+        "temperature": (float(getattr(gen_cfg, "temperature", None) or 1.0)
+                        if gen_cfg else None),
+        "top_p": (float(getattr(gen_cfg, "top_p", None) or 1.0)
+                  if gen_cfg else None),
+        "top_k": (int(getattr(gen_cfg, "top_k", None) or 0) if gen_cfg else None),
+        "repetition_penalty": (float(getattr(gen_cfg, "repetition_penalty", None)
+                                     or 1.0) if gen_cfg else None),
+        "no_repeat_ngram_size": (int(getattr(gen_cfg, "no_repeat_ngram_size", None)
+                                     or 0) if gen_cfg else None),
+    }
+
+    # ---- folded setup (seed-matched masking session) ----
     pkg_dir = Path(args.folded_package_path)
     manifest = load_manifest(pkg_dir)
     n_layers = int(manifest.num_layers)
     seed = seed_from_manifest(pkg_dir, args.seed)
     vrep = verify_package(pkg_dir)
-
-    # seed-matched masking session (same masks the package was folded against)
     cfg = MemoryOptimizedConfig(
         num_layers=n_layers, batch_size=1, seq_len=seq_len, max_new_tokens=max_steps,
-        device=device, dtype=dtype, folding_dtype="float32",
+        device=device, dtype=args.dtype, folding_dtype="float32",
         folded_weight_device=args.folded_weight_device or device,
         mlp_down_chunk_size=args.mlp_down_chunk_size, seed=seed)
     session = MaskedQwenSession(model, mc, cfg)
@@ -375,14 +552,11 @@ def main() -> int:
         except Exception:                                    # noqa: BLE001
             return None
 
-    # ---- plaintext reference (free-running greedy) ----
-    plain_rows, fed_tokens = _plaintext_greedy(model, ids, max_steps, device)
-
     leaked: list = []
 
     def _new_backend(resident):
         return Qwen7BFoldedPackageGpuBackend(
-            folded_package_path=str(pkg_dir), device=device, dtype=dtype,
+            folded_package_path=str(pkg_dir), device=device, dtype=args.dtype,
             nonlinear_backend=args.nonlinear_backend,
             resident_folded_weights=resident)
 
@@ -390,146 +564,251 @@ def main() -> int:
         req = BoundaryInitRequest(
             session_id=sid, hidden_size=int(getattr(mc, "hidden_size")),
             vocab_size=int(getattr(mc, "vocab_size")), num_layers=n_layers,
-            dtype=dtype, gpu_backend="qwen7b_folded_package")
+            dtype=args.dtype, gpu_backend="qwen7b_folded_package")
         bad = forbidden_fields_in_payload(encode_message(req))
         if bad:
             leaked.extend(bad)
         return backend.init(req)
 
-    # ---- primary folded pass (resident if requested) ----
     primary_resident = bool(args.resident_folded_weights)
     primary = _new_backend(primary_resident)
     init_resp = _init(primary, "pf-primary")
-    # force-build resident cache + checksum (mutation detection across the run).
-    # run_prefill builds the cache lazily with (h_tilde.device, h_tilde.dtype);
-    # pre-building with the SAME args lets us checksum BEFORE any forward runs.
+
+    # resident force-build + checksum (mutation detection across the whole run)
     resident_weight_mutated = False
     resident_dtype_mismatch = False
     resident_cache_dtype = None
-    fold_compute_dtype = str(h_tilde.dtype)        # the package fold compute dtype
+    fold_compute_dtype = str(h_tilde.dtype)
+    chk_before = None
     if primary_resident:
         primary._ensure_resident(h_tilde.device, h_tilde.dtype, n_layers)
         resident_cache_dtype = str(primary._resident_layers[0]["wq_tilde"].dtype)
         resident_dtype_mismatch = bool(resident_cache_dtype != fold_compute_dtype)
         chk_before = cmp_res._checksum_resident(primary._resident_layers,
                                                 primary._resident_head)
-    primary_rows = _folded_recovered(primary, session, h_tilde, fed_tokens,
-                                     max_steps, seq_len, n_layers, cfg0)
-    if primary_resident:
-        chk_after = cmp_res._checksum_resident(primary._resident_layers,
-                                               primary._resident_head)
-        resident_weight_mutated = bool(chk_before != chk_after)
 
-    # TEST-ONLY: corrupt the folded logits at a chosen step
-    if args.inject_folded_divergence_step is not None:
-        k = int(args.inject_folded_divergence_step)
-        if 0 <= k < len(primary_rows):
-            row = primary_rows[k].copy()
-            bad_idx = int((int(plain_rows[k].argmax()) + 1) % row.shape[0])
-            row[bad_idx] = float(row.max()) + 1e3
-            primary_rows[k] = row
+    do_tf = args.rollout_mode in ("teacher_forcing", "both")
+    do_free = args.rollout_mode in ("free_running", "both")
 
-    p_rows, p_summary = _compare_logit_steps(
-        plain_rows, primary_rows, topk=args.topk, atol=args.atol, rtol=args.rtol,
-        id_to_text=_id_to_text)
-
-    # ---- resident vs non-resident (optional) ----
+    # ---- only run folded comparisons when reproduction passed ----
+    tf_rows, tf_summary = [], None
+    tf_first_div = None
+    tf_match_rate = None
+    free_rows, free_summary = [], None
+    free_first_div = None
+    free_token_match_rate = None
+    folded_free_tokens = []
+    folded_free_text = None
     rvn = None
-    resident_vs_nonresident_passed = None
-    rvn_max = None
-    rvn_mean = None
+    rvn_passed = None
+    rvn_max = rvn_mean = None
     rvn_top1_match = None
-    if args.compare_nonresident:
-        other = _new_backend(not primary_resident)
-        _init(other, "pf-other")
-        other_rows = _folded_recovered(other, session, h_tilde, fed_tokens,
-                                       max_steps, seq_len, n_layers, cfg0)
-        # order so resident is "a", non-resident is "b" for clear naming
-        res_rows = primary_rows if primary_resident else other_rows
-        non_rows = other_rows if primary_resident else primary_rows
-        if args.inject_resident_divergence and res_rows:
-            res_rows = [r.copy() for r in res_rows]
-            bad = int((int(res_rows[0].argmax()) + 1) % res_rows[0].shape[0])
-            res_rows[0][bad] = float(res_rows[0].max()) + 1e3  # flip resident top1
-        rvn_rows, rvn_summary = _compare_logit_steps(
-            res_rows, non_rows, topk=args.topk, atol=args.atol, rtol=args.rtol)
-        rvn_max = rvn_summary["max_abs_logit_err_max"]
-        rvn_mean = rvn_summary["mean_abs_logit_err_mean"]
-        rvn_top1_match = bool(rvn_summary["first_divergent_step"] is None)
-        resident_vs_nonresident_passed = bool(
-            rvn_top1_match and not resident_weight_mutated
-            and not resident_dtype_mismatch)
-        rvn = {"rows": rvn_rows, "summary": rvn_summary}
 
-    resident_diverged = bool(
-        (resident_vs_nonresident_passed is False)
-        or resident_weight_mutated or resident_dtype_mismatch)
-    correctness_passed = bool(
-        p_summary["first_divergent_step"] is None
-        and not resident_weight_mutated and not resident_dtype_mismatch)
-    suspected = _suspected_root_cause(p_summary["first_divergent_step"],
-                                      resident_diverged=resident_diverged)
+    # run folded diagnostics when our RAW reference is faithful (even if the
+    # ifeval baseline differs due to generation-config processors); correctness is
+    # still BLOCKED below when the authoritative reproduction fails.
+    proceed_folded = bool(plaintext_reproduction_passed
+                          or manual_reproduces_raw_greedy)
+    if proceed_folded:
+        if do_tf:
+            primary_tf_rows, _ = _folded_steps(
+                primary, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
+                fed_tokens=b_tokens)
+            if args.inject_folded_divergence_step is not None:
+                k = int(args.inject_folded_divergence_step)
+                if 0 <= k < len(primary_tf_rows):
+                    r = primary_tf_rows[k].copy()
+                    bad = int((int(plain_rows[k].argmax()) + 1) % r.shape[0])
+                    r[bad] = float(r.max()) + 1e3
+                    primary_tf_rows[k] = r
+            tf_rows, tf_summary = _compare_logit_steps(
+                plain_rows, primary_tf_rows, topk=args.topk, atol=args.atol,
+                rtol=args.rtol, id_to_text=_id_to_text)
+            tf_first_div = tf_summary["first_divergent_step"]
+            tf_match_rate = tf_summary["top1_match_rate"]
+
+        if do_free:
+            free_plain_rows, free_plain_tokens = plain_rows, b_tokens
+            folded_free_rows, folded_free_tokens = _folded_steps(
+                primary, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
+                fed_tokens=None, eos_id=eos_id)
+            if args.inject_free_divergence_step is not None:
+                k = int(args.inject_free_divergence_step)
+                if 0 <= k < len(folded_free_tokens):
+                    folded_free_tokens = list(folded_free_tokens)
+                    folded_free_tokens[k] = int(free_plain_tokens[k]
+                                                if k < len(free_plain_tokens)
+                                                else folded_free_tokens[k]) + 1
+            free_first_div = _first_divergent_tokens(free_plain_tokens,
+                                                     folded_free_tokens)
+            free_token_match_rate = _token_match_rate(free_plain_tokens,
+                                                      folded_free_tokens)
+            folded_free_text = _decode_text(tok, folded_free_tokens)
+            free_rows, free_summary = _compare_logit_steps(
+                free_plain_rows, folded_free_rows, topk=args.topk, atol=args.atol,
+                rtol=args.rtol, id_to_text=_id_to_text)
+
+        if primary_resident and chk_before is not None:
+            chk_after = cmp_res._checksum_resident(primary._resident_layers,
+                                                   primary._resident_head)
+            resident_weight_mutated = bool(chk_before != chk_after)
+
+        if args.compare_nonresident:
+            other = _new_backend(not primary_resident)
+            _init(other, "pf-other")
+            other_rows, _ = _folded_steps(
+                other, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
+                fed_tokens=b_tokens)
+            res_rows = (primary_tf_rows if (do_tf and primary_resident)
+                        else (other_rows if not primary_resident
+                              else _folded_steps(primary, session, h_tilde,
+                                                 max_steps, seq_len, n_layers,
+                                                 cfg0, fed_tokens=b_tokens)[0]))
+            non_rows = other_rows if primary_resident else (
+                primary_tf_rows if do_tf else _folded_steps(
+                    primary, session, h_tilde, max_steps, seq_len, n_layers,
+                    cfg0, fed_tokens=b_tokens)[0])
+            if args.inject_resident_divergence and res_rows:
+                res_rows = [r.copy() for r in res_rows]
+                bad = int((int(res_rows[0].argmax()) + 1) % res_rows[0].shape[0])
+                res_rows[0][bad] = float(res_rows[0].max()) + 1e3
+            rvn_rows, rvn_summary = _compare_logit_steps(
+                res_rows, non_rows, topk=args.topk, atol=args.atol, rtol=args.rtol)
+            rvn_max = rvn_summary["max_abs_logit_err_max"]
+            rvn_mean = rvn_summary["mean_abs_logit_err_mean"]
+            rvn_top1_match = bool(rvn_summary["first_divergent_step"] is None)
+            rvn_passed = bool(rvn_top1_match and not resident_weight_mutated
+                              and not resident_dtype_mismatch)
+            rvn = rvn_rows
+
+    # ---- correctness decision (BLOCKED on reproduction failure) ----
+    blocked = not plaintext_reproduction_passed
+    primary_div = tf_first_div if do_tf else free_first_div
+    if blocked:
+        correctness_passed = None
+    else:
+        correctness_passed = bool(
+            primary_div is None and not resident_weight_mutated
+            and not resident_dtype_mismatch)
+
+    if blocked and authoritative_uses_generation_processors \
+            and manual_reproduces_raw_greedy:
+        suspected = ("generation-config mismatch: run_ifeval plaintext_local "
+                     "(model.generate) applies generation-config logit processors "
+                     "(repetition_penalty=%s, no_repeat_ngram_size=%s) that raw "
+                     "greedy + the folded argmax decode do NOT -> this likely "
+                     "explains folded repetition. Re-run plaintext_local and "
+                     "folded with identical generation config (or compare folded "
+                     "to the raw-greedy plaintext baseline)."
+                     % (gen_summary.get("repetition_penalty"),
+                        gen_summary.get("no_repeat_ngram_size")))
+    elif blocked:
+        suspected = ("plaintext reproduction mismatch: the tool's raw step decode "
+                     "does not reproduce run_ifeval plaintext_local AND does not "
+                     "match a raw model.generate (manual_reproduces_raw_greedy=%s) "
+                     "-> fix encoding / chat template / tokenization first"
+                     % manual_reproduces_raw_greedy)
+    elif do_tf and tf_first_div is None and do_free \
+            and free_first_div is not None:
+        suspected = "autoregressive state divergence or generation-state mismatch"
+    elif do_tf and tf_first_div is not None:
+        suspected = _suspected_root_cause(tf_first_div, prefix="teacher_forcing")
+    elif do_free and free_first_div is not None:
+        suspected = _suspected_root_cause(free_first_div, prefix="free_running")
+    else:
+        suspected = None
 
     report = {
         "stage": "plaintext_vs_folded_generation_correctness",
         "dry_run": dry_run, "model_name": args.model_name,
-        "device": device, "cli_dtype": dtype,
+        "device": device, "cli_dtype": args.dtype,
         "fold_compute_dtype": fold_compute_dtype,
         "resident_cache_dtype": resident_cache_dtype,
+        "rollout_mode": args.rollout_mode,
         "seq_len": seq_len, "max_steps": max_steps, "num_layers": n_layers,
-        # the mask schedule seed is a SECRET -> never serialised; we only record
-        # that the masking session was seed-matched to the package.
         "mask_seed_matched_to_package": True,
         "atol": args.atol, "rtol": args.rtol, "topk": args.topk,
-        "use_chat_template": (args.use_chat_template == "true"),
-        "system_message_used": bool(args.system_message),
         "primary_resident": primary_resident,
         "folded_package_path": str(pkg_dir),
         "folded_package_valid": bool(vrep["package_valid"]),
         "embedding_path": (str(args.embedding_path) if args.embedding_path
                            else None),
         "masking_source": "masked_qwen_session_seed_matched",
-        # ---- per-step plaintext vs folded ----
-        "per_step": p_rows,
-        # ---- requested summary fields ----
+        # ---- TASK 2: plaintext reproduction gate ----
+        "plaintext_reproduction_passed": plaintext_reproduction_passed,
+        "first_plaintext_reproduction_divergent_step": repro_first_div,
+        "manual_reproduces_raw_greedy": manual_reproduces_raw_greedy,
+        "authoritative_uses_generation_processors":
+            authoritative_uses_generation_processors,
+        "raw_greedy_plaintext_token_ids": a_raw_tokens,
+        "run_ifeval_plaintext_token_ids": a_tokens,
+        "correctness_plaintext_token_ids": b_tokens,
+        "run_ifeval_plaintext_generated_text": a_text,
+        "correctness_plaintext_generated_text": _decode_text(tok, b_tokens),
+        "run_ifeval_plaintext_prefix_text": _prefix_text(a_tokens),
+        "correctness_plaintext_prefix_text": _prefix_text(b_tokens),
+        "chat_template_sha256": chat_sha,
+        "prompt_token_count": seq_len,
+        "system_message": args.system_message,
+        "add_generation_prompt": False,
+        "generation_config_summary": gen_summary,
+        "eos_token_id": eos_id, "pad_token_id": eos_id,
+        "do_sample": do_sample, "temperature": gen_summary["temperature"],
+        "top_p": gen_summary["top_p"], "num_beams": 1, "use_cache": True,
+        "attention_mask_policy": ("tokenizer_attention_mask_passed"
+                                  if not dry_run else "none_single_sequence"),
+        "position_ids_policy": "huggingface_default_from_attention_mask",
+        # ---- TASK 3: block wrong conclusions ----
         "correctness_passed": correctness_passed,
-        "first_divergent_step": p_summary["first_divergent_step"],
-        "first_divergent_token_text": p_summary["first_divergent_token_text"],
-        "first_divergent_stage": (None if p_summary["first_divergent_step"] is None
-                                  else ("prefill" if p_summary["first_divergent_step"]
-                                        == 0 else "decode")),
-        "plaintext_vs_folded_top1_match_rate": p_summary["top1_match_rate"],
-        "plaintext_vs_folded_max_abs_logit_err_max":
-            p_summary["max_abs_logit_err_max"],
-        "plaintext_vs_folded_mean_abs_logit_err_mean":
-            p_summary["mean_abs_logit_err_mean"],
+        "correctness_blocked_by_plaintext_reproduction_mismatch": blocked,
         "suspected_root_cause": suspected,
+        # ---- teacher forcing (per-step fidelity) ----
+        "teacher_forcing_top1_match_rate": tf_match_rate,
+        "teacher_forcing_first_divergent_step": tf_first_div,
+        "first_divergent_step": (tf_first_div if do_tf else free_first_div),
+        "first_divergent_stage": (None if (tf_first_div if do_tf
+                                           else free_first_div) is None
+                                  else ("prefill" if (tf_first_div if do_tf
+                                        else free_first_div) == 0 else "decode")),
+        "plaintext_vs_folded_top1_match_rate": tf_match_rate,
+        "plaintext_vs_folded_max_abs_logit_err_max":
+            (tf_summary["max_abs_logit_err_max"] if tf_summary else None),
+        "plaintext_vs_folded_mean_abs_logit_err_mean":
+            (tf_summary["mean_abs_logit_err_mean"] if tf_summary else None),
+        "teacher_forcing_per_step": tf_rows,
+        # ---- free running (real generation fork) ----
+        "first_free_running_divergent_step": free_first_div,
+        "free_running_token_match_rate": free_token_match_rate,
+        "token_match_rate": (free_token_match_rate if do_free else tf_match_rate),
+        "plaintext_generated_text": a_text,
+        "folded_generated_text": folded_free_text,
+        "plaintext_token_ids": (b_tokens if do_free else None),
+        "folded_token_ids": (folded_free_tokens if do_free else None),
+        "free_running_per_step": free_rows,
         # ---- resident vs non-resident ----
-        "resident_vs_nonresident_correctness_passed":
-            resident_vs_nonresident_passed,
+        "resident_vs_nonresident_correctness_passed": rvn_passed,
         "resident_vs_nonresident_max_abs_err": rvn_max,
         "resident_vs_nonresident_mean_abs_err": rvn_mean,
         "resident_vs_nonresident_top1_match": rvn_top1_match,
         "resident_weight_mutated": resident_weight_mutated,
         "resident_dtype_mismatch": resident_dtype_mismatch,
-        "resident_vs_nonresident_per_step": (rvn["rows"] if rvn else None),
-        # ---- dtype note (same as the resident validator) ----
-        "cli_dtype_used_for_fold_compute": bool(dtype == fold_compute_dtype),
+        "resident_vs_nonresident_per_step": rvn,
+        # ---- dtype note ----
+        "cli_dtype_used_for_fold_compute": bool(args.dtype == fold_compute_dtype),
         "dtype_note": ("the folded compute uses the package fold dtype (%s); "
-                       "--dtype=%s is applied identically to the plaintext model "
-                       "but is NOT the fold dtype, so a fold-vs-cli dtype "
-                       "difference is expected and not a bug" %
-                       (fold_compute_dtype, dtype)),
+                       "--dtype=%s is applied to the plaintext model but is NOT "
+                       "the fold dtype" % (fold_compute_dtype, args.dtype)),
         # ---- security audit (threat model unchanged) ----
-        "audit_passed": bool(not leaked),
+        "audit_passed": None,
         "tee_used_on_gpu": bool(init_resp.tee_used_on_gpu),
         "worker_has_mask_secrets": bool(primary.worker_has_mask_secrets),
         "worker_has_raw_lora": bool(getattr(primary, "worker_has_raw_lora", False)),
         "gpu_visible_plaintext_fields": [],
-        "leaked_secret_fields": sorted(set(leaked)) + list(
-            vrep["forbidden_fields_found"]),
+        "leaked_secret_fields": sorted(set(leaked))
+        + list(vrep["forbidden_fields_found"]),
         "schedule_secret_leaked_to_gpu": False,
         "gpu_request_contains_schedule_secret": False,
+        "plaintext_logits_or_sampling_on_gpu": False,
         "pad_disabled_for_correctness": False,
     }
     report["audit_passed"] = bool(not report["leaked_secret_fields"])
@@ -540,26 +819,35 @@ def main() -> int:
 
     print("=== plaintext vs folded generation correctness (%s, dry_run=%s) ==="
           % (device, dry_run))
-    print("correctness_passed=%s top1_match_rate=%.4f first_divergent_step=%s (%s)"
-          % (report["correctness_passed"],
-             report["plaintext_vs_folded_top1_match_rate"],
-             report["first_divergent_step"], report["first_divergent_stage"]))
-    print("max_abs_logit_err_max=%.4e mean_abs_logit_err_mean=%.4e"
-          % (report["plaintext_vs_folded_max_abs_logit_err_max"],
-             report["plaintext_vs_folded_mean_abs_logit_err_mean"]))
+    print("plaintext_reproduction_passed=%s first_repro_div=%s (blocked=%s)"
+          % (report["plaintext_reproduction_passed"],
+             report["first_plaintext_reproduction_divergent_step"], blocked))
+    print("manual_reproduces_raw_greedy=%s authoritative_uses_generation_processors"
+          "=%s (repetition_penalty=%s)"
+          % (report["manual_reproduces_raw_greedy"],
+             report["authoritative_uses_generation_processors"],
+             gen_summary.get("repetition_penalty")))
+    print("rollout_mode=%s correctness_passed=%s" % (args.rollout_mode,
+                                                     report["correctness_passed"]))
+    print("teacher_forcing: top1_match_rate=%s first_divergent_step=%s"
+          % (report["teacher_forcing_top1_match_rate"],
+             report["teacher_forcing_first_divergent_step"]))
+    print("free_running: token_match_rate=%s first_free_running_divergent_step=%s"
+          % (report["free_running_token_match_rate"],
+             report["first_free_running_divergent_step"]))
     print("resident_vs_nonresident: passed=%s max_abs_err=%s mutated=%s "
-          "dtype_mismatch=%s"
-          % (report["resident_vs_nonresident_correctness_passed"],
-             report["resident_vs_nonresident_max_abs_err"],
-             report["resident_weight_mutated"],
-             report["resident_dtype_mismatch"]))
+          "dtype_mismatch=%s" % (report["resident_vs_nonresident_correctness_passed"],
+                                 report["resident_vs_nonresident_max_abs_err"],
+                                 report["resident_weight_mutated"],
+                                 report["resident_dtype_mismatch"]))
     print("suspected_root_cause=%s" % report["suspected_root_cause"])
     print("audit_passed=%s tee_used_on_gpu=%s worker_has_mask_secrets=%s leaked=%s"
           % (report["audit_passed"], report["tee_used_on_gpu"],
              report["worker_has_mask_secrets"], report["leaked_secret_fields"]))
-    overall_ok = bool(report["correctness_passed"] and report["audit_passed"]
-                      and report["resident_vs_nonresident_correctness_passed"]
-                      is not False)
+
+    overall_ok = bool(plaintext_reproduction_passed
+                      and report["correctness_passed"] and report["audit_passed"]
+                      and rvn_passed is not False)
     return 0 if overall_ok else 1
 
 

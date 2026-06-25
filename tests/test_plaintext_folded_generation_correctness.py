@@ -1,11 +1,19 @@
 """Local (CPU, dry-run) tests for the plaintext-vs-folded generation diagnostic.
 
 Drives scripts/compare_plaintext_folded_generation_correctness.py over the tiny
-dry-run folded package on CPU (no Qwen weights, no GPU, no server). Confirms the
-diagnostic (a) PASSES when plaintext == folded (the real, un-broken case), (b)
-localises first_divergent_step when the folded logits are corrupted, (c) detects a
-resident-vs-non-resident mismatch, (d) reports shape / dtype mismatch (pure
-helper), and (e) never serialises a forbidden GPU-boundary secret field.
+dry-run folded package on CPU (no Qwen weights, no GPU, no server). Confirms:
+
+* the **plaintext reproduction gate** -- the tool's step-by-step plaintext path
+  reproduces the authoritative ``generate`` path; a forced mismatch BLOCKS every
+  folded correctness conclusion;
+* **teacher-forcing** vs **free-running** rollout: clean -> both match; a forced
+  free-running fork is localised to ``first_free_running_divergent_step`` and (when
+  teacher-forcing still matches) flagged as autoregressive-state divergence;
+* a forced teacher-forced step divergence is localised;
+* resident == non-resident folded (bit-exact) + injected resident divergence is
+  detected;
+* shape / dtype mismatch are reported by the pure helper;
+* no forbidden GPU-boundary secret field is ever serialised.
 
 Run: python -m pytest tests/test_plaintext_folded_generation_correctness.py -q
 """
@@ -36,7 +44,7 @@ _MOD = _load("cmp_pf", "scripts/compare_plaintext_folded_generation_correctness.
 def _run(extra, tmp_path, name):
     out = tmp_path / ("%s.json" % name)
     argv = ["x", "--dry-run", "--num-layers", "4", "--device", "cpu",
-            "--dtype", "float32", "--seq-len", "8", "--max-steps", "4",
+            "--dtype", "float32", "--seq-len", "8", "--max-steps", "6",
             "--output-json", str(out)] + (extra or [])
     old = sys.argv
     try:
@@ -64,90 +72,134 @@ def test_compare_steps_value_divergence_first_step() -> None:
     plain = [np.array([1.0, 0.0], dtype="float32"),
              np.array([0.0, 1.0], dtype="float32"),
              np.array([1.0, 0.0], dtype="float32")]
-    folded = [np.array([1.0, 0.0], dtype="float32"),   # step 0 matches
+    folded = [np.array([1.0, 0.0], dtype="float32"),
               np.array([1.0, 0.0], dtype="float32"),   # step 1 argmax flips
               np.array([1.0, 0.0], dtype="float32")]
     rows, summ = _MOD._compare_logit_steps(plain, folded, topk=2, atol=1e-6,
                                            rtol=1e-6)
     assert summ["first_divergent_step"] == 1
-    assert rows[1]["top1_match"] is False
-    assert rows[0]["top1_match"] is True
+    assert rows[1]["token_match"] is False and rows[0]["token_match"] is True
     assert summ["max_abs_logit_err_max"] == 1.0
 
 
 def test_compare_steps_shape_mismatch_is_reported() -> None:
-    plain = [np.ones((5,), dtype="float32")]
-    folded = [np.ones((6,), dtype="float32")]
-    rows, summ = _MOD._compare_logit_steps(plain, folded, topk=2, atol=1e-6,
-                                           rtol=1e-6)
+    rows, summ = _MOD._compare_logit_steps([np.ones((5,), dtype="float32")],
+                                           [np.ones((6,), dtype="float32")],
+                                           topk=2, atol=1e-6, rtol=1e-6)
     assert rows[0]["shape_match"] is False
-    assert rows[0]["max_abs_logit_err"] is None        # not computed on mismatch
+    assert rows[0]["max_abs_logit_err"] is None
     assert summ["first_divergent_step"] == 0
 
 
 def test_compare_steps_dtype_mismatch_is_reported() -> None:
-    plain = [np.ones((4,), dtype="float32")]
-    folded = [np.ones((4,), dtype="float64")]
-    rows, _ = _MOD._compare_logit_steps(plain, folded, topk=2, atol=1e-6,
-                                        rtol=1e-6)
+    rows, _ = _MOD._compare_logit_steps([np.ones((4,), dtype="float32")],
+                                        [np.ones((4,), dtype="float64")],
+                                        topk=2, atol=1e-6, rtol=1e-6)
     assert rows[0]["dtype_match"] is False
 
 
-def test_np_err_and_rel() -> None:
-    a = np.array([0.0, 0.0, 3.0])
-    b = np.array([0.0, 0.0, 0.0])
-    mx, mn = _MOD._np_err(a, b)
-    assert mx == 3.0 and abs(mn - 1.0) < 1e-12
-    assert _MOD._np_rel(b, a) == 1.0                     # ||b-a||/||a|| = 3/3
+def test_first_divergent_tokens_and_match_rate() -> None:
+    assert _MOD._first_divergent_tokens([1, 2, 3], [1, 2, 3]) is None
+    assert _MOD._first_divergent_tokens([1, 2, 3], [1, 9, 3]) == 1
+    assert _MOD._first_divergent_tokens([1, 2], [1, 2, 3]) == 2   # prefix
+    assert _MOD._token_match_rate([1, 2, 3, 4], [1, 2, 9, 4]) == 0.75
 
 
 # ---- end-to-end diagnostic (dry-run tiny package) -------------------------
 
-def test_clean_plaintext_folded_passes(tmp_path) -> None:
-    rc, r = _run(["--resident-folded-weights", "--compare-nonresident"],
+def test_clean_both_passes(tmp_path) -> None:
+    rc, r = _run(["--rollout-mode", "both", "--verify-plaintext-reproduction",
+                  "--resident-folded-weights", "--compare-nonresident"],
                  tmp_path, "clean")
     assert rc == 0
+    assert r["plaintext_reproduction_passed"] is True
+    assert r["correctness_blocked_by_plaintext_reproduction_mismatch"] is False
     assert r["correctness_passed"] is True
-    assert r["plaintext_vs_folded_top1_match_rate"] == 1.0
-    assert r["first_divergent_step"] is None
-    assert r["first_divergent_stage"] is None
+    assert r["teacher_forcing_top1_match_rate"] == 1.0
+    assert r["teacher_forcing_first_divergent_step"] is None
+    assert r["first_free_running_divergent_step"] is None
+    assert r["free_running_token_match_rate"] == 1.0
     assert r["suspected_root_cause"] is None
-    # resident is a pure performance optimisation -> bit-exact vs non-resident
     assert r["resident_vs_nonresident_correctness_passed"] is True
     assert r["resident_vs_nonresident_max_abs_err"] == 0.0
     assert r["resident_weight_mutated"] is False
-    assert r["resident_dtype_mismatch"] is False
-    # the dtype lead: fold compute dtype == resident cache dtype
     assert r["fold_compute_dtype"] == r["resident_cache_dtype"]
-    # plaintext-vs-folded numeric error is tiny (exact masking algebra)
-    assert r["plaintext_vs_folded_max_abs_logit_err_max"] < 1e-2
 
 
-def test_inject_folded_divergence_localises_step(tmp_path) -> None:
-    rc, r = _run(["--inject-folded-divergence-step", "2"], tmp_path, "div")
+def test_plaintext_reproduction_mismatch_blocks_correctness(tmp_path) -> None:
+    rc, r = _run(["--rollout-mode", "both", "--inject-plaintext-repro-mismatch"],
+                 tmp_path, "repro")
+    assert rc == 1
+    assert r["plaintext_reproduction_passed"] is False
+    assert r["first_plaintext_reproduction_divergent_step"] == 0
+    assert r["correctness_blocked_by_plaintext_reproduction_mismatch"] is True
+    # a blocked run must NOT claim plaintext-vs-folded correctness passed
+    assert r["correctness_passed"] is None
+    assert "reproduction mismatch" in r["suspected_root_cause"]
+    # folded comparisons are skipped while blocked
+    assert r["teacher_forcing_per_step"] == []
+    assert r["free_running_per_step"] == []
+
+
+def test_authoritative_processor_divergence_is_attributed(tmp_path) -> None:
+    # the ifeval baseline (model.generate) diverges from raw greedy, but the
+    # tool's raw decode is faithful -> attribute to generation config, not a bug
+    rc, r = _run(["--rollout-mode", "both",
+                  "--inject-authoritative-processor-divergence"], tmp_path, "proc")
+    assert rc == 1
+    assert r["plaintext_reproduction_passed"] is False        # vs authoritative
+    assert r["manual_reproduces_raw_greedy"] is True          # tool is correct
+    assert r["authoritative_uses_generation_processors"] is True
+    assert r["correctness_blocked_by_plaintext_reproduction_mismatch"] is True
+    assert r["correctness_passed"] is None
+    assert "generation-config mismatch" in r["suspected_root_cause"]
+    # folded diagnostics still ran (against the faithful raw-greedy reference)
+    assert r["teacher_forcing_per_step"] != []
+
+
+def test_free_running_divergence_localised(tmp_path) -> None:
+    rc, r = _run(["--rollout-mode", "both", "--inject-free-divergence-step", "3"],
+                 tmp_path, "free")
+    assert r["plaintext_reproduction_passed"] is True
+    assert r["first_free_running_divergent_step"] == 3
+    assert r["free_running_token_match_rate"] < 1.0
+    # teacher-forcing per-step fidelity still holds -> autoregressive divergence
+    assert r["teacher_forcing_first_divergent_step"] is None
+    assert r["suspected_root_cause"] == \
+        "autoregressive state divergence or generation-state mismatch"
+    assert isinstance(r["folded_token_ids"], list)
+    assert isinstance(r["plaintext_token_ids"], list)
+
+
+def test_teacher_forcing_divergence_localised(tmp_path) -> None:
+    rc, r = _run(["--rollout-mode", "teacher_forcing",
+                  "--inject-folded-divergence-step", "2"], tmp_path, "tf")
     assert rc == 1
     assert r["correctness_passed"] is False
-    assert r["first_divergent_step"] == 2
+    assert r["teacher_forcing_first_divergent_step"] == 2
     assert r["first_divergent_stage"] == "decode"
-    assert r["plaintext_vs_folded_top1_match_rate"] < 1.0
-    assert "decode_path" in r["suspected_root_cause"]
-
-
-def test_inject_folded_divergence_step0_is_prefill(tmp_path) -> None:
-    _, r = _run(["--inject-folded-divergence-step", "0"], tmp_path, "div0")
-    assert r["first_divergent_step"] == 0
-    assert r["first_divergent_stage"] == "prefill"
-    assert "prefill_path" in r["suspected_root_cause"]
+    assert "teacher_forcing" in r["suspected_root_cause"]
 
 
 def test_inject_resident_divergence_is_detected(tmp_path) -> None:
-    rc, r = _run(["--resident-folded-weights", "--compare-nonresident",
-                  "--inject-resident-divergence"], tmp_path, "rvn")
+    rc, r = _run(["--rollout-mode", "teacher_forcing", "--resident-folded-weights",
+                  "--compare-nonresident", "--inject-resident-divergence"],
+                 tmp_path, "rvn")
     assert rc == 1
     assert r["resident_vs_nonresident_correctness_passed"] is False
     assert r["resident_vs_nonresident_max_abs_err"] > 0.0
     assert r["resident_vs_nonresident_top1_match"] is False
-    assert "resident_cache" in r["suspected_root_cause"]
+
+
+def test_reproduction_metadata_present(tmp_path) -> None:
+    _, r = _run(["--rollout-mode", "teacher_forcing"], tmp_path, "meta")
+    for key in ("run_ifeval_plaintext_token_ids", "correctness_plaintext_token_ids",
+                "generation_config_summary", "eos_token_id", "pad_token_id",
+                "do_sample", "num_beams", "use_cache", "attention_mask_policy",
+                "position_ids_policy", "prompt_token_count", "add_generation_prompt"):
+        assert key in r
+    assert r["do_sample"] is False and r["num_beams"] == 1 and r["use_cache"] is True
+    assert r["generation_config_summary"]["do_sample"] is False
 
 
 def test_security_fields_clean_and_no_forbidden_keys(tmp_path) -> None:
@@ -162,12 +214,15 @@ def test_security_fields_clean_and_no_forbidden_keys(tmp_path) -> None:
             for v in obj:
                 yield from _walk_keys(v)
 
-    for extra, name in (([], "s_clean"),
-                        (["--inject-folded-divergence-step", "1"], "s_div"),
-                        (["--resident-folded-weights", "--compare-nonresident"],
-                         "s_res")):
+    for extra, name in (
+            (["--rollout-mode", "both"], "s_clean"),
+            (["--rollout-mode", "both", "--inject-free-divergence-step", "2"],
+             "s_free"),
+            (["--rollout-mode", "both", "--inject-plaintext-repro-mismatch"],
+             "s_block"),
+            (["--rollout-mode", "teacher_forcing", "--resident-folded-weights",
+              "--compare-nonresident"], "s_res")):
         _, r = _run(extra, tmp_path, name)
-        # a correctness regression must NEVER relax the security posture
         assert r["audit_passed"] is True
         assert r["tee_used_on_gpu"] is False
         assert r["worker_has_mask_secrets"] is False
@@ -175,7 +230,7 @@ def test_security_fields_clean_and_no_forbidden_keys(tmp_path) -> None:
         assert r["leaked_secret_fields"] == []
         assert r["schedule_secret_leaked_to_gpu"] is False
         assert r["gpu_request_contains_schedule_secret"] is False
+        assert r["plaintext_logits_or_sampling_on_gpu"] is False
         assert r["pad_disabled_for_correctness"] is False
-        # no GPU-boundary secret field name is ever serialised in the report
         keys = set(_walk_keys(r))
         assert keys.isdisjoint(FORBIDDEN_WIRE_FIELDS)
