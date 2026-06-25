@@ -86,6 +86,10 @@ _TARGET_KEYS = (
     "avg_worker_total_s_per_token",
     "avg_worker_backend_forward_s_per_token",
     "avg_network_protocol_overhead_s_per_token",
+    "avg_worker_known_substage_total_s_per_token",
+    "avg_worker_unattributed_forward_s_per_token",
+    "worker_timing_method",
+    "worker_timing_is_cuda_synchronized",
     "worker_bottleneck_stage",
 )
 
@@ -308,6 +312,10 @@ class DecodeProfiler:
             "avg_worker_total_s_per_token": None,
             "avg_worker_backend_forward_s_per_token": None,
             "avg_network_protocol_overhead_s_per_token": None,
+            "avg_worker_known_substage_total_s_per_token": None,
+            "avg_worker_unattributed_forward_s_per_token": None,
+            "worker_timing_method": None,
+            "worker_timing_is_cuda_synchronized": None,
             "worker_bottleneck_stage": None,
         }
         wt_rows = [r.get("worker_timings") for r in self._rows
@@ -323,23 +331,66 @@ class DecodeProfiler:
             "worker_backend_forward_s")
         out["avg_network_protocol_overhead_s_per_token"] = _mean(
             [r.get("network_protocol_overhead_s") for r in self._rows])
-        # worker-internal bottleneck: prefer the fine forward breakdown when the
-        # backend could split it; else fall back to the coarse forward total.
+        out["avg_worker_known_substage_total_s_per_token"] = _wmean(
+            "worker_known_substage_total_s")
+        out["avg_worker_unattributed_forward_s_per_token"] = _wmean(
+            "worker_unattributed_forward_s")
+        # provenance: the dominant method across rows (they are homogeneous in
+        # practice -- one backend per run)
+        methods = [w.get("worker_timing_method") for w in wt_rows
+                   if w.get("worker_timing_method")]
+        out["worker_timing_method"] = methods[0] if methods else None
+        out["worker_timing_is_cuda_synchronized"] = bool(
+            wt_rows[0].get("worker_timing_is_cuda_synchronized"))
+        out["worker_bottleneck_stage"] = self._worker_bottleneck(wt_rows, _wmean)
+        return out
+
+    @staticmethod
+    def _worker_bottleneck(wt_rows, _wmean) -> Optional[str]:
+        """Pick the worker-internal bottleneck WITHOUT being fooled by tiny
+        accurately-but-partially-measured substages.
+
+        Rules (req. 4/5):
+          * a substage is only a candidate when its timing method is reliable;
+          * if the named substages account for < half the forward (i.e. most of the
+            forward is weight movement / unattributed), the bottleneck is the
+            per-layer total (if it dominates) or ``worker_backend_forward_unattributed``
+            -- never attention/mlp/nonlinear/lm_head;
+          * otherwise the largest reliable substage wins.
+        """
+        from pllo.protocol.worker_timing import (
+            WORKER_FORWARD_UNATTRIBUTED, substage_reliable)
+        fwd = _wmean("worker_backend_forward_s")
+        layer_total = _wmean("worker_layer_total_s")
+        known = _wmean("worker_known_substage_total_s")
+        reliable = all(substage_reliable(w) for w in wt_rows)
+
+        if not reliable:
+            # substage numbers can't be trusted -> only coarse fields
+            cand = {k: v for k, v in (("worker_layer_total_s", layer_total),
+                                      ("worker_backend_forward_s", fwd))
+                    if v is not None}
+            return max(cand, key=cand.get) if cand else None
+
+        # substages reliable: do they explain most of the forward?
+        if fwd is not None and known is not None and known < 0.5 * fwd:
+            if layer_total is not None and layer_total >= max(known, 0.5 * fwd):
+                return "worker_layer_total_s"
+            return WORKER_FORWARD_UNATTRIBUTED
+
         cand: Dict[str, float] = {}
-        fine = ("worker_attention_total_s", "worker_mlp_total_s",
-                "worker_nonlinear_total_s", "worker_lm_head_s")
-        for key in ("worker_request_parse_s", "worker_payload_decode_s",
-                    "worker_payload_encode_s") + fine:
+        for key in ("worker_attention_total_s", "worker_mlp_total_s",
+                    "worker_nonlinear_total_s", "worker_lm_head_s",
+                    "worker_request_parse_s", "worker_payload_decode_s",
+                    "worker_payload_encode_s"):
             m = _wmean(key)
             if m is not None:
                 cand[key] = m
-        if not any(k in cand for k in fine):
+        if not cand:
             m = _wmean("worker_backend_forward_s")
             if m is not None:
                 cand["worker_backend_forward_s"] = m
-        out["worker_bottleneck_stage"] = (max(cand, key=cand.get)
-                                          if cand else None)
-        return out
+        return max(cand, key=cand.get) if cand else None
 
     def write_trace(self, path, *, limit: Optional[int] = None) -> str:
         """Write the per-token trace as JSONL (one row per decode step)."""

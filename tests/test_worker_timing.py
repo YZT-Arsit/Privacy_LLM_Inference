@@ -157,8 +157,13 @@ def test_profiler_merges_worker_timing_and_aggregates() -> None:
     agg = p.aggregate(generated_tokens=3)
     assert agg["avg_worker_total_s_per_token"] is not None
     assert agg["avg_worker_backend_forward_s_per_token"] == 1.0
-    # synthetic forward split has attention as the largest fine sub-stage
-    assert agg["worker_bottleneck_stage"] == "worker_attention_total_s"
+    # the named matmul substages are tiny; the per-layer total (weight movement)
+    # dominates -> attention must NOT be the bottleneck
+    assert agg["worker_bottleneck_stage"] == "worker_layer_total_s"
+    assert agg["avg_worker_known_substage_total_s_per_token"] is not None
+    assert agg["avg_worker_unattributed_forward_s_per_token"] is not None
+    assert agg["worker_timing_method"] == "cuda_event"
+    assert agg["worker_timing_is_cuda_synchronized"] is True
 
 
 def test_profiler_worker_fields_none_without_worker_timing() -> None:
@@ -172,6 +177,84 @@ def test_profiler_worker_fields_none_without_worker_timing() -> None:
     assert agg["avg_worker_total_s_per_token"] is None
     assert agg["worker_bottleneck_stage"] is None
     assert agg["avg_network_protocol_overhead_s_per_token"] is None
+
+
+def _profiler_with_worker_timing(worker_timing):
+    """A 2-step profiler whose every step carries the given worker_timing dict."""
+    counters = {"boundary_calls": 0, "gpu_calls": 0, "trusted_bytes": 0,
+                "gpu_bytes": 0}
+    p = DecodeProfiler(counters=lambda: dict(counters), enabled=True)
+    for step in range(2):
+        p.begin_step(step, "prefill" if step == 0 else "decode")
+        with p.stage("gpu_worker_roundtrip"):
+            counters["gpu_calls"] += 1
+        p.set_worker_timing(dict(worker_timing))
+        p.end_step(token_id=step)
+    return p
+
+
+def test_bottleneck_small_attention_large_layer_total() -> None:
+    # attention tiny, layer_total large -> NOT attention (req. 7)
+    from pllo.protocol.worker_timing import synthetic_worker_timing
+    agg = _profiler_with_worker_timing(
+        synthetic_worker_timing(phase="decode", forward_s=4.65)
+    ).aggregate(generated_tokens=2)
+    assert agg["worker_bottleneck_stage"] == "worker_layer_total_s"
+    assert agg["worker_bottleneck_stage"] not in (
+        "worker_attention_total_s", "worker_mlp_total_s")
+
+
+def test_bottleneck_unattributed_when_no_layer_total() -> None:
+    # most of forward unattributed AND no per-layer total -> forward_unattributed
+    from pllo.protocol.worker_timing import (
+        WORKER_FORWARD_UNATTRIBUTED, _fill_attribution, empty_worker_timing)
+    wt = empty_worker_timing()
+    wt.update({"worker_backend_forward_s": 4.6, "worker_total_s": 4.7,
+               "worker_attention_total_s": 0.02, "worker_mlp_total_s": 0.01,
+               "worker_nonlinear_total_s": 0.005, "worker_lm_head_s": 0.015,
+               "worker_layer_total_s": None,      # not split into layers
+               "worker_timing_method": "cuda_event",
+               "worker_timing_is_cuda_synchronized": True})
+    _fill_attribution(wt)
+    assert wt["worker_unattributed_forward_s"] > 4.0
+    agg = _profiler_with_worker_timing(wt).aggregate(generated_tokens=2)
+    assert agg["worker_bottleneck_stage"] == WORKER_FORWARD_UNATTRIBUTED
+
+
+def test_bottleneck_ignores_unreliable_substages() -> None:
+    # unsynchronized wall-clock -> a big-looking attention must NOT be picked
+    from pllo.protocol.worker_timing import _fill_attribution, empty_worker_timing
+    wt = empty_worker_timing()
+    wt.update({"worker_backend_forward_s": 4.6, "worker_total_s": 4.7,
+               "worker_attention_total_s": 3.0,   # bogus (async launch artefact)
+               "worker_mlp_total_s": 0.5, "worker_nonlinear_total_s": 0.1,
+               "worker_lm_head_s": 0.1, "worker_layer_total_s": 3.6,
+               "worker_timing_method": "wall_clock_unsynchronized",
+               "worker_timing_is_cuda_synchronized": False})
+    _fill_attribution(wt)
+    agg = _profiler_with_worker_timing(wt).aggregate(generated_tokens=2)
+    # unreliable -> a named substage must NOT be chosen; only coarse fields
+    assert agg["worker_bottleneck_stage"] in (
+        "worker_layer_total_s", "worker_backend_forward_s")
+    assert agg["worker_bottleneck_stage"] not in (
+        "worker_attention_total_s", "worker_mlp_total_s",
+        "worker_nonlinear_total_s", "worker_lm_head_s")
+    assert agg["worker_timing_is_cuda_synchronized"] is False
+
+
+def test_bottleneck_largest_substage_when_substages_dominate() -> None:
+    # if named substages DO account for most of forward, pick the largest one
+    from pllo.protocol.worker_timing import _fill_attribution, empty_worker_timing
+    wt = empty_worker_timing()
+    wt.update({"worker_backend_forward_s": 1.0, "worker_total_s": 1.05,
+               "worker_attention_total_s": 0.6, "worker_mlp_total_s": 0.25,
+               "worker_nonlinear_total_s": 0.05, "worker_lm_head_s": 0.05,
+               "worker_layer_total_s": 0.9,
+               "worker_timing_method": "cuda_event",
+               "worker_timing_is_cuda_synchronized": True})
+    _fill_attribution(wt)                       # known=0.95 >= 0.5*1.0
+    agg = _profiler_with_worker_timing(wt).aggregate(generated_tokens=2)
+    assert agg["worker_bottleneck_stage"] == "worker_attention_total_s"
 
 
 def _profiler_with_boundary_rate(total_boundary, n_tokens):
@@ -301,6 +384,9 @@ def test_server_returns_worker_timing_when_requested(mock_server) -> None:
             assert k in wt and wt[k] is not None, "missing %s" % k
         assert wt["worker_backend_name"] == "mock"
         assert wt["worker_prefill_or_decode"] == phase
+        # timing provenance present (mock runs on CPU -> wall_clock)
+        assert wt["worker_timing_method"] == "wall_clock"
+        assert "worker_timing_is_cuda_synchronized" in wt
         # no secret rode back
         assert audit_worker_timing_no_secrets(wt)["ok"] is True
 
@@ -412,9 +498,17 @@ def test_folded_package_detailed_worker_timing(tmp_path) -> None:
         for k in ("worker_layer_total_s", "worker_lm_head_s",
                   "worker_attention_total_s", "worker_mlp_total_s",
                   "worker_nonlinear_total_s", "worker_backend_forward_s",
-                  "worker_total_s"):
+                  "worker_total_s", "worker_known_substage_total_s",
+                  "worker_unattributed_forward_s"):
             assert isinstance(wt[k], (int, float)), "missing %s" % k
         assert wt["per_layer_timing_summary"]["count"] == n_layers
+        # CPU path -> wall_clock (synchronous, accurate); attribution holds
+        assert wt["worker_timing_method"] == "wall_clock"
+        assert wt["worker_known_substage_total_s"] == round(
+            sum(wt[k] for k in ("worker_attention_total_s", "worker_mlp_total_s",
+                                "worker_nonlinear_total_s", "worker_lm_head_s")),
+            9)
+        assert audit_worker_timing_no_secrets(wt)["ok"] is True
         assert audit_worker_timing_no_secrets(wt)["ok"] is True
 
 

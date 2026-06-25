@@ -115,9 +115,11 @@ class MockGpuBackend(GpuBackend):
         from pllo.protocol.worker_timing import coarse_forward_metadata
         dt = str(self._folded_head.dtype) if self._folded_head is not None \
             else None
+        # mock runs on CPU (synchronous) -> wall_clock is accurate
         return coarse_forward_metadata(
             phase=phase, backend_name=self.name, device="cpu", dtype=dt,
-            forward_s=forward_s, num_layers=None)
+            forward_s=forward_s, num_layers=None, timing_method="wall_clock",
+            is_cuda_synchronized=False)
 
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
         timing = bool(getattr(self, "collect_worker_timing", False))
@@ -261,9 +263,14 @@ class Qwen7BGpuBackend(GpuBackend):
 
     def _coarse_timing(self, phase, forward_s):
         from pllo.protocol.worker_timing import coarse_forward_metadata
+        # forward_s is measured with a synchronize bracket (see prefill/decode),
+        # so the TOTAL is accurate even though there is no per-substage split.
+        on_cuda = str(self.device).startswith("cuda")
         return coarse_forward_metadata(
             phase=phase, backend_name=self.name, device=self.device,
-            dtype=self.dtype, forward_s=forward_s, num_layers=self.num_layers)
+            dtype=self.dtype, forward_s=forward_s, num_layers=self.num_layers,
+            timing_method=("cuda_synchronize" if on_cuda else "wall_clock"),
+            is_cuda_synchronized=on_cuda)
 
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
         timing = bool(getattr(self, "collect_worker_timing", False))
@@ -541,11 +548,26 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
 
     def _make_timer(self):
         """A ``WorkerTimer`` iff the client opted into worker timing, else None
-        (so the folded forward runs the historical path with no timing overhead)."""
+        (so the folded forward runs the historical path with no timing overhead).
+
+        Prefers CUDA events on a CUDA device (accurate device time, one final
+        synchronize), falls back to wall-clock on CPU (synchronous -> accurate)."""
         if not bool(getattr(self, "collect_worker_timing", False)):
             return None
         from pllo.protocol.worker_timing import WorkerTimer
-        return WorkerTimer(enabled=True, sync=self._cuda_sync)
+        method = "wall_clock"
+        if str(self.device).startswith("cuda"):
+            try:
+                import torch
+                method = ("cuda_event" if torch.cuda.is_available()
+                          else "cuda_synchronize")
+            except Exception:                                # noqa: BLE001
+                method = "cuda_synchronize"
+        # optional explicit override (profiler tooling); never weakens timing.
+        override = getattr(self, "_timing_method_override", None)
+        if override:
+            method = override
+        return WorkerTimer(enabled=True, method=method, sync=self._cuda_sync)
 
     def _ensure_runner(self):
         """Lazily build the nonlinear runner that EXECUTES the selected design
