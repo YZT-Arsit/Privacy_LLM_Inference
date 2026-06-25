@@ -42,10 +42,23 @@ CLAIM_CLASSES = [
     "folded_lora_tdx_attested_validated",
     "private_lora_training_tiny_prototype",
     "security_negative_tests_passed",
+    "latency_baseline_available",
     "no_gpu_visible_plaintext",
     "no_worker_mask_secrets",
     "real_tdx_attestation_bound_to_runtime_hash",
     "production_ready_serving",
+]
+
+# Claim families whose evidence is nonlinear-design specific: a claim tagged for
+# one design cannot be supported by evidence produced under another design. The
+# validator emits per-backend support for these and parses ``claim[backend]``
+# required-claim syntax against them.
+BACKEND_SENSITIVE_CLAIMS = [
+    "no_lora_tdx_attested_remote_package_decode",
+    "public_benchmark_utility_preserved",
+    "folded_lora_tdx_attested_validated",
+    "latency_baseline_available",
+    "security_negative_tests_passed",
 ]
 
 
@@ -138,6 +151,11 @@ def _supports(name, r, t):
     if name == "security_negative_tests_passed":
         return (_stage(r) == "security_negative_tests"
                 and _g(r, "all_passed") is True)
+    if name == "latency_baseline_available":
+        rows = _g(r, "rows") or []
+        good = [row for row in rows if isinstance(row, dict)
+                and row.get("paper_ready") is True and row.get("dry_run") is not True]
+        return (_stage(r) == "latency_baselines" and bool(good))
     if name == "no_gpu_visible_plaintext":
         return (real and _is_decode(r) and not _g(r, "gpu_visible_plaintext_fields")
                 and _g(r, "audit_passed") is True)
@@ -174,24 +192,60 @@ def _shape(name, r, t):
     return False
 
 
+def _report_nonlinear_backend(r):
+    """Canonical nonlinear design recorded in a report (or None)."""
+    nb = _g(r, "nonlinear_backend") or _g(r, "nonlinear_design_name")
+    if not nb:
+        return None
+    try:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        return normalize_nonlinear_backend(nb)
+    except Exception:
+        return str(nb)
+
+
+def _parse_tagged_claim(claim):
+    """``"name[backend]"`` -> ``(name, backend)``; ``"name"`` -> ``(name, None)``.
+
+    The backend is normalized to a canonical design name when possible."""
+    claim = str(claim)
+    if claim.endswith("]") and "[" in claim:
+        name, _, rest = claim.partition("[")
+        backend = rest[:-1].strip()
+        try:
+            from pllo.experiments.nonlinear_designs import (
+                normalize_nonlinear_backend)
+            backend = normalize_nonlinear_backend(backend)
+        except Exception:
+            pass
+        return name.strip(), backend
+    return claim.strip(), None
+
+
 def build_claim_report(results: list, required_claims=None) -> dict:
     enriched = []
     for item in results:
         rep = item.get("report")
         truth = infer_deployment_truth(rep) if isinstance(rep, dict) else {}
         enriched.append({"file": item.get("file"), "report": rep,
-                         "truth": truth})
+                         "truth": truth,
+                         "nonlinear_backend": _report_nonlinear_backend(rep)})
 
     supported = {}
+    supported_backends = {}          # claim -> {backend or "unspecified": [files]}
     overclaim = []
     for claim in CLAIM_CLASSES:
         evidence = []
         risk_files = []
+        per_backend = {}
         for e in enriched:
             if e["report"] is None:
                 continue
             if _supports(claim, e["report"], e["truth"]):
                 evidence.append(e["file"])
+                bk = e["nonlinear_backend"] or "unspecified"
+                per_backend.setdefault(bk, []).append(e["file"])
             elif _shape(claim, e["report"], e["truth"]):
                 # shape matches but gate failed -> potential overclaim source
                 reasons = []
@@ -212,6 +266,7 @@ def build_claim_report(results: list, required_claims=None) -> dict:
                 if reasons:
                     risk_files.append({"file": e["file"], "reasons": reasons})
         supported[claim] = evidence
+        supported_backends[claim] = per_backend
         for rf in risk_files:
             overclaim.append({"claim": claim, **rf})
 
@@ -220,16 +275,68 @@ def build_claim_report(results: list, required_claims=None) -> dict:
     missing_evidence = {c: "no qualifying real evidence found"
                         for c in unsupported_claims}
 
+    # ---- nonlinear-design awareness -------------------------------------
+    backends_seen = sorted({e["nonlinear_backend"] for e in enriched
+                            if e["nonlinear_backend"]})
+    # which designs have ANY paper-facing supporting evidence
+    designs_evaluated = sorted({
+        bk for c in BACKEND_SENSITIVE_CLAIMS
+        for bk in supported_backends.get(c, {})
+        if bk != "unspecified"})
+    try:
+        from pllo.experiments.nonlinear_designs import list_nonlinear_backends
+        all_designs = list_nonlinear_backends()
+    except Exception:                                       # pragma: no cover
+        all_designs = ["current", "trusted_shortcut"]
+    designs_not_evaluated = [d for d in all_designs if d not in designs_evaluated]
+
+    # backend-tagged support: "claim[backend]" supported iff a report tagged
+    # with that backend supports the claim (cross-backend evidence never counts).
+    backend_tagged_supported = []
+    supported_claims_by_backend = {d: [] for d in all_designs}
+    for c in BACKEND_SENSITIVE_CLAIMS:
+        for bk, files in supported_backends.get(c, {}).items():
+            if bk == "unspecified" or not files:
+                continue
+            backend_tagged_supported.append("%s[%s]" % (c, bk))
+            if bk in supported_claims_by_backend:
+                supported_claims_by_backend[bk].append(c)
+
+    def _is_supported(claim_str):
+        name, backend = _parse_tagged_claim(claim_str)
+        if backend is None:
+            return name in supported_claims
+        # tagged: require evidence tagged with that exact backend
+        return bool(supported_backends.get(name, {}).get(backend))
+
     warnings = []
     # production claim must stay unsupported unless explicit production transport
     if "production_ready_serving" in supported_claims:
         warnings.append("production_ready_serving is marked supported -- ensure a "
                         "real production transport exists; default deployment is a "
                         "research-prototype HTTP/SSH tunnel.")
+    # if only one design is evaluated, the report must say so explicitly
+    if len(designs_evaluated) == 1 and designs_not_evaluated:
+        warnings.append(
+            "only nonlinear design(s) %s have paper-facing evidence; design(s) %s "
+            "were NOT evaluated -- state this explicitly in the paper (do not "
+            "imply both designs are supported)."
+            % (designs_evaluated, designs_not_evaluated))
+
+    required_norm = list(required_claims) if required_claims else []
     if required_claims:
         for rc in required_claims:
-            if rc not in supported_claims:
+            if not _is_supported(rc):
                 warnings.append("REQUIRED claim not supported: %s" % rc)
+        # if any required claim is tagged for a design that has zero evidence,
+        # surface the cross-backend gap clearly
+        for rc in required_claims:
+            name, backend = _parse_tagged_claim(rc)
+            if backend is not None and backend not in designs_evaluated:
+                warnings.append(
+                    "REQUIRED claim %s targets nonlinear design %r which has NO "
+                    "paper-facing evidence (cannot be backed by another design)."
+                    % (rc, backend))
 
     return {
         "stage": "paper_claim_validation",
@@ -237,12 +344,21 @@ def build_claim_report(results: list, required_claims=None) -> dict:
         "supported_claims": supported_claims,
         "unsupported_claims": unsupported_claims,
         "evidence_files": {c: supported[c] for c in supported_claims},
+        "evidence_backends": {c: supported_backends[c] for c in supported_claims},
         "missing_evidence": missing_evidence,
         "overclaim_risks": overclaim,
         "warnings": warnings,
-        "required_claims": list(required_claims) if required_claims else [],
+        # nonlinear-design dimension
+        "nonlinear_backends_seen": backends_seen,
+        "nonlinear_designs_evaluated": designs_evaluated,
+        "nonlinear_designs_not_evaluated": designs_not_evaluated,
+        "backend_tagged_supported": sorted(backend_tagged_supported),
+        "supported_claims_by_backend": supported_claims_by_backend,
+        "both_nonlinear_designs_supported": (
+            len(designs_evaluated) >= 2),
+        "required_claims": required_norm,
         "all_required_supported": (
-            all(rc in supported_claims for rc in required_claims)
+            all(_is_supported(rc) for rc in required_claims)
             if required_claims else None),
     }
 
@@ -266,6 +382,20 @@ def render_claim_md(rep: dict) -> str:
         for o in rep["overclaim_risks"]:
             L.append("| %s | %s | %s |"
                      % (o["claim"], o["file"], ",".join(o["reasons"])))
+    if rep.get("nonlinear_backends_seen") is not None:
+        L += ["", "## Nonlinear designs", "",
+              "- designs seen in evidence: %s"
+              % (", ".join(rep.get("nonlinear_backends_seen") or []) or "none"),
+              "- designs evaluated (paper-facing): %s"
+              % (", ".join(rep.get("nonlinear_designs_evaluated") or []) or "none"),
+              "- designs NOT evaluated: %s"
+              % (", ".join(rep.get("nonlinear_designs_not_evaluated") or [])
+                 or "none"),
+              "- both designs supported: %s"
+              % rep.get("both_nonlinear_designs_supported"), "",
+              "| backend-tagged claim |", "| --- |"]
+        for c in rep.get("backend_tagged_supported") or []:
+            L.append("| %s |" % c)
     if rep["warnings"]:
         L += ["", "## Warnings", ""]
         L += ["- %s" % w for w in rep["warnings"]]

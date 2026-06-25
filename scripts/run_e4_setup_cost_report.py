@@ -39,6 +39,10 @@ from pllo.experiments.e4_setup_cost import (  # noqa: E402
     render_e4_csv,
     render_e4_md,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 
 
 def _csv_floats(s):
@@ -62,7 +66,10 @@ def main() -> int:
     ap.add_argument("--output-json", default="outputs/e4_setup_cost_report.json")
     ap.add_argument("--output-md", default="outputs/e4_setup_cost_report.md")
     ap.add_argument("--output-csv", default="outputs/e4_setup_cost_report.csv")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     facts = gather_facts(
         folded_package_path=args.folded_package_path,
@@ -74,6 +81,7 @@ def main() -> int:
     report = build_e4_report(
         facts, bandwidth_mbps_list=_csv_floats(args.bandwidth_mbps_list),
         sessions_list=_csv_ints(args.amortize_sessions_list))
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     if args.output_json:
         p = Path(args.output_json)

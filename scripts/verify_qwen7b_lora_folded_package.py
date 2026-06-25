@@ -30,20 +30,58 @@ def main() -> int:
     ap.add_argument("--lora-folded-package-path", required=True)
     ap.add_argument("--base-folded-package-path", default=None,
                     help="if given, require base_package_manifest_hash to match")
+    ap.add_argument("--expected-nonlinear-backend", default=None,
+                    help="if set, fail unless the LoRA package records this "
+                         "nonlinear design (and it matches the base package)")
     ap.add_argument("--output-json", default=None)
     args = ap.parse_args()
 
     base_hash = None
+    base_manifest = None
     if args.base_folded_package_path:
         try:
             from pllo.deployment import compute_manifest_hash, load_manifest
-            base_hash = compute_manifest_hash(
-                load_manifest(args.base_folded_package_path))
+            base_manifest = load_manifest(args.base_folded_package_path)
+            base_hash = compute_manifest_hash(base_manifest)
         except Exception as exc:                            # noqa: BLE001
             print("WARNING: could not read base manifest hash: %s" % exc)
 
     rep = verify_lora_folded_package(args.lora_folded_package_path,
                                      base_manifest_hash=base_hash)
+
+    # nonlinear-design compatibility: the LoRA package must target the same
+    # nonlinear design as its base, and match --expected-nonlinear-backend.
+    nonlinear_ok = True
+    nonlinear_problems = []
+    lora_backend = None
+    try:
+        from pllo.deployment import (
+            check_lora_base_nonlinear_compatibility, check_nonlinear_backend,
+            load_manifest)
+        lora_manifest = load_manifest(args.lora_folded_package_path)
+        lora_backend = lora_manifest.nonlinear_backend
+        if args.expected_nonlinear_backend is not None:
+            ok1, p1 = check_nonlinear_backend(lora_manifest,
+                                              args.expected_nonlinear_backend)
+            nonlinear_ok = nonlinear_ok and ok1
+            nonlinear_problems += p1
+        if base_manifest is not None:
+            ok2, p2 = check_lora_base_nonlinear_compatibility(lora_manifest,
+                                                              base_manifest)
+            nonlinear_ok = nonlinear_ok and ok2
+            nonlinear_problems += p2
+    except Exception as exc:                                 # noqa: BLE001
+        nonlinear_ok = False
+        nonlinear_problems = ["could not check nonlinear backend: %s" % exc]
+    rep["nonlinear_backend"] = lora_backend
+    rep["expected_nonlinear_backend"] = args.expected_nonlinear_backend
+    rep["base_nonlinear_backend"] = (base_manifest.nonlinear_backend
+                                     if base_manifest is not None else None)
+    rep["nonlinear_backend_ok"] = nonlinear_ok
+    rep["nonlinear_backend_problems"] = nonlinear_problems
+    if not nonlinear_ok:
+        rep["lora_package_valid"] = False
+
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -67,6 +105,11 @@ def main() -> int:
              rep["contains_training_data"], rep["contains_mask_secrets"]))
     if rep.get("base_manifest_match") is not None:
         print("base_manifest_match=%s" % rep["base_manifest_match"])
+    print("nonlinear_backend=%s base=%s expected=%s ok=%s"
+          % (rep["nonlinear_backend"], rep["base_nonlinear_backend"],
+             rep["expected_nonlinear_backend"], rep["nonlinear_backend_ok"]))
+    if rep["nonlinear_backend_problems"]:
+        print("nonlinear_backend_problems=%s" % rep["nonlinear_backend_problems"])
     print("\nLoRA PACKAGE %s" % ("VALID" if rep["lora_package_valid"]
                                  else "INVALID"))
     return 0 if rep["lora_package_valid"] else 1

@@ -36,6 +36,10 @@ from pllo.experiments.e13_final_report import (  # noqa: E402
     build_e13_report,
     render_e13_md,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 
 
 def _load(path):
@@ -68,7 +72,10 @@ def main() -> int:
     ap.add_argument("--required-claims", default=None)
     ap.add_argument("--output-json", default="outputs/e13_final_evaluation.json")
     ap.add_argument("--output-md", default="docs/paper_draft/evaluation_full.md")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     correctness = [r for r in (_load(p) for p in args.correctness_json) if r]
     e9 = [r for r in (_load(p) for p in args.e9_json) if r]
@@ -110,6 +117,7 @@ def main() -> int:
         "security_negative": security_negative, "results": results,
         "claims": _load(args.claims_json), "required_claims": required,
     })
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     if args.output_json:
         p = Path(args.output_json)

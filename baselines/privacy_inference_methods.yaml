@@ -1,0 +1,181 @@
+# Prior-work privacy-preserving LLM inference methods (category-level).
+#
+# This is the SOTA comparison table data source. It is read by
+# scripts/render_sota_comparison_tables.py.
+#
+# HONESTY RULES (enforced by reviewers):
+#   * Each entry has EXACTLY the fields listed below -- no more, no less.
+#   * DO NOT invent numbers. Any numeric/boolean value you cannot cite or are
+#     not confident about MUST be `null` (YAML null). `null` means
+#     "not-claimed / unknown", NOT "false".
+#   * `reported_latency` is null unless a specific, citable figure exists. We do
+#     not put our own measured latency here (it is measured/reported elsewhere).
+#   * `source_type` is one of: cited | reproduced | estimated | ours.
+#   * Rows are CATEGORY-level representatives of real method families we are
+#     confident exist; `notes` carries the honest caveat.
+#
+# Fields (exact set, in order):
+#   method, paper, year, protects_input, protects_logits, protects_kv,
+#   protects_lora, requires_gpu_tee, requires_mpc_fhe, tee_holds_full_model,
+#   runs_real_7b, real_attestation, reported_latency, source_type, notes
+
+methods:
+  - method: "MPC-based secure inference (e.g. CrypTen-style 2PC/3PC)"
+    paper: "Knott et al., CrypTen (NeurIPS 2021) and follow-ups"
+    year: 2021
+    protects_input: true
+    protects_logits: true
+    protects_kv: null
+    protects_lora: null
+    requires_gpu_tee: false
+    requires_mpc_fhe: true
+    tee_holds_full_model: false
+    runs_real_7b: null
+    real_attestation: false
+    reported_latency: null
+    source_type: cited
+    notes: "Cryptographic 2PC/3PC; strong privacy but large compute/comm overhead. 7B-scale interactive latency not claimed here; KV/LoRA handling not standard."
+
+  - method: "FHE-based private inference (e.g. CKKS transformer eval)"
+    paper: "Various (e.g. THE-X / homomorphic transformer evaluations)"
+    year: 2022
+    protects_input: true
+    protects_logits: true
+    protects_kv: null
+    protects_lora: null
+    requires_gpu_tee: false
+    requires_mpc_fhe: true
+    tee_holds_full_model: false
+    runs_real_7b: null
+    real_attestation: false
+    reported_latency: null
+    source_type: cited
+    notes: "Fully homomorphic; data stays encrypted. Practicality at 7B autoregressive decode not established; nonlinearities approximated. Latency not cited."
+
+  - method: "GPU-TEE full-model (NVIDIA H100 Confidential Computing)"
+    paper: "NVIDIA Hopper Confidential Computing whitepaper"
+    year: 2023
+    protects_input: true
+    protects_logits: true
+    protects_kv: true
+    protects_lora: true
+    requires_gpu_tee: true
+    requires_mpc_fhe: false
+    tee_holds_full_model: true
+    runs_real_7b: true
+    real_attestation: true
+    reported_latency: null
+    source_type: cited
+    notes: "Whole model + KV held inside a confidential GPU enclave. Requires CC-capable GPU (H100); trust rests on the GPU TEE. Latency depends on deployment; not cited here."
+
+  - method: "CPU-TEE shielding of full model (SGX/SEV enclave)"
+    paper: "TEE-shielded inference line (e.g. SGX/SEV-based serving)"
+    year: 2020
+    protects_input: true
+    protects_logits: true
+    protects_kv: true
+    protects_lora: true
+    requires_gpu_tee: false
+    requires_mpc_fhe: false
+    tee_holds_full_model: true
+    runs_real_7b: null
+    real_attestation: true
+    reported_latency: null
+    source_type: cited
+    notes: "Entire model runs inside a CPU enclave; no GPU acceleration of the protected compute. 7B interactive throughput on CPU TEE typically impractical; latency not cited."
+
+  - method: "Split inference / split learning (client keeps early layers)"
+    paper: "Split-NN / split-inference line"
+    year: 2019
+    protects_input: null
+    protects_logits: false
+    protects_kv: false
+    protects_lora: null
+    requires_gpu_tee: false
+    requires_mpc_fhe: false
+    tee_holds_full_model: false
+    runs_real_7b: null
+    real_attestation: false
+    reported_latency: null
+    source_type: cited
+    notes: "Partition the network across trust boundaries. Intermediate activations are exposed and are known to be invertible; input privacy is not guaranteed."
+
+  - method: "Permutation / masking obfuscation of activations"
+    paper: "Permutation- and additive-masking obfuscation line"
+    year: 2022
+    protects_input: null
+    protects_logits: null
+    protects_kv: null
+    protects_lora: null
+    requires_gpu_tee: false
+    requires_mpc_fhe: false
+    tee_holds_full_model: false
+    runs_real_7b: null
+    real_attestation: false
+    reported_latency: null
+    source_type: cited
+    notes: "Hides activations via permutation/additive masks on the accelerator. Security depends on the scheme; permutation-only variants have known leakage. No attestation."
+
+  - method: "Differentially-private prompting / output perturbation"
+    paper: "DP-prompt / DP text generation line"
+    year: 2023
+    protects_input: null
+    protects_logits: false
+    protects_kv: false
+    protects_lora: null
+    requires_gpu_tee: false
+    requires_mpc_fhe: false
+    tee_holds_full_model: false
+    runs_real_7b: null
+    real_attestation: false
+    reported_latency: null
+    source_type: cited
+    notes: "Adds calibrated noise for a DP guarantee on outputs/prompts; does NOT hide the raw input from the serving party. Different threat model from confidential inference."
+
+  - method: "Hybrid TEE + MPC inference (enclave host + secret-shared compute)"
+    paper: "Hybrid TEE/MPC serving line"
+    year: 2023
+    protects_input: true
+    protects_logits: true
+    protects_kv: null
+    protects_lora: null
+    requires_gpu_tee: false
+    requires_mpc_fhe: true
+    tee_holds_full_model: false
+    runs_real_7b: null
+    real_attestation: true
+    reported_latency: null
+    source_type: cited
+    notes: "Combines an attested enclave with secret-shared/MPC compute to cut crypto cost. Overheads remain nontrivial at 7B; KV/LoRA handling varies. Latency not cited."
+
+  - method: "Plaintext cloud inference (no protection baseline)"
+    paper: "(reference baseline)"
+    year: 2024
+    protects_input: false
+    protects_logits: false
+    protects_kv: false
+    protects_lora: false
+    requires_gpu_tee: false
+    requires_mpc_fhe: false
+    tee_holds_full_model: false
+    runs_real_7b: true
+    real_attestation: false
+    reported_latency: null
+    source_type: estimated
+    notes: "Standard GPU serving with no input/output protection. Included as the no-privacy reference point; the serving party sees everything."
+
+  - method: "Ours (folded masked + trusted nonlinear)"
+    paper: "(this work)"
+    year: 2026
+    protects_input: true
+    protects_logits: true
+    protects_kv: true
+    protects_lora: true
+    requires_gpu_tee: false
+    requires_mpc_fhe: false
+    tee_holds_full_model: false
+    runs_real_7b: true
+    real_attestation: true
+    reported_latency: null
+    source_type: ours
+    notes: "Trusted nonlinear boundary; folded (masked) weights on an untrusted GPU. No GPU TEE and no MPC/FHE required; full model never held in plaintext on the accelerator. Latency measured/reported elsewhere (null here)."

@@ -61,6 +61,15 @@ def main() -> int:
         p.write_text(render_claim_md(rep), encoding="utf-8")
 
     print("=== paper claim validation ===")
+    if "nonlinear_designs_evaluated" in rep:
+        print("nonlinear_designs_evaluated: %s"
+              % (", ".join(rep.get("nonlinear_designs_evaluated") or [])
+                 or "(none)"))
+        print("both_nonlinear_designs_supported: %s"
+              % rep.get("both_nonlinear_designs_supported"))
+        bts = rep.get("backend_tagged_supported")
+        if bts:
+            print("backend_tagged_supported: %s" % ", ".join(bts))
     print("supported (%d):" % len(rep["supported_claims"]))
     for c in rep["supported_claims"]:
         print("  + %s  [%s]" % (c, "; ".join(rep["evidence_files"][c])))

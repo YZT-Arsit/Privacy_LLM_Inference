@@ -125,6 +125,11 @@ def main() -> int:
     ap.add_argument("--output-json", default=None)
     args = ap.parse_args()
 
+    from pllo.experiments.nonlinear_designs import (  # noqa: E402
+        normalize_nonlinear_backend, nonlinear_design_report_fields)
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+    build_command = "python " + " ".join(sys.argv)
+
     dry_run = bool(args.dry_run or not args.model_path)
     if dry_run:
         if not args.dry_run:
@@ -165,6 +170,7 @@ def main() -> int:
                "per_layer_bytes": layer_bytes, "head_bytes": head_bytes,
                "num_shards": n + 1, "contains_mask_secrets": False,
                "dry_run": dry_run}
+        rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
         print(json.dumps(rep, indent=2))
         if args.output_json:
             Path(args.output_json).write_text(json.dumps(rep, indent=2))
@@ -197,7 +203,7 @@ def main() -> int:
         mask_schedule_id=mask_schedule_id,
         folding_runtime_hash=_folding_runtime_hash(args, n, args.seed),
         tee_type=args.tee_type, mr_td=args.mr_td, report_data=args.report_data,
-        created_at=created_at)
+        created_at=created_at, build_command=build_command)
     manifest_hash = compute_manifest_hash(manifest)
     if _bool(args.write_manifest):
         write_manifest(manifest, args.output_dir)
@@ -231,7 +237,9 @@ def main() -> int:
         "folded_weight_transfer_size_gb": round(folded_gb, 6),
         "worker_has_mask_secrets": False,
         "tee_used_on_gpu": False,
+        "build_command": build_command,
     }
+    rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)

@@ -40,6 +40,11 @@ from types import SimpleNamespace
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
+
 
 def _load_demo():
     path = REPO_ROOT / "scripts" / "run_tee_gpu_protocol_demo.py"
@@ -95,7 +100,10 @@ def main() -> int:
     ap.add_argument("--output-json",
                     default="outputs/qwen7b_lora_folded_remote_decode_probe.json")
     ap.add_argument("--output-md", default=None)
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     lite = bool(args.embedding_path and not args.model_path)
     expected_csv = args.expected_token_ids
@@ -121,6 +129,7 @@ def main() -> int:
     report = demo.build_remote_folded_package_decode_report(ns, _bool(args.audit))
     report["stage"] = "qwen7b_lora_folded_remote_decode_probe"
     report["probe"] = "lora_remote_decode"
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     # TDX attestation: only attach when evidence is supplied, so a non-attested
     # run makes NO attestation claim. Mirrors the demo's folded attested branch.
@@ -130,12 +139,14 @@ def main() -> int:
             md = demo.boundary_manifest_metadata(
                 report.get("boundary_backend", "process"),
                 report.get("gpu_backend", "qwen7b_folded_package"),
-                args.expected_mr_td)
+                args.expected_mr_td,
+                nonlinear_backend=args.nonlinear_backend)
             demo.write_runtime_manifest(args.write_runtime_manifest, metadata=md)
         demo.attach_attestation(
             report, evidence=args.attestation_evidence,
             expected_mr_td=args.expected_mr_td,
-            manifest_path=args.write_runtime_manifest)
+            manifest_path=args.write_runtime_manifest,
+            nonlinear_backend=args.nonlinear_backend)
 
     if args.output_json:
         p = Path(args.output_json)

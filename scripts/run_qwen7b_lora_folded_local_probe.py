@@ -60,6 +60,10 @@ from pllo.experiments.folded_probe_common import (  # noqa: E402
     tiny_model,
     topk_overlap,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession  # noqa: E402
 from pllo.hf_wrappers.qwen_memory_optimized import (  # noqa: E402
     MemoryOptimizedConfig,
@@ -141,7 +145,10 @@ def main() -> int:
     ap.add_argument("--output-json",
                     default="outputs/qwen7b_lora_folded_local_probe.json")
     ap.add_argument("--output-md", default=None)
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     dry_run = bool(args.dry_run or not args.model_path)
     target_modules = _csv(args.target_modules)
@@ -242,6 +249,7 @@ def main() -> int:
         "leaked_secret_fields": leaked, "latency_s": latency_s,
         "peak_gpu_memory_mb": peak_mb,
     }
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)

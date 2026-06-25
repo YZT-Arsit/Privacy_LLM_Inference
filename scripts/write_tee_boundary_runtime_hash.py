@@ -51,6 +51,11 @@ def main() -> int:
     ap.add_argument("--gpu-backend", default="mock", choices=["mock", "qwen7b"])
     ap.add_argument("--expected-mr-td", default=None)
     ap.add_argument("--protocol-version", default="8.5")
+    ap.add_argument(
+        "--nonlinear-backend", default=None,
+        help=("bind a nonlinear design into the runtime hash so design A and "
+              "design B get different bindings (current|trusted_shortcut, "
+              "aliases ok). Omit to preserve the legacy no-nonlinear hash."))
     ap.add_argument("--output", default=None,
                     help="write the runtime hash (hex) to this path")
     ap.add_argument("--manifest", default=None,
@@ -59,9 +64,16 @@ def main() -> int:
                     help="print only the hash on stdout")
     args = ap.parse_args()
 
+    nonlinear_backend = None
+    if args.nonlinear_backend is not None:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+
     metadata = boundary_manifest_metadata(
         args.boundary_backend, args.gpu_backend, args.expected_mr_td,
-        protocol_version=args.protocol_version)
+        protocol_version=args.protocol_version,
+        nonlinear_backend=nonlinear_backend)
     manifest = build_trusted_boundary_manifest(metadata=metadata)
     runtime_hash = compute_runtime_hash_from_manifest(manifest)
 

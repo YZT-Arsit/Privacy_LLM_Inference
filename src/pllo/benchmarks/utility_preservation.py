@@ -74,6 +74,10 @@ def pairwise_preservation(baseline, candidate, *, max_abs_drop=0.02,
                                                           "metric_name"),
         "baseline_backend": _g(baseline, "backend"),
         "candidate_backend": _g(candidate, "backend"),
+        # the candidate determines the nonlinear design under test (the baseline
+        # is plaintext); this tags the report for the per-design utility claim.
+        "nonlinear_backend": (_g(candidate, "nonlinear_backend")
+                              or _g(baseline, "nonlinear_backend")),
         "baseline_metric": bm, "candidate_metric": cm,
         "delta_abs": delta_abs, "delta_rel": delta_rel,
         "max_abs_drop": max_abs_drop, "max_rel_drop": max_rel_drop,
@@ -99,13 +103,17 @@ def aggregate_preservation(pairwise_reports, *,
     dataset is present, within threshold, and paper_ready."""
     rows = []
     by_dataset = {}
+    backends = set()
     for pr in pairwise_reports:
         if not isinstance(pr, dict):
             continue
         ds = _norm_dataset(pr.get("dataset"))
+        if pr.get("nonlinear_backend"):
+            backends.add(pr.get("nonlinear_backend"))
         row = {
             "dataset": pr.get("dataset"), "norm_dataset": ds,
             "task_type": pr.get("task_type"),
+            "nonlinear_backend": pr.get("nonlinear_backend"),
             "baseline_metric": pr.get("baseline_metric"),
             "candidate_metric": pr.get("candidate_metric"),
             "delta_abs": pr.get("delta_abs"), "delta_rel": pr.get("delta_rel"),
@@ -128,6 +136,10 @@ def aggregate_preservation(pairwise_reports, *,
         "stage": "e9_aggregate_utility_preservation",
         "required_datasets": list(required),
         "covered_datasets": covered, "missing_datasets": missing,
+        # one design only when all pairwise rows agree; "mixed" otherwise so a
+        # claim cannot be silently backed by cross-design evidence.
+        "nonlinear_backend": (next(iter(backends)) if len(backends) == 1
+                              else ("mixed" if backends else None)),
         "rows": rows,
         "utility_preserved": all_pass and paper_ready,
         "all_within_threshold": bool(rows) and all(

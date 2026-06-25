@@ -31,6 +31,14 @@ import sys
 import tarfile
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    parse_nonlinear_backends,
+)
+
 # category -> glob patterns (relative to --outputs-dir).
 OUTPUT_CATEGORIES = {
     "no_lora_local_remote": [
@@ -153,6 +161,13 @@ def main() -> int:
     ap.add_argument("--embedding-artifact-path", default=None)
     ap.add_argument("--lora-folded-package-path", default=None)
     ap.add_argument("--extra-file", action="append", default=[])
+    ap.add_argument("--nonlinear-backend", default=None,
+                    help="optional single nonlinear design (current|"
+                         "trusted_shortcut, aliases ok) to record in the "
+                         "package summary; omit if design-agnostic")
+    ap.add_argument("--nonlinear-backends", default=None,
+                    help="optional comma-separated list of nonlinear designs "
+                         "included in this package (e.g. current,trusted_shortcut)")
     ap.add_argument("--output-tar", required=True)
     args = ap.parse_args()
 
@@ -179,6 +194,12 @@ def main() -> int:
         "files": files_manifest,
         "missing": info["missing"],
     }
+    # optional nonlinear-design provenance (additive; only when provided)
+    if args.nonlinear_backend:
+        manifest.update(nonlinear_design_report_fields(args.nonlinear_backend))
+    if args.nonlinear_backends:
+        manifest["nonlinear_designs_included"] = parse_nonlinear_backends(
+            args.nonlinear_backends)
 
     out_tar = Path(args.output_tar)
     out_tar.parent.mkdir(parents=True, exist_ok=True)

@@ -29,6 +29,8 @@ __all__ = [
     "load_manifest",
     "compute_manifest_hash",
     "validate_manifest",
+    "check_nonlinear_backend",
+    "check_lora_base_nonlinear_compatibility",
 ]
 
 PACKAGE_FORMAT_VERSION = "1.0"
@@ -50,6 +52,10 @@ class FoldedPackageManifest:
     dtype: str
     nonlinear_backend: str
     created_by: str                         # tdx_trusted_setup|trusted_setup|test
+    nonlinear_design_metadata_hash: str | None = None
+    nonlinear_design_version: str | None = None
+    nonlinear_design_limitations: list[str] = field(default_factory=list)
+    build_command: str | None = None
     model_hash: str | None = None
     hidden_size: int | None = None
     vocab_size: int | None = None
@@ -90,15 +96,49 @@ def build_manifest(*, package_type: str, model_name: str | None,
                    folding_runtime_hash: str | None = None,
                    tee_type: str | None = None, mr_td: str | None = None,
                    report_data: str | None = None,
-                   created_at: str | None = None) -> FoldedPackageManifest:
+                   created_at: str | None = None,
+                   nonlinear_design_metadata_hash: str | None = None,
+                   nonlinear_design_version: str | None = None,
+                   nonlinear_design_limitations: list[str] | None = None,
+                   build_command: str | None = None
+                   ) -> FoldedPackageManifest:
     """Assemble a :class:`FoldedPackageManifest`. The ``contains_*`` flags are
     forced ``False`` (a folded package never carries secrets); the shard index is
-    taken verbatim from the writer."""
+    taken verbatim from the writer.
+
+    The nonlinear-design fields (``nonlinear_design_metadata_hash`` /
+    ``nonlinear_design_version`` / ``nonlinear_design_limitations``) and
+    ``build_command`` record which nonlinear design produced the package, so a
+    verifier can reject a base/LoRA design mismatch and the reproducibility
+    appendix can cite the exact build. When the metadata hash is not supplied it
+    is derived from ``nonlinear_backend`` via the design registry."""
+    if nonlinear_design_metadata_hash is None or nonlinear_design_version is None \
+            or nonlinear_design_limitations is None:
+        try:
+            from pllo.experiments.nonlinear_designs import (
+                nonlinear_backend_metadata as _meta,
+                nonlinear_design_metadata_hash as _ndmh,
+                normalize_nonlinear_backend as _norm,
+            )
+            canon = _norm(nonlinear_backend)
+            rec = _meta(canon)
+            if nonlinear_design_metadata_hash is None:
+                nonlinear_design_metadata_hash = _ndmh(canon)
+            if nonlinear_design_version is None:
+                nonlinear_design_version = rec.get("version")
+            if nonlinear_design_limitations is None:
+                nonlinear_design_limitations = list(rec.get("limitations", []))
+        except Exception:                                   # pragma: no cover
+            pass
     return FoldedPackageManifest(
         package_format_version=PACKAGE_FORMAT_VERSION, package_type=package_type,
         model_name=model_name, model_path_or_id=model_path_or_id,
         num_layers=int(num_layers), dtype=dtype,
         nonlinear_backend=nonlinear_backend, created_by=created_by,
+        nonlinear_design_metadata_hash=nonlinear_design_metadata_hash,
+        nonlinear_design_version=nonlinear_design_version,
+        nonlinear_design_limitations=list(nonlinear_design_limitations or []),
+        build_command=build_command,
         model_hash=model_hash, hidden_size=hidden_size, vocab_size=vocab_size,
         mask_schedule_id=mask_schedule_id,
         folding_runtime_hash=folding_runtime_hash, tee_type=tee_type, mr_td=mr_td,
@@ -165,10 +205,83 @@ def validate_manifest(manifest: FoldedPackageManifest) -> tuple[bool, list[str]]
                  "contains_raw_lora", "contains_optimizer_state"):
         if getattr(manifest, flag):
             problems.append(f"{flag} must be False")
+    if not manifest.nonlinear_backend:
+        problems.append("nonlinear_backend is missing")
+    else:
+        try:
+            from pllo.experiments.nonlinear_designs import (
+                normalize_nonlinear_backend, nonlinear_design_metadata_hash)
+            canon = normalize_nonlinear_backend(manifest.nonlinear_backend)
+            # If a design hash is recorded, it must match the registry hash for
+            # the recorded design (detects a tampered/stale design record).
+            if manifest.nonlinear_design_metadata_hash and (
+                    manifest.nonlinear_design_metadata_hash
+                    != nonlinear_design_metadata_hash(canon)):
+                problems.append(
+                    "nonlinear_design_metadata_hash does not match the registry "
+                    "hash for nonlinear_backend %r" % manifest.nonlinear_backend)
+        except Exception:
+            problems.append("unknown nonlinear_backend %r"
+                            % manifest.nonlinear_backend)
     if not manifest.shard_index:
         problems.append("shard_index is empty")
     for i, sh in enumerate(manifest.shard_index):
         for key in ("name", "path", "sha256", "nbytes"):
             if key not in sh:
                 problems.append(f"shard[{i}] missing {key!r}")
+    return (not problems), problems
+
+
+def _norm_nonlinear(name):
+    """Best-effort canonical nonlinear name (falls back to the raw string)."""
+    try:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        return normalize_nonlinear_backend(name)
+    except Exception:
+        return str(name) if name is not None else None
+
+
+def check_nonlinear_backend(manifest: FoldedPackageManifest,
+                            expected: str | None) -> tuple[bool, list[str]]:
+    """Check a manifest records a (recognized) nonlinear backend, and -- when
+    ``expected`` is supplied -- that it matches.
+
+    Returns ``(ok, problems)``. A missing backend is always a problem; a
+    mismatch against ``expected`` is a problem; an unrecognized backend is a
+    problem."""
+    problems: list[str] = []
+    have = manifest.nonlinear_backend
+    if not have:
+        problems.append("manifest has no nonlinear_backend")
+        return False, problems
+    have_c = _norm_nonlinear(have)
+    if have_c is None:
+        problems.append("unknown nonlinear_backend %r" % have)
+    if expected is not None:
+        exp_c = _norm_nonlinear(expected)
+        if have_c != exp_c:
+            problems.append(
+                "nonlinear_backend mismatch: manifest=%r (%s) expected=%r (%s)"
+                % (have, have_c, expected, exp_c))
+    return (not problems), problems
+
+
+def check_lora_base_nonlinear_compatibility(
+        lora_manifest: FoldedPackageManifest,
+        base_manifest: FoldedPackageManifest) -> tuple[bool, list[str]]:
+    """A folded-LoRA package must target the same nonlinear design as its base
+    folded package. Returns ``(ok, problems)``; a design mismatch is fatal."""
+    problems: list[str] = []
+    lora_c = _norm_nonlinear(lora_manifest.nonlinear_backend)
+    base_c = _norm_nonlinear(base_manifest.nonlinear_backend)
+    if not lora_c:
+        problems.append("LoRA package has no nonlinear_backend")
+    if not base_c:
+        problems.append("base package has no nonlinear_backend")
+    if lora_c and base_c and lora_c != base_c:
+        problems.append(
+            "LoRA/base nonlinear_backend mismatch: lora=%r base=%r -- a "
+            "folded-LoRA package built for one nonlinear design must not be "
+            "applied on a base folded for another" % (lora_c, base_c))
     return (not problems), problems

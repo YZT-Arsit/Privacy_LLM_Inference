@@ -64,7 +64,8 @@ def _bool(s: str) -> bool:
 
 def attach_attestation(report: dict, *, evidence: str | None,
                        expected_mr_td: str | None,
-                       manifest_path: str | None = None) -> None:
+                       manifest_path: str | None = None,
+                       nonlinear_backend: str | None = None) -> None:
     """Attest the trusted boundary (manifest recipe) and fold into ``report``.
 
     The runtime hash is SHA-512 over the trusted-boundary manifest (source-file
@@ -72,8 +73,11 @@ def attach_attestation(report: dict, *, evidence: str | None,
     actual boundary code artifact. ``expected_runtime_hash`` is THE value the TD
     Quote's ``report_data`` must equal; the report surfaces it alongside
     ``evidence_report_data`` and a ``binding_mismatch_reason`` when they differ."""
+    if nonlinear_backend is None:
+        nonlinear_backend = report.get("nonlinear_backend")
     metadata = boundary_manifest_metadata(
-        report["boundary_backend"], report["gpu_backend"], expected_mr_td)
+        report["boundary_backend"], report["gpu_backend"], expected_mr_td,
+        nonlinear_backend=nonlinear_backend)
     manifest = build_trusted_boundary_manifest(metadata=metadata)
     expected = compute_runtime_hash_from_manifest(manifest)    # source of truth
     ev = attest_boundary(runtime_hash=expected, evidence=evidence,
@@ -887,6 +891,10 @@ def main() -> int:
                          "(tee/mr_td/report_data/jwt); verifies the binding")
     ap.add_argument("--expected-mr-td", default=None,
                     help="expected mr_td to match against the evidence")
+    ap.add_argument("--nonlinear-backend", default=None,
+                    help="bind a nonlinear design (current|trusted_shortcut, "
+                         "aliases ok) into the runtime hash / attestation; omit "
+                         "to preserve the legacy no-nonlinear binding")
     ap.add_argument("--write-runtime-manifest", default=None,
                     help="write the trusted-boundary manifest JSON to this path")
     ap.add_argument("--write-runtime-hash", default=None,
@@ -922,8 +930,14 @@ def main() -> int:
         return 0
 
     # --- preflight: read off the exact hash to bind into report_data ---------
+    nonlinear_backend = None
+    if getattr(args, "nonlinear_backend", None) is not None:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
     md = boundary_manifest_metadata(args.boundary_backend, args.gpu_backend,
-                                    args.expected_mr_td)
+                                    args.expected_mr_td,
+                                    nonlinear_backend=nonlinear_backend)
     if args.print_runtime_hash_only:
         manifest = build_trusted_boundary_manifest(metadata=md)
         rh = compute_runtime_hash_from_manifest(manifest)
@@ -956,6 +970,10 @@ def main() -> int:
             transcript_recorder = TranscriptRecorder()
         report = build_remote_folded_package_decode_report(
             args, _bool(args.audit), transcript_recorder=transcript_recorder)
+        if nonlinear_backend is not None:
+            from pllo.experiments.nonlinear_designs import (
+                nonlinear_design_report_fields)
+            report.update(nonlinear_design_report_fields(nonlinear_backend))
         if transcript_recorder is not None:
             tpath = transcript_recorder.to_jsonl(args.record_transcript)
             print("security transcript written: %s (%d entries)"
@@ -970,7 +988,8 @@ def main() -> int:
                 write_runtime_hash(args.write_runtime_hash, metadata=md)
             attach_attestation(report, evidence=args.attestation_evidence,
                                expected_mr_td=args.expected_mr_td,
-                               manifest_path=args.write_runtime_manifest)
+                               manifest_path=args.write_runtime_manifest,
+                               nonlinear_backend=nonlinear_backend)
             print("attestation: boundary_attested=%s runtime_hash_bound=%s "
                   "mr_td=%s" % (report.get("boundary_attested"),
                                 report.get("runtime_hash_bound"),

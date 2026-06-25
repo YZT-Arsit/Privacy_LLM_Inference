@@ -50,6 +50,10 @@ from pllo.deployment.lora_folded_package import (  # noqa: E402
     synthetic_lora_adapter,
 )
 from pllo.experiments.folded_probe_common import seed_from_manifest, tiny_model  # noqa: E402
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession  # noqa: E402
 from pllo.hf_wrappers.qwen_memory_optimized import MemoryOptimizedConfig  # noqa: E402
 
@@ -86,7 +90,11 @@ def main() -> int:
     ap.add_argument("--output-dir", required=True)
     ap.add_argument("--output-json", default=None,
                     help="write the build report JSON to this path (for pipelines)")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+    build_command = "python " + " ".join(sys.argv)
 
     dry_run = bool(args.dry_run or not args.model_path)
     target_modules = _csv(args.target_modules)
@@ -162,7 +170,8 @@ def main() -> int:
         target_modules=target_modules, rank=rank, alpha=alpha,
         rank_seed=rank_seed, base_manifest_hash=base_manifest_hash,
         model_name=args.model_name,
-        created_by="trusted_setup" if not dry_run else "test")
+        created_by="trusted_setup" if not dry_run else "test",
+        nonlinear_backend=args.nonlinear_backend, build_command=build_command)
     report["build_time_s"] = round(time.perf_counter() - t0, 3)
     report["dry_run"] = dry_run
     report["seed"] = seed
@@ -175,6 +184,8 @@ def main() -> int:
     for k in ("contains_raw_lora", "contains_optimizer_state",
               "contains_training_data", "contains_mask_secrets"):
         report[k] = bool(report["meta"][k])
+    report["build_command"] = build_command
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     if args.output_json:
         p = Path(args.output_json)

@@ -49,6 +49,10 @@ from pllo.experiments.e3_remote_decode_scaling import (  # noqa: E402
     render_e3_md,
     run_e3_scaling,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 
 
 def _load_demo():
@@ -133,7 +137,10 @@ def main() -> int:
     ap.add_argument("--output-json", default="outputs/e3_remote_decode_scaling.json")
     ap.add_argument("--output-csv", default="outputs/e3_remote_decode_scaling.csv")
     ap.add_argument("--output-md", default="outputs/e3_remote_decode_scaling.md")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     if args.gpu_backend != "qwen7b_folded_package":
         ap.error("E3 currently sweeps --gpu-backend qwen7b_folded_package")
@@ -175,6 +182,7 @@ def main() -> int:
     }
     report = {"experiment": "E3", "stage": "remote_package_decode_scaling",
               "meta": meta, "rows": rows, "summary": summary}
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     if args.output_json:
         p = Path(args.output_json)

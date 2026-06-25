@@ -40,6 +40,10 @@ from pllo.experiments.e5_final_comparison import (  # noqa: E402
     render_e5_md,
     render_e5_tex,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 
 
 def main() -> int:
@@ -63,7 +67,10 @@ def main() -> int:
                     default="outputs/paper_ready_final_evaluation.md",
                     help="paper-ready evaluation Markdown (E3-E5 narrative + E5 "
                          "tables); set empty to skip")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     inputs = {
         "e1": load_json(args.e1_json), "e2": load_json(args.e2_json),
@@ -76,6 +83,7 @@ def main() -> int:
         "setup_cost": load_json(args.setup_cost_json),
     }
     report = build_e5_report(inputs)
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
     md = render_e5_md(report)
 
     if args.output_json:

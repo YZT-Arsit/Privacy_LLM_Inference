@@ -48,6 +48,17 @@ def _dir_nonempty(p):
     return bool(p) and Path(p).is_dir() and any(Path(p).iterdir())
 
 
+def _norm_nonlinear(name):
+    if not name:
+        return None
+    try:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        return normalize_nonlinear_backend(name)
+    except Exception:
+        return str(name)
+
+
 def run_preflight(opts: dict) -> dict:
     backend = opts.get("backend") or "plaintext_local"
     attested = (backend in _ATTESTED_BACKENDS
@@ -55,6 +66,7 @@ def run_preflight(opts: dict) -> dict:
                 or bool(opts.get("attestation_evidence")))
     is_remote = backend in _REMOTE_BACKENDS
     is_lora = backend in _LORA_BACKENDS
+    nonlinear_backend = _norm_nonlinear(opts.get("nonlinear_backend"))
 
     checks = []
     blockers = []
@@ -77,11 +89,22 @@ def run_preflight(opts: dict) -> dict:
     base_hash = None
     if base and Path(base).is_dir():
         try:
-            from pllo.deployment import compute_manifest_hash, load_manifest
-            base_hash = compute_manifest_hash(load_manifest(base))
+            from pllo.deployment import (
+                check_nonlinear_backend, compute_manifest_hash, load_manifest)
+            base_manifest = load_manifest(base)
+            base_hash = compute_manifest_hash(base_manifest)
             _chk("base_manifest_hash_readable", bool(base_hash),
                  base_hash[:16] + "..." if base_hash else "unreadable",
                  blocker=is_remote)
+            # nonlinear design of the package must match the expected design
+            if nonlinear_backend is not None:
+                ok, probs = check_nonlinear_backend(base_manifest,
+                                                    nonlinear_backend)
+                _chk("base_manifest_nonlinear_backend_matches", ok,
+                     "manifest nonlinear_backend=%s expected=%s%s"
+                     % (base_manifest.nonlinear_backend, nonlinear_backend,
+                        ("" if ok else " :: " + "; ".join(probs))),
+                     blocker=is_remote)
         except Exception as exc:                            # noqa: BLE001
             _chk("base_manifest_hash_readable", False, "error: %s" % exc,
                  blocker=is_remote)
@@ -116,6 +139,18 @@ def run_preflight(opts: dict) -> dict:
     if is_lora:
         if _dir_nonempty(lora):
             _chk("folded_lora_package_exists", True, lora)
+            # LoRA package design must match the base folded package design
+            try:
+                from pllo.deployment import (
+                    check_lora_base_nonlinear_compatibility, load_manifest)
+                if base and Path(base).is_dir():
+                    okc, probs = check_lora_base_nonlinear_compatibility(
+                        load_manifest(lora), load_manifest(base))
+                    _chk("lora_base_nonlinear_compatible", okc,
+                         "compatible" if okc else "; ".join(probs))
+            except Exception as exc:                        # noqa: BLE001
+                _chk("lora_base_nonlinear_compatible", False,
+                     "could not check: %s" % exc, blocker=False)
         else:
             _chk("folded_lora_package_exists", False,
                  "missing -- build with scripts/build_qwen7b_lora_folded_package.py",
@@ -139,7 +174,8 @@ def run_preflight(opts: dict) -> dict:
                     compute_runtime_hash_from_manifest, verify_evidence)
                 md = boundary_manifest_metadata(
                     "process", opts.get("hash_gpu_backend", "qwen7b"),
-                    opts.get("expected_mr_td"))
+                    opts.get("expected_mr_td"),
+                    nonlinear_backend=nonlinear_backend)
                 expected_hex = compute_runtime_hash_from_manifest(
                     build_trusted_boundary_manifest(metadata=md))
                 evidence = json.loads(Path(ev).read_text(encoding="utf-8"))
@@ -219,11 +255,21 @@ def run_preflight(opts: dict) -> dict:
     except Exception as exc:                                # noqa: BLE001
         _chk("output_dir_writable", False, "%s: %s" % (out_dir, exc))
 
+    # reminder: a changed nonlinear design needs its own runtime hash + quote
+    if attested and nonlinear_backend is not None:
+        warnings.append(
+            "attested run for nonlinear design %r: the runtime hash binds the "
+            "design, so regenerate it (write_tee_boundary_runtime_hash.py "
+            "--nonlinear-backend %s) and re-bind the TD Quote if any measured "
+            "boundary file or the design changed -- design A evidence cannot be "
+            "reused for design B." % (nonlinear_backend, nonlinear_backend))
+
     passed = not blockers
     commands = _next_commands(opts, backend, attested, is_lora, base, art, lora,
-                              url)
+                              url, nonlinear_backend)
     return {
         "stage": "preflight_real_eval", "backend": backend,
+        "nonlinear_backend": nonlinear_backend,
         "attested": attested, "preflight_passed": passed,
         "blockers": blockers, "warnings": warnings,
         "commands_to_run_next": commands, "checks": checks,
@@ -231,13 +277,79 @@ def run_preflight(opts: dict) -> dict:
     }
 
 
-def _next_commands(opts, backend, attested, is_lora, base, art, lora, url):
+def run_preflight_matrix(opts: dict) -> dict:
+    """Run :func:`run_preflight` once per nonlinear design and aggregate the
+    per-backend results. Paths can be auto-namespaced by appending
+    ``_<design>`` to the directory/file names (the dual-matrix convention) when
+    ``namespace_by_backend`` is set."""
+    from pllo.experiments.nonlinear_designs import parse_nonlinear_backends
+    designs = parse_nonlinear_backends(opts.get("nonlinear_backends")
+                                       or "current,trusted_shortcut")
+    ns = bool(opts.get("namespace_by_backend"))
+
+    by = {}
+    passed_by = {}
+    blockers_by = {}
+    warnings_by = {}
+    commands_by = {}
+    for d in designs:
+        sub = dict(opts)
+        sub["nonlinear_backend"] = d
+        if ns:
+            for k in ("base_folded_package_path", "embedding_artifact_path",
+                      "lora_folded_package_path"):
+                if sub.get(k):
+                    sub[k] = _namespace_path(sub[k], d)
+            if sub.get("attestation_evidence"):
+                sub["attestation_evidence"] = _namespace_path(
+                    sub["attestation_evidence"], d)
+        r = run_preflight(sub)
+        by[d] = r
+        passed_by[d] = r["preflight_passed"]
+        blockers_by[d] = r["blockers"]
+        warnings_by[d] = r["warnings"]
+        commands_by[d] = r["commands_to_run_next"]
+
+    return {
+        "stage": "preflight_real_eval_matrix",
+        "nonlinear_backends": designs,
+        "namespace_by_backend": ns,
+        "preflight_passed": all(passed_by.values()),
+        "preflight_passed_by_backend": passed_by,
+        "blockers_by_backend": blockers_by,
+        "warnings_by_backend": warnings_by,
+        "commands_to_run_next_by_backend": commands_by,
+        "per_backend": by,
+    }
+
+
+def _namespace_path(path, backend):
+    """Append ``_<backend>`` to the final path component (before a file
+    suffix), e.g. ``qwen7b_folded_full`` -> ``qwen7b_folded_full_current`` and
+    ``evidence.json`` -> ``evidence_current.json``."""
+    p = Path(path)
+    if p.suffix:
+        return str(p.with_name(p.stem + "_" + backend + p.suffix))
+    return str(p.with_name(p.name + "_" + backend))
+
+
+def _next_commands(opts, backend, attested, is_lora, base, art, lora, url,
+                   nonlinear_backend=None):
+    nb = (" --nonlinear-backend %s" % nonlinear_backend) if nonlinear_backend \
+        else ""
     cmds = []
     if is_lora and not _dir_nonempty(lora):
         cmds.append("python scripts/build_qwen7b_lora_folded_package.py "
-                    "--base-folded-package-path %s --output-dir %s "
+                    "--base-folded-package-path %s --output-dir %s%s "
                     "--output-json outputs/qwen7b_lora_folded_build.json"
-                    % (base or "<BASE>", lora or "<LORA>"))
+                    % (base or "<BASE>", lora or "<LORA>", nb))
+    if attested and nonlinear_backend:
+        cmds.append("python scripts/write_tee_boundary_runtime_hash.py "
+                    "--boundary-backend process --gpu-backend qwen7b "
+                    "--nonlinear-backend %s --expected-mr-td %s "
+                    "--output outputs/runtime_hash_%s.txt"
+                    % (nonlinear_backend, opts.get("expected_mr_td") or "<MRTD>",
+                       nonlinear_backend))
     cmds.append("python scripts/run_tee_gpu_protocol_demo.py --mode "
                 "gpu_worker_server --gpu-backend qwen7b_folded_package "
                 "--folded-package-path %s%s --device cuda --dtype bfloat16 "
@@ -245,10 +357,10 @@ def _next_commands(opts, backend, attested, is_lora, base, art, lora, url):
                                   (" --folded-lora-package-path %s" % lora)
                                   if is_lora else ""))
     e9 = ("python scripts/run_e9_task_utility_benchmark.py --require-real "
-          "--backend %s --dataset-jsonl outputs/bench/<DS>.jsonl "
+          "--backend %s%s --dataset-jsonl outputs/bench/<DS>.jsonl "
           "--model-path %s --gpu-worker-url %s --embedding-path %s "
           "--output-json outputs/e9_<ds>_%s.json"
-          % (backend, opts.get("model_path") or "<MODEL>", url or "<URL>",
+          % (backend, nb, opts.get("model_path") or "<MODEL>", url or "<URL>",
              art or "<ART>", backend))
     if attested:
         e9 += (" --attestation-evidence %s --expected-mr-td %s"
@@ -265,6 +377,22 @@ def _next_commands(opts, backend, attested, is_lora, base, art, lora, url):
 
 
 def _render_md(r: dict) -> str:
+    if r.get("stage") == "preflight_real_eval_matrix":
+        L = ["# Preflight: real H800/TDX eval (nonlinear matrix)", "",
+             "- designs: %s" % ", ".join(r["nonlinear_backends"]),
+             "- namespace_by_backend: %s" % r["namespace_by_backend"],
+             "- **preflight_passed: %s**" % r["preflight_passed"], ""]
+        for d in r["nonlinear_backends"]:
+            sub = r["per_backend"][d]
+            L += ["## design `%s` (passed=%s)" % (d, sub["preflight_passed"]), "",
+                  "| check | ok | detail |", "| --- | --- | --- |"]
+            for c in sub["checks"]:
+                L.append("| %s | %s | %s |"
+                         % (c["name"], "yes" if c["ok"] else "**NO**",
+                            c["detail"]))
+            L += ["", "Blockers: " + ("; ".join(sub["blockers"]) or "none"),
+                  "", "Warnings: " + ("; ".join(sub["warnings"]) or "none"), ""]
+        return "\n".join(L)
     L = ["# Preflight: real H800/TDX eval", "",
          "- backend: `%s`  attested: %s" % (r["backend"], r["attested"]),
          "- **preflight_passed: %s**" % r["preflight_passed"], "",
@@ -289,6 +417,14 @@ def main() -> int:
     ap.add_argument("--lora-folded-package-path", default=None)
     ap.add_argument("--gpu-worker-url", default=None)
     ap.add_argument("--backend", default="plaintext_local")
+    ap.add_argument("--nonlinear-backend", default=None,
+                    help="single nonlinear design to preflight against")
+    ap.add_argument("--nonlinear-backends", default=None,
+                    help="comma-separated designs -> per-backend matrix preflight "
+                         "(e.g. current,trusted_shortcut)")
+    ap.add_argument("--namespace-by-backend", action="store_true", default=False,
+                    help="in matrix mode, append _<design> to package/evidence "
+                         "paths (dual-matrix layout convention)")
     ap.add_argument("--attested", action="store_true", default=False)
     ap.add_argument("--attestation-evidence", default=None)
     ap.add_argument("--expected-mr-td", default=None)
@@ -299,7 +435,7 @@ def main() -> int:
     ap.add_argument("--output-md", default="outputs/preflight.md")
     args = ap.parse_args()
 
-    report = run_preflight({
+    base_opts = {
         "model_path": args.model_path,
         "base_folded_package_path": args.base_folded_package_path,
         "embedding_artifact_path": args.embedding_artifact_path,
@@ -310,7 +446,16 @@ def main() -> int:
         "expected_mr_td": args.expected_mr_td,
         "hash_gpu_backend": args.hash_gpu_backend,
         "result_json": args.result_json, "output_dir": args.output_dir,
-    })
+        "nonlinear_backend": args.nonlinear_backend,
+    }
+
+    matrix = bool(args.nonlinear_backends)
+    if matrix:
+        base_opts["nonlinear_backends"] = args.nonlinear_backends
+        base_opts["namespace_by_backend"] = args.namespace_by_backend
+        report = run_preflight_matrix(base_opts)
+    else:
+        report = run_preflight(base_opts)
 
     if args.output_json:
         p = Path(args.output_json)
@@ -321,13 +466,22 @@ def main() -> int:
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(_render_md(report), encoding="utf-8")
 
-    print("=== preflight: real eval ===")
-    for c in report["checks"]:
-        print("  [%s] %s -- %s" % ("OK" if c["ok"] else "XX", c["name"],
-                                   c["detail"]))
-    print("\npreflight_passed=%s blockers=%d warnings=%d"
-          % (report["preflight_passed"], len(report["blockers"]),
-             len(report["warnings"])))
+    if matrix:
+        print("=== preflight: real eval (matrix) ===")
+        for d in report["nonlinear_backends"]:
+            print("  [%s] design=%s blockers=%d warnings=%d"
+                  % ("OK" if report["preflight_passed_by_backend"][d] else "XX",
+                     d, len(report["blockers_by_backend"][d]),
+                     len(report["warnings_by_backend"][d])))
+        print("\npreflight_passed=%s" % report["preflight_passed"])
+    else:
+        print("=== preflight: real eval ===")
+        for c in report["checks"]:
+            print("  [%s] %s -- %s" % ("OK" if c["ok"] else "XX", c["name"],
+                                       c["detail"]))
+        print("\npreflight_passed=%s blockers=%d warnings=%d"
+              % (report["preflight_passed"], len(report["blockers"]),
+                 len(report["warnings"])))
     return 0 if report["preflight_passed"] else 1
 
 

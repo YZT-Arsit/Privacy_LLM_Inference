@@ -72,6 +72,9 @@ def main() -> int:
     ap.add_argument("--lora-decode-json", default=None)
     ap.add_argument("--lora-verify-json", default=None)
     ap.add_argument("--preserve-threshold", type=float, default=0.9)
+    ap.add_argument("--nonlinear-backend", default=None,
+                    help="nonlinear design under test (recorded for tagging); "
+                         "defaults to the folded-LoRA candidate's recorded design")
     ap.add_argument("--output-json", default="outputs/e10_lora_utility.json")
     ap.add_argument("--output-md", default="outputs/e10_lora_utility.md")
     args = ap.parse_args()
@@ -90,6 +93,19 @@ def main() -> int:
         "effect": effect, "lora_verify": _load(args.lora_verify_json),
         "preserve_threshold": args.preserve_threshold,
     })
+
+    # tag the nonlinear design (explicit flag, else inherit from a candidate)
+    nb = args.nonlinear_backend
+    if nb is None:
+        for src in (_load(args.folded_lora_json),
+                    _load(args.tdx_attested_folded_lora_json), lora):
+            if isinstance(src, dict) and src.get("nonlinear_backend"):
+                nb = src["nonlinear_backend"]
+                break
+    if nb is not None:
+        from pllo.experiments.nonlinear_designs import (
+            nonlinear_design_report_fields)
+        report.update(nonlinear_design_report_fields(nb))
 
     if args.output_json:
         p = Path(args.output_json)

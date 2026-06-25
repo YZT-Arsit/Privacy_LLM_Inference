@@ -7,6 +7,16 @@ flow end to end. For LoRA-only or benchmark-only sessions see
 [`REAL_H800_TDX_LORA_RUNBOOK.md`](REAL_H800_TDX_LORA_RUNBOOK.md) and
 [`REAL_PUBLIC_BENCHMARK_RUNBOOK.md`](REAL_PUBLIC_BENCHMARK_RUNBOOK.md).
 
+> **Nonlinear design dimension.** Every build/verify/probe/decode/E9/E10/latency
+> script accepts `--nonlinear-backend current|trusted_shortcut` (aliases:
+> `amulet_migrated`, `tee_shortcut_nonlinear`); these commands default to
+> `current`. To produce results for BOTH designs (advisor requirement) use
+> [`REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md`](REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md):
+> it namespaces artifacts per design and **regenerates the TDX runtime hash +
+> TD Quote per design** (the runtime hash binds the design, so design-A evidence
+> cannot be replayed for design B). Pass the matching `--expected-nonlinear-backend`
+> to verifiers and tag required claims as `claim[<design>]`.
+
 Threat model is unchanged: the untrusted H800 worker holds only the public base
 folded package + folded-LoRA operators + masked activations + public metadata;
 input ids, mask secrets, raw LoRA, optimizer state, labels, and logit recovery

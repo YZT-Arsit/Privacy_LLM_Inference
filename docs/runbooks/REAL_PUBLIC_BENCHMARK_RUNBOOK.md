@@ -8,6 +8,11 @@ responsibility. See also
 [`PUBLIC_BENCHMARK_PREPARATION.md`](PUBLIC_BENCHMARK_PREPARATION.md) and the
 master [`REAL_H800_TDX_FULL_EVAL_RUNBOOK.md`](REAL_H800_TDX_FULL_EVAL_RUNBOOK.md).
 
+> **Nonlinear design.** Add `--nonlinear-backend current|trusted_shortcut` to the
+> E9/E10 commands; the pairwise/aggregate reports inherit the candidate's design
+> and back `public_benchmark_utility_preserved[<design>]`. For both designs, see
+> [`REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md`](REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md).
+
 ```
 MODEL=/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct
 PKGS=/root/autodl-tmp/privacy_llm_packages

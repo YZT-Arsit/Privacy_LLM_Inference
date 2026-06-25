@@ -43,6 +43,10 @@ from pllo.experiments.folded_probe_common import (  # noqa: E402
     seed_from_manifest,
     topk_overlap,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession  # noqa: E402
 from pllo.hf_wrappers.qwen_memory_optimized import (  # noqa: E402
     MemoryOptimizedConfig,
@@ -73,7 +77,10 @@ def main() -> int:
                     default="outputs/qwen7b_folded_full_onestep_logits_probe.json")
     ap.add_argument("--output-md",
                     default="outputs/qwen7b_folded_full_onestep_logits_probe.md")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     dry_run = bool(args.dry_run or not args.model_path)
     model, mc, ids, device, dtype = load_model_and_ids(args, dry_run)
@@ -154,6 +161,7 @@ def main() -> int:
         "leaked_secret_fields": vrep["forbidden_fields_found"],
         "latency_s": latency_s, "peak_gpu_memory_mb": peak_mb,
     }
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     if args.output_json:
         p = Path(args.output_json)

@@ -384,7 +384,9 @@ def build_lora_folded_package(out_dir, *, session, lora: dict, target_modules,
                               rank: int, alpha: float, rank_seed: int,
                               base_manifest_hash: str | None,
                               model_name: str | None = None,
-                              created_by: str = "trusted_setup") -> dict:
+                              created_by: str = "trusted_setup",
+                              nonlinear_backend: str = "current",
+                              build_command: str | None = None) -> dict:
     """Fold the adapter layer-by-layer and stream folded-LoRA shards + a manifest
     + a ``lora_meta.json`` sidecar. Returns a build report."""
     from pllo.deployment.folded_package import FoldedPackageWriter
@@ -406,10 +408,11 @@ def build_lora_folded_package(out_dir, *, session, lora: dict, target_modules,
         package_type="lora_adapter", model_name=model_name,
         model_path_or_id=None, num_layers=int(session.n),
         dtype=str(session.fdtype).replace("torch.", ""),
-        nonlinear_backend="current", created_by=created_by,
+        nonlinear_backend=nonlinear_backend, created_by=created_by,
         shard_index=writer.shard_index,
         mask_schedule_id=getattr(session.masks, "metadata", {}).get(
-            "mask_schedule_id") if hasattr(session.masks, "metadata") else None)
+            "mask_schedule_id") if hasattr(session.masks, "metadata") else None,
+        build_command=build_command)
     write_manifest(manifest, out_dir)
 
     a_hash = adapter_hash(lora, target_modules)

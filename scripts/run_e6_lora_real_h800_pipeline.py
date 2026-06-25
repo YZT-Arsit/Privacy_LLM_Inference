@@ -51,6 +51,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO_ROOT / "scripts"
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
+
 
 def _bool(s) -> bool:
     return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
@@ -77,6 +82,7 @@ def build_plan(args) -> list:
     dry = bool(args.dry_run)
     lora_hf = (args.lora_mode == "hf")
     tm = args.target_modules
+    nb = args.nonlinear_backend
 
     paths = {
         "build": (work / "e6_build.json").as_posix(),
@@ -99,6 +105,7 @@ def build_plan(args) -> list:
         "--target-modules", tm, "--rank", str(args.lora_rank),
         "--alpha", str(args.lora_alpha), "--dtype", args.dtype,
         "--device", args.device, "--output-dir", args.output_lora_package,
+        "--nonlinear-backend", nb,
         "--output-json", paths["build"]]
     if lora_hf:
         build_argv += ["--raw-lora-adapter-path", args.raw_lora_adapter_path,
@@ -110,6 +117,7 @@ def build_plan(args) -> list:
     verify_argv = ["verify_qwen7b_lora_folded_package.py",
                    "--lora-folded-package-path", args.output_lora_package,
                    "--base-folded-package-path", args.base_folded_package_path,
+                   "--expected-nonlinear-backend", nb,
                    "--output-json", paths["verify"]]
 
     # 3. H800 local folded-LoRA correctness probe
@@ -119,6 +127,7 @@ def build_plan(args) -> list:
         "--alpha", str(args.lora_alpha), "--max-new-tokens",
         str(args.max_new_tokens), "--seq-len", str(args.seq_len),
         "--dtype", args.dtype, "--device", args.device,
+        "--nonlinear-backend", nb,
         "--output-json", paths["local"]]
     if lora_hf:
         local_argv += ["--adapter-path", args.raw_lora_adapter_path]
@@ -135,7 +144,8 @@ def build_plan(args) -> list:
                    "--max-new-tokens", str(args.max_new_tokens),
                    "--seq-len", str(args.seq_len), "--dtype", args.dtype,
                    "--device", args.boundary_device, "--audit",
-                   str(args.audit), "--output-json", paths["remote"]]
+                   str(args.audit), "--nonlinear-backend", nb,
+                   "--output-json", paths["remote"]]
     if dry:
         remote_argv += ["--dry-run"]
 
@@ -218,7 +228,8 @@ def _start_worker(args):
             args.base_folded_package_path, "--folded-lora-package-path",
             args.output_lora_package, "--listen-host", "127.0.0.1",
             "--listen-port", str(port), "--device", args.device,
-            "--dtype", args.dtype, "--audit", str(args.audit)]
+            "--dtype", args.dtype, "--audit", str(args.audit),
+            "--nonlinear-backend", args.nonlinear_backend]
     if args.model_path and not args.dry_run:
         argv += ["--model-path", args.model_path]
     proc = subprocess.Popen(argv)
@@ -335,6 +346,7 @@ def consolidate(args, results: dict, step_status: dict) -> dict:
         "local_max_abs_error": _g(local, "max_abs_error"),
         "local_tokens_exact_match": _g(local, "tokens_exact_match"),
     }
+    rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     security_ok = (rep["worker_has_raw_lora"] is False
                    and rep["worker_has_mask_secrets"] is False
@@ -454,7 +466,10 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--output-json", default="outputs/e6_lora_real_h800_pipeline.json")
     ap.add_argument("--output-md", default="outputs/e6_lora_real_h800_pipeline.md")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     if args.lora_mode == "hf" and not args.raw_lora_adapter_path:
         ap.error("--lora-mode hf requires --raw-lora-adapter-path")

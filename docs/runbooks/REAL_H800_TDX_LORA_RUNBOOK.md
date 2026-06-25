@@ -8,6 +8,14 @@ operators**; raw LoRA `A`/`B`, optimizer state, training data, labels, mask
 secrets, input ids, and recovered logits stay trusted-side (H800 trusted process
 for the reference; the TDX guest for the lite/attested boundary).
 
+> **Nonlinear design dimension.** Add `--nonlinear-backend current|trusted_shortcut`
+> to the build/verify/probe/decode/E10 commands below (default `current`); the
+> folded-LoRA package must match its base package's design (verifiers enforce
+> this via `--expected-nonlinear-backend`). For both designs end-to-end (with
+> per-design runtime-hash + TD Quote regeneration), follow
+> [`REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md`](REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md)
+> §11.
+
 All of this was dry-run validated on CPU (`tests/test_lora_folded_e6.py`,
 `tests/test_lora_hf_adapter_fixture.py`, `tests/test_e6_lora_real_pipeline.py`).
 Replace the example paths with your real ones.

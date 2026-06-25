@@ -38,7 +38,7 @@ _CSV_FIELDS = [
     "metric_name", "metric_value", "accuracy", "macro_f1", "rouge_l",
     "numeric_exact_match", "exact_match", "latency_s", "latency_per_example_s",
     "audit_passed", "tee_used_on_gpu", "worker_has_mask_secrets",
-    "dry_run", "paper_ready",
+    "nonlinear_backend", "dry_run", "paper_ready",
 ]
 
 
@@ -74,6 +74,9 @@ def main() -> int:
     ap.add_argument("--attestation-evidence", default=None)
     ap.add_argument("--expected-mr-td", default=None)
     ap.add_argument("--backend", default="plaintext_local", choices=BACKENDS)
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design under test (current|trusted_shortcut, "
+                         "aliases ok); recorded in the report for tagging")
     ap.add_argument("--seq-len", type=int, default=256)
     ap.add_argument("--max-new-tokens", type=int, default=8)
     ap.add_argument("--dtype", default="float32")
@@ -110,6 +113,10 @@ def main() -> int:
         print("ERROR: --require-real set but real backend unavailable: %s"
               % exc, file=sys.stderr)
         return 3
+
+    from pllo.experiments.nonlinear_designs import (
+        nonlinear_design_report_fields)
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     if args.output_json:
         p = Path(args.output_json)

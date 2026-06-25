@@ -92,6 +92,11 @@ DEFAULT_TRUSTED_BOUNDARY_PATHS: tuple[str, ...] = (
     "src/pllo/security/__init__.py",
     "src/pllo/security/transcript_recorder.py",
     "src/pllo/security/transcript_scanner.py",
+    # nonlinear-design registry: the selected design is folded into the runtime
+    # identity (boundary_manifest_metadata), so the design contract source is
+    # part of the measured boundary. This binds design A vs design B to distinct
+    # runtime hashes -- evidence for one design cannot be replayed for the other.
+    "src/pllo/experiments/nonlinear_designs.py",
     "scripts/run_tee_gpu_protocol_demo.py",
 )
 
@@ -317,19 +322,42 @@ def boundary_manifest_metadata(
     expected_mr_td: str | None = None,
     *,
     protocol_version: str = "8.5",
+    nonlinear_backend: str | None = None,
+    nonlinear_design_metadata_hash: str | None = None,
 ) -> dict[str, Any]:
     """Canonical runtime-identity metadata shared by the demo + preflight tool.
 
     Both the quote-binding step (``write_tee_boundary_runtime_hash.py`` /
     ``--print-runtime-hash-only``) and the verification step (the demo) MUST use
     this exact metadata so they compute the identical runtime hash. Changing any
-    field (notably ``expected_mr_td``) changes the binding."""
-    return {
+    field (notably ``expected_mr_td`` or the selected ``nonlinear_backend``)
+    changes the binding.
+
+    The nonlinear design is part of the runtime identity: design A and design B
+    deliberately produce different runtime hashes, so attestation evidence bound
+    for one nonlinear design cannot be reused for the other. When
+    ``nonlinear_backend`` is given the canonical name + its design metadata hash
+    are folded into ``runtime_identity``. ``None`` (the default) preserves the
+    legacy hash for backward compatibility with already-bound no-nonlinear
+    runs."""
+    md: dict[str, Any] = {
         "protocol_version": protocol_version,
         "boundary_backend": boundary_backend,
         "allowed_gpu_backend": gpu_backend,
         "expected_mr_td": expected_mr_td,
     }
+    if nonlinear_backend is not None:
+        # Resolve canonically so an alias cannot dodge the binding; compute the
+        # design hash here if the caller did not supply it.
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend,
+            nonlinear_design_metadata_hash as _ndmh,
+        )
+        canon = normalize_nonlinear_backend(nonlinear_backend)
+        md["nonlinear_backend"] = canon
+        md["nonlinear_design_metadata_hash"] = (
+            nonlinear_design_metadata_hash or _ndmh(canon))
+    return md
 
 
 def boundary_runtime_hash(

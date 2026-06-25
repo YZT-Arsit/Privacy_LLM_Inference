@@ -35,6 +35,10 @@ from pllo.experiments.latency_baselines import (  # noqa: E402
     render_latex,
     render_md,
 )
+from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    nonlinear_design_report_fields,
+    normalize_nonlinear_backend,
+)
 
 
 def main() -> int:
@@ -46,7 +50,10 @@ def main() -> int:
     ap.add_argument("--output-csv", default="outputs/e12_latency_baselines.csv")
     ap.add_argument("--output-md", default="outputs/e12_latency_baselines.md")
     ap.add_argument("--output-tex", default="outputs/e12_latency_baselines.tex")
+    ap.add_argument("--nonlinear-backend", default="current",
+                    help="nonlinear design (current|trusted_shortcut, aliases ok)")
     args = ap.parse_args()
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     reports_by_backend = {}
     for b in BACKENDS:
@@ -55,6 +62,10 @@ def main() -> int:
             reports_by_backend[b] = rep
 
     table = build_latency_table(reports_by_backend)
+    # nonlinear design fields live at the TOP LEVEL of the report (the claim
+    # validator reads top-level nonlinear_backend); the per-backend rows are
+    # left untouched.
+    table.update(nonlinear_design_report_fields(args.nonlinear_backend))
 
     def _write(path, text):
         if not path:
