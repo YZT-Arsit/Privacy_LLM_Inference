@@ -149,6 +149,23 @@ class _PlaintextLocalPredictor:
         new = out[0, ids.shape[1]:]
         return self._tok.decode(new, skip_special_tokens=True)
 
+    def generate(self, prompt):
+        """Greedy open-ended generation -> {text, token_ids} (deterministic).
+
+        Used by the generation-preservation benchmark. Same greedy decoding as
+        :meth:`predict`'s free-text branch, but also returns the newly generated
+        token ids so token-level preservation can be measured."""
+        import torch
+        ids = self._ids(prompt)
+        with torch.no_grad():
+            out = self._model.generate(
+                ids, max_new_tokens=self.max_new_tokens, do_sample=False,
+                num_beams=1, pad_token_id=getattr(self._tok, "eos_token_id",
+                                                  None))
+        new = out[0, ids.shape[1]:]
+        return {"text": self._tok.decode(new, skip_special_tokens=True),
+                "token_ids": [int(t) for t in new.tolist()]}
+
     def stats(self):
         # plaintext baseline: no GPU privacy boundary (it IS plaintext).
         return {"tee_used_on_gpu": False, "worker_has_mask_secrets": False,
@@ -362,6 +379,15 @@ class _RemoteMaskedPredictor:
             return self._tok.decode(gen, skip_special_tokens=True)
         gen, _ = self._decode_loop(ids)
         return self._tok.decode(gen, skip_special_tokens=True)
+
+    def generate(self, prompt):
+        """Greedy masked prefill+decode over the remote folded worker ->
+        {text, token_ids}. Only masked embeddings + public metadata cross to the
+        GPU; tokenization + recovery + sampling stay trusted-side."""
+        ids = self._ids(prompt)
+        gen, _ = self._decode_loop(ids)
+        return {"text": self._tok.decode(gen, skip_special_tokens=True),
+                "token_ids": [int(t) for t in gen]}
 
     def stats(self):
         bc = sum(self._trace.boundary_calls.values()) \
