@@ -24,6 +24,22 @@ TM=q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
 MRTD=<expected_mr_td>
 ```
 
+## 0. Preflight (before spending server time)
+
+```
+python scripts/preflight_real_eval.py \
+  --model-path $MODEL --base-folded-package-path $BASE \
+  --embedding-artifact-path $ART --lora-folded-package-path $LORA \
+  --gpu-worker-url $URL --backend tdx_attested_remote \
+  --attestation-evidence outputs/attestation_evidence.json --expected-mr-td $MRTD \
+  --result-json outputs/tdx_attested_qwen7b_folded_remote_decode.json \
+  --output-json outputs/preflight.json --output-md outputs/preflight.md
+```
+
+`preflight_passed=false` lists blockers (missing model/base/artifact/evidence,
+`runtime_hash != evidence.report_data`, `--require-real` would fall back, output
+dir not writable). Clear them before opening the worker.
+
 ## 1. Start the H800 worker (base [+ LoRA])
 
 ```
@@ -78,6 +94,25 @@ python scripts/run_e6_lora_real_h800_pipeline.py \
   --output-json outputs/e6_lora_real_h800_pipeline.json
 ```
 
+LoRA **attested** remote decode (the wrapper now attaches + verifies the binding;
+without `--attestation-evidence` it makes no attestation claim):
+
+```
+python scripts/run_qwen7b_lora_folded_remote_decode_probe.py \
+  --gpu-worker-url $URL --embedding-path $ART \
+  --input-ids-file outputs/qwen7b_lora_folded_local_probe.json \
+  --expected-token-ids-file outputs/qwen7b_lora_folded_local_probe.json \
+  --max-new-tokens 4 --seq-len 128 --dtype bfloat16 --device cpu --audit true \
+  --attestation-evidence outputs/attestation_evidence.json --expected-mr-td $MRTD \
+  --write-runtime-manifest outputs/lora_runtime_manifest.json \
+  --output-json outputs/tdx_attested_qwen7b_lora_folded_remote_decode.json
+```
+
+The output JSON includes `attestation`, `boundary_attested`, `runtime_hash`,
+`expected_runtime_hash`, `evidence_report_data`, `runtime_hash_bound`,
+`binding_mismatch_reason`, and `mr_td`. The wrapper exits non-zero if the binding
+does not verify.
+
 ## 6. Prepare public benchmark JSONL files
 
 From LOCAL dataset files (no downloads). See
@@ -94,15 +129,39 @@ python scripts/prepare_public_benchmark_jsonl.py \
 ## 7. Run public benchmark subsets
 
 ```
-# no-LoRA TDX-attested utility
-python scripts/run_e9_task_utility_benchmark.py \
+# plaintext baseline + no-LoRA TDX-attested candidate (use --require-real so a
+# missing model/worker hard-fails instead of emitting a stub dry_run report)
+python scripts/run_e9_task_utility_benchmark.py --require-real \
+  --dataset-jsonl outputs/bench/mmlu_300.jsonl --task-type multiple_choice \
+  --backend plaintext_local --model-path $MODEL \
+  --seq-len 512 --max-new-tokens 8 --dtype bfloat16 --device cuda --audit true \
+  --output-json outputs/e9_mmlu_plaintext_local.json
+
+python scripts/run_e9_task_utility_benchmark.py --require-real \
   --dataset-jsonl outputs/bench/mmlu_300.jsonl --task-type multiple_choice \
   --backend tdx_attested_remote --model-name Qwen2.5-7B-Instruct \
   --model-path $MODEL --gpu-worker-url $URL --embedding-path $ART \
   --attestation-evidence outputs/attestation_evidence.json --expected-mr-td $MRTD \
   --seq-len 512 --max-new-tokens 8 --dtype bfloat16 --device cpu --audit true \
-  --output-json outputs/e9_mmlu_tdx_attested.json --output-md outputs/e9_mmlu.md \
+  --output-json outputs/e9_mmlu_tdx_attested_remote.json --output-md outputs/e9_mmlu.md \
   --output-csv outputs/e9_mmlu.csv
+
+# pairwise + aggregate utility preservation (this — not a single E9 metric — is
+# what backs the public_benchmark_utility_preserved claim)
+python scripts/run_e9_pairwise_utility_preservation.py \
+  --baseline-json outputs/e9_mmlu_plaintext_local.json \
+  --candidate-json outputs/e9_mmlu_tdx_attested_remote.json \
+  --max-abs-drop 0.02 --max-rel-drop 0.05 --dataset mmlu \
+  --output-json outputs/e9_mmlu_pairwise.json
+# ... repeat for gsm8k/boolq/sst2, then:
+python scripts/run_e9_pairwise_utility_preservation.py --aggregate \
+  --pairwise-json outputs/e9_mmlu_pairwise.json \
+  --pairwise-json outputs/e9_gsm8k_pairwise.json \
+  --pairwise-json outputs/e9_boolq_pairwise.json \
+  --pairwise-json outputs/e9_sst2_pairwise.json \
+  --required-datasets mmlu,gsm8k,boolq,sst2 \
+  --output-json outputs/e9_aggregate_utility.json \
+  --output-md outputs/e9_aggregate_utility.md
 
 # LoRA utility preservation (E10): base / plaintext-LoRA / folded-LoRA on e.g. SST-2
 python scripts/run_e10_lora_utility_benchmark.py \
@@ -163,13 +222,18 @@ python scripts/run_security_negative_tests.py \
 python scripts/validate_paper_claims.py \
   --result-json outputs/qwen7b_folded_remote_decode.json \
   --result-json outputs/tdx_attested_qwen7b_folded_remote_decode.json \
-  --result-json outputs/qwen7b_lora_folded_remote_decode_probe.json \
+  --result-json outputs/tdx_attested_qwen7b_lora_folded_remote_decode.json \
+  --result-json outputs/e9_aggregate_utility.json \
   --result-json outputs/e10_lora_utility.json \
   --result-json outputs/security_negative_tests.json \
-  --required-claims no_lora_tdx_attested_remote_package_decode,folded_lora_dry_run_validated \
+  --required-claims no_lora_tdx_attested_remote_package_decode,public_benchmark_utility_preserved \
   --output-json outputs/paper_claim_validation.json \
   --output-md outputs/paper_claim_validation.md
 ```
+
+Note: `public_benchmark_utility_preserved` is backed ONLY by the aggregate/pairwise
+preservation report — passing a single `e9_*` metric report is refused and flagged
+as an overclaim risk.
 
 Then consolidate everything (E13):
 

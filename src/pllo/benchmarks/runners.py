@@ -19,10 +19,11 @@ from typing import Any, Dict, List, Optional
 
 from pllo.benchmarks import metrics as M
 from pllo.benchmarks.prompt_templates import build_prompt
+from pllo.benchmarks.real_predictors import RealBackendUnavailable, build_predictor
 from pllo.benchmarks.task_schemas import assert_valid
 
 __all__ = ["BACKENDS", "BenchmarkRunner", "run_benchmark", "load_examples",
-           "stub_predict"]
+           "stub_predict", "extract_prediction", "RealBackendUnavailable"]
 
 BACKENDS = (
     "plaintext_local",
@@ -77,6 +78,46 @@ def stub_predict(example: Dict[str, Any]) -> str:
     return ""
 
 
+def extract_prediction(task_type, raw, example) -> str:
+    """Map a real predictor's raw output to the canonical prediction form.
+
+    Identity-preserving on already-canonical inputs (so the stub path is
+    unchanged): a bare letter / label / number passes straight through, while
+    free-text generations are reduced to the task's answer space.
+    """
+    s = "" if raw is None else str(raw).strip()
+    if task_type == "multiple_choice":
+        for ch in s:
+            up = ch.upper()
+            if up in ("A", "B", "C", "D", "E", "F", "G", "H"):
+                return up
+        return s[:1].upper() if s else ""
+    if task_type == "yes_no":
+        low = s.lower()
+        ls = [str(x).lower() for x in (example.get("label_space")
+                                       or ["yes", "no"])]
+        for lab in ls:
+            if lab in low:
+                return lab
+        if "true" in low:
+            return "yes"
+        if "false" in low:
+            return "no"
+        return low.split()[0] if low.split() else low
+    if task_type == "classification":
+        labels = example.get("label_space") or []
+        low = s.lower()
+        for lab in labels:                       # exact-ish containment match
+            if str(lab).lower() in low:
+                return lab
+        return s
+    if task_type == "generation_exact":
+        num = M.extract_numeric_answer(s)
+        return num if num is not None else s
+    # summarization / fallback: keep the generated text
+    return s
+
+
 def _gold_of(example: Dict[str, Any]) -> str:
     tt = example.get("task_type")
     if tt in ("multiple_choice", "generation_exact", "yes_no"):
@@ -110,7 +151,8 @@ class BenchmarkRunner:
         prompt = build_prompt(example)
         if self.dry_run or self.predictor is None:
             return stub_predict(example)
-        return str(self.predictor(prompt, example))
+        fn = getattr(self.predictor, "predict", self.predictor)
+        return str(fn(prompt, example))
 
     def run(self, examples: List[Dict[str, Any]]) -> Dict[str, Any]:
         preds: List[str] = []
@@ -118,10 +160,25 @@ class BenchmarkRunner:
         t0 = time.perf_counter()
         for ex in examples:
             assert_valid(ex)
-            preds.append(self.predict(ex))
+            raw = self.predict(ex)
+            # the stub already returns canonical forms; real generations are
+            # reduced to the task's answer space.
+            pred = (raw if (self.dry_run or self.predictor is None)
+                    else extract_prediction(ex.get("task_type"), raw, ex))
+            preds.append(pred)
             golds.append(_gold_of(ex))
         elapsed = time.perf_counter() - t0
-        return _build_report(self, examples, preds, golds, elapsed)
+        report = _build_report(self, examples, preds, golds, elapsed)
+        # merge any predictor-reported stats (latency/bytes/calls/audit/attest)
+        if self.predictor is not None and hasattr(self.predictor, "stats"):
+            try:
+                stats = self.predictor.stats() or {}
+            except Exception:                               # noqa: BLE001
+                stats = {}
+            for k, v in stats.items():
+                if v is not None:
+                    report[k] = v
+        return report
 
 
 def _label_space(examples: List[Dict[str, Any]]) -> List[str]:
@@ -191,25 +248,6 @@ def _build_report(runner: "BenchmarkRunner", examples, preds, golds,
     }
 
 
-def _build_real_predictor(*, backend, model_path, gpu_worker_url, model_name,
-                          embedding_path, folded_lora_package_path,
-                          attestation_evidence, expected_mr_td, seq_len,
-                          max_new_tokens, dtype, device):
-    """Lazily construct a real-backend predictor.
-
-    Heavy imports (torch / remote GPU bridges) happen *inside* this function so
-    importing the runner stays cheap. Not exercised by the test suite -- the
-    real model/worker is never available there. Returns a callable or raises
-    ``NotImplementedError`` (the caller falls back to the stub on failure).
-    """
-    # Intentionally not wired to the full Qwen stack here; the heavy path is
-    # provided by the deployment / protocol packages and is plugged in by the
-    # operator at run time. We raise so dry-run fallback stays explicit.
-    raise NotImplementedError(
-        "real-backend predictor for %s must be supplied by the operator; "
-        "running with the deterministic stub instead" % backend)
-
-
 def run_benchmark(dataset_jsonl, *, backend: str = "plaintext_local",
                   task_type: Optional[str] = None,
                   max_examples: Optional[int] = None,
@@ -223,13 +261,19 @@ def run_benchmark(dataset_jsonl, *, backend: str = "plaintext_local",
                   seq_len: int = 256, max_new_tokens: int = 8,
                   dtype: str = "float32", device: str = "cpu",
                   audit: bool = True, predictor=None,
-                  dry_run: Optional[bool] = None) -> Dict[str, Any]:
+                  dry_run: Optional[bool] = None,
+                  require_real: bool = False) -> Dict[str, Any]:
     """Run a task-utility benchmark and return an honest report dict.
 
-    With ``dry_run=True`` (or no ``model_path``/``gpu_worker_url`` for a remote
-    backend, or no ``model_path`` for plaintext_local) the deterministic stub
-    predictor is used and the report is labeled ``dry_run=True,
+    A real predictor (real Qwen checkpoint for ``plaintext_local``; trusted lite
+    boundary + remote GPU worker for the masked backends) is built via
+    :func:`pllo.benchmarks.real_predictors.build_predictor` when the resources
+    are present, yielding ``dry_run=False, paper_ready=True``. Otherwise the
+    deterministic stub is used and the report is ``dry_run=True,
     paper_ready=False``.
+
+    ``require_real=True`` forbids the silent stub fallback: if the real backend
+    cannot be constructed, :class:`RealBackendUnavailable` is raised.
     """
     if backend not in BACKENDS:
         raise ValueError("unknown backend: %r" % (backend,))
@@ -240,12 +284,14 @@ def run_benchmark(dataset_jsonl, *, backend: str = "plaintext_local",
     examples = examples[:max_examples] if (max_examples and max_examples > 0) \
         else examples
 
-    # Decide dry-run: forced, or no model resources available.
-    if dry_run is None:
+    # Decide dry-run: forced, required-real, or no model resources available.
+    if require_real:
+        auto_dry = False
+    elif dry_run is None:
         if backend == "plaintext_local":
             need_real = bool(model_path)
         else:
-            need_real = bool(model_path and gpu_worker_url)
+            need_real = bool(model_path and gpu_worker_url and embedding_path)
         auto_dry = not need_real
     else:
         auto_dry = dry_run
@@ -253,23 +299,31 @@ def run_benchmark(dataset_jsonl, *, backend: str = "plaintext_local",
     real_predictor = predictor
     if not auto_dry and real_predictor is None:
         try:
-            real_predictor = _build_real_predictor(
-                backend=backend, model_path=model_path,
-                gpu_worker_url=gpu_worker_url, model_name=model_name,
-                embedding_path=embedding_path,
+            real_predictor = build_predictor(
+                backend, model_path=model_path, gpu_worker_url=gpu_worker_url,
+                model_name=model_name, embedding_path=embedding_path,
                 folded_lora_package_path=folded_lora_package_path,
                 attestation_evidence=attestation_evidence,
                 expected_mr_td=expected_mr_td, seq_len=seq_len,
-                max_new_tokens=max_new_tokens, dtype=dtype, device=device)
-        except NotImplementedError:
+                max_new_tokens=max_new_tokens, dtype=dtype, device=device,
+                audit=audit)
+        except (RealBackendUnavailable, NotImplementedError) as exc:
+            if require_real:
+                raise RealBackendUnavailable(str(exc))
             real_predictor = None
             auto_dry = True
+
+    if require_real and real_predictor is None:
+        raise RealBackendUnavailable(
+            "real backend %r unavailable and --require-real was set" % backend)
 
     runner = BenchmarkRunner(backend=backend, model_name=model_name,
                              predictor=real_predictor, dry_run=auto_dry)
     report = runner.run(examples)
     report["audit_passed"] = (True if (audit and not report["leaked_secret_fields"]
                                        and not report[
-                                           "gpu_visible_plaintext_fields"])
+                                           "gpu_visible_plaintext_fields"]
+                                       and report.get("audit_passed") is not False)
                               else report["audit_passed"])
+    report["require_real"] = bool(require_real)
     return report

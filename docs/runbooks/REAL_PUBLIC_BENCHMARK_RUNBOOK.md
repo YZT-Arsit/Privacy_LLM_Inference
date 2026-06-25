@@ -17,6 +17,21 @@ LORA=$PKGS/qwen7b_lora_folded_synth_r4
 URL=http://127.0.0.1:18083 ; PORT=18083 ; MRTD=<expected_mr_td>
 ```
 
+## 0. Preflight (before spending server time)
+
+```
+python scripts/preflight_real_eval.py \
+  --model-path $MODEL --base-folded-package-path $BASE \
+  --embedding-artifact-path $ART --gpu-worker-url $URL \
+  --backend tdx_attested_remote --attestation-evidence outputs/attestation_evidence.json \
+  --expected-mr-td $MRTD \
+  --output-json outputs/preflight.json --output-md outputs/preflight.md
+```
+
+Fix every blocker (model/base/artifact/evidence present, `runtime_hash ==
+evidence.report_data`, `--require-real` won't fall back, output dir writable)
+before continuing.
+
 ## 1. Start H800 worker + 2. health + 3. TDX tunnel
 
 Same as the master runbook steps 1–3 (worker with `--folded-package-path $BASE`
@@ -47,11 +62,13 @@ Each `*_card.json` records `input_file_sha256`, `output_file_sha256`,
 
 ## 7. Run public benchmark subsets
 
-Run the SAME dataset on the backends you want to compare (per-backend report):
+Run the SAME dataset on the backends you want to compare (per-backend report).
+Use `--require-real` so a missing model/worker hard-fails (exit 3) instead of
+silently producing a stub `dry_run` report:
 
 ```
 for B in plaintext_local folded_remote tdx_lite_remote tdx_attested_remote; do
-  python scripts/run_e9_task_utility_benchmark.py \
+  python scripts/run_e9_task_utility_benchmark.py --require-real \
     --dataset-jsonl outputs/bench/mmlu_300.jsonl --task-type multiple_choice \
     --backend $B --model-name Qwen2.5-7B-Instruct --model-path $MODEL \
     --gpu-worker-url $URL --embedding-path $ART \
@@ -61,6 +78,35 @@ for B in plaintext_local folded_remote tdx_lite_remote tdx_attested_remote; do
     --output-md outputs/e9_mmlu_${B}.md
 done
 ```
+
+### 7b. Pairwise + aggregate utility preservation (REQUIRED for the claim)
+
+A single E9 metric does NOT show utility preservation; compare the candidate to
+the plaintext baseline and aggregate across datasets:
+
+```
+for DS in mmlu gsm8k boolq sst2; do
+  python scripts/run_e9_pairwise_utility_preservation.py \
+    --baseline-json  outputs/e9_${DS}_plaintext_local.json \
+    --candidate-json outputs/e9_${DS}_tdx_attested_remote.json \
+    --max-abs-drop 0.02 --max-rel-drop 0.05 --dataset $DS \
+    --output-json outputs/e9_${DS}_pairwise.json \
+    --output-md   outputs/e9_${DS}_pairwise.md
+done
+
+python scripts/run_e9_pairwise_utility_preservation.py --aggregate \
+  --pairwise-json outputs/e9_mmlu_pairwise.json \
+  --pairwise-json outputs/e9_gsm8k_pairwise.json \
+  --pairwise-json outputs/e9_boolq_pairwise.json \
+  --pairwise-json outputs/e9_sst2_pairwise.json \
+  --required-datasets mmlu,gsm8k,boolq,sst2 \
+  --output-json outputs/e9_aggregate_utility.json \
+  --output-md   outputs/e9_aggregate_utility.md
+```
+
+Only `e9_pairwise_utility_preservation` / `e9_aggregate_utility_preservation`
+reports (with `utility_preserved=True`, `paper_ready=True`, `dry_run=False`) back
+the `public_benchmark_utility_preserved` claim.
 
 LoRA utility (E10) on a task where the adapter helps (e.g. SST-2): run base,
 plaintext-LoRA, and folded-LoRA-remote E9 reports, then:
@@ -98,16 +144,18 @@ python scripts/run_security_negative_tests.py \
   --output-json outputs/security_negative_tests.json
 
 python scripts/validate_paper_claims.py \
-  --result-json outputs/e9_mmlu_tdx_attested_remote.json \
+  --result-json outputs/e9_aggregate_utility.json \
   --result-json outputs/e10_lora_utility.json \
   --result-json outputs/security_negative_tests.json \
   --required-claims public_benchmark_utility_preserved \
   --output-json outputs/paper_claim_validation.json
 ```
 
-`public_benchmark_utility_preserved` is only supported when the E9/E10 evidence is
-`paper_ready=True` (real model, not dry-run). Synthetic-LoRA evidence does not back
-a real-HF-adapter utility claim.
+`public_benchmark_utility_preserved` is supported ONLY by an
+`e9_pairwise_utility_preservation` / `e9_aggregate_utility_preservation` report
+with `utility_preserved=True`, `paper_ready=True`, `dry_run=False` — a single E9
+metric report is refused (flagged as `single_e9_metric_not_preservation`).
+Synthetic-LoRA evidence does not back a real-HF-adapter utility claim.
 
 ## 14–15. Package + cleanup
 

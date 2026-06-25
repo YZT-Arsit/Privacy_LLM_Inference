@@ -117,12 +117,13 @@ def _supports(name, r, t):
         return (real and not lora and attested and t.get("gpu_worker_remote")
                 and _g(r, "package_backed_decode") is True and _tokens_ok(r))
     if name == "public_benchmark_utility_preserved":
-        return (_stage(r) in ("e10_lora_utility_benchmark",)
+        # ONLY a pairwise/aggregate preservation report (baseline vs candidate)
+        # can support this -- a single E9 metric value never can.
+        return (_stage(r) in ("e9_pairwise_utility_preservation",
+                              "e9_aggregate_utility_preservation")
                 and _g(r, "utility_preserved") is True
-                and _g(r, "paper_ready") is True) or (
-                _stage(r) == "e9_task_utility_benchmark"
                 and _g(r, "paper_ready") is True
-                and _g(r, "metric_value") is not None)
+                and _g(r, "dry_run") is not True)
     if name == "folded_lora_dry_run_validated":
         # dry-run is EXPECTED here; just needs a lora decode with tokens matched
         return (lora and _tokens_ok(r))
@@ -162,8 +163,12 @@ def _shape(name, r, t):
                 "folded_lora_tdx_attested_validated"):
         return lora and _is_decode(r)
     if name == "public_benchmark_utility_preserved":
+        # a single E9 metric / E10 report "looks like" utility evidence but does
+        # NOT qualify -> flag as an overclaim risk.
         return _stage(r) in ("e9_task_utility_benchmark",
-                             "e10_lora_utility_benchmark")
+                             "e10_lora_utility_benchmark",
+                             "e9_pairwise_utility_preservation",
+                             "e9_aggregate_utility_preservation")
     if name == "real_tdx_attestation_bound_to_runtime_hash":
         return t.get("attestation_evidence_present") is True
     return False
@@ -199,6 +204,11 @@ def build_claim_report(results: list, required_claims=None) -> dict:
                 if claim.startswith("folded_lora") and not e["truth"].get(
                         "lora_enabled"):
                     reasons.append("no_lora")
+                if (claim == "public_benchmark_utility_preserved"
+                        and _stage(e["report"]) not in (
+                            "e9_pairwise_utility_preservation",
+                            "e9_aggregate_utility_preservation")):
+                    reasons.append("single_e9_metric_not_preservation")
                 if reasons:
                     risk_files.append({"file": e["file"], "reasons": reasons})
         supported[claim] = evidence

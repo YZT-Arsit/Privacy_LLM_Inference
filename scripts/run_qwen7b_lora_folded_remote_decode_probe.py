@@ -90,6 +90,8 @@ def main() -> int:
     ap.add_argument("--audit", default="true")
     ap.add_argument("--attestation-evidence", default=None)
     ap.add_argument("--expected-mr-td", default=None)
+    ap.add_argument("--write-runtime-manifest", default=None,
+                    help="write the trusted-boundary manifest JSON to this path")
     ap.add_argument("--output-json",
                     default="outputs/qwen7b_lora_folded_remote_decode_probe.json")
     ap.add_argument("--output-md", default=None)
@@ -120,6 +122,21 @@ def main() -> int:
     report["stage"] = "qwen7b_lora_folded_remote_decode_probe"
     report["probe"] = "lora_remote_decode"
 
+    # TDX attestation: only attach when evidence is supplied, so a non-attested
+    # run makes NO attestation claim. Mirrors the demo's folded attested branch.
+    attested_requested = bool(args.attestation_evidence)
+    if attested_requested:
+        if args.write_runtime_manifest:
+            md = demo.boundary_manifest_metadata(
+                report.get("boundary_backend", "process"),
+                report.get("gpu_backend", "qwen7b_folded_package"),
+                args.expected_mr_td)
+            demo.write_runtime_manifest(args.write_runtime_manifest, metadata=md)
+        demo.attach_attestation(
+            report, evidence=args.attestation_evidence,
+            expected_mr_td=args.expected_mr_td,
+            manifest_path=args.write_runtime_manifest)
+
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -145,6 +162,14 @@ def main() -> int:
           % (report["worker_has_mask_secrets"], report["tee_used_on_gpu"],
              report["gpu_visible_plaintext_fields"] or "[]",
              report["leaked_secret_fields"] or "[]"))
+    if attested_requested:
+        print("attestation: boundary_tee_type=%s boundary_attested=%s "
+              "runtime_hash_bound=%s mr_td=%s"
+              % (report.get("boundary_tee_type"), report.get("boundary_attested"),
+                 report.get("runtime_hash_bound"), report.get("mr_td")))
+        if report.get("binding_mismatch_reason"):
+            print("binding_mismatch_reason: %s"
+                  % report.get("binding_mismatch_reason"))
 
     ok = (report.get("lora_enabled") and report.get("folded_lora_loaded")
           and (report["tokens_exact_match"] is not False)
@@ -154,6 +179,10 @@ def main() -> int:
           and not report["leaked_secret_fields"]
           and not report["gpu_visible_plaintext_fields"]
           and report["audit_passed"] is not False)
+    # when attestation evidence is supplied, the binding MUST verify
+    if attested_requested:
+        ok = bool(ok and report.get("boundary_attested") is True
+                  and report.get("runtime_hash_bound") is True)
     print("\nREMOTE FOLDED-LoRA DECODE %s" % ("PASSED" if ok else "FAILED"))
     return 0 if ok else 1
 

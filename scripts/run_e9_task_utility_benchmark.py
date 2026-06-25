@@ -27,7 +27,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from pllo.benchmarks.runners import BACKENDS, run_benchmark  # noqa: E402
+from pllo.benchmarks.runners import (  # noqa: E402
+    BACKENDS,
+    RealBackendUnavailable,
+    run_benchmark,
+)
 
 _CSV_FIELDS = [
     "stage", "dataset", "task_type", "backend", "model_name", "num_examples",
@@ -76,6 +80,9 @@ def main() -> int:
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--audit", action="store_true", default=True)
     ap.add_argument("--no-audit", dest="audit", action="store_false")
+    ap.add_argument("--require-real", action="store_true", default=False,
+                    help="fail (exit 3) instead of falling back to the stub if "
+                         "the real backend cannot be constructed")
     ap.add_argument("--output-json", default="outputs/e9_task_utility.json")
     ap.add_argument("--output-md", default=None)
     ap.add_argument("--output-csv", default=None)
@@ -86,16 +93,23 @@ def main() -> int:
         print("ERROR: dataset JSONL not found: %s" % ds, file=sys.stderr)
         return 2
 
-    report = run_benchmark(
-        ds, backend=args.backend, task_type=args.task_type,
-        max_examples=args.max_examples if args.max_examples > 0 else None,
-        model_name=args.model_name, model_path=args.model_path,
-        gpu_worker_url=args.gpu_worker_url, embedding_path=args.embedding_path,
-        folded_lora_package_path=args.folded_lora_package_path,
-        attestation_evidence=args.attestation_evidence,
-        expected_mr_td=args.expected_mr_td, seq_len=args.seq_len,
-        max_new_tokens=args.max_new_tokens, dtype=args.dtype,
-        device=args.device, audit=args.audit)
+    try:
+        report = run_benchmark(
+            ds, backend=args.backend, task_type=args.task_type,
+            max_examples=args.max_examples if args.max_examples > 0 else None,
+            model_name=args.model_name, model_path=args.model_path,
+            gpu_worker_url=args.gpu_worker_url,
+            embedding_path=args.embedding_path,
+            folded_lora_package_path=args.folded_lora_package_path,
+            attestation_evidence=args.attestation_evidence,
+            expected_mr_td=args.expected_mr_td, seq_len=args.seq_len,
+            max_new_tokens=args.max_new_tokens, dtype=args.dtype,
+            device=args.device, audit=args.audit,
+            require_real=args.require_real)
+    except RealBackendUnavailable as exc:
+        print("ERROR: --require-real set but real backend unavailable: %s"
+              % exc, file=sys.stderr)
+        return 3
 
     if args.output_json:
         p = Path(args.output_json)
