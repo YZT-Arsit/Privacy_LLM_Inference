@@ -31,9 +31,17 @@ from pllo.protocol.tee_gpu_messages import (
 )
 from pllo.protocol.wire import decode_message, encode_message
 
+from pllo.runtime.obfuscation_schedule import (  # noqa: E402
+    SCHEDULE_SECRET_FIELDS,
+    audit_gpu_payload_no_schedule_secrets,
+    audit_worker_package_no_schedule_secrets,
+)
+
 __all__ = [
     "FORBIDDEN_WIRE_FIELDS",
     "forbidden_fields_in_payload",
+    "audit_gpu_payload_no_schedule_secrets",
+    "audit_worker_package_no_schedule_secrets",
     "GpuWorkerServer",
     "RemoteGpuWorker",
     "run_gpu_worker_server",
@@ -54,6 +62,9 @@ FORBIDDEN_WIRE_FIELDS = frozenset({
     "mask_secret", "mask_secrets", "mask_handles", "handles", "residual_perm",
     "residual_inv_perm", "in_perm", "in_signs", "vocab_perm", "out_perm",
     "vocab_scale", "out_scale", "residual_signs", "seed",
+    # precomputed-obfuscation-schedule secrets (also caught by the schedule
+    # audit's substring matcher; listed here for the server's exact-match guard)
+    *SCHEDULE_SECRET_FIELDS,
 })
 
 # Path -> message class expected in the request body.
@@ -99,11 +110,15 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _send_json(self, code: int, obj: dict) -> None:
         body = json.dumps(obj).encode("utf-8")
-        self.close_connection = True
+        # Persistent connection ONLY when the client explicitly opts in via the
+        # private header (pllo persistent transport). Default clients (no header)
+        # get the historical close-after-response behaviour byte-for-byte.
+        keep_alive = self.headers.get("X-PLLO-KeepAlive", "") == "1"
+        self.close_connection = not keep_alive
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Connection", "close")
+        self.send_header("Connection", "keep-alive" if keep_alive else "close")
         self.end_headers()
         self.wfile.write(body)
 
@@ -247,27 +262,89 @@ class RemoteGpuWorker:
     objects sent/received for the security audit. Imports no model code."""
 
     def __init__(self, url: str, gpu_backend: str = "mock",
-                 recorder: Any = None, timeout: float = 60.0) -> None:
+                 recorder: Any = None, timeout: float = 60.0,
+                 persistent: bool = False) -> None:
         self.url = url.rstrip("/")
         self.gpu_backend = gpu_backend
         self._recorder = recorder
         self.timeout = timeout
+        # Optional persistent transport: reuse ONE TCP connection across decode
+        # steps (keep-alive) to drop per-token connection-setup overhead. Default
+        # off -> historical one-connection-per-request behaviour. Profiling
+        # decides whether this matters (it does not when GPU compute dominates).
+        self.persistent = bool(persistent)
+        self._conn = None
         self._closed = False
+
+    def _audit_encoded(self, path: str, msg: Any):
+        encoded = encode_message(msg)
+        # Defense-in-depth (client side): no forbidden/secret field -- including a
+        # precomputed obfuscation schedule's secret material -- may ride a GPU
+        # request. Exact-name match (same matcher the server uses) so legitimate
+        # masked payloads are never false-flagged; raise loudly, no silent pass.
+        bad = forbidden_fields_in_payload(encoded)
+        if bad:
+            from pllo.runtime.obfuscation_schedule import ScheduleSecretLeak
+            raise ScheduleSecretLeak(
+                "forbidden/secret field(s) on GPU request to %s: %s"
+                % (path, bad))
+        return encoded
+
+    def _persistent_conn(self):
+        import http.client
+        from urllib.parse import urlparse
+        if self._conn is None:
+            u = urlparse(self.url)
+            self._conn = http.client.HTTPConnection(
+                u.hostname, u.port or 80, timeout=self.timeout)
+        return self._conn
+
+    def _post_persistent(self, path: str, body: bytes) -> dict:
+        headers = {"Content-Type": "application/json", "Connection": "keep-alive",
+                   "X-PLLO-KeepAlive": "1"}
+        for attempt in (1, 2):                     # reconnect once on a dropped conn
+            try:
+                conn = self._persistent_conn()
+                conn.request("POST", path, body=body, headers=headers)
+                resp = conn.getresponse()
+                raw = resp.read().decode("utf-8")
+                if resp.status >= 400:
+                    raise RuntimeError(
+                        "GPU worker HTTP %d at %s: %s" % (resp.status, path, raw))
+                return json.loads(raw)
+            except (ConnectionError, OSError) as exc:
+                self._close_conn()
+                if attempt == 2:
+                    raise RuntimeError("persistent GPU worker connection failed "
+                                       "at %s: %s" % (path, exc)) from None
+        raise RuntimeError("unreachable")
+
+    def _close_conn(self) -> None:
+        try:
+            if self._conn is not None:
+                self._conn.close()
+        except Exception:                                    # noqa: BLE001
+            pass
+        self._conn = None
 
     def _post(self, path: str, msg: Any) -> Any:
         if self._recorder is not None:
             self._recorder("inbound", path, msg)
-        body = json.dumps(encode_message(msg)).encode("utf-8")
-        req = urllib.request.Request(
-            self.url + path, data=body,
-            headers={"Content-Type": "application/json"}, method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                out = json.loads(resp.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "replace")
-            raise RuntimeError(
-                f"GPU worker HTTP {exc.code} at {path}: {detail}") from None
+        encoded = self._audit_encoded(path, msg)
+        body = json.dumps(encoded).encode("utf-8")
+        if self.persistent:
+            out = self._post_persistent(path, body)
+        else:
+            req = urllib.request.Request(
+                self.url + path, data=body,
+                headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                    out = json.loads(resp.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", "replace")
+                raise RuntimeError(
+                    f"GPU worker HTTP {exc.code} at {path}: {detail}") from None
         result = decode_message(out)
         if self._recorder is not None:
             self._recorder("outbound", path, result)
@@ -289,6 +366,7 @@ class RemoteGpuWorker:
 
     def close(self) -> None:
         self._closed = True
+        self._close_conn()
 
     def __enter__(self) -> "RemoteGpuWorker":
         return self

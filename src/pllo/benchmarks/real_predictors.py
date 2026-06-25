@@ -303,6 +303,13 @@ class _RemoteMaskedPredictor:
             self._attestation = self._verify_attestation(
                 attestation_evidence, expected_mr_td)
 
+        # Optional trusted-side precomputed obfuscation schedule (default off).
+        # When attached, each decode step consumes its step-specific slot. This
+        # is a trusted-only object: nothing from it ever crosses to the GPU.
+        self._schedule = None
+        # Optional per-token, per-stage decode profiler (default off).
+        self._profiler = None
+
     def _verify_attestation(self, evidence, expected_mr_td):
         from dataclasses import asdict
         from pllo.protocol.attestation import (
@@ -348,31 +355,109 @@ class _RemoteMaskedPredictor:
             np.asarray(rec.detach().to("cpu")).nbytes)
         return rec
 
+    def attach_obfuscation_schedule(self, schedule) -> None:
+        """Attach a trusted-side precomputed obfuscation schedule (optional). Its
+        per-step slots are consumed during decode; its secrets never leave the
+        trusted runtime (no schedule field is ever added to a GPU request)."""
+        self._schedule = schedule
+
+    def enable_decode_profiling(self, enabled: bool = True) -> None:
+        """Turn on per-token, per-stage decode profiling (default off). Times the
+        9 decode stages + per-step boundary/gpu call & byte deltas."""
+        from pllo.benchmarks.decode_profiler import DecodeProfiler
+        self._profiler = DecodeProfiler(counters=self._trace_counters,
+                                        enabled=bool(enabled))
+
+    def decode_profiler(self):
+        return self._profiler
+
+    def _trace_counters(self):
+        t = self._trace
+        bc = sum(t.boundary_calls.values()) if t.boundary_calls else 0
+        gc = sum(t.gpu_calls.values()) if t.gpu_calls else 0
+        return {"boundary_calls": bc, "gpu_calls": gc,
+                "trusted_bytes": int(t.trusted_bytes),
+                "gpu_bytes": int(t.gpu_bytes)}
+
+    def _consume_slot(self, step_id: int) -> None:
+        if self._schedule is None:
+            return
+        try:
+            self._schedule.consume(step_id)
+        except Exception:                                    # noqa: BLE001
+            # schedule too short / already consumed: do not corrupt decode; the
+            # report's slots_consumed reflects what actually happened.
+            pass
+
+    def _pstage(self, name):
+        from contextlib import nullcontext
+        return (self._profiler.stage(name) if self._profiler is not None
+                else nullcontext())
+
+    def _pbegin(self, step_id, phase):
+        if self._profiler is not None:
+            self._profiler.begin_step(step_id, phase)
+
+    def _pend(self, token_id=None):
+        if self._profiler is not None:
+            self._profiler.end_step(token_id)
+
     def _decode_loop(self, ids):
-        """Greedy masked prefill+decode; return (generated_ids, last_recovered)."""
+        """Greedy masked prefill+decode; return (generated_ids, last_recovered).
+
+        Each stage is timed when profiling is enabled (no overhead otherwise).
+        No schedule secret / mask / pad / inverse is ever placed in a request."""
         from pllo.protocol.tee_gpu_messages import (
             MaskedDecodeRequest, MaskedPrefillRequest)
         import torch
         seq_len = int(ids.shape[1])
-        h = self._boundary.mask_embeddings(ids)
-        pre = self._worker.prefill(MaskedPrefillRequest(
-            session_id="e9", masked_embeddings=self._np(h),
-            positions=list(range(seq_len)), batch_size=1, seq_len=seq_len))
-        self._trace.bump_boundary("prefill")
-        rec_last = self._recover_last(pre.masked_logits)
-        tok = int(rec_last.argmax(-1))
+
+        # ---- prefill step ----
+        self._pbegin(0, "prefill")
+        with self._pstage("trusted_input_embedding"):
+            h = self._boundary.mask_embeddings(ids)
+        with self._pstage("http_request_serialization"):
+            pre_req = MaskedPrefillRequest(
+                session_id="e9", masked_embeddings=self._np(h),
+                positions=list(range(seq_len)), batch_size=1, seq_len=seq_len)
+        with self._pstage("gpu_worker_roundtrip"):
+            pre = self._worker.prefill(pre_req)
+            self._trace.bump_boundary("prefill")
+        with self._pstage("schedule_slot_lookup"):
+            self._consume_slot(0)                   # step 0 obfuscation slot
+        with self._pstage("trusted_nonlinear_restore_logits"):
+            rec_last = self._recover_last(pre.masked_logits)
+        with self._pstage("sampling"):
+            tok = int(rec_last.argmax(-1))
+        self._pend(tok)
         gen = [tok]
         pos = seq_len
+
+        # ---- decode steps ----
         for step in range(self.max_new_tokens - 1):
-            x = self._boundary.mask_token_embedding(torch.tensor([tok]))
-            self._trace.bump_boundary("mask_token_embedding")
-            dec = self._worker.decode(MaskedDecodeRequest(
-                session_id="e9", masked_embedding=self._np(x), position=pos,
-                step=step + 1))
-            self._trace.bump_boundary("decode")
-            tok = int(self._recover_last(dec.masked_logits).argmax(-1))
+            self._pbegin(step + 1, "decode")
+            with self._pstage("prompt_token_prep"):
+                tok_tensor = torch.tensor([tok])
+            with self._pstage("trusted_input_embedding"):
+                x = self._boundary.mask_token_embedding(tok_tensor)
+                self._trace.bump_boundary("mask_token_embedding")
+            with self._pstage("schedule_slot_lookup"):
+                self._consume_slot(step + 1)        # fresh per-step slot
+            with self._pstage("http_request_serialization"):
+                dec_req = MaskedDecodeRequest(
+                    session_id="e9", masked_embedding=self._np(x), position=pos,
+                    step=step + 1)
+            with self._pstage("gpu_worker_roundtrip"):
+                dec = self._worker.decode(dec_req)
+                self._trace.bump_boundary("decode")
+            with self._pstage("trusted_nonlinear_restore_logits"):
+                rec = self._recover_last(dec.masked_logits)
+            with self._pstage("sampling"):
+                tok = int(rec.argmax(-1))
+            with self._pstage("kv_cache_update"):
+                pos += 1
             gen.append(tok)
-            pos += 1
+            self._pend(tok)
         return gen, rec_last
 
     def predict(self, prompt, example):
@@ -435,6 +520,12 @@ class _RemoteMaskedPredictor:
             out["audit_passed"] = self._run_audit()
         if self._attestation:
             out.update(self._attestation)
+        # per-token, per-stage profile (only when profiling was enabled)
+        if self._profiler is not None:
+            agg = self._profiler.aggregate()
+            out["decode_profile"] = agg
+            out["decode_bottleneck_stage"] = agg.get("bottleneck_stage")
+            out["decode_stage_total_s"] = agg.get("stage_total_s")
         return out
 
     def _run_audit(self):
