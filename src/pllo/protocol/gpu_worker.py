@@ -364,6 +364,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         self.resident_cache_dtype: str | None = None
         self.resident_cache_oom: bool = False
         self.resident_cache_fallback_used: bool = False
+        # per-decode weight-movement counters (so the END-TO-END report can show
+        # the resident win without the microbench's monkeypatch). These mirror the
+        # exact branch taken: resident -> 0 per step; per-step path -> one shard
+        # load + one folded_layer_dict build (= one H2D copy) per executed layer.
+        self._decode_steps_run: int = 0
+        self._decode_shard_loads: int = 0
+        self._decode_dict_builds: int = 0
         # Selected nonlinear DESIGN -- the worker GENUINELY executes it: design B
         # (trusted_shortcut/amulet_migrated) lifts the MLP activation onto this
         # untrusted accelerator and migrates softmax/RMSNorm with a trusted
@@ -415,6 +422,9 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         self._public = dict(req.public_metadata or {})
         self._exec_ctx = None
         self._kv = None
+        self._decode_steps_run = 0
+        self._decode_shard_loads = 0
+        self._decode_dict_builds = 0
         if not self.folded_package_path:
             raise RuntimeError("qwen7b_folded_package worker needs "
                                "folded_package_path")
@@ -640,7 +650,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         return True
 
     def resident_status(self) -> dict[str, Any]:
-        """Public, non-secret resident-cache status for reports."""
+        """Public, non-secret resident-cache status + per-decode weight-movement
+        counters for reports (measured from the actual decode path)."""
+        steps = self._decode_steps_run
+        loads_ps = (round(self._decode_shard_loads / steps, 3)
+                    if steps else None)
+        builds_ps = (round(self._decode_dict_builds / steps, 3)
+                     if steps else None)
         return {
             "resident_folded_weights": bool(self.resident_folded_weights),
             "resident_weight_init_latency_s": self.resident_weight_init_latency_s,
@@ -651,6 +667,12 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             "resident_cache_oom": bool(self.resident_cache_oom),
             "resident_cache_fallback_used": bool(self.resident_cache_fallback_used),
             "resident_cache_active": self._resident_layers is not None,
+            # per-decode weight-movement counters (the resident win, end-to-end)
+            "weight_reloaded_each_step": (bool(loads_ps and loads_ps >= 1)
+                                          if loads_ps is not None else None),
+            "weight_shard_loads_per_decode_step": loads_ps,
+            "folded_layer_dict_builds_per_decode_step": builds_ps,
+            "cpu_to_gpu_weight_copies_per_decode_step": builds_ps,
         }
 
     def _tag_resident(self, wt: dict[str, Any] | None) -> None:
@@ -751,6 +773,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         resident = (self._resident_layers
                     if self._ensure_resident(x_next_tilde.device,
                                              x_next_tilde.dtype, k) else None)
+        # count exactly what this step's path does: resident reuses the cached
+        # layers (0 loads/builds/copies); the per-step path loads + builds (one
+        # H2D copy) per executed layer.
+        self._decode_steps_run += 1
+        if resident is None:
+            self._decode_shard_loads += k
+            self._decode_dict_builds += k
         out = apply_folded_decode(x_next_tilde, self.folded_package_path,
                                   self._kv, int(position), k, config, cos, sin,
                                   eps,

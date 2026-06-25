@@ -361,9 +361,13 @@ def main() -> int:
         stats.get("resident_folded_weights", False))
     for k in ("resident_cache_active", "resident_weight_memory_gb",
               "resident_cache_num_layers", "resident_cache_oom",
-              "resident_cache_fallback_used"):
-        if k in stats:
-            report[k] = stats.get(k)
+              "resident_cache_fallback_used", "resident_cache_device",
+              "resident_cache_dtype",
+              # per-decode weight-movement counters (no longer null when resident)
+              "weight_reloaded_each_step", "weight_shard_loads_per_decode_step",
+              "folded_layer_dict_builds_per_decode_step",
+              "cpu_to_gpu_weight_copies_per_decode_step"):
+        report[k] = stats.get(k)
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:

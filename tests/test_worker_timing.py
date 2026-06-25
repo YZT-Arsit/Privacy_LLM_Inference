@@ -532,3 +532,10 @@ def test_ifeval_emits_worker_timing(tmp_path) -> None:
     assert r["worker_bottleneck_stage"] is not None
     # resident status is surfaced in the report (mock has no real worker -> False)
     assert r["resident_folded_weights"] is False
+    # the per-decode weight-movement counter keys are wired into the report (they
+    # carry real values from the worker /health on a resident server run)
+    for k in ("weight_reloaded_each_step", "weight_shard_loads_per_decode_step",
+              "folded_layer_dict_builds_per_decode_step",
+              "cpu_to_gpu_weight_copies_per_decode_step", "resident_cache_device",
+              "resident_cache_dtype"):
+        assert k in r, "missing %s" % k

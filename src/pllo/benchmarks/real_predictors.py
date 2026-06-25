@@ -562,7 +562,12 @@ class _RemoteMaskedPredictor:
                       "resident_weight_memory_gb", "resident_cache_num_layers",
                       "resident_cache_device", "resident_cache_dtype",
                       "resident_cache_oom", "resident_cache_fallback_used",
-                      "resident_cache_active"):
+                      "resident_cache_active",
+                      # per-decode weight-movement counters (the resident win)
+                      "weight_reloaded_each_step",
+                      "weight_shard_loads_per_decode_step",
+                      "folded_layer_dict_builds_per_decode_step",
+                      "cpu_to_gpu_weight_copies_per_decode_step"):
                 if k in rs:
                     out[k] = rs[k]
         except Exception:                                    # noqa: BLE001

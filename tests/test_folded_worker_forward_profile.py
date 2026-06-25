@@ -190,10 +190,18 @@ def test_resident_visible_via_health_and_worker_timing(tmp_path) -> None:
     finally:
         srv.shutdown()
 
-    # /health exposes the public resident status
+    # /health exposes the public resident status + per-decode counters (the exact
+    # worker metadata that real_predictors.stats() forwards into the end-to-end
+    # ifeval report -- so they are no longer null when resident is on)
     rs = health.get("resident_status") or {}
     assert rs.get("resident_folded_weights") is True
     assert rs.get("resident_cache_active") is True
+    assert rs.get("weight_reloaded_each_step") is False
+    assert rs.get("weight_shard_loads_per_decode_step") == 0
+    assert rs.get("folded_layer_dict_builds_per_decode_step") == 0
+    assert rs.get("cpu_to_gpu_weight_copies_per_decode_step") == 0
+    assert rs.get("resident_cache_device") == "cpu"
+    assert rs.get("resident_cache_dtype") is not None
     # worker_timing carries the resident flag (and no secret)
     wt = dec.worker_timing
     assert isinstance(wt, dict)
@@ -265,6 +273,28 @@ def test_backend_resident_equivalence(tmp_path) -> None:
     d = b_res.describe()
     assert d["resident_folded_weights"] is True
     assert d["worker_has_mask_secrets"] is False
+
+
+def test_backend_resident_decode_counters(tmp_path) -> None:
+    """resident_status() reports the per-decode weight-movement counters measured
+    from the actual path: resident -> 0; per-step path -> num_layers."""
+    pkg, art = _build_pkg_art(tmp_path)
+    b_res, _ = _run_backend(pkg, art, resident=True, steps=3)
+    rs = b_res.resident_status()
+    assert rs["weight_shard_loads_per_decode_step"] == 0
+    assert rs["folded_layer_dict_builds_per_decode_step"] == 0
+    assert rs["cpu_to_gpu_weight_copies_per_decode_step"] == 0
+    assert rs["weight_reloaded_each_step"] is False
+    assert rs["resident_cache_device"] == "cpu"
+    assert rs["resident_cache_dtype"] is not None
+
+    b_base, _ = _run_backend(pkg, art, resident=False, steps=3)
+    rb = b_base.resident_status()
+    nl = b_base._num_layers
+    assert rb["weight_shard_loads_per_decode_step"] == nl
+    assert rb["folded_layer_dict_builds_per_decode_step"] == nl
+    assert rb["cpu_to_gpu_weight_copies_per_decode_step"] == nl
+    assert rb["weight_reloaded_each_step"] is True
 
 
 def test_profile_security_audit_clean(tmp_path) -> None:
