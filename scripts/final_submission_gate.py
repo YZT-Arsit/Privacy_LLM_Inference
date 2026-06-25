@@ -37,8 +37,41 @@ from pllo.experiments.claim_validator import (  # noqa: E402
 )
 from pllo.experiments.deployment_truth import infer_deployment_truth  # noqa: E402
 from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    list_nonlinear_backends,
+    nonlinear_backend_metadata,
+    normalize_nonlinear_backend,
     parse_nonlinear_backends,
 )
+
+# Claim bases that assert the *nonlinear design itself* is formally secure. A
+# design can back these ONLY if its registry ``security_claim_status`` is
+# ``established`` (currently only ``current``); ``trusted_shortcut`` is
+# ``under_discussion`` so it must FAIL such a claim until proofs/tests are added
+# and the registry is updated.
+FORMAL_SECURITY_CLAIM_BASES = {
+    "formal_security", "design_security_proven", "design_formally_secure",
+    "nonlinear_design_formally_secure",
+}
+
+
+def _parse_tagged_claim(claim):
+    claim = str(claim)
+    if claim.endswith("]") and "[" in claim:
+        name, _, rest = claim.partition("[")
+        backend = rest[:-1].strip()
+        try:
+            backend = normalize_nonlinear_backend(backend)
+        except Exception:                                   # noqa: BLE001
+            pass
+        return name.strip(), backend
+    return claim.strip(), None
+
+
+def _security_claim_status(backend):
+    try:
+        return nonlinear_backend_metadata(backend).get("security_claim_status")
+    except Exception:                                       # noqa: BLE001
+        return None
 
 
 def _g(d, *keys, default=None):
@@ -106,7 +139,19 @@ def build_gate_report(results, *, required_claims=None, final_artifact_tar=None,
     reports = [item.get("report") for item in results]
     reports = [r for r in reports if isinstance(r, dict)]
 
-    claim_rep = build_claim_report(results, required_claims=required_claims)
+    # Split formal-security claims out: they are validated against the design
+    # registry's security_claim_status, NOT the evidence-based claim validator
+    # (which would spuriously reject them as unknown claim classes).
+    required_claims = list(required_claims) if required_claims else []
+    formal_security_required = []
+    other_required = []
+    for rc in required_claims:
+        base, _bk = _parse_tagged_claim(rc)
+        (formal_security_required if base in FORMAL_SECURITY_CLAIM_BASES
+         else other_required).append(rc)
+
+    claim_rep = build_claim_report(results,
+                                   required_claims=other_required or None)
     supported = set(claim_rep["supported_claims"])
     backend_tagged = set(claim_rep.get("backend_tagged_supported") or [])
 
@@ -192,14 +237,14 @@ def build_gate_report(results, *, required_claims=None, final_artifact_tar=None,
         "deployment_truth_no_production_overclaim", not prod_overclaim,
         prod_detail))
 
-    # 9. claim validator supports required claims
-    if required_claims:
+    # 9. claim validator supports required (evidence-based) claims
+    if other_required:
         all_req = claim_rep.get("all_required_supported") is True
         checks.append(_check(
             "required_claims_supported", all_req,
             "claim validator all_required_supported must be True for: %s"
-            % ", ".join(required_claims)))
-    else:
+            % ", ".join(other_required)))
+    elif not required_claims:
         warnings.append("no --required-claims given; required-claims check skipped")
 
     # 10. latency baseline exists
@@ -230,6 +275,35 @@ def build_gate_report(results, *, required_claims=None, final_artifact_tar=None,
                 "nonlinear_backend_%s" % bk, ok,
                 "backend %s must have backend-tagged support for: %s; missing: %s"
                 % (bk, ", ".join(need), ", ".join(missing) or "none")))
+
+    # 13. formal-security guard: a design with security_claim_status != established
+    #     cannot back a FORMAL security claim, and we always flag design B.
+    scope_designs = list(nonlinear_backends) if nonlinear_backends else \
+        list(claim_rep.get("nonlinear_designs_evaluated") or [])
+    for bk in scope_designs:
+        status = _security_claim_status(bk)
+        if status != "established":
+            warnings.append(
+                "design_B_security_not_formally_claimed: nonlinear design %r has "
+                "security_claim_status=%s; correctness/performance/utility claims "
+                "are allowed but FORMAL security claims are not." % (bk, status))
+
+    for rc in formal_security_required:
+        base, bk = _parse_tagged_claim(rc)
+        backends = [bk] if bk else (scope_designs or list_nonlinear_backends())
+        for b in backends:
+            status = _security_claim_status(b)
+            ok = (status == "established")
+            checks.append(_check(
+                "formal_security_claim[%s]" % b, ok,
+                "formal security claim %r requires registry "
+                "security_claim_status=established for design %r (is %s); add "
+                "proofs/tests and update the registry first" % (rc, b, status)))
+            if not ok:
+                warnings.append(
+                    "trusted_shortcut_cannot_support_formal_security_claim: "
+                    "design %r security_claim_status=%s cannot back %r"
+                    % (b, status, rc))
 
     gate_passed = all(c["ok"] for c in checks)
     blockers = [c["detail"] for c in checks if not c["ok"]]

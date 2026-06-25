@@ -26,7 +26,8 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List, Optional
 
-__all__ = ["RealBackendUnavailable", "build_predictor", "REMOTE_BACKENDS"]
+__all__ = ["RealBackendUnavailable", "build_predictor", "REMOTE_BACKENDS",
+           "expected_remote_runtime_hash"]
 
 REMOTE_BACKENDS = (
     "folded_remote", "tdx_lite_remote", "tdx_attested_remote",
@@ -40,6 +41,29 @@ _MC_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
 class RealBackendUnavailable(Exception):
     """Raised when a real backend cannot be constructed (missing resources)."""
+
+
+def expected_remote_runtime_hash(nonlinear_backend=None, expected_mr_td=None):
+    """The runtime hash the E9 masked-remote attested backends must bind to.
+
+    This MUST match ``run_tee_gpu_protocol_demo.py --print-runtime-hash-only``
+    invoked with ``--gpu-backend qwen7b_folded_package`` and the same
+    ``--nonlinear-backend`` (and ``--expected-mr-td``): the real E9 remote folded
+    path runs the ``qwen7b_folded_package`` GPU backend, and the selected
+    nonlinear design is part of the runtime identity. It is deliberately NOT the
+    ``qwen7b`` hash."""
+    from pllo.protocol.attestation import (
+        boundary_manifest_metadata, build_trusted_boundary_manifest,
+        compute_runtime_hash_from_manifest)
+    nb = None
+    if nonlinear_backend is not None:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        nb = normalize_nonlinear_backend(nonlinear_backend)
+    md = boundary_manifest_metadata(
+        "process", "qwen7b_folded_package", expected_mr_td, nonlinear_backend=nb)
+    return compute_runtime_hash_from_manifest(
+        build_trusted_boundary_manifest(metadata=md))
 
 
 def _torch_dtype(name):
@@ -146,9 +170,14 @@ class _PlaintextLocalPredictor:
 class _RemoteMaskedPredictor:
     def __init__(self, backend, *, model_path, model_name, gpu_worker_url,
                  embedding_path, folded_lora_package_path, attestation_evidence,
-                 expected_mr_td, seq_len, max_new_tokens, dtype, device, audit):
+                 expected_mr_td, seq_len, max_new_tokens, dtype, device, audit,
+                 nonlinear_backend="current"):
         self.backend = backend
         self.model_name = model_name
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend)
+        self.nonlinear_backend = normalize_nonlinear_backend(
+            nonlinear_backend or "current")
         self.seq_len = int(seq_len)
         self.max_new_tokens = int(max_new_tokens)
         self._audit = bool(audit)
@@ -248,12 +277,11 @@ class _RemoteMaskedPredictor:
     def _verify_attestation(self, evidence, expected_mr_td):
         from dataclasses import asdict
         from pllo.protocol.attestation import (
-            attest_boundary, binding_mismatch_reason,
-            boundary_manifest_metadata, build_trusted_boundary_manifest,
-            compute_runtime_hash_from_manifest)
-        md = boundary_manifest_metadata("process", "qwen7b", expected_mr_td)
-        manifest = build_trusted_boundary_manifest(metadata=md)
-        expected = compute_runtime_hash_from_manifest(manifest)
+            attest_boundary, binding_mismatch_reason)
+        # The real E9 remote folded path runs the qwen7b_folded_package GPU
+        # backend, and the binding is specific to the selected nonlinear design.
+        expected = expected_remote_runtime_hash(self.nonlinear_backend,
+                                                expected_mr_td)
         ev = attest_boundary(runtime_hash=expected, evidence=evidence,
                              expected_mr_td=expected_mr_td)
         return {
@@ -266,6 +294,7 @@ class _RemoteMaskedPredictor:
             "runtime_hash_bound": ev.runtime_hash_bound,
             "binding_mismatch_reason": binding_mismatch_reason(ev),
             "mr_td": ev.mr_td,
+            "attestation_nonlinear_backend": self.nonlinear_backend,
         }
 
     # -- generation -------------------------------------------------------
@@ -386,8 +415,13 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     gpu_worker_url=None, embedding_path=None,
                     folded_lora_package_path=None, attestation_evidence=None,
                     expected_mr_td=None, seq_len=256, max_new_tokens=8,
-                    dtype="bfloat16", device="cuda", audit=True):
-    """Construct a real predictor or raise :class:`RealBackendUnavailable`."""
+                    dtype="bfloat16", device="cuda", audit=True,
+                    nonlinear_backend="current"):
+    """Construct a real predictor or raise :class:`RealBackendUnavailable`.
+
+    ``nonlinear_backend`` selects the nonlinear design; for the attested remote
+    backends it binds the attestation to the design (current vs trusted_shortcut
+    produce distinct runtime hashes)."""
     if backend == "plaintext_local":
         if not model_path:
             raise RealBackendUnavailable(
@@ -403,5 +437,5 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             attestation_evidence=attestation_evidence,
             expected_mr_td=expected_mr_td, seq_len=seq_len,
             max_new_tokens=max_new_tokens, dtype=dtype, device=device,
-            audit=audit)
+            audit=audit, nonlinear_backend=nonlinear_backend)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))

@@ -108,7 +108,8 @@ def main() -> int:
             expected_mr_td=args.expected_mr_td, seq_len=args.seq_len,
             max_new_tokens=args.max_new_tokens, dtype=args.dtype,
             device=args.device, audit=args.audit,
-            require_real=args.require_real)
+            require_real=args.require_real,
+            nonlinear_backend=args.nonlinear_backend)
     except RealBackendUnavailable as exc:
         print("ERROR: --require-real set but real backend unavailable: %s"
               % exc, file=sys.stderr)
@@ -117,6 +118,28 @@ def main() -> int:
     from pllo.experiments.nonlinear_designs import (
         nonlinear_design_report_fields)
     report.update(nonlinear_design_report_fields(args.nonlinear_backend))
+
+    # Attested backends under --require-real MUST have evidence bound to THIS
+    # nonlinear design (the runtime hash binds the design); reject a stale /
+    # wrong-design / wrong-backend binding instead of emitting a paper-ready
+    # report that silently fails the binding.
+    _ATTESTED = ("tdx_attested_remote", "tdx_attested_folded_lora_remote")
+    if args.require_real and args.backend in _ATTESTED:
+        if report.get("runtime_hash_bound") is not True:
+            print("ERROR: --require-real attested backend %r: attestation "
+                  "evidence is NOT bound to nonlinear design %r "
+                  "(runtime_hash_bound=%s, reason=%s). Regenerate the runtime "
+                  "hash with --nonlinear-backend %s and re-bind the TD Quote."
+                  % (args.backend, args.nonlinear_backend,
+                     report.get("runtime_hash_bound"),
+                     report.get("binding_mismatch_reason"),
+                     args.nonlinear_backend), file=sys.stderr)
+            return 3
+        bound_nb = report.get("attestation_nonlinear_backend")
+        if bound_nb is not None and bound_nb != args.nonlinear_backend:
+            print("ERROR: attestation bound to design %r but run requested %r"
+                  % (bound_nb, args.nonlinear_backend), file=sys.stderr)
+            return 3
 
     if args.output_json:
         p = Path(args.output_json)

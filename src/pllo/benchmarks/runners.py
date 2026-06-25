@@ -262,7 +262,8 @@ def run_benchmark(dataset_jsonl, *, backend: str = "plaintext_local",
                   dtype: str = "float32", device: str = "cpu",
                   audit: bool = True, predictor=None,
                   dry_run: Optional[bool] = None,
-                  require_real: bool = False) -> Dict[str, Any]:
+                  require_real: bool = False,
+                  nonlinear_backend: str = "current") -> Dict[str, Any]:
     """Run a task-utility benchmark and return an honest report dict.
 
     A real predictor (real Qwen checkpoint for ``plaintext_local``; trusted lite
@@ -306,7 +307,7 @@ def run_benchmark(dataset_jsonl, *, backend: str = "plaintext_local",
                 attestation_evidence=attestation_evidence,
                 expected_mr_td=expected_mr_td, seq_len=seq_len,
                 max_new_tokens=max_new_tokens, dtype=dtype, device=device,
-                audit=audit)
+                audit=audit, nonlinear_backend=nonlinear_backend)
         except (RealBackendUnavailable, NotImplementedError) as exc:
             if require_real:
                 raise RealBackendUnavailable(str(exc))

@@ -200,6 +200,20 @@ python scripts/run_qwen7b_lora_folded_remote_decode_probe.py \
 
 ## 12. Public benchmarks per design (`--require-real`)
 
+> **Use the REAL staged data, never the tiny unit-test fixtures.** The raw public
+> benchmark files are on the server at
+> `/root/autodl-tmp/datasets/privacy_llm_benchmarks/raw`. Convert each to a
+> normalized JSONL with `scripts/prepare_public_benchmark_jsonl.py` (writes a
+> dataset card with input/output sha256), e.g.:
+> ```
+> RAW=/root/autodl-tmp/datasets/privacy_llm_benchmarks/raw
+> python scripts/prepare_public_benchmark_jsonl.py --input-path $RAW/mmlu/test.csv \
+>   --dataset-name mmlu --split test --max-examples 300 --seed 2035 \
+>   --output-jsonl outputs/bench/mmlu.jsonl --dataset-card-json outputs/bench/mmlu_card.json
+> ```
+> `tests/fixtures/benchmarks/*` are for unit tests ONLY and must never appear in a
+> paper-facing run (the gate/claim validator reject dry-run/fixture evidence).
+
 ```
 for DS in mmlu gsm8k boolq sst2; do
   for B in plaintext_local tdx_attested_remote; do
