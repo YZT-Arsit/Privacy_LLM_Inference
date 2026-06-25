@@ -48,6 +48,12 @@ __all__ = [
     "op_backend_for_design",
     "nonlinear_design_metadata_hash",
     "nonlinear_design_report_fields",
+    "NonlinearDesignNotWired",
+    "real_path_executes",
+    "real_path_execution_status",
+    "assert_real_path_execution",
+    "report_has_amulet_execution",
+    "trusted_shortcut_tag_only",
     "add_nonlinear_backend_arg",
     "add_nonlinear_backends_arg",
     "parse_nonlinear_backends",
@@ -196,6 +202,108 @@ def op_backend_for_design(name: str) -> str:
     return NONLINEAR_DESIGNS[normalize_nonlinear_backend(name)]["op_backend"]
 
 
+# ---------------------------------------------------------------------------
+# Real-path execution status (HONESTY GUARD)
+# ---------------------------------------------------------------------------
+#
+# Whether the *real* Qwen folded-package / worker / probe / E3 / E9 path actually
+# EXECUTES this design's nonlinear handling -- as opposed to merely tagging the
+# design into report metadata + the attestation runtime hash.
+#
+# IMPORTANT: this mapping is intentionally kept OUT of the ``NONLINEAR_DESIGNS``
+# records so it does NOT feed ``nonlinear_design_metadata_hash`` -- editing it
+# must never invalidate already-built folded packages (their stored design hash
+# stays stable). It is a runtime/honesty annotation, not part of the design
+# identity.
+#
+#   * "current"          -> "trusted_boundary_inline": the folded worker + the
+#       trusted boundary run the current trusted-island nonlinearity; this IS the
+#       real, executed path (pllo.ops.nonlinear_islands).
+#   * "trusted_shortcut" -> "prototype_only": the Amulet-style lifted backend
+#       (pllo.nonlinear.amulet_backend / pllo.ops.amulet_lifted_islands) exists as
+#       a correctness + microbench PROTOTYPE only. It is NOT invoked by the real
+#       Qwen folded path (the worker imports only nonlinear_islands). Until it is
+#       wired, a trusted_shortcut tag on a real report does NOT mean the lift ran.
+#
+# When the lift is genuinely wired into the real path, change the value to e.g.
+# "lifted_on_accelerator" AND have the real path stamp the execution-evidence
+# fields (amulet_lift_executed / lifted_nonlinear_ops_count / lift_k /
+# lifted_gpu_bytes) collected from NonlinearOpResult counters.
+_REAL_PATH_EXECUTION: Dict[str, str] = {
+    "current": "trusted_boundary_inline",
+    "trusted_shortcut": "prototype_only",
+}
+
+
+class NonlinearDesignNotWired(RuntimeError):
+    """A paper-facing run selected a design whose nonlinear handling is not yet
+    executed in the real Qwen path (tag-only)."""
+
+
+def real_path_execution_status(name: str) -> str:
+    """The real-path execution status string for a design (see above)."""
+    return _REAL_PATH_EXECUTION.get(normalize_nonlinear_backend(name),
+                                    "prototype_only")
+
+
+def real_path_executes(name: str) -> bool:
+    """True iff the real Qwen folded path actually executes this design's
+    nonlinear handling (False for tag-only prototypes like trusted_shortcut)."""
+    return real_path_execution_status(name) != "prototype_only"
+
+
+def assert_real_path_execution(name: str, *, dry_run: bool = False,
+                               allow_unwired: bool = False) -> str:
+    """Guard for paper-facing runs: raise :class:`NonlinearDesignNotWired` if a
+    real (non-dry-run) run selects a design not executed in the real path.
+
+    ``dry_run`` runs are always allowed (they are clearly labeled prototypes);
+    ``allow_unwired=True`` is an explicit opt-in that lets a PROTOTYPE run proceed
+    (it can never produce paper-facing evidence -- the claim validator / gate
+    independently reject tag-only trusted_shortcut)."""
+    canon = normalize_nonlinear_backend(name)
+    if dry_run or allow_unwired or real_path_executes(canon):
+        return canon
+    raise NonlinearDesignNotWired(
+        "nonlinear design %r is a correctness PROTOTYPE (status=%s) that is NOT "
+        "wired into the real Qwen folded-package/worker path -- it would only be "
+        "TAGGED, not executed (the worker runs the 'current' trusted-island "
+        "nonlinearity). A paper-facing run must not select it. Wire the "
+        "amulet_migrated op backend into the real path (op_backend_for_design + "
+        "make_nonlinear_backend, stamping amulet_lift_executed / "
+        "lifted_nonlinear_ops_count / lift_k / lifted_gpu_bytes), or pass "
+        "--allow-unwired-nonlinear for a clearly non-paper-facing prototype run, "
+        "or use --dry-run." % (canon, real_path_execution_status(canon)))
+
+
+def report_has_amulet_execution(report: Dict[str, Any]) -> bool:
+    """True iff a report carries genuine runtime evidence that the Amulet-style
+    lifted nonlinear backend actually executed (not just a design tag)."""
+    if not isinstance(report, dict):
+        return False
+    return (report.get("nonlinear_op_backend") == "amulet_migrated"
+            and (report.get("amulet_lift_executed") is True
+                 or report.get("amulet_backend_used") is True)
+            and (report.get("lifted_nonlinear_ops_count") or 0) > 0
+            and (report.get("lift_k") or 0) >= 2
+            and (report.get("lifted_gpu_bytes") or 0) > 0)
+
+
+def trusted_shortcut_tag_only(report: Dict[str, Any]) -> bool:
+    """True iff a report is TAGGED trusted_shortcut but lacks real amulet
+    execution evidence (i.e. tag-only, design not actually executed)."""
+    if not isinstance(report, dict):
+        return False
+    nb = report.get("nonlinear_backend") or report.get("nonlinear_design_name")
+    if not nb:
+        return False
+    try:
+        canon = normalize_nonlinear_backend(nb)
+    except UnknownNonlinearBackend:
+        return False
+    return canon == "trusted_shortcut" and not report_has_amulet_execution(report)
+
+
 def _canonical_metadata_bytes(name: str) -> bytes:
     rec = NONLINEAR_DESIGNS[normalize_nonlinear_backend(name)]
     payload = {"registry_version": NONLINEAR_DESIGN_REGISTRY_VERSION,
@@ -219,6 +327,7 @@ def nonlinear_design_report_fields(name: str) -> Dict[str, Any]:
     after normalizing. Returns a flat, JSON-safe dict (no torch)."""
     canon = normalize_nonlinear_backend(name)
     rec = NONLINEAR_DESIGNS[canon]
+    executed = real_path_executes(canon)
     return {
         "nonlinear_backend": canon,
         "nonlinear_design_name": canon,
@@ -226,6 +335,17 @@ def nonlinear_design_report_fields(name: str) -> Dict[str, Any]:
         "nonlinear_design_version": rec["version"],
         "nonlinear_design_registry_version": NONLINEAR_DESIGN_REGISTRY_VERSION,
         "nonlinear_design_metadata_hash": nonlinear_design_metadata_hash(canon),
+        "nonlinear_op_backend": rec["op_backend"],
+        # HONEST execution annotation: whether the real Qwen path actually runs
+        # this design's nonlinearity, vs. only tagging it. A wired real path that
+        # truly ran the lift must OVERRIDE amulet_lift_executed (and stamp
+        # lifted_nonlinear_ops_count / lift_k / lifted_gpu_bytes) AFTER this.
+        "nonlinear_real_path_execution": real_path_execution_status(canon),
+        "nonlinear_real_path_executed": executed,
+        "amulet_lift_executed": False,
+        "nonlinear_execution_status": (
+            "executed_trusted_boundary_inline" if executed
+            else "tag_only_prototype_not_wired"),
         "nonlinear_design_metadata_summary": {
             "op_backend": rec["op_backend"],
             "security_status": rec["security_status"],

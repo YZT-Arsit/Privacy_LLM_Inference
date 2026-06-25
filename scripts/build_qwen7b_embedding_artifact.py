@@ -94,6 +94,13 @@ def main() -> int:
     ap.add_argument("--store-embed-dtype", default="model",
                     help="'model' keeps the checkpoint dtype (smaller, lossless "
                          "cast to fold precision on load) or a dtype name")
+    ap.add_argument("--nonlinear-backend", default=None,
+                    help="optional: record the nonlinear design (current|"
+                         "trusted_shortcut, aliases ok) in boundary_meta.json for "
+                         "provenance. Omit to keep the legacy artifact byte-for-"
+                         "byte. NOTE: this is provenance only -- the design is "
+                         "BOUND through the folded-package manifest + the TDX "
+                         "runtime hash, not through this artifact's tensors.")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -136,6 +143,24 @@ def main() -> int:
             embed = embed.to(ed)
 
     meta = _artifact_meta(session, mc, args.model_name, seed)
+    # Optional nonlinear-design provenance: ADD keys to the meta dict only when
+    # requested, so omitting the flag keeps the artifact byte-identical and never
+    # invalidates already-generated artifacts. The measured boundary module is
+    # untouched (so the TDX runtime hash is unchanged).
+    nonlinear_backend = None
+    if args.nonlinear_backend is not None:
+        from pllo.experiments.nonlinear_designs import (
+            normalize_nonlinear_backend, nonlinear_backend_metadata,
+            nonlinear_design_metadata_hash)
+        nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+        rec = nonlinear_backend_metadata(nonlinear_backend)
+        meta.update({
+            "nonlinear_backend": nonlinear_backend,
+            "nonlinear_design_metadata_hash":
+                nonlinear_design_metadata_hash(nonlinear_backend),
+            "nonlinear_design_version": rec.get("version"),
+            "nonlinear_design_limitations": list(rec.get("limitations", [])),
+        })
     info = build_embedding_artifact(
         args.output_dir, embed_tokens_weight=embed,
         residual_mask_n0=session._n0, vocab_mask=session._vocab_mask, meta=meta)
@@ -153,6 +178,7 @@ def main() -> int:
         "embed_dtype": str(embed.dtype).replace("torch.", ""),
         "contains_mask_secrets": True, "trusted_only": True,
         "build_time_s": round(build_time_s, 3),
+        "nonlinear_backend": nonlinear_backend,
     }
     print(json.dumps(report, indent=2))
     print("\nEMBEDDING ARTIFACT BUILT: %s (%.4f GB, %s)"

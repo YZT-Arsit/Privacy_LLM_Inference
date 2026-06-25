@@ -78,6 +78,15 @@ def pairwise_preservation(baseline, candidate, *, max_abs_drop=0.02,
         # is plaintext); this tags the report for the per-design utility claim.
         "nonlinear_backend": (_g(candidate, "nonlinear_backend")
                               or _g(baseline, "nonlinear_backend")),
+        # propagate the candidate's nonlinear-execution evidence so a
+        # trusted_shortcut pairwise built from a tag-only candidate stays
+        # tag-only (and one from a genuinely-executed candidate carries proof).
+        "nonlinear_op_backend": _g(candidate, "nonlinear_op_backend"),
+        "amulet_lift_executed": _g(candidate, "amulet_lift_executed"),
+        "amulet_backend_used": _g(candidate, "amulet_backend_used"),
+        "lifted_nonlinear_ops_count": _g(candidate, "lifted_nonlinear_ops_count"),
+        "lift_k": _g(candidate, "lift_k"),
+        "lifted_gpu_bytes": _g(candidate, "lifted_gpu_bytes"),
         "baseline_metric": bm, "candidate_metric": cm,
         "delta_abs": delta_abs, "delta_rel": delta_rel,
         "max_abs_drop": max_abs_drop, "max_rel_drop": max_rel_drop,
@@ -140,6 +149,21 @@ def aggregate_preservation(pairwise_reports, *,
         # claim cannot be silently backed by cross-design evidence.
         "nonlinear_backend": (next(iter(backends)) if len(backends) == 1
                               else ("mixed" if backends else None)),
+        # aggregate carries amulet-execution proof only if EVERY pairwise did
+        "amulet_lift_executed": (bool(pairwise_reports) and all(
+            pr.get("amulet_lift_executed") is True for pr in pairwise_reports
+            if isinstance(pr, dict)) or None),
+        "nonlinear_op_backend": (next(
+            (pr.get("nonlinear_op_backend") for pr in pairwise_reports
+             if isinstance(pr, dict) and pr.get("nonlinear_op_backend")), None)),
+        "lifted_nonlinear_ops_count": sum(
+            (pr.get("lifted_nonlinear_ops_count") or 0) for pr in pairwise_reports
+            if isinstance(pr, dict)) or None,
+        "lift_k": next((pr.get("lift_k") for pr in pairwise_reports
+                        if isinstance(pr, dict) and pr.get("lift_k")), None),
+        "lifted_gpu_bytes": sum(
+            (pr.get("lifted_gpu_bytes") or 0) for pr in pairwise_reports
+            if isinstance(pr, dict)) or None,
         "rows": rows,
         "utility_preserved": all_pass and paper_ready,
         "all_within_threshold": bool(rows) and all(

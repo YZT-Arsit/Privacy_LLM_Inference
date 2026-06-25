@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from pllo.experiments.nonlinear_designs import (
+    real_path_executes as _real_path_executes,
     nonlinear_design_report_fields,
     parse_nonlinear_backends,
 )
@@ -54,6 +55,9 @@ INCLUDE_FLAGS = (
 
 # Public benchmark dataset placeholders for E9 task-utility runs.
 _E9_DATASETS = ("mmlu", "gsm8k", "boolq", "sst2")
+# real converted benchmark data on the server (NEVER fixtures/tiny). Adjust to
+# your converted-data directory; --require-real rejects fixture/tiny paths.
+_CONVERTED_DATA_DIR = "/root/autodl-tmp/datasets/privacy_llm_benchmarks/converted"
 
 
 def default_include() -> Dict[str, bool]:
@@ -150,6 +154,17 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
             expected_output_files=["%s/verify_folded_package.json" % out],
             required_input_files=[manifest],
             side="trusted_host"))
+        # 2b. build the trusted boundary embedding artifact (seed synced from the
+        #     folded package; nonlinear design recorded for provenance)
+        steps.append(_step(
+            "build_boundary_artifact", "Build trusted boundary artifact", backend,
+            "python scripts/build_qwen7b_embedding_artifact.py "
+            "--model-path %s --folded-package-path %s --output-dir %s "
+            "--nonlinear-backend %s --dtype bfloat16 --device cuda"
+            % (model_path, base_pkg, boundary, backend),
+            expected_output_files=["%s/boundary_meta.json" % boundary],
+            required_input_files=[manifest, model_path],
+            side="trusted_host"))
 
     # 3. local prefill/logits/decode probes
     if inc["local_probes"]:
@@ -166,7 +181,7 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
         ):
             steps.append(_step(
                 sid, title, backend,
-                "python scripts/%s %s --package-path %s --model-path %s "
+                "python scripts/%s %s --folded-package-path %s --model-path %s "
                 "--seq-len %d --output-json %s/%s.json"
                 % (script, nb, base_pkg, model_path, seq_len, out, sid),
                 expected_output_files=["%s/%s.json" % (out, sid)],
@@ -179,7 +194,7 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
             "remote_decode", "Remote H800 package-backed decode", backend,
             "python scripts/run_tee_gpu_protocol_demo.py "
             "--mode boundary_client --gpu-backend qwen7b_folded_package %s "
-            "--package-path %s --gpu-worker-url %s --seq-len %d "
+            "--folded-package-path %s --gpu-worker-url %s --seq-len %d "
             "--max-new-tokens %d --output-json %s/remote_decode.json"
             % (nb, base_pkg, worker, seq_len,
                max(max_new_tokens_list), out),
@@ -192,10 +207,11 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
         steps.append(_step(
             "tdx_lite_decode", "TDX-lite decode (no evidence)", backend,
             "python scripts/run_tee_gpu_protocol_demo.py "
-            "--mode boundary_client --gpu-backend boundary %s "
-            "--boundary-artifact %s --seq-len %d --max-new-tokens %d "
+            "--mode boundary_client --gpu-backend qwen7b_folded_package "
+            "--boundary-backend process %s --embedding-path %s "
+            "--gpu-worker-url %s --seq-len %d --max-new-tokens %d "
             "--output-json %s/tdx_lite_decode.json"
-            % (nb, boundary, seq_len, max(max_new_tokens_list), out),
+            % (nb, boundary, worker, seq_len, max(max_new_tokens_list), out),
             expected_output_files=["%s/tdx_lite_decode.json" % out],
             required_input_files=[boundary],
             required_server_state="tdx_guest", side="tdx"))
@@ -215,11 +231,12 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
         steps.append(_step(
             "tdx_attested_decode", "TDX-attested decode", backend,
             "python scripts/run_tee_gpu_protocol_demo.py "
-            "--mode boundary_client --gpu-backend boundary %s "
-            "--boundary-artifact %s --attestation-evidence %s "
+            "--mode boundary_client --gpu-backend qwen7b_folded_package "
+            "--boundary-backend process %s --embedding-path %s "
+            "--gpu-worker-url %s --attestation-evidence %s "
             "--expected-mr-td %s --seq-len %d --max-new-tokens %d "
             "--output-json %s/tdx_attested_decode.json"
-            % (nb, boundary, ev, mrtd, seq_len,
+            % (nb, boundary, worker, ev, mrtd, seq_len,
                max(max_new_tokens_list), out),
             expected_output_files=["%s/tdx_attested_decode.json" % out],
             required_input_files=[boundary, "%s/runtime_hash.json" % out],
@@ -231,9 +248,10 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
         steps.append(_step(
             "e3_scaling", "E3 remote-decode scaling", backend,
             "python scripts/run_e3_remote_decode_scaling.py %s "
-            "--package-path %s --max-new-tokens-list %s "
+            "--gpu-backend qwen7b_folded_package --gpu-worker-url %s "
+            "--folded-package-path %s --model-path %s --max-new-tokens-list %s "
             "--output-json %s/e3_scaling.json"
-            % (nb, base_pkg, mnt, out),
+            % (nb, worker, base_pkg, model_path, mnt, out),
             expected_output_files=["%s/e3_scaling.json" % out],
             required_input_files=["%s/manifest.json" % base_pkg],
             required_server_state="h800_worker_running", side="h800"))
@@ -243,7 +261,7 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
         steps.append(_step(
             "e4_setup_cost", "E4 setup-cost report", backend,
             "python scripts/run_e4_setup_cost_report.py %s "
-            "--package-path %s --output-json %s/e4_setup_cost.json"
+            "--folded-package-path %s --output-json %s/e4_setup_cost.json"
             % (nb, base_pkg, out),
             expected_output_files=["%s/e4_setup_cost.json" % out],
             required_input_files=["%s/manifest.json" % base_pkg],
@@ -277,71 +295,104 @@ def build_backend_steps(backend: str, *, model_path: str, model_name: str,
         steps.append(_step(
             "lora_verify", "Verify LoRA folded package", backend,
             "python scripts/verify_qwen7b_lora_folded_package.py "
-            "--package-path %s --expected-nonlinear-backend %s "
-            "--output-json %s/lora_verify.json"
-            % (lora_pkg, backend, out),
+            "--lora-folded-package-path %s --base-folded-package-path %s "
+            "--expected-nonlinear-backend %s --output-json %s/lora_verify.json"
+            % (lora_pkg, base_pkg, backend, out),
             expected_output_files=["%s/lora_verify.json" % out],
             required_input_files=[lora_manifest], side="trusted_host"))
         steps.append(_step(
             "lora_local_probe", "LoRA folded local probe", backend,
             "python scripts/run_qwen7b_lora_folded_local_probe.py %s "
-            "--package-path %s --model-path %s "
+            "--base-folded-package-path %s --model-path %s "
             "--output-json %s/lora_local_probe.json"
-            % (nb, lora_pkg, model_path, out),
+            % (nb, base_pkg, model_path, out),
             expected_output_files=["%s/lora_local_probe.json" % out],
             required_input_files=[lora_manifest], side="local"))
         steps.append(_step(
             "lora_remote_probe", "LoRA folded remote decode probe", backend,
             "python scripts/run_qwen7b_lora_folded_remote_decode_probe.py %s "
-            "--package-path %s --gpu-worker-url %s "
+            "--folded-package-path %s --embedding-path %s --gpu-worker-url %s "
             "--output-json %s/lora_remote_probe.json"
-            % (nb, lora_pkg, worker, out),
+            % (nb, base_pkg, boundary, worker, out),
             expected_output_files=["%s/lora_remote_probe.json" % out],
             required_input_files=[lora_manifest],
             required_server_state="h800_worker_running", side="h800"))
 
-    # 11. E9 public benchmark runs (one per dataset placeholder)
+    # 11. E9 public benchmark runs: plaintext baseline + attested candidate per
+    #     dataset (real converted data only; --require-real rejects fixtures).
     if inc["public_benchmarks"]:
+        ev = attestation_evidence or "%s/attestation_evidence.json" % out
+        mrtd = expected_mr_td or "<EXPECTED_MR_TD>"
         for ds in _E9_DATASETS:
+            data = "%s/%s.jsonl" % (_CONVERTED_DATA_DIR, ds)
             steps.append(_step(
-                "e9_benchmark_%s" % ds, "E9 public benchmark: %s" % ds,
+                "e9_plaintext_%s" % ds, "E9 plaintext baseline: %s" % ds, backend,
+                "python scripts/run_e9_task_utility_benchmark.py --require-real "
+                "%s --backend plaintext_local --dataset-jsonl %s --model-path %s "
+                "--output-json %s/e9_%s_plaintext.json"
+                % (nb, data, model_path, out, ds),
+                expected_output_files=["%s/e9_%s_plaintext.json" % (out, ds)],
+                required_input_files=[data], side="local"))
+            steps.append(_step(
+                "e9_candidate_%s" % ds, "E9 attested candidate: %s" % ds, backend,
+                "python scripts/run_e9_task_utility_benchmark.py --require-real "
+                "%s --backend tdx_attested_remote --dataset-jsonl %s "
+                "--model-path %s --gpu-worker-url %s --embedding-path %s "
+                "--attestation-evidence %s --expected-mr-td %s "
+                "--output-json %s/e9_%s_candidate.json"
+                % (nb, data, model_path, worker, boundary, ev, mrtd, out, ds),
+                expected_output_files=["%s/e9_%s_candidate.json" % (out, ds)],
+                required_input_files=[data, "%s/manifest.json" % base_pkg],
+                required_server_state="tdx_quote_bound", side="tdx"))
+            steps.append(_step(
+                "e9_pairwise_%s" % ds, "E9 pairwise preservation: %s" % ds,
                 backend,
-                "python scripts/run_e9_task_utility_benchmark.py "
-                "--require-real %s --dataset %s "
-                "--output-json %s/e9_%s.json" % (nb, ds, out, ds),
-                expected_output_files=["%s/e9_%s.json" % (out, ds)],
-                required_input_files=["%s/manifest.json" % base_pkg],
-                required_server_state="h800_worker_running", side="h800"))
-        # 12. E9 pairwise utility preservation
+                "python scripts/run_e9_pairwise_utility_preservation.py "
+                "--baseline-json %s/e9_%s_plaintext.json "
+                "--candidate-json %s/e9_%s_candidate.json --dataset %s "
+                "--output-json %s/e9_%s_pairwise.json"
+                % (out, ds, out, ds, ds, out, ds),
+                expected_output_files=["%s/e9_%s_pairwise.json" % (out, ds)],
+                required_input_files=["%s/e9_%s_plaintext.json" % (out, ds),
+                                      "%s/e9_%s_candidate.json" % (out, ds)],
+                side="local"))
+        # 12. E9 aggregate utility preservation over the per-dataset pairwise
         steps.append(_step(
-            "e9_pairwise", "E9 pairwise utility preservation", backend,
-            "python scripts/run_e9_pairwise_utility_preservation.py "
-            "--output-json %s/e9_pairwise.json" % out,
-            expected_output_files=["%s/e9_pairwise.json" % out],
-            required_input_files=["%s/e9_%s.json" % (out, ds)
+            "e9_aggregate", "E9 aggregate utility preservation", backend,
+            "python scripts/run_e9_pairwise_utility_preservation.py --aggregate %s "
+            "--output-json %s/e9_aggregate.json"
+            % (" ".join("--pairwise-json %s/e9_%s_pairwise.json" % (out, ds)
+                        for ds in _E9_DATASETS), out),
+            expected_output_files=["%s/e9_aggregate.json" % out],
+            required_input_files=["%s/e9_%s_pairwise.json" % (out, ds)
                                   for ds in _E9_DATASETS],
             side="local"))
 
-    # 13. E10 LoRA utility
+    # 13. E10 LoRA utility (consumes report JSONs, not a package path)
     if inc["lora"]:
         steps.append(_step(
             "e10_lora_utility", "E10 LoRA utility benchmark", backend,
             "python scripts/run_e10_lora_utility_benchmark.py %s "
-            "--package-path %s --output-json %s/e10_lora_utility.json"
-            % (nb, lora_pkg, out),
+            "--no-lora-decode-json %s/remote_decode.json "
+            "--lora-decode-json %s/lora_remote_probe.json "
+            "--lora-verify-json %s/lora_verify.json "
+            "--output-json %s/e10_lora_utility.json"
+            % (nb, out, out, out, out),
             expected_output_files=["%s/e10_lora_utility.json" % out],
-            required_input_files=["%s/manifest.json" % lora_pkg],
+            required_input_files=["%s/lora_verify.json" % out],
             side="local"))
 
-    # 14. E12 latency baselines
+    # 14. E12 latency baselines (consumes decode report JSONs)
     if inc["latency"]:
         steps.append(_step(
             "e12_latency", "E12 latency baselines", backend,
             "python scripts/run_e12_latency_baselines.py %s "
-            "--package-path %s --output-json %s/e12_latency.json"
-            % (nb, base_pkg, out),
+            "--folded-remote-json %s/remote_decode.json "
+            "--tdx-attested-json %s/tdx_attested_decode.json "
+            "--output-json %s/e12_latency.json"
+            % (nb, out, out, out),
             expected_output_files=["%s/e12_latency.json" % out],
-            required_input_files=["%s/manifest.json" % base_pkg],
+            required_input_files=["%s/remote_decode.json" % out],
             side="local"))
 
     # 15. transcript scan
@@ -421,12 +472,20 @@ def build_matrix_plan(*, nonlinear_backends, model_path: str,
             expected_mr_td=expected_mr_td,
             attestation_evidence=attestation_evidence)
         total += len(steps)
+        executed = _real_path_executes(backend)
         per_backend[backend] = {
             "steps": steps,
             "namespaced_paths": namespaced_paths(
                 backend, base_output_root=base_output_root,
                 outputs_dir=outputs_dir),
             "nonlinear_design": nonlinear_design_report_fields(backend),
+            "nonlinear_real_path_executed": executed,
+            "note": (None if executed else
+                     "NON-PAPER-FACING: %s is not wired into the real Qwen path; "
+                     "these real steps will be REFUSED (exit nonzero) unless run "
+                     "with --allow-unwired-nonlinear as a tag-only prototype. Wire "
+                     "the Amulet backend first (see docs/paper_draft/"
+                     "evaluation_nonlinear_designs.md)." % backend),
         }
 
     notes = [

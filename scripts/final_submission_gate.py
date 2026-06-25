@@ -276,6 +276,14 @@ def build_gate_report(results, *, required_claims=None, final_artifact_tar=None,
                 "backend %s must have backend-tagged support for: %s; missing: %s"
                 % (bk, ", ".join(need), ", ".join(missing) or "none")))
 
+    # 12b. trusted_shortcut must be EXECUTED in the real path, not tag-only.
+    ts_tag_only = claim_rep.get("trusted_shortcut_tag_only_files") or []
+    checks.append(_check(
+        "trusted_shortcut_not_executed_in_real_path", not ts_tag_only,
+        "trusted_shortcut reports must carry Amulet-lift execution evidence "
+        "(amulet_lift_executed / lifted_nonlinear_ops_count / lift_k / "
+        "lifted_gpu_bytes); tag-only (not executed): %s" % (ts_tag_only or "none")))
+
     # 13. formal-security guard: a design with security_claim_status != established
     #     cannot back a FORMAL security claim, and we always flag design B.
     scope_designs = list(nonlinear_backends) if nonlinear_backends else \

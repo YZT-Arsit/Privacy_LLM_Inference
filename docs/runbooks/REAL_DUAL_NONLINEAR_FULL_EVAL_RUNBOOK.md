@@ -85,17 +85,26 @@ done
 
 ## 3. Build both boundary (embedding) artifacts
 
+Pass `--folded-package-path` so the mask seed is synced from the package the
+artifact must match, and `--nonlinear-backend` to record the design in
+`boundary_meta.json` (provenance only — the design is bound through the folded
+manifest + the TDX runtime hash, not the artifact tensors):
+
 ```
 for D in $DESIGNS; do
   python scripts/build_qwen7b_embedding_artifact.py --model-path $MODEL \
-    --output-dir $ROOT/qwen7b_boundary_artifact_$D --device cuda --dtype bfloat16
+    --folded-package-path $ROOT/qwen7b_folded_full_$D \
+    --output-dir $ROOT/qwen7b_boundary_artifact_$D --nonlinear-backend $D \
+    --device cuda --dtype bfloat16
 done
 ```
 
 ## 4. Start the H800 worker for a design
 
 The worker loads a folded package; start one per design (or restart between
-designs). Run the matching `--folded-package-path` for the design under test:
+designs). Run the matching `--folded-package-path` for the design under test.
+`ss` is NOT installed on H800 — use `curl /health` (and a portable Python socket
+probe), never `ss`:
 
 ```
 python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
@@ -103,16 +112,21 @@ python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
   --folded-package-path $ROOT/qwen7b_folded_full_$D \
   --folded-lora-package-path $ROOT/qwen7b_lora_folded_$D \
   --device cuda --dtype bfloat16 --listen-port $PORT --audit true
-curl $URL/health
+curl -fsS $URL/health && echo            # health check (no ss)
+python - <<'PY'                          # portable listen probe (no ss)
+import socket
+s = socket.socket(); s.settimeout(2)
+print("18083", "open" if s.connect_ex(("127.0.0.1", 18083)) == 0 else "CLOSED")
+PY
 ```
 
 ## 5. Local probes for each design
 
 ```
 for P in prefill onestep_logits decode; do
-  python scripts/run_qwen7b_folded_package_${P/onestep_logits/onestep_logits}_probe.py \
-    --package-path $ROOT/qwen7b_folded_full_$D --nonlinear-backend $D \
-    --output-json $OUT/$D/local_${P}_$D.json
+  python scripts/run_qwen7b_folded_package_${P}_probe.py \
+    --folded-package-path $ROOT/qwen7b_folded_full_$D --model-path $MODEL \
+    --nonlinear-backend $D --output-json $OUT/$D/local_${P}_$D.json
 done
 ```
 (Scripts: `run_qwen7b_folded_package_prefill_probe.py`,

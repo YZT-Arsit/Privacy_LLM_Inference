@@ -24,6 +24,57 @@ Every paper-facing report carries a canonical `nonlinear_backend` field plus a
 design metadata hash that binds into the attestation runtime hash, so design A
 evidence can never be silently reused for design B.
 
+## Execution status (READ THIS BEFORE CLAIMING trusted_shortcut)
+
+A code audit (2026-06) established that **`trusted_shortcut` is currently a
+correctness/efficiency PROTOTYPE only — it is NOT wired into the real Qwen
+folded-package / worker / probe / E3 / E9 path.** The real folded worker
+(`src/pllo/deployment/folded_worker.py`) imports only the *current*
+trusted-island primitives (`pllo.ops.nonlinear_islands`); it never invokes the
+Amulet-style lifted backend (`pllo.nonlinear.amulet_backend` /
+`pllo.ops.amulet_lifted_islands`). Selecting `--nonlinear-backend
+trusted_shortcut` on the real path today only **tags** the design into report
+metadata + the attestation runtime hash — **the lift does not execute**; the run
+actually computes the `current` trusted-boundary nonlinearity.
+
+The Amulet backend itself is real and exercised at the op level (the registry
+maps `trusted_shortcut -> amulet_migrated`; `AmuletMigratedNonlinearBackend.gelu`
+lifts onto the untrusted accelerator: `extra.location=untrusted_accelerator`,
+`lift_k>=2`, `trusted_calls=0`, `gpu_bytes>0` — see
+`scripts/run_nonlinear_backend_microbench.py` and
+`tests/test_trusted_shortcut_execution.py`). It is the *integration into the real
+Qwen pipeline* that is not yet done.
+
+Consequences (enforced in code, do not bypass):
+
+* `trusted_shortcut` is **non-paper-facing** until wired. `build_qwen7b_folded_package.py`,
+  the folded probes, `run_e3_remote_decode_scaling.py`, and (under `--require-real`)
+  `run_e9_task_utility_benchmark.py` **refuse** a real `trusted_shortcut` run
+  (exit nonzero) unless `--allow-unwired-nonlinear` is given for an explicitly
+  non-paper prototype, or `--dry-run`.
+* A report has genuine execution evidence only if it carries
+  `nonlinear_op_backend=amulet_migrated`, `amulet_lift_executed=true`,
+  `lifted_nonlinear_ops_count>0`, `lift_k>=2`, `lifted_gpu_bytes>0`. The default
+  report stamp sets `amulet_lift_executed=false` / `nonlinear_execution_status=
+  tag_only_prototype_not_wired`; only a wired real path may override these from
+  measured `NonlinearOpResult` counters.
+* The claim validator and `final_submission_gate.py` fail any tag-only
+  `trusted_shortcut` evidence with `trusted_shortcut_not_executed_in_real_path`,
+  and **E15 refuses to compare or recommend** a tag-only `trusted_shortcut`
+  (`recommendation_status=insufficient_evidence`).
+
+**To make `trusted_shortcut` paper-facing**, wire
+`op_backend_for_design(nonlinear_backend)` + `make_nonlinear_backend(op_backend)`
+into the real worker/boundary nonlinear path, collect the `NonlinearOpResult`
+counters into the report (`amulet_lift_executed` / `lifted_nonlinear_ops_count` /
+`lift_k` / `lifted_gpu_bytes` / `trusted_calls` / `trusted_bytes` / `gpu_bytes`),
+then flip `_REAL_PATH_EXECUTION["trusted_shortcut"]` in
+`src/pllo/experiments/nonlinear_designs.py` to the executed status. **Any
+`trusted_shortcut` H800 inference artifacts generated before that wiring are
+tag-only and MUST be regenerated** (the folded *package* itself is design-
+independent and need not be rebuilt; only the inference/decode/E3/E9 reports must
+be re-run once the lift actually executes). `current` is unaffected.
+
 ## E15 — five comparison tables
 
 `scripts/run_e15_nonlinear_design_comparison.py` consolidates ALL per-design

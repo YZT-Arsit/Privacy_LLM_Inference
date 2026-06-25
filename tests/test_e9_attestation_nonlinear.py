@@ -106,12 +106,13 @@ def test_e9_script_passes_nonlinear_backend_to_predictor(tmp_path,
     rc = _main(mod, [
         "x", "--dataset-jsonl", str(ds), "--task-type", "multiple_choice",
         "--backend", "tdx_attested_remote", "--require-real",
-        "--nonlinear-backend", "trusted_shortcut",
+        "--nonlinear-backend", "trusted_shortcut", "--allow-unwired-nonlinear",
         "--model-path", "/nonexistent", "--gpu-worker-url", "http://127.0.0.1:9",
         "--embedding-path", str(tmp_path),
         "--attestation-evidence", str(tmp_path / "ev.json"),
         "--output-json", str(tmp_path / "out.json")])
-    # require-real + unavailable backend -> exit 3, but we captured the kwarg
+    # --allow-unwired-nonlinear lets the prototype proceed to the predictor;
+    # the backend is then unavailable -> exit 3, but we captured the kwarg
     assert rc == 3
     assert captured.get("backend") == "tdx_attested_remote"
     assert captured.get("nonlinear_backend") == "trusted_shortcut"

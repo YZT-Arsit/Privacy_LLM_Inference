@@ -122,10 +122,17 @@ def test_lora_base_nonlinear_compat() -> None:
 # 7. claim validator refuses cross-backend evidence
 # ---------------------------------------------------------------------------
 
-def _pairwise_report(backend):
-    return {"stage": "e9_pairwise_utility_preservation", "nonlinear_backend":
-            backend, "utility_preserved": True, "paper_ready": True,
-            "dry_run": False, "dataset": "mmlu", "delta_abs": 0.0}
+def _pairwise_report(backend, executed=True):
+    r = {"stage": "e9_pairwise_utility_preservation", "nonlinear_backend":
+         backend, "utility_preserved": True, "paper_ready": True,
+         "dry_run": False, "dataset": "mmlu", "delta_abs": 0.0}
+    # trusted_shortcut needs genuine Amulet-lift execution evidence to count;
+    # current is executed by definition (trusted-boundary inline).
+    if backend == "trusted_shortcut" and executed:
+        r.update({"nonlinear_op_backend": "amulet_migrated",
+                  "amulet_lift_executed": True, "lifted_nonlinear_ops_count": 56,
+                  "lift_k": 4, "lifted_gpu_bytes": 123456})
+    return r
 
 
 def test_claim_validator_cross_backend_refusal() -> None:
@@ -155,6 +162,23 @@ def test_claim_validator_both_designs_supported() -> None:
     assert rep["both_nonlinear_designs_supported"] is True
     assert set(rep["nonlinear_designs_evaluated"]) == {"current",
                                                        "trusted_shortcut"}
+    assert rep["trusted_shortcut_executed_in_real_path"] is True
+
+
+def test_claim_validator_refuses_tag_only_trusted_shortcut() -> None:
+    from pllo.experiments.claim_validator import build_claim_report
+    # tag-only trusted_shortcut (no Amulet-lift execution evidence)
+    results = [{"file": "t.json",
+                "report": _pairwise_report("trusted_shortcut", executed=False)}]
+    rep = build_claim_report(results, required_claims=[
+        "public_benchmark_utility_preserved[trusted_shortcut]"])
+    assert rep["all_required_supported"] is False
+    assert "public_benchmark_utility_preserved[trusted_shortcut]" not in \
+        rep["backend_tagged_supported"]
+    assert rep["trusted_shortcut_executed_in_real_path"] is False
+    assert rep["trusted_shortcut_tag_only_files"] == ["t.json"]
+    assert any("trusted_shortcut_not_executed_in_real_path" in w
+               for w in rep["warnings"])
 
 
 # ---------------------------------------------------------------------------

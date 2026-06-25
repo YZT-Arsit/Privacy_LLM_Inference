@@ -44,6 +44,8 @@ from pllo.experiments.folded_probe_common import (  # noqa: E402
     topk_overlap,
 )
 from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    NonlinearDesignNotWired,
+    assert_real_path_execution,
     nonlinear_design_report_fields,
     normalize_nonlinear_backend,
 )
@@ -73,6 +75,11 @@ def main() -> int:
     ap.add_argument("--atol", type=float, default=1e-3)
     ap.add_argument("--rtol", type=float, default=1e-3)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--allow-unwired-nonlinear", action="store_true",
+                    default=False,
+                    help="allow a non-paper-facing PROTOTYPE run for a "
+                         "nonlinear design not yet executed in the real "
+                         "path (tag-only)")
     ap.add_argument("--output-json",
                     default="outputs/qwen7b_folded_full_onestep_logits_probe.json")
     ap.add_argument("--output-md",
@@ -83,6 +90,13 @@ def main() -> int:
     args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
 
     dry_run = bool(args.dry_run or not args.model_path)
+    try:
+        assert_real_path_execution(
+            args.nonlinear_backend, dry_run=dry_run,
+            allow_unwired=args.allow_unwired_nonlinear)
+    except NonlinearDesignNotWired as exc:
+        print("ERROR: %s" % exc, file=sys.stderr)
+        return 3
     model, mc, ids, device, dtype = load_model_and_ids(args, dry_run)
 
     pkg_dir = Path(args.folded_package_path)

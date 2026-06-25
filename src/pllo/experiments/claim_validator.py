@@ -224,6 +224,7 @@ def _parse_tagged_claim(claim):
 
 
 def build_claim_report(results: list, required_claims=None) -> dict:
+    from pllo.experiments.nonlinear_designs import trusted_shortcut_tag_only
     enriched = []
     for item in results:
         rep = item.get("report")
@@ -231,6 +232,12 @@ def build_claim_report(results: list, required_claims=None) -> dict:
         enriched.append({"file": item.get("file"), "report": rep,
                          "truth": truth,
                          "nonlinear_backend": _report_nonlinear_backend(rep)})
+    # reports TAGGED trusted_shortcut but lacking real Amulet-lift execution
+    # evidence: they actually ran the 'current' path, so they may NOT back a
+    # [trusted_shortcut] claim (only the design tag would be a lie).
+    tag_only_ts_files = {e["file"] for e in enriched
+                         if e["report"] is not None
+                         and trusted_shortcut_tag_only(e["report"])}
 
     supported = {}
     supported_backends = {}          # claim -> {backend or "unspecified": [files]}
@@ -245,7 +252,15 @@ def build_claim_report(results: list, required_claims=None) -> dict:
             if _supports(claim, e["report"], e["truth"]):
                 evidence.append(e["file"])
                 bk = e["nonlinear_backend"] or "unspecified"
-                per_backend.setdefault(bk, []).append(e["file"])
+                # a tag-only trusted_shortcut report cannot back a per-backend
+                # [trusted_shortcut] claim (the lift never executed).
+                if not (bk == "trusted_shortcut"
+                        and e["file"] in tag_only_ts_files):
+                    per_backend.setdefault(bk, []).append(e["file"])
+                else:
+                    overclaim.append({
+                        "claim": claim, "file": e["file"],
+                        "reasons": ["trusted_shortcut_not_executed_in_real_path"]})
             elif _shape(claim, e["report"], e["truth"]):
                 # shape matches but gate failed -> potential overclaim source
                 reasons = []
@@ -315,6 +330,17 @@ def build_claim_report(results: list, required_claims=None) -> dict:
         warnings.append("production_ready_serving is marked supported -- ensure a "
                         "real production transport exists; default deployment is a "
                         "research-prototype HTTP/SSH tunnel.")
+    # tag-only trusted_shortcut reports: loud, explicit refusal reason
+    if tag_only_ts_files:
+        warnings.append(
+            "trusted_shortcut_not_executed_in_real_path: %d report(s) are TAGGED "
+            "trusted_shortcut but carry no Amulet-lift execution evidence "
+            "(amulet_lift_executed / lifted_nonlinear_ops_count / lift_k / "
+            "lifted_gpu_bytes); they actually ran the 'current' path and cannot "
+            "back any public_benchmark_utility_preserved[trusted_shortcut] / "
+            "no_lora_tdx_attested_remote_package_decode[trusted_shortcut] / "
+            "folded_lora_tdx_attested_validated[trusted_shortcut] claim. Files: %s"
+            % (len(tag_only_ts_files), sorted(tag_only_ts_files)))
     # if only one design is evaluated, the report must say so explicitly
     if len(designs_evaluated) == 1 and designs_not_evaluated:
         warnings.append(
@@ -354,6 +380,8 @@ def build_claim_report(results: list, required_claims=None) -> dict:
         "nonlinear_designs_not_evaluated": designs_not_evaluated,
         "backend_tagged_supported": sorted(backend_tagged_supported),
         "supported_claims_by_backend": supported_claims_by_backend,
+        "trusted_shortcut_tag_only_files": sorted(tag_only_ts_files),
+        "trusted_shortcut_executed_in_real_path": not tag_only_ts_files,
         "both_nonlinear_designs_supported": (
             len(designs_evaluated) >= 2),
         "required_claims": required_norm,

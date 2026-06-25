@@ -108,6 +108,10 @@ def main() -> int:
     ap.add_argument("--folded-weight-device", default=None)
     ap.add_argument("--mlp-down-chunk-size", type=int, default=512)
     ap.add_argument("--nonlinear-backend", default="current")
+    ap.add_argument("--allow-unwired-nonlinear", action="store_true",
+                    default=False,
+                    help="allow a non-paper-facing PROTOTYPE build for a nonlinear "
+                         "design not yet executed in the real path (tag-only)")
     ap.add_argument("--mask-schedule", default="session")
     ap.add_argument("--shard-by-layer", default="true")
     ap.add_argument("--write-manifest", default="true")
@@ -126,11 +130,22 @@ def main() -> int:
     args = ap.parse_args()
 
     from pllo.experiments.nonlinear_designs import (  # noqa: E402
+        assert_real_path_execution, NonlinearDesignNotWired,
         normalize_nonlinear_backend, nonlinear_design_report_fields)
     args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
     build_command = "python " + " ".join(sys.argv)
 
     dry_run = bool(args.dry_run or not args.model_path)
+
+    # HONESTY GUARD: refuse a paper-facing build for a nonlinear design not yet
+    # executed in the real path (it would be tag-only). dry-run / explicit
+    # --allow-unwired-nonlinear prototypes are allowed.
+    try:
+        assert_real_path_execution(args.nonlinear_backend, dry_run=dry_run,
+                                   allow_unwired=args.allow_unwired_nonlinear)
+    except NonlinearDesignNotWired as exc:
+        print("ERROR: %s" % exc, file=sys.stderr)
+        return 3
     if dry_run:
         if not args.dry_run:
             print("NOTE: no --model-path; building --dry-run tiny package (NOT a "

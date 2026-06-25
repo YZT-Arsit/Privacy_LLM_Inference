@@ -77,6 +77,11 @@ def main() -> int:
     ap.add_argument("--nonlinear-backend", default="current",
                     help="nonlinear design under test (current|trusted_shortcut, "
                          "aliases ok); recorded in the report for tagging")
+    ap.add_argument("--allow-unwired-nonlinear", action="store_true",
+                    default=False,
+                    help="allow a non-paper-facing PROTOTYPE run for a nonlinear "
+                         "design not yet executed in the real path (tag-only); "
+                         "ignored without --require-real")
     ap.add_argument("--seq-len", type=int, default=256)
     ap.add_argument("--max-new-tokens", type=int, default=8)
     ap.add_argument("--dtype", default="float32")
@@ -95,6 +100,29 @@ def main() -> int:
     if not ds.is_file():
         print("ERROR: dataset JSONL not found: %s" % ds, file=sys.stderr)
         return 2
+
+    # Paper-facing runs (--require-real) MUST use real staged data, never the
+    # tiny unit-test fixtures. Reject obvious fixture/tiny paths up front.
+    if args.require_real:
+        low = str(args.dataset_jsonl).replace("\\", "/").lower()
+        if ("tests/fixtures" in low or "fixture" in low or "tiny" in low):
+            print("ERROR: paper-facing E9 cannot use fixture/tiny datasets "
+                  "(--require-real with dataset path %r). Use the converted real "
+                  "benchmark data (e.g. under datasets/.../converted)."
+                  % args.dataset_jsonl, file=sys.stderr)
+            return 3
+        # HONESTY GUARD: a paper-facing E9 must not select a nonlinear design that
+        # is not actually executed in the real path (tag-only -> misleading).
+        from pllo.experiments.nonlinear_designs import (
+            assert_real_path_execution, NonlinearDesignNotWired)
+        try:
+            assert_real_path_execution(
+                args.nonlinear_backend, dry_run=False,
+                allow_unwired=args.allow_unwired_nonlinear)
+        except NonlinearDesignNotWired as exc:
+            print("ERROR (trusted_shortcut_not_executed_in_real_path): %s" % exc,
+                  file=sys.stderr)
+            return 3
 
     try:
         report = run_benchmark(

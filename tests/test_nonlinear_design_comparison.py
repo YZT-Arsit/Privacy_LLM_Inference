@@ -38,8 +38,8 @@ def _main(mod, argv):
 
 
 def _decode(backend, *, latency, trusted_bytes, gpu_bytes=1000,
-            boundary_calls=10):
-    return {
+            boundary_calls=10, amulet_executed=True):
+    rep = {
         "stage": "tee_gpu_protocol_demo",
         "nonlinear_backend": backend,
         "tokens_exact_match": True,
@@ -65,6 +65,13 @@ def _decode(backend, *, latency, trusted_bytes, gpu_bytes=1000,
         "dry_run": False,
         "paper_ready": True,
     }
+    # trusted_shortcut counts as executed only with Amulet-lift evidence
+    if backend == "trusted_shortcut" and amulet_executed:
+        rep.update({"nonlinear_op_backend": "amulet_migrated",
+                    "amulet_lift_executed": True,
+                    "lifted_nonlinear_ops_count": 56, "lift_k": 4,
+                    "lifted_gpu_bytes": max(1, gpu_bytes)})
+    return rep
 
 
 def _build(backend, *, size_gb=26.3, gen_time=120.0):

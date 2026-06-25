@@ -50,6 +50,8 @@ from pllo.experiments.e3_remote_decode_scaling import (  # noqa: E402
     run_e3_scaling,
 )
 from pllo.experiments.nonlinear_designs import (  # noqa: E402
+    NonlinearDesignNotWired,
+    assert_real_path_execution,
     nonlinear_design_report_fields,
     normalize_nonlinear_backend,
 )
@@ -139,11 +141,35 @@ def main() -> int:
     ap.add_argument("--output-md", default="outputs/e3_remote_decode_scaling.md")
     ap.add_argument("--nonlinear-backend", default="current",
                     help="nonlinear design (current|trusted_shortcut, aliases ok)")
+    ap.add_argument("--allow-unwired-nonlinear", action="store_true",
+                    default=False,
+                    help="allow a non-paper-facing PROTOTYPE sweep for a nonlinear "
+                         "design not yet executed in the real path (tag-only)")
     args = ap.parse_args()
     args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+    try:
+        assert_real_path_execution(args.nonlinear_backend,
+                                   dry_run=bool(args.dry_run),
+                                   allow_unwired=args.allow_unwired_nonlinear)
+    except NonlinearDesignNotWired as exc:
+        print("ERROR: %s" % exc, file=sys.stderr)
+        return 3
 
     if args.gpu_backend != "qwen7b_folded_package":
         ap.error("E3 currently sweeps --gpu-backend qwen7b_folded_package")
+
+    # Friendly guard so the runbook mismatch surfaces here, not deep in the demo:
+    # reference (non-lite) mode needs the in-process folded reference; TDX-lite
+    # needs the boundary embedding artifact.
+    if not args.dry_run:
+        if not _bool(args.skip_reference) and not args.folded_package_path:
+            ap.error("reference mode (no --skip-reference) requires "
+                     "--folded-package-path (the in-process folded reference for "
+                     "gpu_backend=qwen7b_folded_package); for TDX-lite pass "
+                     "--skip-reference together with --embedding-path instead")
+        if _bool(args.skip_reference) and not args.embedding_path:
+            ap.error("--skip-reference (TDX-lite) requires --embedding-path "
+                     "(the trusted boundary artifact)")
 
     max_new_tokens_list = _csv_ints(args.max_new_tokens_list)
     if not max_new_tokens_list:

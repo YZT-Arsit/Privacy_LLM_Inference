@@ -22,6 +22,31 @@ folded package + folded-LoRA operators + masked activations + public metadata;
 input ids, mask secrets, raw LoRA, optimizer state, labels, and logit recovery
 stay trusted-side (H800 trusted process or the TDX guest).
 
+## Phase map (run in order)
+
+The evaluation is split into four phases so a server session has a clear scope.
+Health checks use `curl /health` / a Python socket probe — **`ss` is not
+installed on H800; do not use it.**
+
+- **A. H800 core matrix** — build+verify both folded packages, boundary
+  artifacts, local probes, remote decode, E3 short matrix (max_new_tokens
+  1,4,8,16), E9 (plaintext + folded) on the converted real data, pairwise +
+  aggregate, security transcript scan + negative tests, latency. Per design.
+  Validate with `python scripts/check_h800_stage_outputs.py`.
+- **B. H800 extended decode/context scaling** — extended decode-length sweep
+  (`outputs/e3_extended/e3_decode_len_scaling_<design>.json`) and context sweep
+  (`outputs/e3_context/e3_context_<design>_seq{128,256,512,1024}.json`), then
+  `python scripts/render_extended_latency_context.py`.
+- **C. TDX-attested minimum deployment evidence** — see
+  [`REAL_TDX_MINIMUM_DEPLOYMENT_EVIDENCE_RUNBOOK.md`](REAL_TDX_MINIMUM_DEPLOYMENT_EVIDENCE_RUNBOOK.md)
+  (runtime hash + TD Quote per design; attested decode; cross-design negative
+  control).
+- **D. Final packaging / final gate** — `package_final_artifacts.py`,
+  `validate_paper_claims.py`, `final_submission_gate.py`.
+
+For BOTH nonlinear designs end to end, drive phases A–D from
+[`REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md`](REAL_DUAL_NONLINEAR_FULL_EVAL_RUNBOOK.md).
+
 ```
 MODEL=/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct
 PKGS=/root/autodl-tmp/privacy_llm_packages

@@ -468,6 +468,23 @@ def build_comparison(reports_by_backend: dict, *,
                 if line not in recommendation["missing_evidence"]:
                     recommendation["missing_evidence"].insert(0, line)
 
+    # HONESTY GUARD: if trusted_shortcut is compared but its reports are tag-only
+    # (the Amulet lift never executed in the real path), REFUSE to recommend or
+    # compare it -- a tag-only design is not real evidence.
+    from pllo.experiments.nonlinear_designs import (
+        report_has_amulet_execution, trusted_shortcut_tag_only)
+    ts_reports = norm_map.get("trusted_shortcut", [])
+    ts_executed = any(report_has_amulet_execution(r) for r in ts_reports)
+    ts_tag_only = bool(ts_reports) and not ts_executed
+    if "trusted_shortcut" in backends and ts_tag_only:
+        recommendation["recommendation_status"] = "insufficient_evidence"
+        recommendation["final_recommendation"] = None
+        note = ("trusted_shortcut_not_executed_in_real_path: trusted_shortcut "
+                "reports are tag-only (no Amulet-lift execution evidence); cannot "
+                "compare or recommend until the lifted backend is wired + re-run")
+        if note not in recommendation.get("missing_evidence", []):
+            recommendation.setdefault("missing_evidence", []).insert(0, note)
+
     limitations = [
         "tables are only as honest as the per-design input reports; dry-run or "
         "fixture-derived reports are NOT paper evidence",
@@ -496,6 +513,9 @@ def build_comparison(reports_by_backend: dict, *,
         "performance": performance,
         "deployment": deployment,
         "recommendation": recommendation,
+        "trusted_shortcut_executed_in_real_path": (
+            None if not ts_reports else ts_executed),
+        "trusted_shortcut_tag_only": ts_tag_only,
         "limitations": limitations,
     }
     return report
