@@ -85,6 +85,13 @@ DEFAULT_TRUSTED_BOUNDARY_PATHS: tuple[str, ...] = (
     "src/pllo/ops/causal_lm_boundaries.py",
     "src/pllo/ops/nonlinear_islands.py",
     "src/pllo/ops/mitigation_bundles.py",
+    # optional metadata-only security transcript recorder/scanner (loaded by the
+    # boundary when --record-transcript is enabled; trusted-side instrumentation).
+    # Listed explicitly (not a glob) so non-runtime security tooling added to the
+    # package later does not silently change the attestation hash.
+    "src/pllo/security/__init__.py",
+    "src/pllo/security/transcript_recorder.py",
+    "src/pllo/security/transcript_scanner.py",
     "scripts/run_tee_gpu_protocol_demo.py",
 )
 

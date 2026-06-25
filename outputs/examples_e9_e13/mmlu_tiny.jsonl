@@ -1,0 +1,4 @@
+{"id": "mmlu-test-1", "dataset": "mmlu", "task_type": "multiple_choice", "metric": "accuracy", "question": "What is the capital of France?", "choices": ["A. Berlin", "B. Madrid", "C. Paris", "D. Rome"], "answer": "C"}
+{"id": "mmlu-test-3", "dataset": "mmlu", "task_type": "multiple_choice", "metric": "accuracy", "question": "What color is the sky on a clear day?", "choices": ["A. Green", "B. Blue", "C. Red", "D. Yellow"], "answer": "B"}
+{"id": "mmlu-test-0", "dataset": "mmlu", "task_type": "multiple_choice", "metric": "accuracy", "question": "What is 2+2?", "choices": ["A. 3", "B. 4", "C. 5", "D. 6"], "answer": "B"}
+{"id": "mmlu-test-2", "dataset": "mmlu", "task_type": "multiple_choice", "metric": "accuracy", "question": "Which gas do plants absorb?", "choices": ["A. Oxygen", "B. Carbon dioxide", "C. Helium", "D. Nitrogen"], "answer": "B"}

@@ -273,3 +273,61 @@ nvidia-smi               # confirm no lingering processes hold GPU memory
 
 Do **not** delete the base folded package / embedding artifact unless you intend
 to rebuild them — they are the expensive one-time trusted-setup outputs.
+
+## Full-eval integration (security, benchmark utility, claims)
+
+These steps wire the LoRA run into the paper-facing evaluation. See the master
+[`REAL_H800_TDX_FULL_EVAL_RUNBOOK.md`](REAL_H800_TDX_FULL_EVAL_RUNBOOK.md) for the
+shared no-LoRA steps and [`REAL_PUBLIC_BENCHMARK_RUNBOOK.md`](REAL_PUBLIC_BENCHMARK_RUNBOOK.md)
+for dataset prep.
+
+```
+# (a) record + scan a LoRA TDX transcript for leaks
+python scripts/run_tee_gpu_protocol_demo.py --mode boundary_client \
+  --gpu-backend qwen7b_folded_package --gpu-worker-url $URL \
+  --embedding-path $ART --skip-reference true \
+  --input-ids-file outputs/tdx_lora_input_ids.json \
+  --expected-token-ids "$(python -c "import json;print(','.join(map(str,json.load(open('outputs/tdx_lora_expected_tokens.json'))['expected_token_ids'])))")" \
+  --seq-len 128 --max-new-tokens 4 --dtype bfloat16 --device cpu --audit true \
+  --record-transcript outputs/transcript_lora_tdx.jsonl \
+  --output-json outputs/tdx_attested_qwen7b_lora_folded_remote_decode.json
+python scripts/scan_security_transcript.py \
+  --transcript-jsonl outputs/transcript_lora_tdx.jsonl \
+  --output-json outputs/security_transcript_scan_lora.json --fail-on-leak true
+
+# (b) confirm the LoRA actually changes behaviour vs no-LoRA
+python scripts/validate_lora_effect.py \
+  --no-lora-json outputs/qwen7b_folded_remote_decode.json \
+  --lora-json    outputs/qwen7b_lora_folded_remote_decode_probe.json \
+  --output-json  outputs/validate_lora_effect.json --require-effect true
+
+# (c) LoRA utility preservation on a real task (E10) -- see benchmark runbook
+python scripts/run_e10_lora_utility_benchmark.py \
+  --dataset-name sst2 --task-type classification --metric-name accuracy \
+  --base-json outputs/e9_sst2_base.json \
+  --plaintext-lora-json outputs/e9_sst2_plaintext_lora.json \
+  --folded-lora-json outputs/e9_sst2_folded_lora_remote.json \
+  --tdx-attested-folded-lora-json outputs/e9_sst2_tdx_attested_lora.json \
+  --lora-verify-json outputs/qwen7b_lora_folded_verify.json \
+  --no-lora-decode-json outputs/qwen7b_folded_remote_decode.json \
+  --lora-decode-json outputs/qwen7b_lora_folded_remote_decode_probe.json \
+  --output-json outputs/e10_lora_utility.json
+
+# (d) security negative tests (all 14 must be caught)
+python scripts/run_security_negative_tests.py \
+  --output-json outputs/security_negative_tests.json
+
+# (e) claim validation -- a synthetic-LoRA dry-run can ONLY support
+#     folded_lora_dry_run_validated; a real attested LoRA run supports
+#     folded_lora_tdx_attested_validated / real_lora_tdx_attested.
+python scripts/validate_paper_claims.py \
+  --result-json outputs/tdx_attested_qwen7b_lora_folded_remote_decode.json \
+  --result-json outputs/e10_lora_utility.json \
+  --result-json outputs/security_negative_tests.json \
+  --required-claims folded_lora_h800_real_validated \
+  --output-json outputs/paper_claim_validation_lora.json
+```
+
+For a real HF adapter, build the package with `--raw-lora-adapter-path <dir>
+--adapter-format hf_peft` (step 3) so claims about real-adapter utility are not
+flagged as synthetic by the validator.

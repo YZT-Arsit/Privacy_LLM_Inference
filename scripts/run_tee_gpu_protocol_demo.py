@@ -379,7 +379,8 @@ def _trusted_ref_tokens(session, h_tilde, n_new: int, seq_len: int):
     return toks
 
 
-def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
+def build_remote_folded_package_decode_report(args, run_audit: bool,
+                                              transcript_recorder=None) -> dict:
     """Cross-machine package-backed prefill+decode against a **remote** folded-
     package GPU worker.
 
@@ -477,6 +478,11 @@ def build_remote_folded_package_decode_report(args, run_audit: bool) -> dict:
     def _record(direction, method, msg):
         (trace.record_gpu_inbound if direction == "inbound"
          else trace.record_gpu_outbound)(msg)
+        # Optional metadata-only security transcript (Task D). Backward
+        # compatible: when no recorder is supplied, behaviour is unchanged.
+        if transcript_recorder is not None:
+            from pllo.security import record_message
+            record_message(transcript_recorder, direction, msg)
 
     def _to_np(t):
         return np.asarray(t.detach().to("cpu").float().numpy())
@@ -891,6 +897,11 @@ def main() -> int:
                          "running the protocol")
     ap.add_argument("--output-json", default="outputs/tee_gpu_protocol.json")
     ap.add_argument("--output-md", default="outputs/tee_gpu_protocol.md")
+    ap.add_argument("--record-transcript", default=None,
+                    help="optional path: write a metadata-only GPU-channel "
+                         "security transcript JSONL for the boundary_client "
+                         "folded path (default None = unchanged behaviour). "
+                         "Scan it with scripts/scan_security_transcript.py")
     args = ap.parse_args()
 
     # --- gpu_worker_server: run the untrusted HTTP worker (blocking) ----------
@@ -939,7 +950,16 @@ def main() -> int:
     #     path over HTTP); self-contained, no TDX-attestation overclaim --------
     if (args.mode == "boundary_client"
             and args.gpu_backend == "qwen7b_folded_package"):
-        report = build_remote_folded_package_decode_report(args, _bool(args.audit))
+        transcript_recorder = None
+        if getattr(args, "record_transcript", None):
+            from pllo.security import TranscriptRecorder
+            transcript_recorder = TranscriptRecorder()
+        report = build_remote_folded_package_decode_report(
+            args, _bool(args.audit), transcript_recorder=transcript_recorder)
+        if transcript_recorder is not None:
+            tpath = transcript_recorder.to_jsonl(args.record_transcript)
+            print("security transcript written: %s (%d entries)"
+                  % (tpath, len(transcript_recorder.entries)))
         # Optional TDX attestation: only attached when evidence is supplied, so
         # the default folded run still makes NO attestation claim. The folded-LoRA
         # metadata already in `report` is thereby covered by the attested run.

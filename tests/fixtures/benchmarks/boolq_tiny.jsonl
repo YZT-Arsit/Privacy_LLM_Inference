@@ -1,0 +1,4 @@
+{"passage": "The sun is a star at the center of the solar system.", "question": "Is the sun a star?", "answer": true}
+{"passage": "Cats are mammals that are commonly kept as pets.", "question": "Are cats reptiles?", "answer": false}
+{"passage": "Water boils at 100 degrees Celsius at sea level.", "question": "Does water boil at 100 C at sea level?", "answer": "yes"}
+{"passage": "The Moon orbits the Earth roughly every 27 days.", "question": "Does the Moon orbit the Sun directly?", "answer": "no"}

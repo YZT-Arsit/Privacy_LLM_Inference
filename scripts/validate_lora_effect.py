@@ -58,18 +58,47 @@ def extract_token_ids(data, prefer=None):
         return None
 
 
-def compare_decodes(no_lora, lora, *, no_lora_key=None, lora_key=None) -> dict:
-    """Compare two decode reports; return the validation dict (pure, no I/O)."""
+def _metric(report, override):
+    """A task metric value from a report (metric_value), or an explicit override."""
+    if override is not None:
+        return float(override)
+    if isinstance(report, dict):
+        for k in ("metric_value", "metric", "accuracy", "score"):
+            v = report.get(k)
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                return float(v)
+    return None
+
+
+def compare_decodes(no_lora, lora, *, no_lora_key=None, lora_key=None,
+                    no_lora_metric=None, lora_metric=None) -> dict:
+    """Compare two decode reports; return the validation dict (pure, no I/O).
+
+    If task metrics are available (``metric_value`` in the reports, or the
+    explicit ``no_lora_metric`` / ``lora_metric`` overrides) also reports
+    ``metric_improved``."""
     nl = extract_token_ids(no_lora, prefer=no_lora_key)
     ll = extract_token_ids(lora, prefer=lora_key)
+    nm = _metric(no_lora, no_lora_metric)
+    lm = _metric(lora, lora_metric)
     rep: dict = {
         "stage": "validate_lora_effect",
         "no_lora_token_ids": nl, "lora_token_ids": ll,
         "tokens_differ": None, "token_diff_positions": None,
-        "top1_changed": None, "lora_has_effect": None, "warning": None,
+        "top1_changed": None, "lora_has_effect": None,
+        "no_lora_metric": nm, "lora_metric": lm,
+        "metric_improved": (None if (nm is None or lm is None) else bool(lm > nm)),
+        "warning": None,
     }
     if nl is None or ll is None:
-        rep["warning"] = ("could not extract token ids from %s report"
+        # token ids unavailable -> fall back to the metric signal if present.
+        if rep["metric_improved"] is not None:
+            rep["lora_has_effect"] = bool(lm != nm)
+            if not rep["lora_has_effect"]:
+                rep["warning"] = ("LoRA task metric equals no-LoRA metric; the "
+                                  "adapter may have no observable effect")
+            return rep
+        rep["warning"] = ("could not extract token ids or metrics from %s report"
                           % ("both" if nl is None and ll is None
                              else "no-lora" if nl is None else "lora"))
         return rep
@@ -80,8 +109,10 @@ def compare_decodes(no_lora, lora, *, no_lora_key=None, lora_key=None) -> dict:
     rep["token_diff_positions"] = diff_pos
     rep["top1_changed"] = (bool(nl[0] != ll[0]) if nl and ll else None)
     rep["top1_basis"] = "first_decoded_token"
-    rep["lora_has_effect"] = differ
-    if not differ:
+    # effect = tokens changed OR (when metrics present) metric moved
+    rep["lora_has_effect"] = bool(
+        differ or (rep["metric_improved"] is not None and lm != nm))
+    if not rep["lora_has_effect"]:
         rep["warning"] = ("LoRA decode is IDENTICAL to no-LoRA decode; the adapter "
                           "may not have been applied (wrong/empty folded-LoRA "
                           "package, or the worker ran the base path)")
@@ -105,12 +136,18 @@ def main() -> int:
                     help="explicit token-id field in the no-LoRA report")
     ap.add_argument("--lora-key", default=None,
                     help="explicit token-id field in the LoRA report")
+    ap.add_argument("--no-lora-metric", type=float, default=None,
+                    help="explicit no-LoRA task metric (else read metric_value)")
+    ap.add_argument("--lora-metric", type=float, default=None,
+                    help="explicit LoRA task metric (else read metric_value)")
     ap.add_argument("--require-effect", default="false",
                     help="exit non-zero if LoRA has no observable effect")
     ap.add_argument("--output-json", default=None)
     args = ap.parse_args()
 
     rep = compare_decodes(_load(args.no_lora_json), _load(args.lora_json),
+                          no_lora_metric=args.no_lora_metric,
+                          lora_metric=args.lora_metric,
                           no_lora_key=args.no_lora_key, lora_key=args.lora_key)
     if args.output_json:
         p = Path(args.output_json)
@@ -123,6 +160,8 @@ def main() -> int:
     print("tokens_differ=%s token_diff_positions=%s top1_changed=%s"
           % (rep["tokens_differ"], rep["token_diff_positions"],
              rep["top1_changed"]))
+    print("no_lora_metric=%s lora_metric=%s metric_improved=%s"
+          % (rep["no_lora_metric"], rep["lora_metric"], rep["metric_improved"]))
     if rep["warning"]:
         print("WARNING: %s" % rep["warning"])
 
