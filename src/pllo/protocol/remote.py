@@ -130,6 +130,7 @@ class _Handler(BaseHTTPRequestHandler):
             # lets a trusted client retrieve the design B lift counters post-run
             # without any plaintext/secret crossing the channel.
             ev_fn = getattr(srv.backend, "nonlinear_execution_evidence", None)
+            rs_fn = getattr(srv.backend, "resident_status", None)
             self._send_json(200, {
                 "status": "ok", "gpu_backend": srv.gpu_backend_name,
                 "tee_used_on_gpu": False,
@@ -137,6 +138,9 @@ class _Handler(BaseHTTPRequestHandler):
                     srv.backend, "nonlinear_backend", None),
                 "nonlinear_execution_evidence": ev_fn() if callable(ev_fn)
                 else {},
+                # public, non-secret weight-resident cache status (so a trusted
+                # client can see resident_folded_weights without any secret cross)
+                "resident_status": rs_fn() if callable(rs_fn) else {},
                 # measured server-side by compute backends; None until any run
                 "peak_gpu_memory_mb": getattr(
                     srv.backend, "peak_gpu_memory_mb", None)})

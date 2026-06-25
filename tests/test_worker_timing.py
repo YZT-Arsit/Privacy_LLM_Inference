@@ -530,3 +530,5 @@ def test_ifeval_emits_worker_timing(tmp_path) -> None:
     assert r["worker_timing_requested"] is True
     assert r["avg_worker_backend_forward_s_per_token"] is not None
     assert r["worker_bottleneck_stage"] is not None
+    # resident status is surfaced in the report (mock has no real worker -> False)
+    assert r["resident_folded_weights"] is False

@@ -548,11 +548,23 @@ class _RemoteMaskedPredictor:
         # health): proves design B genuinely lifted the activation on the GPU.
         out["nonlinear_backend"] = self.nonlinear_backend
         out["nonlinear_op_backend"] = self._snotes.get("nonlinear_op_backend")
+        # resident-cache status reported at worker init notes (public, no secret)
+        out["resident_folded_weights"] = bool(
+            self._snotes.get("resident_folded_weights", False))
         try:
-            ev = (self._worker.health() or {}).get(
-                "nonlinear_execution_evidence") or {}
+            health = self._worker.health() or {}
+            ev = health.get("nonlinear_execution_evidence") or {}
             if ev:
                 out.update(ev)
+            # public weight-resident cache status from worker /health
+            rs = health.get("resident_status") or {}
+            for k in ("resident_folded_weights", "resident_weight_init_latency_s",
+                      "resident_weight_memory_gb", "resident_cache_num_layers",
+                      "resident_cache_device", "resident_cache_dtype",
+                      "resident_cache_oom", "resident_cache_fallback_used",
+                      "resident_cache_active"):
+                if k in rs:
+                    out[k] = rs[k]
         except Exception:                                    # noqa: BLE001
             pass
         if self._audit:

@@ -29,6 +29,9 @@ __all__ = [
     "load_folded_layer",
     "load_folded_head",
     "build_folded_layer_dict",
+    "build_resident_folded_layers",
+    "load_resident_head",
+    "folded_layers_nbytes",
     "apply_folded_layer_prefill",
     "apply_folded_layer_decode",
     "apply_folded_prefill",
@@ -114,22 +117,63 @@ def _rmsnorm(x: torch.Tensor, eps: float, runner: Any = None) -> torch.Tensor:
         else rmsnorm_core(x, eps)
 
 
+def build_resident_folded_layers(package_dir, num_exec_layers: int, *,
+                                 device: Any, dtype: Any,
+                                 lora_package_dir=None) -> list[dict[str, Any]]:
+    """Load + fold + move ALL ``num_exec_layers`` layers to ``device`` ONCE.
+
+    Returns a list of GPU-resident folded layer dicts so a decode loop can reuse
+    them across steps WITHOUT re-reading the shards from disk or re-copying to the
+    device. These are the SAME public folded operators the worker already loads per
+    step -- only the *lifetime* changes (cached vs reloaded). No mask secrets: the
+    down projection is pre-folded and only ``*_tilde`` operators are materialised.
+    ``lora_package_dir`` (optional) merges a folded-LoRA package per layer -- still
+    only the folded/obfuscated contribution, never the raw adapter."""
+    layers: list[dict[str, Any]] = []
+    for ell in range(num_exec_layers):
+        lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
+                               lora_package_dir, ell)
+        layers.append(build_folded_layer_dict(lt, device=device, dtype=dtype))
+        del lt
+    return layers
+
+
+def load_resident_head(package_dir, *, device: Any, dtype: Any) -> torch.Tensor:
+    """Load the folded final-norm+LM-head operator ONCE and move it to device."""
+    return load_folded_head(package_dir).to(device=device, dtype=dtype)
+
+
+def folded_layers_nbytes(layers: list[dict[str, Any]],
+                         head: torch.Tensor | None = None) -> int:
+    """Total bytes of the resident folded operators (for memory accounting)."""
+    total = 0
+    for folded in layers:
+        for v in folded.values():
+            if v is not None:
+                total += int(v.numel()) * int(v.element_size())
+    if head is not None:
+        total += int(head.numel()) * int(head.element_size())
+    return total
+
+
 def apply_folded_layer_prefill(x_tilde: torch.Tensor,
-                               layer_tensors: dict[str, torch.Tensor],
+                               layer_tensors: dict[str, torch.Tensor] | None,
                                config: Any, cos: torch.Tensor, sin: torch.Tensor,
                                eps: float, runner: Any = None,
-                               timer: Any = None) -> dict[str, Any]:
-    """Masked prefill of ONE folded layer from package tensors (no masks).
+                               timer: Any = None,
+                               folded: dict[str, Any] | None = None
+                               ) -> dict[str, Any]:
+    """Masked prefill of ONE folded layer (no masks).
 
-    ``x_tilde`` is the masked hidden ``[B, T, H]``; ``layer_tensors`` are the
-    package's folded operators for the layer; ``config`` + ``cos``/``sin`` are the
-    public per-layer block config + RoPE caches. ``runner`` (optional) selects the
-    nonlinear design (default None == the historical inline path). ``timer``
-    (optional ``WorkerTimer``) accumulates attention/MLP/nonlinear sub-totals; when
-    None there is no timing overhead. Returns ``{"y_tilde": ..., "cache": {...}}``
-    -- the same shape the in-process masked block returns."""
-    folded = build_folded_layer_dict(layer_tensors, device=x_tilde.device,
-                                     dtype=x_tilde.dtype)
+    ``x_tilde`` is the masked hidden ``[B, T, H]``; ``config`` + ``cos``/``sin``
+    are the public per-layer block config + RoPE caches. Supply EITHER
+    ``layer_tensors`` (built + moved to device here) OR a pre-built resident
+    ``folded`` dict (reused as-is -- no disk load, no H2D copy). ``runner``
+    (optional) selects the nonlinear design; ``timer`` (optional) accumulates
+    attention/MLP/nonlinear sub-totals. Returns ``{"y_tilde": ..., "cache": ...}``."""
+    if folded is None:
+        folded = build_folded_layer_dict(layer_tensors, device=x_tilde.device,
+                                         dtype=x_tilde.dtype)
     with _region(timer, "nonlinear"):
         r1 = _rmsnorm(x_tilde, eps, runner)
     with _region(timer, "attention"):
@@ -147,17 +191,21 @@ def apply_folded_layer_prefill(x_tilde: torch.Tensor,
 
 
 def apply_folded_layer_decode(x_next_tilde: torch.Tensor,
-                              layer_tensors: dict[str, torch.Tensor],
+                              layer_tensors: dict[str, torch.Tensor] | None,
                               cache: dict, position: int, config: Any,
                               cos: torch.Tensor, sin: torch.Tensor,
                               eps: float, runner: Any = None,
-                              timer: Any = None) -> dict[str, Any]:
-    """Masked one-token decode of ONE folded layer from package tensors (no
-    masks), using the per-layer masked KV ``cache`` + absolute ``position``.
-    ``runner`` (optional) selects the nonlinear design (default None == inline);
-    ``timer`` (optional) accumulates attention/MLP/nonlinear sub-totals."""
-    folded = build_folded_layer_dict(layer_tensors, device=x_next_tilde.device,
-                                     dtype=x_next_tilde.dtype)
+                              timer: Any = None,
+                              folded: dict[str, Any] | None = None
+                              ) -> dict[str, Any]:
+    """Masked one-token decode of ONE folded layer (no masks), using the per-layer
+    masked KV ``cache`` + absolute ``position``. Supply EITHER ``layer_tensors``
+    (built here) OR a pre-built resident ``folded`` dict (reused as-is). ``runner``
+    (optional) selects the design; ``timer`` (optional) accumulates sub-totals."""
+    if folded is None:
+        folded = build_folded_layer_dict(layer_tensors,
+                                         device=x_next_tilde.device,
+                                         dtype=x_next_tilde.dtype)
     pid = torch.tensor([position], device=x_next_tilde.device)
     with _region(timer, "nonlinear"):
         r1 = _rmsnorm(x_next_tilde, eps, runner)
@@ -199,28 +247,37 @@ def apply_folded_prefill(h_tilde: torch.Tensor, package_dir, num_exec_layers: in
                          eps: float, *, layer_configs=None,
                          empty_cache: bool = True,
                          lora_package_dir=None, runner: Any = None,
-                         timer: Any = None) -> dict[str, Any]:
-    """Stream the first ``num_exec_layers`` folded layers from the package over
-    masked ``h_tilde`` (no masks on the worker). Returns the masked hidden after
-    those layers + the per-layer masked KV. One shard is resident at a time.
+                         timer: Any = None, resident_layers=None
+                         ) -> dict[str, Any]:
+    """Stream the first ``num_exec_layers`` folded layers over masked ``h_tilde``
+    (no masks on the worker). Returns the masked hidden + per-layer masked KV.
 
-    ``lora_package_dir`` (optional) merges a folded-LoRA package per layer; the
-    no-LoRA path is unchanged (default ``None``). ``timer`` (optional) records a
-    per-layer time + attention/MLP/nonlinear sub-totals."""
+    Default: one shard is loaded/folded/moved-to-device at a time (one resident).
+    When ``resident_layers`` is given (a list of pre-built folded dicts, e.g. from
+    :func:`build_resident_folded_layers`), the layers are reused as-is -- NO disk
+    load, NO ``build_folded_layer_dict``, NO H2D copy per step. ``lora_package_dir``
+    merges a folded-LoRA package per layer (ignored when resident_layers already
+    baked it in). ``timer`` (optional) records per-layer + sub-stage times."""
     h = h_tilde
     kv: list[dict[str, Any]] = []
     for ell in range(num_exec_layers):
-        lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
-                               lora_package_dir, ell)
         cfg = layer_configs[ell] if layer_configs is not None else config
-        with _layer_ctx(timer):
-            out = apply_folded_layer_prefill(h, lt, cfg, cos, sin, eps,
-                                             runner=runner, timer=timer)
+        if resident_layers is not None:
+            with _layer_ctx(timer):
+                out = apply_folded_layer_prefill(h, None, cfg, cos, sin, eps,
+                                                 runner=runner, timer=timer,
+                                                 folded=resident_layers[ell])
+        else:
+            lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
+                                   lora_package_dir, ell)
+            with _layer_ctx(timer):
+                out = apply_folded_layer_prefill(h, lt, cfg, cos, sin, eps,
+                                                 runner=runner, timer=timer)
+            del lt
+            if empty_cache:
+                _empty_cache(h.device)
         h = out["y_tilde"]
         kv.append(out["cache"])
-        del lt
-        if empty_cache:
-            _empty_cache(h.device)
     return {"y_tilde": h, "kv": kv}
 
 
@@ -229,35 +286,51 @@ def apply_folded_decode(x_next_tilde: torch.Tensor, package_dir, kv: list,
                         cos: torch.Tensor, sin: torch.Tensor, eps: float, *,
                         layer_configs=None, empty_cache: bool = True,
                         lora_package_dir=None, runner: Any = None,
-                        timer: Any = None) -> dict[str, Any]:
-    """Stream a one-token masked decode over ``num_exec_layers`` folded layers
-    from the package, threading the per-layer masked KV. Returns the masked hidden
-    + updated KV. ``lora_package_dir`` (optional) merges a folded-LoRA package per
-    layer; the no-LoRA path is unchanged (default ``None``). ``timer`` (optional)
-    records a per-layer time + attention/MLP/nonlinear sub-totals."""
+                        timer: Any = None, resident_layers=None
+                        ) -> dict[str, Any]:
+    """Stream a one-token masked decode over ``num_exec_layers`` folded layers,
+    threading the per-layer masked KV. Returns the masked hidden + updated KV.
+
+    When ``resident_layers`` is given the pre-built folded dicts are reused as-is
+    (NO disk load / build / H2D copy per step -- the weight-resident decode path).
+    ``lora_package_dir`` merges a folded-LoRA package per layer in the non-resident
+    path. ``timer`` (optional) records per-layer + sub-stage times."""
     h = x_next_tilde
     new_kv: list[dict[str, Any]] = []
     for ell in range(num_exec_layers):
-        lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
-                               lora_package_dir, ell)
         cfg = layer_configs[ell] if layer_configs is not None else config
-        with _layer_ctx(timer):
-            out = apply_folded_layer_decode(h, lt, kv[ell], position, cfg, cos,
-                                            sin, eps, runner=runner, timer=timer)
+        if resident_layers is not None:
+            with _layer_ctx(timer):
+                out = apply_folded_layer_decode(h, None, kv[ell], position, cfg,
+                                                cos, sin, eps, runner=runner,
+                                                timer=timer,
+                                                folded=resident_layers[ell])
+        else:
+            lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
+                                   lora_package_dir, ell)
+            with _layer_ctx(timer):
+                out = apply_folded_layer_decode(h, lt, kv[ell], position, cfg,
+                                                cos, sin, eps, runner=runner,
+                                                timer=timer)
+            del lt
+            if empty_cache:
+                _empty_cache(h.device)
         h = out["y_tilde"]
         new_kv.append(out["cache"])
-        del lt
-        if empty_cache:
-            _empty_cache(h.device)
     return {"y_tilde": h, "kv": new_kv}
 
 
 def apply_folded_head(h_tilde: torch.Tensor, package_dir, eps: float,
-                      runner: Any = None, timer: Any = None) -> torch.Tensor:
+                      runner: Any = None, timer: Any = None,
+                      folded_head: torch.Tensor | None = None) -> torch.Tensor:
     """Masked logits from the folded final-norm+LM-head operator:
     ``rmsnorm_core(h_tilde) @ w_lm_tilde`` (no masks; vocab mask is pre-folded).
-    ``runner`` (optional) routes the final RMSNorm through the selected design;
-    ``timer`` (optional) records the LM-head time (excludes the shard load)."""
-    w = load_folded_head(package_dir).to(h_tilde.device, h_tilde.dtype)
+    Supply ``folded_head`` to reuse a resident head (no shard load / H2D copy).
+    ``runner`` routes the final RMSNorm through the design; ``timer`` records the
+    LM-head time (excludes the shard load)."""
+    if folded_head is not None:
+        w = folded_head
+    else:
+        w = load_folded_head(package_dir).to(h_tilde.device, h_tilde.dtype)
     with _region(timer, "lm_head"):
         return _rmsnorm(h_tilde, eps, runner) @ w

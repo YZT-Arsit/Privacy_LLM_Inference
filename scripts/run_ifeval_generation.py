@@ -354,6 +354,16 @@ def main() -> int:
         report.get("schedule_used_for_metadata_only", enabled))
     report["online_remask_still_performed"] = True
     report["worker_timing_requested"] = bool(args.trace_worker_timings)
+    # weight-resident cache status surfaced from the worker (server-side config;
+    # the runner cannot toggle a remote worker -- start it with
+    # --resident-folded-weights). Public, non-secret.
+    report["resident_folded_weights"] = bool(
+        stats.get("resident_folded_weights", False))
+    for k in ("resident_cache_active", "resident_weight_memory_gb",
+              "resident_cache_num_layers", "resident_cache_oom",
+              "resident_cache_fallback_used"):
+        if k in stats:
+            report[k] = stats.get(k)
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:

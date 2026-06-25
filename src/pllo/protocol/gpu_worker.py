@@ -341,12 +341,29 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                  folded_lora_package_path: str | None = None,
                  nonlinear_backend: str = "current",
                  nonlinear_lift_k: int = 2, nonlinear_seed: int = 2035,
+                 resident_folded_weights: bool = False,
                  **_ignored: Any) -> None:
         self.folded_package_path = folded_package_path
         self.folded_lora_package_path = folded_lora_package_path
         self.device = device
         self.dtype = dtype
         self.verify_on_init = bool(verify_on_init)
+        # Weight-resident decode (default OFF -> historical per-step load path).
+        # When on, all folded layers + head are loaded/folded/moved-to-device ONCE
+        # (lazily, on first forward) and reused across decode steps: no per-token
+        # shard reload, no build_folded_layer_dict, no CPU->GPU copy. The cache
+        # holds only PUBLIC folded operators the worker already reads -- no mask
+        # secrets, no raw LoRA. Falls back to the per-step path on OOM.
+        self.resident_folded_weights = bool(resident_folded_weights)
+        self._resident_layers: Any = None
+        self._resident_head: Any = None
+        self.resident_weight_init_latency_s: float | None = None
+        self.resident_weight_memory_gb: float | None = None
+        self.resident_cache_num_layers: int | None = None
+        self.resident_cache_device: str | None = None
+        self.resident_cache_dtype: str | None = None
+        self.resident_cache_oom: bool = False
+        self.resident_cache_fallback_used: bool = False
         # Selected nonlinear DESIGN -- the worker GENUINELY executes it: design B
         # (trusted_shortcut/amulet_migrated) lifts the MLP activation onto this
         # untrusted accelerator and migrates softmax/RMSNorm with a trusted
@@ -455,6 +472,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             "lora_target_modules": self.lora_target_modules,
             "lora_adapter_hash": self.lora_adapter_hash,
             "worker_has_raw_lora": self.worker_has_raw_lora,
+            "resident_folded_weights": self.resident_folded_weights,
             "tee_used_on_gpu": False})
         return BoundaryInitResponse(
             session_id=req.session_id, ok=True, gpu_backend=self.name,
@@ -479,6 +497,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "lora_target_modules": self.lora_target_modules,
                 "worker_has_raw_lora": self.worker_has_raw_lora,
                 "peak_gpu_memory_mb": self.peak_gpu_memory_mb,
+                **self.resident_status(),
                 "tee_used_on_gpu": False}
 
     def _ensure_exec_context(self):
@@ -580,6 +599,71 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 seed=self.nonlinear_seed)
         return self._runner
 
+    def _ensure_resident(self, device: Any, fdtype: Any, num_layers: int) -> bool:
+        """Build the GPU-resident folded-layer cache ONCE (lazy, on first forward).
+
+        Returns True if the resident cache is available for use. On OOM it clears
+        any partial cache, records the failure, and returns False so the caller
+        falls back to the per-step load path (correctness preserved). Caches only
+        PUBLIC folded operators -> no mask secrets, no raw LoRA."""
+        if not self.resident_folded_weights:
+            return False
+        if self._resident_layers is not None:
+            return True
+        if self.resident_cache_fallback_used:        # already tried + failed
+            return False
+        from pllo.deployment.folded_worker import (
+            build_resident_folded_layers, folded_layers_nbytes,
+            load_resident_head)
+        t0 = time.perf_counter()
+        try:
+            layers = build_resident_folded_layers(
+                self.folded_package_path, int(num_layers), device=device,
+                dtype=fdtype, lora_package_dir=self.folded_lora_package_path)
+            head = load_resident_head(self.folded_package_path, device=device,
+                                      dtype=fdtype)
+        except RuntimeError as exc:                   # CUDA OOM or similar
+            self._resident_layers = None
+            self._resident_head = None
+            self.resident_cache_oom = ("out of memory" in str(exc).lower()
+                                       or "oom" in str(exc).lower())
+            self.resident_cache_fallback_used = True
+            return False
+        self._resident_layers = layers
+        self._resident_head = head
+        self.resident_weight_init_latency_s = round(time.perf_counter() - t0, 9)
+        self.resident_weight_memory_gb = round(
+            folded_layers_nbytes(layers, head) / (1024 ** 3), 6)
+        self.resident_cache_num_layers = len(layers)
+        self.resident_cache_device = str(device)
+        self.resident_cache_dtype = str(fdtype)
+        return True
+
+    def resident_status(self) -> dict[str, Any]:
+        """Public, non-secret resident-cache status for reports."""
+        return {
+            "resident_folded_weights": bool(self.resident_folded_weights),
+            "resident_weight_init_latency_s": self.resident_weight_init_latency_s,
+            "resident_weight_memory_gb": self.resident_weight_memory_gb,
+            "resident_cache_num_layers": self.resident_cache_num_layers,
+            "resident_cache_device": self.resident_cache_device,
+            "resident_cache_dtype": self.resident_cache_dtype,
+            "resident_cache_oom": bool(self.resident_cache_oom),
+            "resident_cache_fallback_used": bool(self.resident_cache_fallback_used),
+            "resident_cache_active": self._resident_layers is not None,
+        }
+
+    def _tag_resident(self, wt: dict[str, Any] | None) -> None:
+        """Stamp the (public, non-secret) resident-cache flags onto a worker-timing
+        dict so a trusted client / ifeval report can see resident mode without any
+        secret crossing. These are bools/ints/strings only."""
+        if not isinstance(wt, dict):
+            return
+        wt["resident_folded_weights"] = bool(self.resident_folded_weights)
+        wt["resident_cache_active"] = self._resident_layers is not None
+        wt["resident_cache_fallback_used"] = bool(self.resident_cache_fallback_used)
+        wt["resident_cache_oom"] = bool(self.resident_cache_oom)
+
     def nonlinear_execution_evidence(self) -> dict[str, Any]:
         """Measured runtime evidence of the nonlinear design actually executed
         over the folded layers (empty until a prefill/decode/head has run). A
@@ -628,10 +712,14 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         from pllo.deployment.folded_worker import apply_folded_prefill
         if not self.folded_package_loaded:
             raise RuntimeError("call init() to load the folded package first")
+        resident = (self._resident_layers
+                    if self._ensure_resident(h_tilde.device, h_tilde.dtype,
+                                             int(num_exec_layers)) else None)
         out = apply_folded_prefill(h_tilde, self.folded_package_path,
                                    int(num_exec_layers), config, cos, sin, eps,
                                    lora_package_dir=self.folded_lora_package_path,
-                                   runner=self._ensure_runner(), timer=timer)
+                                   runner=self._ensure_runner(), timer=timer,
+                                   resident_layers=resident)
         self._kv = out["kv"]
         self._exec_layers = int(num_exec_layers)
         return out
@@ -641,8 +729,12 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         from pllo.deployment.folded_worker import apply_folded_head
         if not self.folded_package_loaded:
             raise RuntimeError("call init() to load the folded package first")
+        head = self._resident_head if self._ensure_resident(
+            h_tilde.device, h_tilde.dtype,
+            int(self._num_layers or self._exec_layers or 0)) else None
         return apply_folded_head(h_tilde, self.folded_package_path, eps,
-                                 runner=self._ensure_runner(), timer=timer)
+                                 runner=self._ensure_runner(), timer=timer,
+                                 folded_head=head)
 
     def run_decode(self, x_next_tilde: Any, position: int, config: Any,
                    cos: Any, sin: Any, eps: float,
@@ -656,11 +748,15 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             raise RuntimeError("run_prefill() must populate the KV cache first")
         k = int(num_exec_layers if num_exec_layers is not None
                 else getattr(self, "_exec_layers", len(self._kv)))
+        resident = (self._resident_layers
+                    if self._ensure_resident(x_next_tilde.device,
+                                             x_next_tilde.dtype, k) else None)
         out = apply_folded_decode(x_next_tilde, self.folded_package_path,
                                   self._kv, int(position), k, config, cos, sin,
                                   eps,
                                   lora_package_dir=self.folded_lora_package_path,
-                                  runner=self._ensure_runner(), timer=timer)
+                                  runner=self._ensure_runner(), timer=timer,
+                                  resident_layers=resident)
         self._kv = out["kv"]
         return out
 
@@ -694,6 +790,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             wt = timer.forward_metadata(
                 phase="prefill", backend_name=self.name, device=self.device,
                 dtype=self.dtype, forward_s=fwd, num_layers=self._num_layers)
+            self._tag_resident(wt)
         return MaskedPrefillResponse(
             session_id=req.session_id, masked_logits=masked,
             kv_cache_len=int(h_tilde.shape[1]), worker_timing=wt)
@@ -723,6 +820,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             wt = timer.forward_metadata(
                 phase="decode", backend_name=self.name, device=self.device,
                 dtype=self.dtype, forward_s=fwd, num_layers=self._num_layers)
+            self._tag_resident(wt)
         return MaskedDecodeResponse(
             session_id=req.session_id, masked_logits=masked,
             kv_cache_len=int(req.position) + 1, worker_timing=wt)

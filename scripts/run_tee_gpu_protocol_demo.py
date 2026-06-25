@@ -882,6 +882,11 @@ def main() -> int:
                     help="gpu_worker_server: bind port")
     ap.add_argument("--gpu-worker-url", default=None,
                     help="boundary_client: URL of the remote GPU worker server")
+    ap.add_argument("--resident-folded-weights", action="store_true",
+                    default=False, help="gpu_worker_server (qwen7b_folded_package):"
+                    " load+fold+move all layers to device ONCE and reuse across "
+                    "decode steps (no per-token shard reload / H2D copy). Caches "
+                    "only PUBLIC folded operators; no mask secrets.")
     ap.add_argument("--dry-run", action="store_true",
                     help="qwen7b_folded_package boundary_client: tiny model + "
                          "tiny package on CPU (never a paper result)")
@@ -932,7 +937,9 @@ def main() -> int:
                               "device": args.device, "dtype": args.dtype,
                               "nonlinear_backend": srv_nb,
                               "folded_lora_package_path":
-                                  args.folded_lora_package_path}
+                                  args.folded_lora_package_path,
+                              "resident_folded_weights":
+                                  bool(args.resident_folded_weights)}
         run_gpu_worker_server(args.listen_host, args.listen_port,
                               args.gpu_backend, backend_kwargs, _bool(args.audit))
         return 0
