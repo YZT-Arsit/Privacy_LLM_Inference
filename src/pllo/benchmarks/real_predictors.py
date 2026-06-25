@@ -125,43 +125,55 @@ class _PlaintextLocalPredictor:
         self.max_new_tokens = int(max_new_tokens)
         self.device = device
 
+    def _encode(self, prompt):
+        """Tokenize -> (input_ids, attention_mask) both truncated to seq_len and
+        on the model device. The attention mask is always passed to the model so
+        padding / left-truncation never corrupts the logits (avoids the silent
+        ``attention_mask`` warning + wrong positions)."""
+        enc = self._tok(prompt, return_tensors="pt")
+        ids = enc["input_ids"][:, :self.seq_len].to(self._model.device)
+        attn = enc.get("attention_mask")
+        if attn is not None:
+            attn = attn[:, :self.seq_len].to(self._model.device)
+        return ids, attn
+
     def _ids(self, prompt):
-        return self._tok(prompt, return_tensors="pt")["input_ids"][
-            :, :self.seq_len].to(self._model.device)
+        return self._encode(prompt)[0]
 
     def predict(self, prompt, example):
         import torch
-        ids = self._ids(prompt)
+        ids, attn = self._encode(prompt)
         task = example.get("task_type")
         if task == "multiple_choice":
             letters = _letters_for(example)
             tid = _choice_token_ids(self._tok, letters)
             if tid:
                 with torch.no_grad():
-                    logits = self._model(ids).logits[0, -1, :].float()
+                    logits = self._model(
+                        ids, attention_mask=attn).logits[0, -1, :].float()
                 best = max(tid, key=lambda L: float(logits[tid[L]]))
                 return best
         with torch.no_grad():
             out = self._model.generate(
-                ids, max_new_tokens=self.max_new_tokens, do_sample=False,
-                num_beams=1, pad_token_id=getattr(self._tok, "eos_token_id",
-                                                  None))
+                ids, attention_mask=attn, max_new_tokens=self.max_new_tokens,
+                do_sample=False, num_beams=1,
+                pad_token_id=getattr(self._tok, "eos_token_id", None))
         new = out[0, ids.shape[1]:]
         return self._tok.decode(new, skip_special_tokens=True)
 
     def generate(self, prompt):
         """Greedy open-ended generation -> {text, token_ids} (deterministic).
 
-        Used by the generation-preservation benchmark. Same greedy decoding as
-        :meth:`predict`'s free-text branch, but also returns the newly generated
-        token ids so token-level preservation can be measured."""
+        Used by the generation benchmarks. Passes the attention mask so the
+        decode is correct, and returns the newly generated token ids so
+        token-level preservation can be measured."""
         import torch
-        ids = self._ids(prompt)
+        ids, attn = self._encode(prompt)
         with torch.no_grad():
             out = self._model.generate(
-                ids, max_new_tokens=self.max_new_tokens, do_sample=False,
-                num_beams=1, pad_token_id=getattr(self._tok, "eos_token_id",
-                                                  None))
+                ids, attention_mask=attn, max_new_tokens=self.max_new_tokens,
+                do_sample=False, num_beams=1,
+                pad_token_id=getattr(self._tok, "eos_token_id", None))
         new = out[0, ids.shape[1]:]
         return {"text": self._tok.decode(new, skip_special_tokens=True),
                 "token_ids": [int(t) for t in new.tolist()]}
