@@ -283,14 +283,18 @@ def _causal_bias(t_q: int, t_k: int, dtype: torch.dtype,
 
 
 def _sdpa(qr: torch.Tensor, kr_rep: torch.Tensor, v_rep: torch.Tensor,
-          scale: float, causal_offset: int | None,
+          scale: float, causal_offset: int | None, runner: Any = None,
           ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     scores = qr @ kr_rep.transpose(-2, -1) * scale
     if causal_offset is not None:
         scores = scores + _causal_bias(
             qr.shape[-2], kr_rep.shape[-2], scores.dtype, scores.device,
             causal_offset)
-    probs = torch.softmax(scores, dim=-1)
+    # ``runner`` (optional) dispatches the softmax through the selected nonlinear
+    # design (design B migrates it onto the accelerator with a trusted row-max
+    # shortcut); default None keeps the historical ``torch.softmax`` path exactly.
+    probs = runner.softmax(scores, dim=-1) if runner is not None \
+        else torch.softmax(scores, dim=-1)
     av = probs @ v_rep
     return scores, probs, av
 
@@ -426,7 +430,7 @@ def _masked_attention(
     config: HFSingleBlockConfig, cos: torch.Tensor, sin: torch.Tensor,
     *, causal_offset: int | None, position_ids: torch.Tensor | None = None,
     past_key_rope: torch.Tensor | None = None,
-    past_value: torch.Tensor | None = None,
+    past_value: torch.Tensor | None = None, runner: Any = None,
 ) -> dict[str, Any]:
     nh, nkv, hd = config.num_heads, config.num_key_value_heads, config.head_dim
     scale = 1.0 / math.sqrt(hd)
@@ -444,7 +448,8 @@ def _masked_attention(
     else:
         kr_t, v_full = kr_t_new, v_t
     scores, probs, av = _sdpa(qr_t, repeat_kv(kr_t, nh, nkv),
-                              repeat_kv(v_full, nh, nkv), scale, causal_offset)
+                              repeat_kv(v_full, nh, nkv), scale, causal_offset,
+                              runner=runner)
     out = _linear(merge_heads(av), folded["wo_tilde"], folded["bo_tilde"])
     return {
         "out": out, "q_pre_rope": q_t, "k_pre_rope": k_t, "v": v_t,
@@ -454,10 +459,15 @@ def _masked_attention(
 
 
 def _masked_mlp(r2_core_tilde: torch.Tensor, folded: dict[str, Any],
-                ) -> dict[str, torch.Tensor]:
+                runner: Any = None) -> dict[str, torch.Tensor]:
     gate = _linear(r2_core_tilde, folded["wgate_tilde"], folded["bgate_tilde"])
     up = _linear(r2_core_tilde, folded["wup_tilde"], folded["bup_tilde"])
-    hidden = silu_reference(gate) * up
+    # The SwiGLU activation is the MLP nonlinear island. ``runner`` (optional)
+    # dispatches the SiLU through the selected design: design B *lifts* it onto
+    # the accelerator (exact after the folded squeeze); default None keeps the
+    # historical ``silu_reference`` inline path exactly.
+    act = runner.silu(gate) if runner is not None else silu_reference(gate)
+    hidden = act * up
     out = _linear(hidden, folded["wdown_tilde"], folded["bdown_tilde"])
     return {"gate": gate, "up": up, "hidden": hidden, "out": out}
 

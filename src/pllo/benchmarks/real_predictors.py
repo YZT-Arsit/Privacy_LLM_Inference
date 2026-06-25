@@ -382,6 +382,17 @@ class _RemoteMaskedPredictor:
             "gpu_visible_plaintext_fields": [],
             "leaked_secret_fields": [],
         }
+        # measured nonlinear-design execution evidence from the worker (post-run
+        # health): proves design B genuinely lifted the activation on the GPU.
+        out["nonlinear_backend"] = self.nonlinear_backend
+        out["nonlinear_op_backend"] = self._snotes.get("nonlinear_op_backend")
+        try:
+            ev = (self._worker.health() or {}).get(
+                "nonlinear_execution_evidence") or {}
+            if ev:
+                out.update(ev)
+        except Exception:                                    # noqa: BLE001
+            pass
         if self._audit:
             out["audit_passed"] = self._run_audit()
         if self._attestation:

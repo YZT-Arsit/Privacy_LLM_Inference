@@ -219,20 +219,54 @@ def op_backend_for_design(name: str) -> str:
 #   * "current"          -> "trusted_boundary_inline": the folded worker + the
 #       trusted boundary run the current trusted-island nonlinearity; this IS the
 #       real, executed path (pllo.ops.nonlinear_islands).
-#   * "trusted_shortcut" -> "prototype_only": the Amulet-style lifted backend
-#       (pllo.nonlinear.amulet_backend / pllo.ops.amulet_lifted_islands) exists as
-#       a correctness + microbench PROTOTYPE only. It is NOT invoked by the real
-#       Qwen folded path (the worker imports only nonlinear_islands). Until it is
-#       wired, a trusted_shortcut tag on a real report does NOT mean the lift ran.
+#   * "trusted_shortcut" -> "lifted_on_accelerator": the Amulet-style lifted
+#       backend is WIRED into the real folded worker (pllo.deployment.folded_nonlinear
+#       -> pllo.nonlinear.amulet_backend). The MLP activation (SiLU/SwiGLU) is
+#       lifted onto the untrusted accelerator and softmax/RMSNorm are migrated with
+#       a trusted reduction shortcut; the worker stamps measured execution evidence
+#       (amulet_lift_executed / lifted_nonlinear_ops_count / lift_k /
+#       lifted_gpu_bytes) from NonlinearOpResult counters.
 #
-# When the lift is genuinely wired into the real path, change the value to e.g.
-# "lifted_on_accelerator" AND have the real path stamp the execution-evidence
-# fields (amulet_lift_executed / lifted_nonlinear_ops_count / lift_k /
-# lifted_gpu_bytes) collected from NonlinearOpResult counters.
+# NOTE: ``real_path_executes`` only states the design is CAPABLE of executing in
+# the real path; whether a SPECIFIC report actually ran the lift is decided by
+# ``report_has_amulet_execution`` (measured counters). A non-execution report (a
+# folded-package BUILD, which only folds weights and never runs a nonlinearity)
+# is therefore NOT treated as tag-only -- see ``_report_is_execution_bearing``.
 _REAL_PATH_EXECUTION: Dict[str, str] = {
     "current": "trusted_boundary_inline",
-    "trusted_shortcut": "prototype_only",
+    "trusted_shortcut": "lifted_on_accelerator",
 }
+
+# Report stages / signals that DO execute the model nonlinearity (and therefore
+# must carry Amulet-lift evidence when tagged trusted_shortcut). A build / setup /
+# estimate report is intentionally NOT here: it folds weights but never runs an
+# activation, so it cannot and need not carry lift counters.
+_EXECUTION_BEARING_STAGES = frozenset({
+    "qwen7b_folded_package_prefill_probe",
+    "qwen7b_folded_package_decode_probe",
+    "qwen7b_folded_package_onestep_logits_probe",
+    "qwen7b_folded_remote_package_decode",
+    "remote_package_decode_scaling",
+    "e3_remote_decode_scaling",
+    "tee_gpu_protocol_demo",
+    "e9_task_utility_benchmark",
+    "e9_pairwise_utility_preservation",
+    "e9_aggregate_utility_preservation",
+    "e10_lora_utility_benchmark",
+})
+
+
+def _report_is_execution_bearing(report: Dict[str, Any]) -> bool:
+    """True iff a report reflects an actual nonlinear-EXECUTION run (decode /
+    prefill / utility), as opposed to a build/setup/estimate report."""
+    if not isinstance(report, dict):
+        return False
+    if (report.get("stage") or "") in _EXECUTION_BEARING_STAGES:
+        return True
+    return (report.get("package_backed_decode") is True
+            or report.get("package_backed_prefill") is True
+            or report.get("tokens_exact_match") is not None
+            or report.get("utility_preserved") is not None)
 
 
 class NonlinearDesignNotWired(RuntimeError):
@@ -290,8 +324,12 @@ def report_has_amulet_execution(report: Dict[str, Any]) -> bool:
 
 
 def trusted_shortcut_tag_only(report: Dict[str, Any]) -> bool:
-    """True iff a report is TAGGED trusted_shortcut but lacks real amulet
-    execution evidence (i.e. tag-only, design not actually executed)."""
+    """True iff an EXECUTION-bearing report is TAGGED trusted_shortcut but lacks
+    real Amulet-lift execution evidence (i.e. tag-only -- it ran the 'current'
+    path under a trusted_shortcut tag, or the lift was never wired in).
+
+    A build / setup / estimate report (which never runs a nonlinearity) is NOT
+    flagged: it legitimately carries no lift counters."""
     if not isinstance(report, dict):
         return False
     nb = report.get("nonlinear_backend") or report.get("nonlinear_design_name")
@@ -301,7 +339,11 @@ def trusted_shortcut_tag_only(report: Dict[str, Any]) -> bool:
         canon = normalize_nonlinear_backend(nb)
     except UnknownNonlinearBackend:
         return False
-    return canon == "trusted_shortcut" and not report_has_amulet_execution(report)
+    if canon != "trusted_shortcut":
+        return False
+    if not _report_is_execution_bearing(report):
+        return False
+    return not report_has_amulet_execution(report)
 
 
 def _canonical_metadata_bytes(name: str) -> bytes:
@@ -344,7 +386,11 @@ def nonlinear_design_report_fields(name: str) -> Dict[str, Any]:
         "nonlinear_real_path_executed": executed,
         "amulet_lift_executed": False,
         "nonlinear_execution_status": (
-            "executed_trusted_boundary_inline" if executed
+            # capability-level default stamp; an execution-bearing run OVERRIDES
+            # this with measured counters (folded_nonlinear runner). For design B
+            # the design fields alone are NOT execution evidence -- the worker
+            # must stamp amulet_lift_executed / lifted_* afterward.
+            real_path_execution_status(canon) if executed
             else "tag_only_prototype_not_wired"),
         "nonlinear_design_metadata_summary": {
             "op_backend": rec["op_backend"],

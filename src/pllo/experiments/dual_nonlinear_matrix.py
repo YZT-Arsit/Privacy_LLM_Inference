@@ -23,6 +23,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from pllo.experiments.nonlinear_designs import (
     real_path_executes as _real_path_executes,
+    real_path_execution_status as _real_path_execution_status,
     nonlinear_design_report_fields,
     parse_nonlinear_backends,
 )
@@ -480,12 +481,18 @@ def build_matrix_plan(*, nonlinear_backends, model_path: str,
                 outputs_dir=outputs_dir),
             "nonlinear_design": nonlinear_design_report_fields(backend),
             "nonlinear_real_path_executed": executed,
-            "note": (None if executed else
-                     "NON-PAPER-FACING: %s is not wired into the real Qwen path; "
-                     "these real steps will be REFUSED (exit nonzero) unless run "
-                     "with --allow-unwired-nonlinear as a tag-only prototype. Wire "
-                     "the Amulet backend first (see docs/paper_draft/"
-                     "evaluation_nonlinear_designs.md)." % backend),
+            "note": (
+                ("%s is WIRED into the real Qwen folded path (%s); decode/E3/E9 "
+                 "reports carry MEASURED execution evidence (amulet_lift_executed "
+                 "/ lifted_nonlinear_ops_count / lift_k / lifted_gpu_bytes). Start "
+                 "the GPU worker with --nonlinear-backend %s so it executes the "
+                 "lift." % (backend, _real_path_execution_status(backend), backend))
+                if executed else
+                "NON-PAPER-FACING: %s is not wired into the real Qwen path; "
+                "these real steps will be REFUSED (exit nonzero) unless run "
+                "with --allow-unwired-nonlinear as a tag-only prototype. Wire "
+                "the Amulet backend first (see docs/paper_draft/"
+                "evaluation_nonlinear_designs.md)." % backend),
         }
 
     notes = [

@@ -110,9 +110,17 @@ class _Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         if self.path.rstrip("/") in ("/health", ""):
             srv = self.server
+            # Measured nonlinear-design execution evidence (empty until a run);
+            # lets a trusted client retrieve the design B lift counters post-run
+            # without any plaintext/secret crossing the channel.
+            ev_fn = getattr(srv.backend, "nonlinear_execution_evidence", None)
             self._send_json(200, {
                 "status": "ok", "gpu_backend": srv.gpu_backend_name,
                 "tee_used_on_gpu": False,
+                "nonlinear_backend": getattr(
+                    srv.backend, "nonlinear_backend", None),
+                "nonlinear_execution_evidence": ev_fn() if callable(ev_fn)
+                else {},
                 # measured server-side by compute backends; None until any run
                 "peak_gpu_memory_mb": getattr(
                     srv.backend, "peak_gpu_memory_mb", None)})

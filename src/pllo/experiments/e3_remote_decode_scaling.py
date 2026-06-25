@@ -33,6 +33,11 @@ E3_ROW_FIELDS = [
     "gpu_visible_plaintext_fields", "leaked_secret_fields", "audit_passed",
     "latency_s", "latency_per_token_s", "trusted_bytes", "gpu_bytes",
     "boundary_calls", "gpu_calls", "peak_gpu_memory_mb",
+    # nonlinear-design execution evidence (carried through so a trusted_shortcut
+    # row proves the lift ran, not just a design tag)
+    "nonlinear_backend", "nonlinear_op_backend", "amulet_lift_executed",
+    "lifted_nonlinear_ops_count", "lift_k", "lifted_gpu_bytes",
+    "nonlinear_execution_status",
 ]
 
 
@@ -69,6 +74,13 @@ def make_row(report: dict, *, seq_len: int, max_new_tokens: int) -> dict:
         "boundary_calls": report.get("boundary_calls"),
         "gpu_calls": report.get("gpu_calls"),
         "peak_gpu_memory_mb": report.get("peak_gpu_memory_mb"),
+        "nonlinear_backend": report.get("nonlinear_backend"),
+        "nonlinear_op_backend": report.get("nonlinear_op_backend"),
+        "amulet_lift_executed": report.get("amulet_lift_executed"),
+        "lifted_nonlinear_ops_count": report.get("lifted_nonlinear_ops_count"),
+        "lift_k": report.get("lift_k"),
+        "lifted_gpu_bytes": report.get("lifted_gpu_bytes"),
+        "nonlinear_execution_status": report.get("nonlinear_execution_status"),
     }
 
 

@@ -77,9 +77,13 @@ dir not writable). Clear them before opening the worker.
 
 ## 1. Start the H800 worker (base [+ LoRA])
 
+Add `--nonlinear-backend trusted_shortcut` for design B so the worker actually
+executes the Amulet lift (and `/health` carries the measured execution evidence);
+omit it (or pass `current`) for design A.
+
 ```
 python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
-  --gpu-backend qwen7b_folded_package \
+  --gpu-backend qwen7b_folded_package --nonlinear-backend current \
   --folded-package-path $BASE --folded-lora-package-path $LORA \
   --listen-host 0.0.0.0 --listen-port $PORT \
   --device cuda --dtype bfloat16 --audit true

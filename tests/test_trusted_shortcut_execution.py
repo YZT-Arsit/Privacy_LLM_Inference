@@ -1,12 +1,14 @@
-"""Guards proving trusted_shortcut is EXECUTED (Amulet-lift), not metadata-only.
+"""Guards on the trusted_shortcut design's honesty schema.
 
-These tests fail if trusted_shortcut becomes a tag-only label again:
+trusted_shortcut is now WIRED into the real folded path (it executes the Amulet
+lift -- see tests/test_trusted_shortcut_real_path_wiring.py for the measured
+execution proof). These tests pin the surrounding honesty schema:
 * the op-backend mapping must reach the Amulet backend;
 * the Amulet backend's GELU must actually lift onto the untrusted accelerator;
 * the current backend's GELU must run in the trusted boundary;
-* a tag-only trusted_shortcut report must fail claim validation, the final gate,
-  and E15 comparison;
-* paper-facing build / E9 runs must refuse an unwired trusted_shortcut.
+* an EXECUTION-bearing trusted_shortcut report that lacks lift evidence (tag-only)
+  must still fail claim validation, the final gate, and E15 comparison;
+* a non-execution report (a build) is design-independent and is NOT flagged.
 
 Backend op tests use CPU torch only (no CUDA / model / H800). Run:
     python -m pytest tests/test_trusted_shortcut_execution.py -q
@@ -71,16 +73,27 @@ def test_current_backend_gelu_trusted() -> None:
     assert r.gpu_bytes == 0
 
 
-# ---- real path is NOT wired today (honesty annotation) --------------------
+# ---- real path IS wired now (executes the Amulet lift) --------------------
 
 def test_real_path_execution_status() -> None:
     assert nd.real_path_executes("current") is True
-    assert nd.real_path_executes("trusted_shortcut") is False
+    # trusted_shortcut is now WIRED into the real folded path (executes the lift).
+    assert nd.real_path_executes("trusted_shortcut") is True
     f = nd.nonlinear_design_report_fields("trusted_shortcut")
     assert f["nonlinear_op_backend"] == "amulet_migrated"
-    assert f["nonlinear_real_path_executed"] is False
+    assert f["nonlinear_real_path_executed"] is True
+    # the design-fields stamp is only a CAPABILITY annotation: it does NOT by
+    # itself assert the lift ran -- an execution-bearing run must override
+    # amulet_lift_executed with measured counters.
     assert f["amulet_lift_executed"] is False
-    assert f["nonlinear_execution_status"] == "tag_only_prototype_not_wired"
+    assert f["nonlinear_execution_status"] == "lifted_on_accelerator"
+
+
+def test_paper_facing_trusted_shortcut_no_longer_refused() -> None:
+    # after wiring, a paper-facing (non-dry-run) trusted_shortcut run is allowed
+    # because it genuinely executes the lift (no NonlinearDesignNotWired).
+    assert nd.assert_real_path_execution(
+        "trusted_shortcut", dry_run=False) == "trusted_shortcut"
 
 
 # ---- claim validation refuses tag-only trusted_shortcut -------------------
@@ -146,19 +159,9 @@ def test_e15_refuses_tag_only_trusted_shortcut() -> None:
                for m in rep["recommendation"]["missing_evidence"])
 
 
-# ---- scripts refuse paper-facing unwired trusted_shortcut -----------------
+# ---- build is design-independent; a build report is not execution-bearing ---
 
-def test_build_refuses_paper_facing_trusted_shortcut(tmp_path) -> None:
-    build = _load("buildts", "scripts/build_qwen7b_folded_package.py")
-    # a non-dry-run (model-path given) trusted_shortcut build must be refused
-    rc = _main(build, ["x", "--model-path", "/nonexistent_model",
-                       "--output-dir", str(tmp_path / "pkg"),
-                       "--nonlinear-backend", "trusted_shortcut",
-                       "--num-layers", "1"])
-    assert rc == 3
-
-
-def test_build_allows_dry_run_trusted_shortcut(tmp_path) -> None:
+def test_build_dry_run_trusted_shortcut_now_executed_capability(tmp_path) -> None:
     build = _load("buildts2", "scripts/build_qwen7b_folded_package.py")
     rc = _main(build, ["x", "--dry-run", "--num-layers", "1",
                        "--output-dir", str(tmp_path / "pkg"),
@@ -167,5 +170,9 @@ def test_build_allows_dry_run_trusted_shortcut(tmp_path) -> None:
     assert rc == 0
     rep = json.loads((tmp_path / "b.json").read_text())
     assert rep["nonlinear_backend"] == "trusted_shortcut"
-    assert rep["nonlinear_real_path_executed"] is False
-    assert rep["nonlinear_execution_status"] == "tag_only_prototype_not_wired"
+    # the design is wired (capability), so the build report annotates executed...
+    assert rep["nonlinear_real_path_executed"] is True
+    assert rep["nonlinear_execution_status"] == "lifted_on_accelerator"
+    # ...but a BUILD never runs a nonlinearity, so it is NOT execution-bearing and
+    # must NOT be flagged tag-only (it legitimately carries no lift counters).
+    assert nd.trusted_shortcut_tag_only(rep) is False

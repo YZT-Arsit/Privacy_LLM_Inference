@@ -141,7 +141,8 @@ def main() -> int:
     # --- verify + load package in the untrusted worker (NO masks) -------------
     vrep = verify_package(pkg_dir)
     backend = Qwen7BFoldedPackageGpuBackend(
-        folded_package_path=str(pkg_dir), device=device, dtype=dtype)
+        folded_package_path=str(pkg_dir), device=device, dtype=dtype,
+        nonlinear_backend=args.nonlinear_backend)
     init_resp = backend.init(BoundaryInitRequest(
         session_id="prefill-probe", hidden_size=int(getattr(mc, "hidden_size")),
         vocab_size=int(getattr(mc, "vocab_size")), num_layers=k, dtype=dtype,
@@ -192,6 +193,9 @@ def main() -> int:
         "peak_gpu_memory_mb": peak_mb,
     }
     report.update(nonlinear_design_report_fields(args.nonlinear_backend))
+    # OVERRIDE the capability stamp with MEASURED execution counters from the
+    # worker (proves design B genuinely lifted the activation onto the GPU).
+    report.update(backend.nonlinear_execution_evidence())
 
     if args.output_json:
         p = Path(args.output_json)

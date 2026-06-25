@@ -67,9 +67,12 @@ The untrusted GPU worker holds the base folded package **and** the folded-LoRA
 package; it merges `W_tilde += a_tilde @ b_tilde` and runs the existing masked
 kernels. It never sees raw A/B or masks.
 
+For design B add `--nonlinear-backend trusted_shortcut` so the worker executes
+the Amulet lift (design A uses `current` / omit).
+
 ```
 python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
-  --gpu-backend qwen7b_folded_package \
+  --gpu-backend qwen7b_folded_package --nonlinear-backend current \
   --folded-package-path $BASE \
   --folded-lora-package-path $LORA \
   --listen-host 0.0.0.0 --listen-port $PORT \

@@ -103,15 +103,23 @@ done
 
 The worker loads a folded package; start one per design (or restart between
 designs). Run the matching `--folded-package-path` for the design under test.
+**Pass `--nonlinear-backend $D`** so the untrusted worker actually EXECUTES the
+design: for `trusted_shortcut` it lifts the MLP activation onto the GPU and
+migrates softmax/RMSNorm with a trusted reduction shortcut, and stamps measured
+execution evidence (`amulet_lift_executed` / `lifted_nonlinear_ops_count` /
+`lift_k` / `lifted_gpu_bytes`) that the client retrieves from `/health` and the
+probes/E3/E9 reports carry. If you forget it the worker silently runs `current`
+and the reports are tag-only (rejected by the claim validator / gate / E15).
 `ss` is NOT installed on H800 — use `curl /health` (and a portable Python socket
 probe), never `ss`:
 
 ```
 python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
-  --gpu-backend qwen7b_folded_package \
+  --gpu-backend qwen7b_folded_package --nonlinear-backend $D \
   --folded-package-path $ROOT/qwen7b_folded_full_$D \
   --folded-lora-package-path $ROOT/qwen7b_lora_folded_$D \
   --device cuda --dtype bfloat16 --listen-port $PORT --audit true
+# /health now reports nonlinear_backend + nonlinear_execution_evidence (post-run)
 curl -fsS $URL/health && echo            # health check (no ss)
 python - <<'PY'                          # portable listen probe (no ss)
 import socket

@@ -145,7 +145,21 @@ def main() -> int:
 
     from pllo.experiments.nonlinear_designs import (
         nonlinear_design_report_fields)
+    # The real predictor's MEASURED nonlinear execution evidence (lift counters)
+    # was merged into ``report`` by run_benchmark via predictor.stats(); preserve
+    # it across the design-fields capability stamp so a wired trusted_shortcut run
+    # keeps its genuine amulet_lift_executed / lifted_* counters.
+    _EVIDENCE_KEYS = (
+        "nonlinear_op_backend", "nonlinear_real_path_executed",
+        "amulet_lift_executed", "amulet_backend_used",
+        "lifted_nonlinear_ops_count", "lift_k", "lifted_gpu_bytes",
+        "trusted_nonlinear_ops_count", "nonlinear_trusted_calls",
+        "nonlinear_trusted_bytes", "nonlinear_accelerator_bytes",
+        "migrated_ops_by_type", "unsupported_nonlinear_ops",
+        "nonlinear_execution_status")
+    _measured = {k: report[k] for k in _EVIDENCE_KEYS if k in report}
     report.update(nonlinear_design_report_fields(args.nonlinear_backend))
+    report.update(_measured)
 
     # Attested backends under --require-real MUST have evidence bound to THIS
     # nonlinear design (the runtime hash binds the design); reject a stale /

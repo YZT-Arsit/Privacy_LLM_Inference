@@ -921,8 +921,16 @@ def main() -> int:
                               "seq_len": args.seq_len,
                               "num_layers": args.num_layers}
         elif args.gpu_backend == "qwen7b_folded_package":
+            # forward the selected nonlinear DESIGN so the untrusted worker
+            # genuinely EXECUTES it (design B lifts the activation onto this GPU).
+            srv_nb = "current"
+            if getattr(args, "nonlinear_backend", None) is not None:
+                from pllo.experiments.nonlinear_designs import (
+                    normalize_nonlinear_backend)
+                srv_nb = normalize_nonlinear_backend(args.nonlinear_backend)
             backend_kwargs = {"folded_package_path": args.folded_package_path,
                               "device": args.device, "dtype": args.dtype,
+                              "nonlinear_backend": srv_nb,
                               "folded_lora_package_path":
                                   args.folded_lora_package_path}
         run_gpu_worker_server(args.listen_host, args.listen_port,
@@ -974,6 +982,19 @@ def main() -> int:
             from pllo.experiments.nonlinear_designs import (
                 nonlinear_design_report_fields)
             report.update(nonlinear_design_report_fields(nonlinear_backend))
+            # OVERRIDE the capability stamp with the worker's MEASURED execution
+            # evidence (post-run health), so a wired trusted_shortcut run carries
+            # genuine lift counters (amulet_lift_executed / lifted_*).
+            try:
+                from pllo.protocol.remote import RemoteGpuWorker
+                _h = RemoteGpuWorker(
+                    args.gpu_worker_url, "qwen7b_folded_package").health()
+                _ev = (_h or {}).get("nonlinear_execution_evidence") or {}
+                if _ev:
+                    report.update(_ev)
+                    report["nonlinear_execution_evidence_source"] = "worker_health"
+            except Exception:                                # noqa: BLE001
+                pass
         if transcript_recorder is not None:
             tpath = transcript_recorder.to_jsonl(args.record_transcript)
             print("security transcript written: %s (%d entries)"

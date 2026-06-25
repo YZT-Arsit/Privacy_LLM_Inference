@@ -279,12 +279,26 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                  device: str = "cuda", dtype: str = "bfloat16",
                  verify_on_init: bool = True,
                  folded_lora_package_path: str | None = None,
+                 nonlinear_backend: str = "current",
+                 nonlinear_lift_k: int = 2, nonlinear_seed: int = 2035,
                  **_ignored: Any) -> None:
         self.folded_package_path = folded_package_path
         self.folded_lora_package_path = folded_lora_package_path
         self.device = device
         self.dtype = dtype
         self.verify_on_init = bool(verify_on_init)
+        # Selected nonlinear DESIGN -- the worker GENUINELY executes it: design B
+        # (trusted_shortcut/amulet_migrated) lifts the MLP activation onto this
+        # untrusted accelerator and migrates softmax/RMSNorm with a trusted
+        # reduction shortcut. The runner + counters are built lazily (torch).
+        from pllo.experiments.nonlinear_designs import (  # stdlib, no torch
+            normalize_nonlinear_backend, op_backend_for_design)
+        self.nonlinear_backend = normalize_nonlinear_backend(
+            nonlinear_backend or "current")
+        self.nonlinear_op_backend = op_backend_for_design(self.nonlinear_backend)
+        self.nonlinear_lift_k = int(nonlinear_lift_k)
+        self.nonlinear_seed = int(nonlinear_seed)
+        self._runner: Any = None
         self._session_id: str | None = None
         # folded-LoRA state (optional; the no-LoRA path leaves these defaults)
         self.lora_enabled = bool(folded_lora_package_path)
@@ -366,6 +380,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
 
         notes = json.dumps({
             "folded_package_loaded": True,
+            "nonlinear_backend": self.nonlinear_backend,
+            "nonlinear_op_backend": self.nonlinear_op_backend,
             "folded_package_valid": bool(self.package_valid)
             if self.package_valid is not None else None,
             "folded_package_path": self.folded_package_path,
@@ -386,6 +402,9 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
 
     def describe(self) -> dict[str, Any]:
         return {"backend": self.name, "tee_used": self.tee_used,
+                "nonlinear_backend": self.nonlinear_backend,
+                "nonlinear_op_backend": self.nonlinear_op_backend,
+                "nonlinear_execution_evidence": self.nonlinear_execution_evidence(),
                 "folded_package_path": self.folded_package_path,
                 "folded_package_loaded": self.folded_package_loaded,
                 "folded_package_size_gb": self.folded_package_size_gb,
@@ -457,6 +476,26 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         except Exception:                                    # noqa: BLE001
             pass
 
+    def _ensure_runner(self):
+        """Lazily build the nonlinear runner that EXECUTES the selected design
+        over the folded layers (design B lifts the activation onto this GPU)."""
+        if self._runner is None:
+            from pllo.deployment.folded_nonlinear import (
+                make_folded_nonlinear_runner)
+            self._runner = make_folded_nonlinear_runner(
+                self.nonlinear_backend, lift_k=self.nonlinear_lift_k,
+                seed=self.nonlinear_seed)
+        return self._runner
+
+    def nonlinear_execution_evidence(self) -> dict[str, Any]:
+        """Measured runtime evidence of the nonlinear design actually executed
+        over the folded layers (empty until a prefill/decode/head has run). A
+        paper-facing report stamps this AFTER ``nonlinear_design_report_fields``
+        so a wired ``trusted_shortcut`` run carries genuine lift counters."""
+        if self._runner is None:
+            return {}
+        return self._runner.execution_evidence()
+
     def _masked_last_logits(self, h_tilde: Any):
         """Apply the folded head, return last-position MASKED logits as numpy."""
         import numpy as np
@@ -482,7 +521,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             raise RuntimeError("call init() to load the folded package first")
         layer_tensors = load_folded_layer(self.folded_package_path, layer_index)
         return apply_folded_layer_prefill(x_tilde, layer_tensors, config, cos,
-                                          sin, eps)
+                                          sin, eps, runner=self._ensure_runner())
 
     def run_prefill(self, h_tilde: Any, num_exec_layers: int, config: Any,
                     cos: Any, sin: Any, eps: float) -> dict[str, Any]:
@@ -495,7 +534,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             raise RuntimeError("call init() to load the folded package first")
         out = apply_folded_prefill(h_tilde, self.folded_package_path,
                                    int(num_exec_layers), config, cos, sin, eps,
-                                   lora_package_dir=self.folded_lora_package_path)
+                                   lora_package_dir=self.folded_lora_package_path,
+                                   runner=self._ensure_runner())
         self._kv = out["kv"]
         self._exec_layers = int(num_exec_layers)
         return out
@@ -505,7 +545,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         from pllo.deployment.folded_worker import apply_folded_head
         if not self.folded_package_loaded:
             raise RuntimeError("call init() to load the folded package first")
-        return apply_folded_head(h_tilde, self.folded_package_path, eps)
+        return apply_folded_head(h_tilde, self.folded_package_path, eps,
+                                 runner=self._ensure_runner())
 
     def run_decode(self, x_next_tilde: Any, position: int, config: Any,
                    cos: Any, sin: Any, eps: float,
@@ -520,7 +561,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         out = apply_folded_decode(x_next_tilde, self.folded_package_path,
                                   self._kv, int(position), k, config, cos, sin,
                                   eps,
-                                  lora_package_dir=self.folded_lora_package_path)
+                                  lora_package_dir=self.folded_lora_package_path,
+                                  runner=self._ensure_runner())
         self._kv = out["kv"]
         return out
 

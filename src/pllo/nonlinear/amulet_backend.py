@@ -60,10 +60,16 @@ class AmuletMigratedNonlinearBackend(NonlinearBackend):
         h = x.shape[-1]
         U = x.reshape(-1, h)                              # [m, h]
         m = U.shape[0]
+        # The selector lift params are generated on CPU with a fixed seed (the
+        # torch CPU generator cannot target CUDA directly) then moved onto the
+        # input's device, so the lift runs on whatever accelerator holds ``x``
+        # (CPU for prototypes, CUDA on the H800). CPU numerics are unchanged
+        # (``.to`` is a no-op when already on CPU).
         gen = torch.Generator().manual_seed(self.seed)
-        valid = torch.randint(0, self.lift_k, (h,), generator=gen)
-        R = (torch.rand(h, self.lift_k, generator=gen) + 0.5).to(U.dtype)
-        R[torch.arange(h), valid] = 1.0                   # valid column scale = 1
+        valid = torch.randint(0, self.lift_k, (h,), generator=gen).to(U.device)
+        R = (torch.rand(h, self.lift_k, generator=gen) + 0.5).to(
+            device=U.device, dtype=U.dtype)
+        R[torch.arange(h, device=U.device), valid] = 1.0  # valid column scale = 1
         lift = U.unsqueeze(-1) * R.unsqueeze(0)           # [m, h, k]  (accelerator)
         Af = act(lift)                                    # activation on accelerator
         idx = valid.view(1, h, 1).expand(m, h, 1)
