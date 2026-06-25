@@ -83,6 +83,9 @@ def main() -> int:
     ap.add_argument("--mock-runtime", action="store_true", default=False)
     ap.add_argument("--trace-decode-steps", action="store_true", default=False)
     ap.add_argument("--trace-output-jsonl", default=None)
+    ap.add_argument("--trace-worker-timings", action="store_true", default=False,
+                    help="attach SYNTHETIC worker-side forward timing per step "
+                    "(mock only; splits the roundtrip into network vs worker)")
     ap.add_argument("--output-json", required=True)
     args = ap.parse_args()
 
@@ -133,8 +136,21 @@ def main() -> int:
             except ScheduleSecretLeak:
                 leak_detected = True
 
+    # optional SYNTHETIC worker timing (mock only): split the roundtrip into
+    # network vs worker compute so the client-side merge/aggregate is exercised.
+    worker_timing_fn = None
+    if args.trace_worker_timings:
+        from pllo.protocol.worker_timing import (
+            audit_worker_timing_no_secrets, synthetic_worker_timing)
+
+        def worker_timing_fn(step, phase):       # noqa: F811
+            wt = synthetic_worker_timing(phase=phase, num_layers=28)
+            audit_worker_timing_no_secrets(wt)   # mock metadata carries no secret
+            return wt
+
     simulate_mock_decode(prof, counters, n_tokens=n_new,
-                         hidden_size=args.hidden_size, on_step=_on_step)
+                         hidden_size=args.hidden_size, on_step=_on_step,
+                         worker_timing_fn=worker_timing_fn)
 
     agg = prof.aggregate(
         generated_tokens=n_new,
@@ -175,8 +191,10 @@ def main() -> int:
         # honest bottleneck localisation
         "bottleneck_stage": agg["bottleneck_stage"],
         "boundary_calls_reduced": agg["boundary_calls_reduced"],
+        "boundary_calls_reduction_note": agg.get("boundary_calls_reduction_note"),
         "online_remask_still_performed": True,
         "schedule_used_for_metadata_only": True,
+        "worker_timing_requested": bool(args.trace_worker_timings),
         "trace_output_jsonl": (args.trace_output_jsonl
                                if args.trace_decode_steps else None),
     }

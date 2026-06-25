@@ -80,11 +80,21 @@ _TARGET_KEYS = (
     "total_gpu_calls",
     "generated_tokens",
     "boundary_calls_reduced",
+    "boundary_calls_reduction_note",
+    # worker-side timing split of gpu_worker_roundtrip (None unless the worker
+    # returned its public timing metadata for this run)
+    "avg_worker_total_s_per_token",
+    "avg_worker_backend_forward_s_per_token",
+    "avg_network_protocol_overhead_s_per_token",
+    "worker_bottleneck_stage",
 )
 
 # Measured baseline (server, current backend): ~2 boundary calls / generated
-# token. boundary_calls_reduced compares against this.
+# token. boundary_calls_reduced is only true when measurably BELOW the threshold
+# (a prefill that does 1 boundary call makes the per-token average ~1.875 over a
+# short run -- that is NOT a reduction, so the threshold sits well under 2.0).
 _BASELINE_BOUNDARY_CALLS_PER_TOKEN = 2.0
+_BOUNDARY_REDUCED_THRESHOLD = 1.5
 
 
 def empty_target_metrics() -> Dict[str, Any]:
@@ -105,6 +115,22 @@ def _delta(before, after):
 def _mean(xs) -> Optional[float]:
     xs = [x for x in xs if isinstance(x, (int, float))]
     return round(sum(xs) / len(xs), 9) if xs else None
+
+
+def _boundary_reduction_note(bpt: Optional[float]) -> Optional[str]:
+    """Honest one-liner about the boundary-call rate vs the ~2/token baseline."""
+    if bpt is None:
+        return None
+    if bpt < _BOUNDARY_REDUCED_THRESHOLD:
+        return ("reduced to %.3f boundary calls/generated token (below the %.1f "
+                "threshold; baseline ~%.1f)"
+                % (bpt, _BOUNDARY_REDUCED_THRESHOLD,
+                   _BASELINE_BOUNDARY_CALLS_PER_TOKEN))
+    return ("still ~%.3f boundary calls/generated token (baseline ~%.1f; NOT "
+            "reduced below the %.1f threshold -- each token still needs a fresh "
+            "mask embedding + a logits recovery)"
+            % (bpt, _BASELINE_BOUNDARY_CALLS_PER_TOKEN,
+               _BOUNDARY_REDUCED_THRESHOLD))
 
 
 class DecodeProfiler:
@@ -143,6 +169,14 @@ class DecodeProfiler:
             "_t0": _now(),
         }
 
+    def set_worker_timing(self, meta: Optional[Dict[str, Any]]) -> None:
+        """Attach the worker's PUBLIC forward-timing metadata to the current step
+        (call between ``begin_step`` and ``end_step``). Used to split the
+        client-observed ``gpu_worker_roundtrip`` into network vs worker compute."""
+        if not self.enabled or self._cur is None or not meta:
+            return
+        self._cur["worker_timings"] = dict(meta)
+
     @contextmanager
     def stage(self, name: str):
         if not self.enabled or self._cur is None:
@@ -170,6 +204,17 @@ class DecodeProfiler:
         c["total_step_latency_s"] = round(_now() - c.pop("_t0"), 9)
         c["stage_timings"] = {k: round(v, 9)
                               for k, v in c["stage_timings"].items()}
+        # derived: client-observed roundtrip minus the worker's own total time =
+        # network + protocol overhead (None unless the worker reported its total).
+        wt = c.get("worker_timings")
+        rt = c["stage_timings"].get("gpu_worker_roundtrip")
+        if (isinstance(wt, dict)
+                and isinstance(wt.get("worker_total_s"), (int, float))
+                and isinstance(rt, (int, float))):
+            c["network_protocol_overhead_s"] = round(
+                rt - wt["worker_total_s"], 9)
+        else:
+            c["network_protocol_overhead_s"] = None
         self._rows.append(c)
         self._cur = None
 
@@ -248,9 +293,52 @@ class DecodeProfiler:
             "schedule_precompute_latency_s": schedule_precompute_latency_s,
             "bottleneck_stage": bottleneck,
             "stage_total_s": stage_total,
-            "boundary_calls_reduced": (bool(bpt < _BASELINE_BOUNDARY_CALLS_PER_TOKEN)
+            "boundary_calls_reduced": (bool(bpt < _BOUNDARY_REDUCED_THRESHOLD)
                                        if bpt is not None else False),
+            "boundary_calls_reduction_note": _boundary_reduction_note(bpt),
         })
+        out.update(self._worker_aggregate())
+        return out
+
+    def _worker_aggregate(self) -> Dict[str, Any]:
+        """Aggregate the per-step worker timing (when present) into per-token
+        averages + a worker-internal bottleneck. All None when the worker returned
+        no timing (e.g. the client did not opt in)."""
+        out = {
+            "avg_worker_total_s_per_token": None,
+            "avg_worker_backend_forward_s_per_token": None,
+            "avg_network_protocol_overhead_s_per_token": None,
+            "worker_bottleneck_stage": None,
+        }
+        wt_rows = [r.get("worker_timings") for r in self._rows
+                   if isinstance(r.get("worker_timings"), dict)]
+        if not wt_rows:
+            return out
+
+        def _wmean(key):
+            return _mean([w.get(key) for w in wt_rows])
+
+        out["avg_worker_total_s_per_token"] = _wmean("worker_total_s")
+        out["avg_worker_backend_forward_s_per_token"] = _wmean(
+            "worker_backend_forward_s")
+        out["avg_network_protocol_overhead_s_per_token"] = _mean(
+            [r.get("network_protocol_overhead_s") for r in self._rows])
+        # worker-internal bottleneck: prefer the fine forward breakdown when the
+        # backend could split it; else fall back to the coarse forward total.
+        cand: Dict[str, float] = {}
+        fine = ("worker_attention_total_s", "worker_mlp_total_s",
+                "worker_nonlinear_total_s", "worker_lm_head_s")
+        for key in ("worker_request_parse_s", "worker_payload_decode_s",
+                    "worker_payload_encode_s") + fine:
+            m = _wmean(key)
+            if m is not None:
+                cand[key] = m
+        if not any(k in cand for k in fine):
+            m = _wmean("worker_backend_forward_s")
+            if m is not None:
+                cand["worker_backend_forward_s"] = m
+        out["worker_bottleneck_stage"] = (max(cand, key=cand.get)
+                                          if cand else None)
         return out
 
     def write_trace(self, path, *, limit: Optional[int] = None) -> str:
@@ -273,15 +361,17 @@ def _busy(n: int) -> int:
 
 def simulate_mock_decode(profiler: "DecodeProfiler", counters: Dict[str, Any], *,
                          n_tokens: int, hidden_size: int, on_step=None,
-                         busy_iters: int = 2000) -> None:
+                         worker_timing_fn=None, busy_iters: int = 2000) -> None:
     """Run a SYNTHETIC profiled decode (no model/GPU) over ``n_tokens`` steps,
     exercising all 9 stages with tiny CPU work so the profiler's trace + metrics
     can be validated locally. Mirrors the real folded path's per-step boundary
     (2/token) and gpu (1/token) call pattern. ``on_step(kind, step, phase)`` is
     invoked inside the ``schedule_slot_lookup`` (kind='schedule') and
     ``http_request_serialization`` (kind='serialize') stages for the caller to
-    consume a schedule slot / audit a synthetic GPU payload. This is a MOCK
-    helper -- it is NOT a substitute for measuring the real runtime."""
+    consume a schedule slot / audit a synthetic GPU payload.
+    ``worker_timing_fn(step, phase)`` (optional) returns a SYNTHETIC worker-timing
+    dict attached to the step (mock only). This is a MOCK helper -- it is NOT a
+    substitute for measuring the real runtime."""
     for step in range(int(n_tokens)):
         phase = "prefill" if step == 0 else "decode"
         profiler.begin_step(step, phase)
@@ -302,6 +392,8 @@ def simulate_mock_decode(profiler: "DecodeProfiler", counters: Dict[str, Any], *
         with profiler.stage("gpu_worker_roundtrip"):
             _busy(busy_iters * 2)               # roundtrip dominates per token
             counters["gpu_calls"] += 1
+        if worker_timing_fn is not None:
+            profiler.set_worker_timing(worker_timing_fn(step, phase))
         with profiler.stage("trusted_nonlinear_restore_logits"):
             _busy(busy_iters)
             if step > 0:

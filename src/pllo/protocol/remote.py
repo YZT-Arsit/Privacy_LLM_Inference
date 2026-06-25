@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -144,14 +145,20 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         srv = self.server
+        t_handler0 = time.perf_counter()
         path = self.path.rstrip("/") or "/"
         if path not in _ROUTES:
             self._send_json(404, {"error": "not_found", "path": self.path})
             return
+        # Worker-side timing ONLY when the client explicitly opts in (profiling
+        # mode). Default clients get no timing work and a worker_timing=None field.
+        want_timing = self.headers.get("X-PLLO-WorkerTiming", "") == "1"
         try:
+            t_parse0 = time.perf_counter()
             length = int(self.headers.get("Content-Length", 0))
             raw = self.rfile.read(length) if length else b""
             payload = json.loads(raw.decode("utf-8")) if raw else {}
+            parse_s = time.perf_counter() - t_parse0
         except Exception as exc:  # noqa: BLE001
             self._send_json(400, {"error": "bad_request", "detail": str(exc)})
             return
@@ -165,24 +172,68 @@ class _Handler(BaseHTTPRequestHandler):
                 return
 
         try:
+            t_dec0 = time.perf_counter()
             msg = decode_message(payload)
+            decode_s = time.perf_counter() - t_dec0
             if not isinstance(msg, _ROUTES[path]):
                 raise ValueError(
                     f"expected {_ROUTES[path].__name__} at {path}, got "
                     f"{type(msg).__name__}")
             with srv.lock:
+                try:
+                    srv.backend.collect_worker_timing = bool(want_timing)
+                except Exception:                            # noqa: BLE001
+                    pass
                 if path == "/init":
                     result = srv.backend.init(msg)
                 elif path == "/prefill":
                     result = srv.backend.prefill(msg)
                 else:
                     result = srv.backend.decode(msg)
-            self._send_json(200, encode_message(result))
+            t_enc0 = time.perf_counter()
+            encoded = encode_message(result)
+            encode_s = time.perf_counter() - t_enc0
+            encoded = self._attach_worker_timing(
+                encoded, want_timing=want_timing, parse_s=parse_s,
+                decode_s=decode_s, encode_s=encode_s, t_handler0=t_handler0)
+            self._send_json(200, encoded)
         except NotImplementedError as exc:
             self._send_json(501, {"error": "not_implemented", "detail": str(exc),
                                   "tee_used_on_gpu": False})
         except Exception as exc:  # noqa: BLE001
             self._send_json(500, {"error": "worker_error", "detail": str(exc)})
+
+    def _attach_worker_timing(self, encoded: dict, *, want_timing: bool,
+                              parse_s, decode_s, encode_s, t_handler0) -> dict:
+        """Merge the worker's forward timing (already on ``encoded.worker_timing``)
+        with the server handler's stage timings, or strip it. Default (no opt-in):
+        worker_timing is forced to None so responses match the historical path."""
+        if "worker_timing" not in encoded:
+            return encoded
+        if not want_timing:
+            encoded["worker_timing"] = None
+            return encoded
+        wt = encoded.get("worker_timing")
+        if not isinstance(wt, dict):
+            encoded["worker_timing"] = None
+            return encoded
+        from pllo.protocol.worker_timing import (
+            audit_worker_timing_no_secrets, merge_server_timing)
+        # response size: the encoded body sans the (about-to-be-added) server
+        # stage fields -- dominated by the masked-logits base64, so it is the wire
+        # size to within a few bytes; documented as approximate.
+        try:
+            resp_bytes = len(json.dumps(encoded).encode("utf-8"))
+        except Exception:                                    # noqa: BLE001
+            resp_bytes = None
+        total = time.perf_counter() - t_handler0
+        merged = merge_server_timing(
+            wt, total_s=total, parse_s=parse_s, decode_s=decode_s,
+            encode_s=encode_s, response_bytes=resp_bytes)
+        # GPU->trusted direction must also carry no secret-named field.
+        audit_worker_timing_no_secrets(merged)
+        encoded["worker_timing"] = merged
+        return encoded
 
 
 class GpuWorkerServer:
@@ -263,11 +314,17 @@ class RemoteGpuWorker:
 
     def __init__(self, url: str, gpu_backend: str = "mock",
                  recorder: Any = None, timeout: float = 60.0,
-                 persistent: bool = False) -> None:
+                 persistent: bool = False,
+                 request_worker_timing: bool = False) -> None:
         self.url = url.rstrip("/")
         self.gpu_backend = gpu_backend
         self._recorder = recorder
         self.timeout = timeout
+        # Ask the (untrusted) worker to return its PUBLIC forward-timing metadata
+        # so the client can split gpu_worker_roundtrip into network vs worker
+        # compute. Default off -> the worker does no timing work and the response
+        # carries worker_timing=None. The trusted client never sends a secret.
+        self.request_worker_timing = bool(request_worker_timing)
         # Optional persistent transport: reuse ONE TCP connection across decode
         # steps (keep-alive) to drop per-token connection-setup overhead. Default
         # off -> historical one-connection-per-request behaviour. Profiling
@@ -302,6 +359,8 @@ class RemoteGpuWorker:
     def _post_persistent(self, path: str, body: bytes) -> dict:
         headers = {"Content-Type": "application/json", "Connection": "keep-alive",
                    "X-PLLO-KeepAlive": "1"}
+        if self.request_worker_timing:
+            headers["X-PLLO-WorkerTiming"] = "1"
         for attempt in (1, 2):                     # reconnect once on a dropped conn
             try:
                 conn = self._persistent_conn()
@@ -335,9 +394,11 @@ class RemoteGpuWorker:
         if self.persistent:
             out = self._post_persistent(path, body)
         else:
+            headers = {"Content-Type": "application/json"}
+            if self.request_worker_timing:
+                headers["X-PLLO-WorkerTiming"] = "1"
             req = urllib.request.Request(
-                self.url + path, data=body,
-                headers={"Content-Type": "application/json"}, method="POST")
+                self.url + path, data=body, headers=headers, method="POST")
             try:
                 with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                     out = json.loads(resp.read().decode("utf-8"))

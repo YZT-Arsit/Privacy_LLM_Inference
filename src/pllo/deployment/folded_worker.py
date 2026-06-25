@@ -15,6 +15,7 @@ RoPE caches are provided by the boundary (they are not secret).
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,16 @@ __all__ = [
     "apply_folded_decode",
     "apply_folded_head",
 ]
+
+
+def _region(timer: Any, name: str):
+    """A timing region from an optional ``WorkerTimer`` (no-op when ``timer`` is
+    None -- the default path is byte-for-byte unchanged)."""
+    return timer.region(name) if timer is not None else nullcontext()
+
+
+def _layer_ctx(timer: Any):
+    return timer.layer() if timer is not None else nullcontext()
 
 
 def _empty_cache(device) -> None:
@@ -106,23 +117,29 @@ def _rmsnorm(x: torch.Tensor, eps: float, runner: Any = None) -> torch.Tensor:
 def apply_folded_layer_prefill(x_tilde: torch.Tensor,
                                layer_tensors: dict[str, torch.Tensor],
                                config: Any, cos: torch.Tensor, sin: torch.Tensor,
-                               eps: float, runner: Any = None) -> dict[str, Any]:
+                               eps: float, runner: Any = None,
+                               timer: Any = None) -> dict[str, Any]:
     """Masked prefill of ONE folded layer from package tensors (no masks).
 
     ``x_tilde`` is the masked hidden ``[B, T, H]``; ``layer_tensors`` are the
     package's folded operators for the layer; ``config`` + ``cos``/``sin`` are the
     public per-layer block config + RoPE caches. ``runner`` (optional) selects the
-    nonlinear design (default None == the historical inline path). Returns
-    ``{"y_tilde": ..., "cache": {...}}`` -- the same shape the in-process masked
-    block returns."""
+    nonlinear design (default None == the historical inline path). ``timer``
+    (optional ``WorkerTimer``) accumulates attention/MLP/nonlinear sub-totals; when
+    None there is no timing overhead. Returns ``{"y_tilde": ..., "cache": {...}}``
+    -- the same shape the in-process masked block returns."""
     folded = build_folded_layer_dict(layer_tensors, device=x_tilde.device,
                                      dtype=x_tilde.dtype)
-    r1 = _rmsnorm(x_tilde, eps, runner)
-    a = _masked_attention(r1, folded, config, cos, sin, causal_offset=0,
-                          runner=runner)
+    with _region(timer, "nonlinear"):
+        r1 = _rmsnorm(x_tilde, eps, runner)
+    with _region(timer, "attention"):
+        a = _masked_attention(r1, folded, config, cos, sin, causal_offset=0,
+                              runner=runner)
     x1 = x_tilde + a["out"]
-    r2 = _rmsnorm(x1, eps, runner)
-    mlp = _masked_mlp(r2, folded, runner)      # uses pre-folded wdown_tilde
+    with _region(timer, "nonlinear"):
+        r2 = _rmsnorm(x1, eps, runner)
+    with _region(timer, "mlp"):
+        mlp = _masked_mlp(r2, folded, runner)      # uses pre-folded wdown_tilde
     y_tilde = x1 + mlp["out"]
     return {"y_tilde": y_tilde,
             "cache": {"key_rope_tilde": a["key_rope_full"],
@@ -133,21 +150,27 @@ def apply_folded_layer_decode(x_next_tilde: torch.Tensor,
                               layer_tensors: dict[str, torch.Tensor],
                               cache: dict, position: int, config: Any,
                               cos: torch.Tensor, sin: torch.Tensor,
-                              eps: float, runner: Any = None) -> dict[str, Any]:
+                              eps: float, runner: Any = None,
+                              timer: Any = None) -> dict[str, Any]:
     """Masked one-token decode of ONE folded layer from package tensors (no
     masks), using the per-layer masked KV ``cache`` + absolute ``position``.
-    ``runner`` (optional) selects the nonlinear design (default None == inline)."""
+    ``runner`` (optional) selects the nonlinear design (default None == inline);
+    ``timer`` (optional) accumulates attention/MLP/nonlinear sub-totals."""
     folded = build_folded_layer_dict(layer_tensors, device=x_next_tilde.device,
                                      dtype=x_next_tilde.dtype)
     pid = torch.tensor([position], device=x_next_tilde.device)
-    r1 = _rmsnorm(x_next_tilde, eps, runner)
-    a = _masked_attention(r1, folded, config, cos, sin, causal_offset=None,
-                          position_ids=pid,
-                          past_key_rope=cache["key_rope_tilde"],
-                          past_value=cache["value_tilde"], runner=runner)
+    with _region(timer, "nonlinear"):
+        r1 = _rmsnorm(x_next_tilde, eps, runner)
+    with _region(timer, "attention"):
+        a = _masked_attention(r1, folded, config, cos, sin, causal_offset=None,
+                              position_ids=pid,
+                              past_key_rope=cache["key_rope_tilde"],
+                              past_value=cache["value_tilde"], runner=runner)
     x1 = x_next_tilde + a["out"]
-    r2 = _rmsnorm(x1, eps, runner)
-    mlp = _masked_mlp(r2, folded, runner)
+    with _region(timer, "nonlinear"):
+        r2 = _rmsnorm(x1, eps, runner)
+    with _region(timer, "mlp"):
+        mlp = _masked_mlp(r2, folded, runner)
     y_tilde = x1 + mlp["out"]
     return {"y_tilde": y_tilde,
             "cache": {"key_rope_tilde": a["key_rope_full"],
@@ -175,21 +198,24 @@ def apply_folded_prefill(h_tilde: torch.Tensor, package_dir, num_exec_layers: in
                          config: Any, cos: torch.Tensor, sin: torch.Tensor,
                          eps: float, *, layer_configs=None,
                          empty_cache: bool = True,
-                         lora_package_dir=None, runner: Any = None
-                         ) -> dict[str, Any]:
+                         lora_package_dir=None, runner: Any = None,
+                         timer: Any = None) -> dict[str, Any]:
     """Stream the first ``num_exec_layers`` folded layers from the package over
     masked ``h_tilde`` (no masks on the worker). Returns the masked hidden after
     those layers + the per-layer masked KV. One shard is resident at a time.
 
     ``lora_package_dir`` (optional) merges a folded-LoRA package per layer; the
-    no-LoRA path is unchanged (default ``None``)."""
+    no-LoRA path is unchanged (default ``None``). ``timer`` (optional) records a
+    per-layer time + attention/MLP/nonlinear sub-totals."""
     h = h_tilde
     kv: list[dict[str, Any]] = []
     for ell in range(num_exec_layers):
         lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
                                lora_package_dir, ell)
         cfg = layer_configs[ell] if layer_configs is not None else config
-        out = apply_folded_layer_prefill(h, lt, cfg, cos, sin, eps, runner=runner)
+        with _layer_ctx(timer):
+            out = apply_folded_layer_prefill(h, lt, cfg, cos, sin, eps,
+                                             runner=runner, timer=timer)
         h = out["y_tilde"]
         kv.append(out["cache"])
         del lt
@@ -202,20 +228,22 @@ def apply_folded_decode(x_next_tilde: torch.Tensor, package_dir, kv: list,
                         position: int, num_exec_layers: int, config: Any,
                         cos: torch.Tensor, sin: torch.Tensor, eps: float, *,
                         layer_configs=None, empty_cache: bool = True,
-                        lora_package_dir=None, runner: Any = None
-                        ) -> dict[str, Any]:
+                        lora_package_dir=None, runner: Any = None,
+                        timer: Any = None) -> dict[str, Any]:
     """Stream a one-token masked decode over ``num_exec_layers`` folded layers
     from the package, threading the per-layer masked KV. Returns the masked hidden
     + updated KV. ``lora_package_dir`` (optional) merges a folded-LoRA package per
-    layer; the no-LoRA path is unchanged (default ``None``)."""
+    layer; the no-LoRA path is unchanged (default ``None``). ``timer`` (optional)
+    records a per-layer time + attention/MLP/nonlinear sub-totals."""
     h = x_next_tilde
     new_kv: list[dict[str, Any]] = []
     for ell in range(num_exec_layers):
         lt = _maybe_merge_lora(load_folded_layer(package_dir, ell),
                                lora_package_dir, ell)
         cfg = layer_configs[ell] if layer_configs is not None else config
-        out = apply_folded_layer_decode(h, lt, kv[ell], position, cfg, cos, sin,
-                                        eps, runner=runner)
+        with _layer_ctx(timer):
+            out = apply_folded_layer_decode(h, lt, kv[ell], position, cfg, cos,
+                                            sin, eps, runner=runner, timer=timer)
         h = out["y_tilde"]
         new_kv.append(out["cache"])
         del lt
@@ -225,9 +253,11 @@ def apply_folded_decode(x_next_tilde: torch.Tensor, package_dir, kv: list,
 
 
 def apply_folded_head(h_tilde: torch.Tensor, package_dir, eps: float,
-                      runner: Any = None) -> torch.Tensor:
+                      runner: Any = None, timer: Any = None) -> torch.Tensor:
     """Masked logits from the folded final-norm+LM-head operator:
     ``rmsnorm_core(h_tilde) @ w_lm_tilde`` (no masks; vocab mask is pre-folded).
-    ``runner`` (optional) routes the final RMSNorm through the selected design."""
+    ``runner`` (optional) routes the final RMSNorm through the selected design;
+    ``timer`` (optional) records the LM-head time (excludes the shard load)."""
     w = load_folded_head(package_dir).to(h_tilde.device, h_tilde.dtype)
-    return _rmsnorm(h_tilde, eps, runner) @ w
+    with _region(timer, "lm_head"):
+        return _rmsnorm(h_tilde, eps, runner) @ w

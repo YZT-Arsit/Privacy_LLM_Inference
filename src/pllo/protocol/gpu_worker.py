@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import multiprocessing as mp
+import time
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -61,6 +62,10 @@ class GpuBackend(ABC):
 
     name: str
     tee_used: bool = False                  # the GPU side is NEVER a TEE
+    # Set by the server (under its lock) when the client opts into worker timing
+    # via the X-PLLO-WorkerTiming header. Default False -> zero timing overhead and
+    # responses identical to the historical path.
+    collect_worker_timing: bool = False
 
     @abstractmethod
     def init(self, req: BoundaryInitRequest) -> BoundaryInitResponse: ...
@@ -106,22 +111,38 @@ class MockGpuBackend(GpuBackend):
         assert self._folded_head is not None
         return masked_hidden_last @ self._folded_head        # [B, V]
 
+    def _coarse_timing(self, phase, forward_s):
+        from pllo.protocol.worker_timing import coarse_forward_metadata
+        dt = str(self._folded_head.dtype) if self._folded_head is not None \
+            else None
+        return coarse_forward_metadata(
+            phase=phase, backend_name=self.name, device="cpu", dtype=dt,
+            forward_s=forward_s, num_layers=None)
+
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
+        timing = bool(getattr(self, "collect_worker_timing", False))
+        t0 = time.perf_counter() if timing else None
         x = np.asarray(req.masked_embeddings)                # [B, T, H] masked
         for t in range(x.shape[1]):                          # store masked KV
             self._masked_kv.append(x[:, t, :])
         masked_logits = self._logits(x[:, -1, :])
+        wt = self._coarse_timing("prefill", time.perf_counter() - t0) \
+            if timing else None
         return MaskedPrefillResponse(
             session_id=req.session_id, masked_logits=masked_logits,
-            kv_cache_len=len(self._masked_kv))
+            kv_cache_len=len(self._masked_kv), worker_timing=wt)
 
     def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
+        timing = bool(getattr(self, "collect_worker_timing", False))
+        t0 = time.perf_counter() if timing else None
         x = np.asarray(req.masked_embedding)                 # [B, 1, H] masked
         self._masked_kv.append(x[:, -1, :])
         masked_logits = self._logits(x[:, -1, :])
+        wt = self._coarse_timing("decode", time.perf_counter() - t0) \
+            if timing else None
         return MaskedDecodeResponse(
             session_id=req.session_id, masked_logits=masked_logits,
-            kv_cache_len=len(self._masked_kv))
+            kv_cache_len=len(self._masked_kv), worker_timing=wt)
 
 
 class Qwen7BGpuBackend(GpuBackend):
@@ -228,31 +249,63 @@ class Qwen7BGpuBackend(GpuBackend):
         except Exception:
             pass
 
+    def _cuda_sync(self) -> None:
+        """Synchronise CUDA so a wall-clock forward time is honest (not just the
+        async kernel-launch time). No-op off CUDA. Only called when timing."""
+        try:
+            import torch
+            if torch.cuda.is_available() and str(self.device).startswith("cuda"):
+                torch.cuda.synchronize()
+        except Exception:                                    # noqa: BLE001
+            pass
+
+    def _coarse_timing(self, phase, forward_s):
+        from pllo.protocol.worker_timing import coarse_forward_metadata
+        return coarse_forward_metadata(
+            phase=phase, backend_name=self.name, device=self.device,
+            dtype=self.dtype, forward_s=forward_s, num_layers=self.num_layers)
+
     def prefill(self, req: MaskedPrefillRequest) -> MaskedPrefillResponse:
+        timing = bool(getattr(self, "collect_worker_timing", False))
         sess = self._ensure_session()
         h_tilde = self._to_torch(req.masked_embeddings).to(
             sess.compute_device, sess.fdtype)
+        if timing:
+            self._cuda_sync()
+        t0 = time.perf_counter() if timing else None
         out = sess.worker_prefill(h_tilde)             # masked logits [B,T,V]
+        if timing:
+            self._cuda_sync()
+        fwd = (time.perf_counter() - t0) if timing else None
         self._kv = out["kv"]
         self._track_peak()
         last = out["logits_tilde"][:, -1, :]           # masked next-token logits
         return MaskedPrefillResponse(
             session_id=req.session_id,
             masked_logits=self._masked_logits_out(last),
-            kv_cache_len=int(h_tilde.shape[1]))
+            kv_cache_len=int(h_tilde.shape[1]),
+            worker_timing=self._coarse_timing("prefill", fwd) if timing else None)
 
     def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
+        timing = bool(getattr(self, "collect_worker_timing", False))
         sess = self._ensure_session()
         x_tilde = self._to_torch(req.masked_embedding).to(
             sess.compute_device, sess.fdtype)
+        if timing:
+            self._cuda_sync()
+        t0 = time.perf_counter() if timing else None
         out = sess.worker_decode(x_tilde, self._kv, int(req.position))
+        if timing:
+            self._cuda_sync()
+        fwd = (time.perf_counter() - t0) if timing else None
         self._kv = out["kv"]
         self._track_peak()
         last = out["logits_tilde"][:, -1, :]
         return MaskedDecodeResponse(
             session_id=req.session_id,
             masked_logits=self._masked_logits_out(last),
-            kv_cache_len=int(req.position) + 1)
+            kv_cache_len=int(req.position) + 1,
+            worker_timing=self._coarse_timing("decode", fwd) if timing else None)
 
 
 class Qwen7BFoldedPackageGpuBackend(GpuBackend):
@@ -476,6 +529,24 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         except Exception:                                    # noqa: BLE001
             pass
 
+    def _cuda_sync(self) -> None:
+        """Synchronise CUDA so the per-region wall times reflect real device
+        compute (not async kernel launch). No-op off CUDA; only used when timing."""
+        try:
+            import torch
+            if torch.cuda.is_available() and str(self.device).startswith("cuda"):
+                torch.cuda.synchronize()
+        except Exception:                                    # noqa: BLE001
+            pass
+
+    def _make_timer(self):
+        """A ``WorkerTimer`` iff the client opted into worker timing, else None
+        (so the folded forward runs the historical path with no timing overhead)."""
+        if not bool(getattr(self, "collect_worker_timing", False)):
+            return None
+        from pllo.protocol.worker_timing import WorkerTimer
+        return WorkerTimer(enabled=True, sync=self._cuda_sync)
+
     def _ensure_runner(self):
         """Lazily build the nonlinear runner that EXECUTES the selected design
         over the folded layers (design B lifts the activation onto this GPU)."""
@@ -496,10 +567,11 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             return {}
         return self._runner.execution_evidence()
 
-    def _masked_last_logits(self, h_tilde: Any):
+    def _masked_last_logits(self, h_tilde: Any, timer: Any = None):
         """Apply the folded head, return last-position MASKED logits as numpy."""
         import numpy as np
-        logits_tilde = self.run_head(h_tilde, float(self._eps))    # [B, T, V]
+        logits_tilde = self.run_head(h_tilde, float(self._eps),
+                                     timer=timer)              # [B, T, V]
         last = logits_tilde[:, -1, :]
         return np.asarray(last.detach().to("cpu").float().numpy())
 
@@ -524,35 +596,39 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                                           sin, eps, runner=self._ensure_runner())
 
     def run_prefill(self, h_tilde: Any, num_exec_layers: int, config: Any,
-                    cos: Any, sin: Any, eps: float) -> dict[str, Any]:
+                    cos: Any, sin: Any, eps: float, timer: Any = None
+                    ) -> dict[str, Any]:
         """Execute ``num_exec_layers`` folded layers from the package over masked
         ``h_tilde`` (no masks on the worker). Stores the masked KV; returns the
         masked hidden + KV. ``config``/``cos``/``sin`` are public artifacts from
-        the boundary. Tested in tests/test_folded_package_prefill_exec.py."""
+        the boundary. ``timer`` (optional) records the per-layer breakdown.
+        Tested in tests/test_folded_package_prefill_exec.py."""
         from pllo.deployment.folded_worker import apply_folded_prefill
         if not self.folded_package_loaded:
             raise RuntimeError("call init() to load the folded package first")
         out = apply_folded_prefill(h_tilde, self.folded_package_path,
                                    int(num_exec_layers), config, cos, sin, eps,
                                    lora_package_dir=self.folded_lora_package_path,
-                                   runner=self._ensure_runner())
+                                   runner=self._ensure_runner(), timer=timer)
         self._kv = out["kv"]
         self._exec_layers = int(num_exec_layers)
         return out
 
-    def run_head(self, h_tilde: Any, eps: float) -> Any:
+    def run_head(self, h_tilde: Any, eps: float, timer: Any = None) -> Any:
         """Masked logits from the package's folded head (no masks)."""
         from pllo.deployment.folded_worker import apply_folded_head
         if not self.folded_package_loaded:
             raise RuntimeError("call init() to load the folded package first")
         return apply_folded_head(h_tilde, self.folded_package_path, eps,
-                                 runner=self._ensure_runner())
+                                 runner=self._ensure_runner(), timer=timer)
 
     def run_decode(self, x_next_tilde: Any, position: int, config: Any,
                    cos: Any, sin: Any, eps: float,
-                   num_exec_layers: int | None = None) -> dict[str, Any]:
+                   num_exec_layers: int | None = None, timer: Any = None
+                   ) -> dict[str, Any]:
         """One-token masked decode over the package's folded layers, threading the
-        masked KV from the preceding prefill/decode."""
+        masked KV from the preceding prefill/decode. ``timer`` (optional) records
+        the per-layer breakdown."""
         from pllo.deployment.folded_worker import apply_folded_decode
         if getattr(self, "_kv", None) is None:
             raise RuntimeError("run_prefill() must populate the KV cache first")
@@ -562,7 +638,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                                   self._kv, int(position), k, config, cos, sin,
                                   eps,
                                   lora_package_dir=self.folded_lora_package_path,
-                                  runner=self._ensure_runner())
+                                  runner=self._ensure_runner(), timer=timer)
         self._kv = out["kv"]
         return out
 
@@ -580,13 +656,25 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         cfg0, cos, sin = self._ensure_exec_context()
         h_tilde = torch.as_tensor(np.asarray(req.masked_embeddings)).to(
             self.device, self._fdtype)
+        timer = self._make_timer()
+        if timer is not None:
+            self._cuda_sync()
+        t0 = time.perf_counter() if timer is not None else None
         out = self.run_prefill(h_tilde, int(self._num_layers), cfg0, cos, sin,
-                               float(self._eps))            # stores masked KV
-        masked = self._masked_last_logits(out["y_tilde"])
+                               float(self._eps), timer=timer)  # stores masked KV
+        masked = self._masked_last_logits(out["y_tilde"], timer=timer)
+        if timer is not None:
+            self._cuda_sync()
+        fwd = (time.perf_counter() - t0) if timer is not None else None
         self._track_peak()
+        wt = None
+        if timer is not None:
+            wt = timer.forward_metadata(
+                phase="prefill", backend_name=self.name, device=self.device,
+                dtype=self.dtype, forward_s=fwd, num_layers=self._num_layers)
         return MaskedPrefillResponse(
             session_id=req.session_id, masked_logits=masked,
-            kv_cache_len=int(h_tilde.shape[1]))
+            kv_cache_len=int(h_tilde.shape[1]), worker_timing=wt)
 
     def decode(self, req: MaskedDecodeRequest) -> MaskedDecodeResponse:
         """Remote package-backed one-token decode over the folded layers, threading
@@ -596,14 +684,26 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         cfg0, cos, sin = self._ensure_exec_context()
         x_tilde = torch.as_tensor(np.asarray(req.masked_embedding)).to(
             self.device, self._fdtype)
+        timer = self._make_timer()
+        if timer is not None:
+            self._cuda_sync()
+        t0 = time.perf_counter() if timer is not None else None
         out = self.run_decode(x_tilde, int(req.position), cfg0, cos, sin,
                               float(self._eps),
-                              num_exec_layers=int(self._num_layers))
-        masked = self._masked_last_logits(out["y_tilde"])
+                              num_exec_layers=int(self._num_layers), timer=timer)
+        masked = self._masked_last_logits(out["y_tilde"], timer=timer)
+        if timer is not None:
+            self._cuda_sync()
+        fwd = (time.perf_counter() - t0) if timer is not None else None
         self._track_peak()
+        wt = None
+        if timer is not None:
+            wt = timer.forward_metadata(
+                phase="decode", backend_name=self.name, device=self.device,
+                dtype=self.dtype, forward_s=fwd, num_layers=self._num_layers)
         return MaskedDecodeResponse(
             session_id=req.session_id, masked_logits=masked,
-            kv_cache_len=int(req.position) + 1)
+            kv_cache_len=int(req.position) + 1, worker_timing=wt)
 
 
 def make_gpu_backend(name: str, **kwargs: Any) -> GpuBackend:

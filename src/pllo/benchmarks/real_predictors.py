@@ -258,6 +258,9 @@ class _RemoteMaskedPredictor:
         self._dtype = dtype
         exec_meta = self._boundary.exec_metadata(
             seq_len=self.seq_len, max_new_tokens=self.max_new_tokens)
+        # real runtime model config (so schedule/report sizing uses the genuine
+        # hidden_size/dtype, never a mock placeholder)
+        self._hidden_size = int(exec_meta["hidden_size"])
 
         self._trace = ProtocolTrace(
             boundary_backend="process", gpu_backend="qwen7b_folded_package",
@@ -355,21 +358,55 @@ class _RemoteMaskedPredictor:
             np.asarray(rec.detach().to("cpu")).nbytes)
         return rec
 
+    def model_runtime_config(self) -> Dict[str, Any]:
+        """The genuine runtime model config (no mock placeholders) so the schedule
+        + report size against the real ``hidden_size``/``dtype`` -- e.g. Qwen2.5-7B
+        is hidden_size=3584, dtype=bfloat16, not the local mock defaults."""
+        return {"hidden_size": self._hidden_size, "dtype": self._dtype,
+                "num_layers": self._n_layers, "vocab_size": self._vocab_size}
+
     def attach_obfuscation_schedule(self, schedule) -> None:
         """Attach a trusted-side precomputed obfuscation schedule (optional). Its
         per-step slots are consumed during decode; its secrets never leave the
         trusted runtime (no schedule field is ever added to a GPU request)."""
         self._schedule = schedule
 
-    def enable_decode_profiling(self, enabled: bool = True) -> None:
+    def enable_decode_profiling(self, enabled: bool = True,
+                                request_worker_timing: bool = False) -> None:
         """Turn on per-token, per-stage decode profiling (default off). Times the
-        9 decode stages + per-step boundary/gpu call & byte deltas."""
+        9 decode stages + per-step boundary/gpu call & byte deltas.
+
+        ``request_worker_timing`` additionally asks the untrusted worker to return
+        its PUBLIC forward-timing metadata so each step's gpu_worker_roundtrip can
+        be split into network vs worker compute. No secret is ever sent/received;
+        the worker timing is audited on receipt."""
         from pllo.benchmarks.decode_profiler import DecodeProfiler
         self._profiler = DecodeProfiler(counters=self._trace_counters,
                                         enabled=bool(enabled))
+        if request_worker_timing:
+            try:
+                self._worker.request_worker_timing = True
+            except Exception:                                # noqa: BLE001
+                pass
 
     def decode_profiler(self):
         return self._profiler
+
+    def _record_worker_timing(self, resp) -> None:
+        """Attach the worker's PUBLIC timing metadata (if any) to the current
+        profiler step, after a defense-in-depth secret audit."""
+        if self._profiler is None:
+            return
+        wt = getattr(resp, "worker_timing", None)
+        if not isinstance(wt, dict):
+            return
+        try:
+            from pllo.protocol.worker_timing import audit_worker_timing_no_secrets
+            audit_worker_timing_no_secrets(wt)
+            self._profiler.set_worker_timing(wt)
+        except Exception:                                    # noqa: BLE001
+            # never let timing metadata corrupt decode; just skip it
+            pass
 
     def _trace_counters(self):
         t = self._trace
@@ -423,6 +460,7 @@ class _RemoteMaskedPredictor:
         with self._pstage("gpu_worker_roundtrip"):
             pre = self._worker.prefill(pre_req)
             self._trace.bump_boundary("prefill")
+        self._record_worker_timing(pre)
         with self._pstage("schedule_slot_lookup"):
             self._consume_slot(0)                   # step 0 obfuscation slot
         with self._pstage("trusted_nonlinear_restore_logits"):
@@ -450,6 +488,7 @@ class _RemoteMaskedPredictor:
             with self._pstage("gpu_worker_roundtrip"):
                 dec = self._worker.decode(dec_req)
                 self._trace.bump_boundary("decode")
+            self._record_worker_timing(dec)
             with self._pstage("trusted_nonlinear_restore_logits"):
                 rec = self._recover_last(dec.masked_logits)
             with self._pstage("sampling"):

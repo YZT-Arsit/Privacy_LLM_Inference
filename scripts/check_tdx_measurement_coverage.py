@@ -49,6 +49,9 @@ BOUNDARY_ENTRY = ["scripts/run_tee_gpu_protocol_demo.py"]
 # NOT its ``embedding_artifact`` submodule, which the lite boundary does load).
 ALLOW_UNMEASURED_EXACT = {
     "pllo.protocol.gpu_worker": "untrusted GPU worker backend (runs on GPU host)",
+    "pllo.protocol.worker_timing": "worker-side timing merge runs on the GPU host "
+    "(server handler); reachable by import but never executes inside the TD via "
+    "this boundary",
     "pllo.protocol.orchestrator": "local/worker orchestration (not boundary)",
     "pllo.deployment.folded_worker": "untrusted GPU folded kernels (GPU host)",
     "pllo.deployment.lora_folded_package": "folded-LoRA build/merge (setup+worker)",

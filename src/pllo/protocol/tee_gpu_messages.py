@@ -74,6 +74,10 @@ class BoundaryInitResponse:
     gpu_backend: str
     tee_used_on_gpu: bool                   # MUST be False (worker is untrusted)
     notes: str = ""
+    # Optional PUBLIC worker-side profiling metadata (numeric timings + public
+    # identifiers only; never any secret). None unless the client opted in via the
+    # X-PLLO-WorkerTiming header. See pllo.protocol.worker_timing.
+    worker_timing: dict | None = None
 
 
 @dataclass
@@ -92,6 +96,8 @@ class MaskedPrefillResponse:
     session_id: str
     masked_logits: np.ndarray              # [B, V] (masked)
     kv_cache_len: int
+    # Optional PUBLIC worker-side profiling metadata (None unless requested).
+    worker_timing: dict | None = None
 
 
 @dataclass
@@ -109,6 +115,8 @@ class MaskedDecodeResponse:
     session_id: str
     masked_logits: np.ndarray              # [B, V] (masked)
     kv_cache_len: int
+    # Optional PUBLIC worker-side profiling metadata (None unless requested).
+    worker_timing: dict | None = None
 
 
 # ---------------------------------------------------------------------------

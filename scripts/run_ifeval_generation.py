@@ -107,6 +107,10 @@ def main() -> int:
                     default=False)
     ap.add_argument("--schedule-max-steps", type=int, default=None)
     ap.add_argument("--schedule-seed", type=int, default=2035)
+    ap.add_argument("--hidden-size", type=int, default=None,
+                    help="real model hidden_size for schedule/report sizing; if "
+                    "omitted it is read from the runtime model config (real "
+                    "backend), else a placeholder is used and flagged")
     ap.add_argument("--schedule-cache-dir", default=None)
     ap.add_argument("--schedule-save-secret-tensors", action="store_true",
                     default=False, help="NOT recommended; refused unless also "
@@ -117,6 +121,10 @@ def main() -> int:
                     help="record a per-token, per-stage decode trace")
     ap.add_argument("--trace-output-jsonl", default=None,
                     help="write the per-token decode trace to this JSONL")
+    ap.add_argument("--trace-worker-timings", action="store_true", default=False,
+                    help="ask the untrusted worker for its PUBLIC forward-timing "
+                    "metadata so the roundtrip splits into network vs worker "
+                    "compute (mock path uses synthetic worker timing)")
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
@@ -150,6 +158,23 @@ def main() -> int:
             predictor = None
     is_dry = predictor is None
 
+    # Resolve the REAL hidden_size/dtype for schedule + report sizing. Priority:
+    # explicit CLI > runtime model config (real backend) > placeholder (mock/dry).
+    # A placeholder must NEVER masquerade as a real size, so it is flagged.
+    sched_hidden = args.hidden_size
+    sched_dtype = args.dtype
+    if predictor is not None and hasattr(predictor, "model_runtime_config"):
+        try:
+            mc = predictor.model_runtime_config()
+            if sched_hidden is None:
+                sched_hidden = int(mc.get("hidden_size"))
+            sched_dtype = mc.get("dtype") or sched_dtype
+        except Exception:                                    # noqa: BLE001
+            pass
+    hidden_is_placeholder = sched_hidden is None
+    if hidden_is_placeholder:
+        sched_hidden = 1                # metadata-only sizing (mock/dry-run only)
+
     enabled = bool(args.precompute_obfuscation_schedule)
     per_example_steps = int(args.schedule_max_steps or args.max_new_tokens)
     sched_precompute_latency = 0.0
@@ -163,7 +188,8 @@ def main() -> int:
     profiler = None
     mock_counters = None
     if predictor is not None and hasattr(predictor, "enable_decode_profiling"):
-        predictor.enable_decode_profiling(True)
+        predictor.enable_decode_profiling(
+            True, request_worker_timing=args.trace_worker_timings)
     else:
         mock_counters = {"boundary_calls": 0, "gpu_calls": 0,
                          "trusted_bytes": 0, "gpu_bytes": 0}
@@ -178,9 +204,9 @@ def main() -> int:
             if enabled:
                 tprep = time.perf_counter()
                 schedule = PrecomputedMaskSchedule.precompute(
-                    max_steps=per_example_steps, hidden_size=1,  # hidden unknown locally; metadata-only sizing
+                    max_steps=per_example_steps, hidden_size=int(sched_hidden),
                     seed=int(args.schedule_seed) + idx, seq_len=args.seq_len,
-                    max_new_tokens=args.max_new_tokens, dtype="float32",
+                    max_new_tokens=args.max_new_tokens, dtype=sched_dtype,
                     device=args.device, mask_family="pairwise_complex_scaling",
                     nonlinear_backend=nb, with_secret_tensors=(not is_dry),
                     strict_audit=True)
@@ -208,9 +234,19 @@ def main() -> int:
                             _sched.consume(step)
                         except Exception:            # noqa: BLE001
                             pass
+                worker_timing_fn = None
+                if args.trace_worker_timings:
+                    from pllo.protocol.worker_timing import (
+                        audit_worker_timing_no_secrets, synthetic_worker_timing)
+
+                    def worker_timing_fn(step, phase):   # noqa: F811
+                        wt = synthetic_worker_timing(phase=phase, num_layers=28)
+                        audit_worker_timing_no_secrets(wt)
+                        return wt
                 simulate_mock_decode(profiler, mock_counters,
                                      n_tokens=max(1, len(toks)), hidden_size=64,
-                                     on_step=_on_step)
+                                     on_step=_on_step,
+                                     worker_timing_fn=worker_timing_fn)
             if schedule is not None:
                 sched_slots_consumed += schedule.slots_consumed()
             responses.append({"id": ex.get("id"), "prompt": prompt,
@@ -308,9 +344,16 @@ def main() -> int:
     report["bottleneck_stage"] = decode_metrics.get("bottleneck_stage")
     report["boundary_calls_reduced"] = bool(
         decode_metrics.get("boundary_calls_reduced"))
+    report["boundary_calls_reduction_note"] = decode_metrics.get(
+        "boundary_calls_reduction_note")
+    # real (non-mock) schedule sizing surfaced honestly
+    report["schedule_hidden_size"] = int(sched_hidden)
+    report["schedule_dtype"] = sched_dtype
+    report["schedule_hidden_size_is_placeholder"] = bool(hidden_is_placeholder)
     report["schedule_used_for_metadata_only"] = bool(
         report.get("schedule_used_for_metadata_only", enabled))
     report["online_remask_still_performed"] = True
+    report["worker_timing_requested"] = bool(args.trace_worker_timings)
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:
