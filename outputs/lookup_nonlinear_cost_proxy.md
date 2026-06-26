@@ -62,10 +62,10 @@ Microbench workload: `batch_size=1`, `seq_len=128`, `intermediate_size=1024`, `r
 
 | method | mean_ms | median_ms | std_ms |
 |---|---|---|---|
-| `compatible_swiglu_island_current` | 0.0645 | 0.0594 | 0.0113 |
-| `lookup_swiglu_proxy_4bit` | 0.1546 | 0.1471 | 0.0288 |
-| `lookup_swiglu_proxy_6bit` | 0.1419 | 0.1334 | 0.0181 |
-| `lookup_swiglu_proxy_8bit` | 0.1259 | 0.1207 | 0.0134 |
+| `compatible_swiglu_island_current` | 0.0590 | 0.0573 | 0.0050 |
+| `lookup_swiglu_proxy_4bit` | 0.1265 | 0.1248 | 0.0137 |
+| `lookup_swiglu_proxy_6bit` | 0.1094 | 0.1075 | 0.0085 |
+| `lookup_swiglu_proxy_8bit` | 0.1242 | 0.1151 | 0.0326 |
 
 ## 8. Security / Cost Interpretation
 
