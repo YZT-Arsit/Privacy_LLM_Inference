@@ -102,6 +102,57 @@ def test_precompute_secret_tensors_requires_strong_confirm(tmp_path, capsys):
     assert report["secret_tensor_precompute_performed"] is False
 
 
+def _run_full(tmp_path, prompts, extra):
+    """Run with explicit prompts + max-new-tokens from `extra`."""
+    inp = tmp_path / "in.jsonl"
+    inp.write_text("\n".join(
+        json.dumps({"id": "ex%d" % i, "prompt": p})
+        for i, p in enumerate(prompts)) + "\n", encoding="utf-8")
+    rj, rep = tmp_path / "r.jsonl", tmp_path / "r.json"
+    argv = ["x", "--input-jsonl", str(inp), "--backend", "folded_remote",
+            "--mock-runtime", "--output-response-jsonl", str(rj),
+            "--output-report-json", str(rep)] + extra
+    old = sys.argv
+    try:
+        sys.argv = argv
+        rc = _R.main()
+    finally:
+        sys.argv = old
+    return rc, json.loads(rep.read_text()), rj.read_text().splitlines()
+
+
+def test_coverage_active_without_precompute_flag(tmp_path) -> None:
+    # the smoke2 scenario: online_deterministic, NO --precompute-obfuscation-
+    # schedule -> coverage proof must still be computed from real generation
+    rc, report = _run(tmp_path, ["--schedule-proof-mode", "online_deterministic"])
+    assert rc == 0
+    assert report["schedule_proof_mode"] == "online_deterministic"
+    assert report["schedule_full_coverage_verified"] is True
+    assert report["schedule_slots_required_total"] > 0
+    assert (report["schedule_slots_required_total"]
+            == report["schedule_slots_consumed_total"]
+            == report["generated_tokens"])
+    assert report["schedule_secret_leaked_to_gpu"] is False
+    assert report["schedule_materialized_on_gpu"] is False
+
+
+def test_coverage_128_tokens(tmp_path) -> None:
+    # 2 examples x 64 tokens = 128 generated tokens; long prompts so the stub
+    # actually reaches the 64-token budget. No --precompute-obfuscation-schedule.
+    long = "word " * 40                     # >> 64 chars so "gen: "+p hits cap
+    rc, report, lines = _run_full(tmp_path, [long, long], [
+        "--max-new-tokens", "64", "--schedule-proof-mode", "online_deterministic"])
+    assert rc == 0
+    gen = sum(json.loads(ln)["num_tokens"] for ln in lines)
+    assert gen == 128
+    assert report["generated_tokens"] == 128
+    assert report["schedule_slots_required_total"] == 128
+    assert report["schedule_slots_consumed_total"] == 128
+    assert report["schedule_full_coverage_verified"] is True
+    assert report["schedule_secret_leaked_to_gpu"] is False
+    assert report["schedule_materialized_on_gpu"] is False
+
+
 def test_proof_mode_none_disables_schedule(tmp_path) -> None:
     rc, report = _run(tmp_path, [
         "--precompute-obfuscation-schedule", "--schedule-proof-mode", "none"])

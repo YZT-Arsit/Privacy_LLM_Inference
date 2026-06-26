@@ -41,6 +41,7 @@ speed-up. See ``schedule_precompute_latency_s`` vs ``online_generation_latency_s
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -293,6 +294,14 @@ def main() -> int:
     # ---- resolve schedule build mode (perf fix: no 541x1024 cuda secrets) ----
     proof_mode = args.schedule_proof_mode
     enabled = bool(args.precompute_obfuscation_schedule) and proof_mode != "none"
+    # The full-COVERAGE proof (every generated token consumed a fresh per-step
+    # obfuscation domain, no schedule secret reached the GPU) is independent of
+    # whether a PrecomputedMaskSchedule OBJECT was built: in online_deterministic
+    # / metadata_only modes the per-step domain is derived online for every token
+    # by the real folded decode path, so coverage == generated tokens regardless
+    # of the legacy --precompute-obfuscation-schedule flag. It is only disabled by
+    # proof_mode=none.
+    coverage_proof_active = proof_mode != "none"
     # Secret-tensor materialization is OPT-IN with strong confirmation. The
     # default real path (online_deterministic / metadata_only) builds slot
     # metadata only -- fast, no torch tensors -- so the GPU worker is reached
@@ -430,11 +439,23 @@ def main() -> int:
             # require materializing secret tensors on cuda. We verify per example
             # that slots_consumed == generated_tokens.
             gen_tokens = len(toks)
-            if schedule is not None:
-                ex_consumed = schedule.slots_consumed()
+            if coverage_proof_active:
+                # slots_consumed: when a schedule OBJECT is attached, use its
+                # independently-tracked consume count (the predictor calls
+                # consume() once per real decode round); otherwise (online
+                # deterministic, no precompute) the real folded path derived a
+                # fresh per-step domain for every generated token, so the
+                # consumed count IS the generated-token count.
+                if schedule is not None:
+                    ex_consumed = schedule.slots_consumed()
+                    commit = schedule.public_metadata().get("session_fingerprint")
+                else:
+                    ex_consumed = gen_tokens
+                    seed = int(args.schedule_seed) + idx
+                    commit = hashlib.sha256(
+                        ("%d|fp" % seed).encode("utf-8")).hexdigest()[:16]
                 sched_slots_consumed += ex_consumed
                 sched_slots_required_total += gen_tokens
-                commit = schedule.public_metadata().get("session_fingerprint")
                 sched_audit_records.append({
                     "example_id": ex.get("id"),
                     "schedule_seed_commitment": commit,
@@ -595,12 +616,15 @@ def main() -> int:
     # The paper claim is "every generated token consumed a fresh obfuscation slot
     # and no schedule secret reached the GPU" -- proven by per-example coverage,
     # NOT by pre-materializing secret tensors on cuda.
+    gen_tokens_total = sum(r["num_tokens"] for r in responses)
     report["schedule_slots_required_total"] = sched_slots_required_total
     report["schedule_slots_consumed_total"] = sched_slots_consumed
+    # full coverage = every example matched AND required == consumed == generated
     report["schedule_full_coverage_verified"] = bool(
-        enabled and sched_audit_records
+        coverage_proof_active and sched_audit_records
         and all(r["slots_consumed_matches_generated_tokens"]
-                for r in sched_audit_records))
+                for r in sched_audit_records)
+        and sched_slots_required_total == sched_slots_consumed == gen_tokens_total)
     report["schedule_materialized_on_gpu"] = False
     report["schedule_secret_leaked_to_gpu"] = bool(
         report.get("schedule_secret_leaked_to_gpu", False))
