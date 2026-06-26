@@ -182,7 +182,7 @@ class _PlaintextLocalPredictor:
     backend = "plaintext_local"
 
     def __init__(self, *, model_path, model_name, seq_len, max_new_tokens,
-                 dtype, device, use_chat_template=False):
+                 dtype, device, use_chat_template=False, adapter_path=None):
         try:
             import torch  # noqa: F401
             from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -198,6 +198,15 @@ class _PlaintextLocalPredictor:
         except Exception as exc:                            # noqa: BLE001
             raise RealBackendUnavailable("could not load model at %s: %s"
                                          % (model_path, exc))
+        self.adapter_path = adapter_path
+        if adapter_path:                    # plaintext LoRA baseline (PEFT adapter)
+            try:
+                from peft import PeftModel
+                self._model = PeftModel.from_pretrained(
+                    self._model, adapter_path).eval()
+            except Exception as exc:                        # noqa: BLE001
+                raise RealBackendUnavailable(
+                    "could not load PEFT adapter at %s: %s" % (adapter_path, exc))
         self.model_name = model_name
         self.seq_len = int(seq_len)
         self.max_new_tokens = int(max_new_tokens)
@@ -922,7 +931,8 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     dtype="bfloat16", device="cuda", audit=True,
                     nonlinear_backend="current", align_generation_config=False,
                     repetition_penalty=None, stop_on_eos=True,
-                    length_hide_generation=False, use_chat_template=False):
+                    length_hide_generation=False, use_chat_template=False,
+                    adapter_path=None):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -936,7 +946,7 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
         return _PlaintextLocalPredictor(
             model_path=model_path, model_name=model_name, seq_len=seq_len,
             max_new_tokens=max_new_tokens, dtype=dtype, device=device,
-            use_chat_template=use_chat_template)
+            use_chat_template=use_chat_template, adapter_path=adapter_path)
     if backend in REMOTE_BACKENDS:
         return _RemoteMaskedPredictor(
             backend, model_path=model_path, model_name=model_name,
