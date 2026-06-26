@@ -125,6 +125,15 @@ def main() -> int:
                     help="ask the untrusted worker for its PUBLIC forward-timing "
                     "metadata so the roundtrip splits into network vs worker "
                     "compute (mock path uses synthetic worker timing)")
+    # ---- trusted-side generation-config alignment (default OFF) ----
+    ap.add_argument("--align-generation-config", action="store_true",
+                    default=False, help="apply the plaintext baseline's "
+                    "generation-config logit processors (repetition_penalty) "
+                    "TRUSTED-SIDE after logits recovery, before argmax; nothing "
+                    "extra crosses to the GPU")
+    ap.add_argument("--repetition-penalty", type=float, default=None,
+                    help="explicit repetition_penalty for --align-generation-config "
+                    "(else read from the model's generation_config.json)")
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
@@ -149,7 +158,9 @@ def main() -> int:
                 model_name=args.model_name, gpu_worker_url=args.gpu_worker_url,
                 embedding_path=args.embedding_path, seq_len=args.seq_len,
                 max_new_tokens=args.max_new_tokens, dtype=args.dtype,
-                device=args.device, audit=args.audit, nonlinear_backend=nb)
+                device=args.device, audit=args.audit, nonlinear_backend=nb,
+                align_generation_config=args.align_generation_config,
+                repetition_penalty=args.repetition_penalty)
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but real backend unavailable: %s"
@@ -368,6 +379,17 @@ def main() -> int:
               "folded_layer_dict_builds_per_decode_step",
               "cpu_to_gpu_weight_copies_per_decode_step"):
         report[k] = stats.get(k)
+    # trusted-side generation-config alignment (repetition_penalty) -- public
+    report["align_generation_config"] = bool(args.align_generation_config)
+    report["generation_processors_applied"] = stats.get(
+        "generation_processors_applied", False)
+    report["repetition_penalty"] = stats.get("repetition_penalty")
+    report["generation_config_aligned_with_plaintext"] = stats.get(
+        "generation_config_aligned_with_plaintext", False)
+    report["generation_processor_location"] = stats.get(
+        "generation_processor_location", "trusted_side")
+    report["plaintext_logits_or_sampling_on_gpu"] = bool(
+        stats.get("plaintext_logits_or_sampling_on_gpu", False))
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:

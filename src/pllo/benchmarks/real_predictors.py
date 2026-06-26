@@ -200,7 +200,8 @@ class _RemoteMaskedPredictor:
     def __init__(self, backend, *, model_path, model_name, gpu_worker_url,
                  embedding_path, folded_lora_package_path, attestation_evidence,
                  expected_mr_td, seq_len, max_new_tokens, dtype, device, audit,
-                 nonlinear_backend="current"):
+                 nonlinear_backend="current", align_generation_config=False,
+                 repetition_penalty=None):
         self.backend = backend
         self.model_name = model_name
         from pllo.experiments.nonlinear_designs import (
@@ -210,6 +211,25 @@ class _RemoteMaskedPredictor:
         self.seq_len = int(seq_len)
         self.max_new_tokens = int(max_new_tokens)
         self._audit = bool(audit)
+        # TRUSTED-SIDE generation processor alignment (default OFF -> old raw
+        # greedy behaviour). When on, the trusted side applies the same
+        # repetition_penalty the plaintext baseline (model.generate) applies, AFTER
+        # logits recovery and BEFORE argmax/sampling -- entirely trusted-side. The
+        # token history, the recovered logits, and the sampling decision NEVER
+        # cross to the GPU.
+        self._align_gen = bool(align_generation_config)
+        self._rep_penalty = (float(repetition_penalty)
+                             if repetition_penalty is not None else None)
+        if self._align_gen and self._rep_penalty is None:
+            try:                                # read generation_config.json only
+                from transformers import GenerationConfig
+                gc = GenerationConfig.from_pretrained(model_path,
+                                                      local_files_only=True)
+                rp = getattr(gc, "repetition_penalty", None)
+                self._rep_penalty = float(rp) if rp else None
+            except Exception:                                # noqa: BLE001
+                self._rep_penalty = None
+        self._gen_processor_applied = False
         want_lora = backend in _LORA_BACKENDS
         want_attest = backend in _ATTESTED_BACKENDS
 
@@ -439,6 +459,31 @@ class _RemoteMaskedPredictor:
         if self._profiler is not None:
             self._profiler.end_step(token_id)
 
+    def _apply_generation_processors(self, rec, seen_ids):
+        """TRUSTED-SIDE generation-config logit processors (currently only
+        repetition_penalty), applied to the recovered logits BEFORE argmax. Matches
+        HF ``RepetitionPenaltyLogitsProcessor``: for each already-seen token id,
+        ``logit < 0 -> *penalty`` else ``logit / penalty``. ``seen_ids`` (the token
+        history) is trusted-only and is never sent to the GPU. Returns the
+        (possibly) adjusted logits; a no-op when alignment is off."""
+        if (not self._align_gen or self._rep_penalty is None
+                or self._rep_penalty == 1.0 or not seen_ids):
+            return rec
+        import torch
+        row = rec.reshape(-1)
+        idx = torch.as_tensor(sorted({int(t) for t in seen_ids}),
+                              dtype=torch.long, device=row.device)
+        idx = idx[idx < row.shape[0]]
+        if idx.numel() == 0:
+            return rec
+        sel = row.index_select(0, idx)
+        penal = torch.where(sel < 0, sel * self._rep_penalty,
+                            sel / self._rep_penalty)
+        row = row.clone()
+        row.index_copy_(0, idx, penal)
+        self._gen_processor_applied = True
+        return row.reshape(rec.shape)
+
     def _decode_loop(self, ids):
         """Greedy masked prefill+decode; return (generated_ids, last_recovered).
 
@@ -448,6 +493,9 @@ class _RemoteMaskedPredictor:
             MaskedDecodeRequest, MaskedPrefillRequest)
         import torch
         seq_len = int(ids.shape[1])
+        # trusted-only token history for generation-config processors (never sent
+        # to the GPU); seeded with the prompt tokens like HF's running input_ids.
+        seen_ids = [int(t) for t in ids.reshape(-1).tolist()]
 
         # ---- prefill step ----
         self._pbegin(0, "prefill")
@@ -466,9 +514,11 @@ class _RemoteMaskedPredictor:
         with self._pstage("trusted_nonlinear_restore_logits"):
             rec_last = self._recover_last(pre.masked_logits)
         with self._pstage("sampling"):
-            tok = int(rec_last.argmax(-1))
+            rec_proc = self._apply_generation_processors(rec_last, seen_ids)
+            tok = int(rec_proc.argmax(-1))
         self._pend(tok)
         gen = [tok]
+        seen_ids.append(tok)
         pos = seq_len
 
         # ---- decode steps ----
@@ -492,10 +542,12 @@ class _RemoteMaskedPredictor:
             with self._pstage("trusted_nonlinear_restore_logits"):
                 rec = self._recover_last(dec.masked_logits)
             with self._pstage("sampling"):
-                tok = int(rec.argmax(-1))
+                rec_proc = self._apply_generation_processors(rec, seen_ids)
+                tok = int(rec_proc.argmax(-1))
             with self._pstage("kv_cache_update"):
                 pos += 1
             gen.append(tok)
+            seen_ids.append(tok)
             self._pend(tok)
         return gen, rec_last
 
@@ -543,6 +595,14 @@ class _RemoteMaskedPredictor:
             "folded_package_loaded": self._snotes.get("folded_package_loaded"),
             "gpu_visible_plaintext_fields": [],
             "leaked_secret_fields": [],
+            # trusted-side generation-config alignment (repetition_penalty)
+            "generation_processors_applied": bool(self._gen_processor_applied),
+            "repetition_penalty": (self._rep_penalty if self._align_gen
+                                   else None),
+            "generation_config_aligned_with_plaintext": bool(
+                self._align_gen and self._rep_penalty not in (None, 1.0)),
+            "generation_processor_location": "trusted_side",
+            "plaintext_logits_or_sampling_on_gpu": False,
         }
         # measured nonlinear-design execution evidence from the worker (post-run
         # health): proves design B genuinely lifted the activation on the GPU.
@@ -612,7 +672,8 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     folded_lora_package_path=None, attestation_evidence=None,
                     expected_mr_td=None, seq_len=256, max_new_tokens=8,
                     dtype="bfloat16", device="cuda", audit=True,
-                    nonlinear_backend="current"):
+                    nonlinear_backend="current", align_generation_config=False,
+                    repetition_penalty=None):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -633,5 +694,7 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             attestation_evidence=attestation_evidence,
             expected_mr_td=expected_mr_td, seq_len=seq_len,
             max_new_tokens=max_new_tokens, dtype=dtype, device=device,
-            audit=audit, nonlinear_backend=nonlinear_backend)
+            audit=audit, nonlinear_backend=nonlinear_backend,
+            align_generation_config=align_generation_config,
+            repetition_penalty=repetition_penalty)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))
