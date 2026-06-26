@@ -177,7 +177,8 @@ def main() -> int:
                 repetition_penalty=args.repetition_penalty,
                 stop_on_eos=(not args.disable_eos_stop),
                 length_hide_generation=(args.length_hide_generation
-                                        or args.dummy_decode_after_eos))
+                                        or args.dummy_decode_after_eos),
+                use_chat_template=bool(args.use_chat_template))
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but real backend unavailable: %s"
@@ -225,6 +226,7 @@ def main() -> int:
                                   enabled=True)
 
     responses = []
+    fmt_records = []        # per-example trusted-side prompt-formatting metadata
     online_t0 = time.perf_counter()
     try:
         for idx, ex in enumerate(examples):
@@ -277,8 +279,21 @@ def main() -> int:
                                      worker_timing_fn=worker_timing_fn)
             if schedule is not None:
                 sched_slots_consumed += schedule.slots_consumed()
+            # per-example prompt-formatting metadata (trusted-side; no full
+            # formatted prompt is stored, only a sha + token counts)
+            fr = {"id": ex.get("id"),
+                  "prompt_format": g.get("prompt_format"),
+                  "formatted_prompt_sha256": g.get("formatted_prompt_sha256"),
+                  "prompt_token_count": g.get("prompt_token_count"),
+                  "raw_prompt_token_count": g.get("raw_prompt_token_count"),
+                  "chat_prompt_token_count": g.get("chat_prompt_token_count")}
+            fmt_records.append(fr)
             responses.append({"id": ex.get("id"), "prompt": prompt,
-                              "response": text, "num_tokens": len(toks)})
+                              "response": text, "num_tokens": len(toks),
+                              "prompt_format": fr["prompt_format"],
+                              "formatted_prompt_sha256":
+                                  fr["formatted_prompt_sha256"],
+                              "prompt_token_count": fr["prompt_token_count"]})
     finally:
         if predictor is not None and hasattr(predictor, "close"):
             try:
@@ -433,6 +448,18 @@ def main() -> int:
               "latency_per_returned_token_s", "latency_per_gpu_decode_round_s",
               "dummy_token_id_on_gpu"):
         report[k] = stats.get(k)
+    # prompt-formatting parity (trusted-side chat template) -- public metadata.
+    # plaintext_local and folded_remote share the SAME formatting function, so
+    # under --use-chat-template their formatted_prompt_sha256 match per example.
+    report["prompt_format"] = ("chat" if args.use_chat_template else "raw")
+    report["formatted_prompt_sha256_per_example"] = [
+        fr["formatted_prompt_sha256"] for fr in fmt_records]
+    report["prompt_token_count_per_example"] = [
+        fr["prompt_token_count"] for fr in fmt_records]
+    report["raw_prompt_token_count_per_example"] = [
+        fr["raw_prompt_token_count"] for fr in fmt_records]
+    report["chat_prompt_token_count_per_example"] = [
+        fr["chat_prompt_token_count"] for fr in fmt_records]
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:

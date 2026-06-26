@@ -95,6 +95,49 @@ def _choice_token_ids(tokenizer, letters):
     return ids
 
 
+def format_prompt_for_generation(prompt, tokenizer, use_chat_template):
+    """Single source of truth for prompt formatting (trusted-side), shared by the
+    plaintext and folded-remote predictors so they decode the IDENTICAL string.
+
+    ``use_chat_template`` True -> ``tokenizer.apply_chat_template([{user}],
+    tokenize=False, add_generation_prompt=True)`` (Qwen injects its default system
+    prompt + the assistant generation prefix); False or no tokenizer -> the raw
+    prompt. Returns a STRING (tokenization happens downstream, trusted-side)."""
+    if not use_chat_template or tokenizer is None:
+        return prompt
+    fn = getattr(tokenizer, "apply_chat_template", None)
+    if fn is None:
+        return prompt
+    return fn([{"role": "user", "content": prompt}], tokenize=False,
+              add_generation_prompt=True)
+
+
+def prompt_format_info(tokenizer, raw, use_chat_template, seq_len):
+    """Trusted-side, non-secret prompt-formatting metadata for the report: the
+    format, a sha256 of the FORMATTED string (not the string itself), and the raw
+    / chat / actually-used token counts. Never returns the prompt or token ids."""
+    import hashlib
+    formatted = format_prompt_for_generation(raw, tokenizer, use_chat_template)
+
+    def _count(s):
+        try:
+            return len(tokenizer(s)["input_ids"])
+        except Exception:                                    # noqa: BLE001
+            return None
+    raw_n = _count(raw)
+    chat_n = _count(format_prompt_for_generation(raw, tokenizer, True))
+    used = _count(formatted)
+    used = min(used, int(seq_len)) if used is not None else None
+    return {
+        "prompt_format": "chat" if use_chat_template else "raw",
+        "formatted_prompt_sha256": hashlib.sha256(
+            formatted.encode("utf-8")).hexdigest(),
+        "raw_prompt_token_count": raw_n,
+        "chat_prompt_token_count": chat_n,
+        "prompt_token_count": used,
+    }
+
+
 def apply_repetition_penalty(rec, seen_ids, penalty):
     """Pure HF-equivalent repetition_penalty over recovered logits (trusted-side).
 
@@ -139,7 +182,7 @@ class _PlaintextLocalPredictor:
     backend = "plaintext_local"
 
     def __init__(self, *, model_path, model_name, seq_len, max_new_tokens,
-                 dtype, device):
+                 dtype, device, use_chat_template=False):
         try:
             import torch  # noqa: F401
             from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -159,13 +202,23 @@ class _PlaintextLocalPredictor:
         self.seq_len = int(seq_len)
         self.max_new_tokens = int(max_new_tokens)
         self.device = device
+        self._use_chat_template = bool(use_chat_template)
+
+    def format_prompt(self, prompt):
+        """Apply the shared chat-template formatting (trusted-side)."""
+        return format_prompt_for_generation(prompt, self._tok,
+                                            self._use_chat_template)
+
+    def prompt_info(self, prompt):
+        return prompt_format_info(self._tok, prompt, self._use_chat_template,
+                                  self.seq_len)
 
     def _encode(self, prompt):
-        """Tokenize -> (input_ids, attention_mask) both truncated to seq_len and
-        on the model device. The attention mask is always passed to the model so
-        padding / left-truncation never corrupts the logits (avoids the silent
-        ``attention_mask`` warning + wrong positions)."""
-        enc = self._tok(prompt, return_tensors="pt")
+        """Format (chat template if enabled) -> tokenize -> (input_ids,
+        attention_mask), truncated to seq_len and on the model device. The
+        attention mask is always passed so padding / left-truncation never
+        corrupts the logits."""
+        enc = self._tok(self.format_prompt(prompt), return_tensors="pt")
         ids = enc["input_ids"][:, :self.seq_len].to(self._model.device)
         attn = enc.get("attention_mask")
         if attn is not None:
@@ -210,8 +263,9 @@ class _PlaintextLocalPredictor:
                 do_sample=False, num_beams=1,
                 pad_token_id=getattr(self._tok, "eos_token_id", None))
         new = out[0, ids.shape[1]:]
+        info = self.prompt_info(prompt)
         return {"text": self._tok.decode(new, skip_special_tokens=True),
-                "token_ids": [int(t) for t in new.tolist()]}
+                "token_ids": [int(t) for t in new.tolist()], **info}
 
     def stats(self):
         # plaintext baseline: no GPU privacy boundary (it IS plaintext).
@@ -237,9 +291,10 @@ class _RemoteMaskedPredictor:
                  expected_mr_td, seq_len, max_new_tokens, dtype, device, audit,
                  nonlinear_backend="current", align_generation_config=False,
                  repetition_penalty=None, stop_on_eos=True,
-                 length_hide_generation=False):
+                 length_hide_generation=False, use_chat_template=False):
         self.backend = backend
         self.model_name = model_name
+        self._use_chat_template = bool(use_chat_template)
         from pllo.experiments.nonlinear_designs import (
             normalize_nonlinear_backend)
         self.nonlinear_backend = normalize_nonlinear_backend(
@@ -431,10 +486,20 @@ class _RemoteMaskedPredictor:
 
     # -- generation -------------------------------------------------------
 
+    def format_prompt(self, prompt):
+        """Apply the shared chat-template formatting (trusted-side); identical to
+        the plaintext predictor so both decode the SAME formatted string."""
+        return format_prompt_for_generation(prompt, self._tok,
+                                            self._use_chat_template)
+
+    def prompt_info(self, prompt):
+        return prompt_format_info(self._tok, prompt, self._use_chat_template,
+                                  self.seq_len)
+
     def _ids(self, prompt):
         import torch
-        enc = self._tok(prompt, return_tensors="pt")["input_ids"][
-            :, :self.seq_len]
+        enc = self._tok(self.format_prompt(prompt), return_tensors="pt")[
+            "input_ids"][:, :self.seq_len]
         return enc.to(torch.long)
 
     def _np(self, t):
@@ -695,8 +760,9 @@ class _RemoteMaskedPredictor:
         GPU; tokenization + recovery + sampling stay trusted-side."""
         ids = self._ids(prompt)
         gen, _ = self._decode_loop(ids)
+        info = self.prompt_info(prompt)
         return {"text": self._tok.decode(gen, skip_special_tokens=True),
-                "token_ids": [int(t) for t in gen]}
+                "token_ids": [int(t) for t in gen], **info}
 
     def stats(self):
         bc = sum(self._trace.boundary_calls.values()) \
@@ -856,19 +922,21 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     dtype="bfloat16", device="cuda", audit=True,
                     nonlinear_backend="current", align_generation_config=False,
                     repetition_penalty=None, stop_on_eos=True,
-                    length_hide_generation=False):
+                    length_hide_generation=False, use_chat_template=False):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
     backends it binds the attestation to the design (current vs trusted_shortcut
-    produce distinct runtime hashes)."""
+    produce distinct runtime hashes). ``use_chat_template`` applies the SAME
+    trusted-side chat-template formatting to both plaintext and folded backends."""
     if backend == "plaintext_local":
         if not model_path:
             raise RealBackendUnavailable(
                 "plaintext_local requires --model-path")
         return _PlaintextLocalPredictor(
             model_path=model_path, model_name=model_name, seq_len=seq_len,
-            max_new_tokens=max_new_tokens, dtype=dtype, device=device)
+            max_new_tokens=max_new_tokens, dtype=dtype, device=device,
+            use_chat_template=use_chat_template)
     if backend in REMOTE_BACKENDS:
         return _RemoteMaskedPredictor(
             backend, model_path=model_path, model_name=model_name,
@@ -880,5 +948,6 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             audit=audit, nonlinear_backend=nonlinear_backend,
             align_generation_config=align_generation_config,
             repetition_penalty=repetition_penalty, stop_on_eos=stop_on_eos,
-            length_hide_generation=length_hide_generation)
+            length_hide_generation=length_hide_generation,
+            use_chat_template=use_chat_template)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))

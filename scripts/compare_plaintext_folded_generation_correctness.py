@@ -548,7 +548,8 @@ def _run_diagnosis(args) -> int:
         predictor = build_predictor(
             "plaintext_local", model_path=args.model_path,
             model_name=args.model_name, seq_len=args.seq_len,
-            max_new_tokens=args.max_steps, dtype=args.dtype, device=args.device)
+            max_new_tokens=args.max_steps, dtype=args.dtype, device=args.device,
+            use_chat_template=bool(args.use_chat_template))
         model, mc = predictor._model, predictor._model.config
         tok = predictor._tok
         device, dtype = args.device, args.dtype
@@ -803,7 +804,8 @@ def main() -> int:
         predictor = build_predictor(
             "plaintext_local", model_path=args.model_path,
             model_name=args.model_name, seq_len=args.seq_len,
-            max_new_tokens=max_steps, dtype=args.dtype, device=args.device)
+            max_new_tokens=max_steps, dtype=args.dtype, device=args.device,
+            use_chat_template=bool(args.use_chat_template))
         model, mc = predictor._model, predictor._model.config
         tok = predictor._tok
         device = args.device
