@@ -83,6 +83,7 @@ DEFAULT_TRUSTED_BOUNDARY_PATHS: tuple[str, ...] = (
     "src/pllo/experiments/folded_probe_common.py",
     "src/pllo/deployment/embedding_artifact.py",
     "src/pllo/ops/causal_lm_boundaries.py",
+    "src/pllo/runtime/obfuscation_schedule.py",
     "src/pllo/ops/nonlinear_islands.py",
     "src/pllo/ops/mitigation_bundles.py",
     # optional metadata-only security transcript recorder/scanner (loaded by the
