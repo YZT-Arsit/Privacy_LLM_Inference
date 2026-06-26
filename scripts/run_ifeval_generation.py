@@ -134,6 +134,10 @@ def main() -> int:
     ap.add_argument("--repetition-penalty", type=float, default=None,
                     help="explicit repetition_penalty for --align-generation-config "
                     "(else read from the model's generation_config.json)")
+    ap.add_argument("--disable-eos-stop", action="store_true", default=False,
+                    help="keep the old fixed-length decode (generate exactly "
+                    "max_new_tokens). DEFAULT is EOS stopping, aligned with the "
+                    "plaintext_local model.generate stop condition")
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
@@ -160,7 +164,8 @@ def main() -> int:
                 max_new_tokens=args.max_new_tokens, dtype=args.dtype,
                 device=args.device, audit=args.audit, nonlinear_backend=nb,
                 align_generation_config=args.align_generation_config,
-                repetition_penalty=args.repetition_penalty)
+                repetition_penalty=args.repetition_penalty,
+                stop_on_eos=(not args.disable_eos_stop))
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but real backend unavailable: %s"
@@ -390,6 +395,19 @@ def main() -> int:
         "generation_processor_location", "trusted_side")
     report["plaintext_logits_or_sampling_on_gpu"] = bool(
         stats.get("plaintext_logits_or_sampling_on_gpu", False))
+    # trusted-side EOS stop, aligned with model.generate -- public, per-example
+    report["stop_on_eos"] = stats.get("stop_on_eos", not args.disable_eos_stop)
+    report["eos_token_id"] = stats.get("eos_token_id")
+    report["pad_token_id"] = stats.get("pad_token_id")
+    report["stopped_by_eos"] = stats.get("stopped_by_eos")
+    report["finish_reason"] = stats.get("finish_reason")
+    report["finish_reason_per_example"] = stats.get("finish_reason_per_example")
+    report["stopped_by_eos_per_example"] = stats.get("stopped_by_eos_per_example")
+    report["generated_tokens_per_example"] = stats.get(
+        "generated_tokens_per_example")
+    report["max_new_tokens_requested"] = stats.get(
+        "max_new_tokens_requested", int(args.max_new_tokens))
+    report["max_new_tokens_consumed"] = stats.get("max_new_tokens_consumed")
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:

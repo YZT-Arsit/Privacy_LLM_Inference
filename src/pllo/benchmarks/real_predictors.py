@@ -95,6 +95,17 @@ def _choice_token_ids(tokenizer, letters):
     return ids
 
 
+def _normalize_eos_ids(eos) -> set:
+    """Normalise an eos_token_id (int, list[int], or None) to a set of ints, to
+    match ``model.generate``'s acceptance of a single id or a list of ids
+    (Qwen2.5 uses ``[151645, 151643]``)."""
+    if eos is None:
+        return set()
+    if isinstance(eos, (list, tuple, set)):
+        return {int(e) for e in eos if e is not None}
+    return {int(eos)}
+
+
 # ---------------------------------------------------------------------------
 # plaintext baseline
 # ---------------------------------------------------------------------------
@@ -201,7 +212,7 @@ class _RemoteMaskedPredictor:
                  embedding_path, folded_lora_package_path, attestation_evidence,
                  expected_mr_td, seq_len, max_new_tokens, dtype, device, audit,
                  nonlinear_backend="current", align_generation_config=False,
-                 repetition_penalty=None):
+                 repetition_penalty=None, stop_on_eos=True):
         self.backend = backend
         self.model_name = model_name
         from pllo.experiments.nonlinear_designs import (
@@ -220,16 +231,16 @@ class _RemoteMaskedPredictor:
         self._align_gen = bool(align_generation_config)
         self._rep_penalty = (float(repetition_penalty)
                              if repetition_penalty is not None else None)
-        if self._align_gen and self._rep_penalty is None:
-            try:                                # read generation_config.json only
-                from transformers import GenerationConfig
-                gc = GenerationConfig.from_pretrained(model_path,
-                                                      local_files_only=True)
-                rp = getattr(gc, "repetition_penalty", None)
-                self._rep_penalty = float(rp) if rp else None
-            except Exception:                                # noqa: BLE001
-                self._rep_penalty = None
         self._gen_processor_applied = False
+        # TRUSTED-SIDE EOS stop (default ON -> aligns model.generate, which stops
+        # at generation_config.eos_token_id). The eos decision + token history are
+        # trusted-only; nothing extra crosses to the GPU. The generation-config /
+        # tokenizer values are resolved below, once the tokenizer is loaded.
+        self._stop_on_eos = bool(stop_on_eos)
+        self._examples_finish: list = []        # per-example finish records
+        self._model_path = model_path
+        self._eos_ids: set = set()
+        self._pad_token_id = None
         want_lora = backend in _LORA_BACKENDS
         want_attest = backend in _ATTESTED_BACKENDS
 
@@ -264,6 +275,28 @@ class _RemoteMaskedPredictor:
                 model_path, trust_remote_code=True, local_files_only=True)
         except Exception as exc:                            # noqa: BLE001
             raise RealBackendUnavailable("tokenizer load failed: %s" % exc)
+
+        # Resolve generation-config alignment values (repetition_penalty + eos/pad)
+        # now that the tokenizer is loaded, aligned with model.generate. Reads
+        # generation_config.json only -- never loads model weights.
+        gc = None
+        try:
+            from transformers import GenerationConfig
+            gc = GenerationConfig.from_pretrained(model_path,
+                                                  local_files_only=True)
+        except Exception:                                    # noqa: BLE001
+            gc = None
+        if self._align_gen and self._rep_penalty is None:
+            rp = getattr(gc, "repetition_penalty", None) if gc else None
+            self._rep_penalty = float(rp) if rp else None
+        eos = getattr(gc, "eos_token_id", None) if gc else None
+        if eos is None:
+            eos = getattr(self._tok, "eos_token_id", None)
+        self._eos_ids = _normalize_eos_ids(eos)
+        pad = getattr(gc, "pad_token_id", None) if gc else None
+        if pad is None:
+            pad = getattr(self._tok, "pad_token_id", None)
+        self._pad_token_id = int(pad) if pad is not None else None
 
         try:
             self._boundary = LiteBoundary.from_artifact(embedding_path,
@@ -520,9 +553,12 @@ class _RemoteMaskedPredictor:
         gen = [tok]
         seen_ids.append(tok)
         pos = seq_len
+        # TRUSTED-SIDE EOS stop (default ON): if prefill already emitted EOS, skip
+        # the decode loop entirely (aligns model.generate's stop condition).
+        stopped = bool(self._stop_on_eos and tok in self._eos_ids)
 
-        # ---- decode steps ----
-        for step in range(self.max_new_tokens - 1):
+        # ---- decode steps (skipped when prefill already produced EOS) ----
+        for step in range(0 if stopped else self.max_new_tokens - 1):
             self._pbegin(step + 1, "decode")
             with self._pstage("prompt_token_prep"):
                 tok_tensor = torch.tensor([tok])
@@ -549,6 +585,16 @@ class _RemoteMaskedPredictor:
             gen.append(tok)
             seen_ids.append(tok)
             self._pend(tok)
+            # TRUSTED-SIDE EOS stop: the eos decision + token history stay
+            # trusted-side; nothing extra is ever placed in a GPU request.
+            if self._stop_on_eos and tok in self._eos_ids:
+                stopped = True
+                break
+        self._examples_finish.append({
+            "finish_reason": "eos" if stopped else "length",
+            "generated_tokens": len(gen),
+            "stopped_by_eos": bool(stopped),
+        })
         return gen, rec_last
 
     def predict(self, prompt, example):
@@ -604,6 +650,26 @@ class _RemoteMaskedPredictor:
             "generation_processor_location": "trusted_side",
             "plaintext_logits_or_sampling_on_gpu": False,
         }
+        # trusted-side EOS stop, aligned with model.generate (per-example records)
+        fin = self._examples_finish
+        reasons = [e["finish_reason"] for e in fin]
+        counts = [e["generated_tokens"] for e in fin]
+        out.update({
+            "eos_token_id": (sorted(self._eos_ids) if self._eos_ids else None),
+            "pad_token_id": self._pad_token_id,
+            "stop_on_eos": bool(self._stop_on_eos),
+            "stopped_by_eos": bool(any(e["stopped_by_eos"] for e in fin)),
+            "finish_reason": (None if not reasons
+                              else ("eos" if all(r == "eos" for r in reasons)
+                                    else ("length"
+                                          if all(r == "length" for r in reasons)
+                                          else "mixed"))),
+            "finish_reason_per_example": reasons,
+            "stopped_by_eos_per_example": [e["stopped_by_eos"] for e in fin],
+            "generated_tokens_per_example": counts,
+            "max_new_tokens_requested": int(self.max_new_tokens),
+            "max_new_tokens_consumed": (max(counts) if counts else None),
+        })
         # measured nonlinear-design execution evidence from the worker (post-run
         # health): proves design B genuinely lifted the activation on the GPU.
         out["nonlinear_backend"] = self.nonlinear_backend
@@ -673,7 +739,7 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     expected_mr_td=None, seq_len=256, max_new_tokens=8,
                     dtype="bfloat16", device="cuda", audit=True,
                     nonlinear_backend="current", align_generation_config=False,
-                    repetition_penalty=None):
+                    repetition_penalty=None, stop_on_eos=True):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -696,5 +762,5 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             max_new_tokens=max_new_tokens, dtype=dtype, device=device,
             audit=audit, nonlinear_backend=nonlinear_backend,
             align_generation_config=align_generation_config,
-            repetition_penalty=repetition_penalty)
+            repetition_penalty=repetition_penalty, stop_on_eos=stop_on_eos)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))
