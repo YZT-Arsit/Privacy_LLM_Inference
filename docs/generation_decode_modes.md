@@ -69,6 +69,31 @@ forbids `token_ids` / `plaintext_logits` / `dummy_token_id` / `eos_decision` /
 `finish_reason` / `generated_token_history`. `plaintext_logits_or_sampling_on_gpu`
 stays `false` in both modes.
 
+## Diagnosing a plaintext-vs-folded quality gap
+
+When folded IFEval trails the plaintext baseline, diagnose **before** touching
+decoding (never trim/clean output to chase a score):
+
+1. **Strict-gap analysis** (`scripts/analyze_ifeval_strict_gap.py`) over the eval
+   JSONL of both runs → which examples + instruction categories diverge, plus the
+   response-format features (whitespace, casing, quote-wrapping, prompt echo,
+   bullets/paragraphs, commas) that drive *strict* failures. Text + evaluator
+   results only. Emits markdown + JSON.
+2. **Token-level divergence** (`scripts/compare_plaintext_folded_generation_correctness.py
+   --diagnose-divergence`) on the EXACT folded_remote decode path (trusted-side
+   `--align-generation-config --repetition-penalty`, EOS stop). Per example it
+   reports the prompt token count, chat-template sha, first-N plaintext/folded
+   token ids+text, `first_free_running_divergent_step`, the tokens + logit error
+   at divergence, and a class:
+   - `step0_divergence` → prompt encoding / chat template / generation config /
+     logits-processor mismatch;
+   - `early_decode_divergence` → KV / position+RoPE / logits-processor / EOS-state;
+   - `no_token_divergence` → tokens match; any gap is postprocessing / whitespace
+     / special-token cleanup (go back to the strict-gap analysis — do NOT trim).
+   Batch the strict failures directly: `--batch-from-strict-gap <strict_gap.json>`
+   (or `--example-indices 0,3,19`). Emits only token ids / text / scalar metrics —
+   no logits / hidden / mask / secret.
+
 > The extended audit lives in a **non-measured** module on purpose, so adding it
 > does not change the attestation runtime hash. The canonical, hash-bound
 > `transcript_scanner` is unchanged; harden it (and re-bind the TDX quote) only

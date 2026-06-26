@@ -95,6 +95,30 @@ def _choice_token_ids(tokenizer, letters):
     return ids
 
 
+def apply_repetition_penalty(rec, seen_ids, penalty):
+    """Pure HF-equivalent repetition_penalty over recovered logits (trusted-side).
+
+    For each already-seen token id: ``logit < 0 -> *penalty`` else ``/penalty``
+    (HF ``RepetitionPenaltyLogitsProcessor``). ``rec`` is a torch tensor; returns
+    a possibly-adjusted tensor of the same shape. No-op for penalty in (None, 1.0)
+    or empty history. Shared by the remote predictor and the correctness tool so
+    both apply the IDENTICAL processor."""
+    if penalty is None or penalty == 1.0 or not seen_ids:
+        return rec
+    import torch
+    row = rec.reshape(-1)
+    idx = torch.as_tensor(sorted({int(t) for t in seen_ids}),
+                          dtype=torch.long, device=row.device)
+    idx = idx[idx < row.shape[0]]
+    if idx.numel() == 0:
+        return rec
+    sel = row.index_select(0, idx)
+    penal = torch.where(sel < 0, sel * penalty, sel / penalty)
+    row = row.clone()
+    row.index_copy_(0, idx, penal)
+    return row.reshape(rec.shape)
+
+
 def _normalize_eos_ids(eos) -> set:
     """Normalise an eos_token_id (int, list[int], or None) to a set of ints, to
     match ``model.generate``'s acceptance of a single id or a list of ids
@@ -518,20 +542,9 @@ class _RemoteMaskedPredictor:
         if (not self._align_gen or self._rep_penalty is None
                 or self._rep_penalty == 1.0 or not seen_ids):
             return rec
-        import torch
-        row = rec.reshape(-1)
-        idx = torch.as_tensor(sorted({int(t) for t in seen_ids}),
-                              dtype=torch.long, device=row.device)
-        idx = idx[idx < row.shape[0]]
-        if idx.numel() == 0:
-            return rec
-        sel = row.index_select(0, idx)
-        penal = torch.where(sel < 0, sel * self._rep_penalty,
-                            sel / self._rep_penalty)
-        row = row.clone()
-        row.index_copy_(0, idx, penal)
+        out = apply_repetition_penalty(rec, seen_ids, self._rep_penalty)
         self._gen_processor_applied = True
-        return row.reshape(rec.shape)
+        return out
 
     def _decode_loop(self, ids):
         """Greedy masked prefill+decode; return (generated_ids, last_recovered).

@@ -202,6 +202,86 @@ def test_reproduction_metadata_present(tmp_path) -> None:
     assert r["generation_config_summary"]["do_sample"] is False
 
 
+def _run_diag(extra, tmp_path, name, *, prompts_jsonl=None):
+    out = tmp_path / ("%s.json" % name)
+    argv = ["x", "--dry-run", "--num-layers", "4", "--device", "cpu",
+            "--dtype", "float32", "--seq-len", "8", "--max-steps", "6",
+            "--diagnose-divergence", "--output-json", str(out)]
+    if prompts_jsonl:
+        argv += ["--input-jsonl", str(prompts_jsonl)]
+    argv += (extra or [])
+    old = sys.argv
+    try:
+        sys.argv = argv
+        rc = _MOD.main()
+    finally:
+        sys.argv = old
+    return rc, json.loads(out.read_text())
+
+
+def test_classify_divergence() -> None:
+    assert _MOD._classify_divergence(None)[0] == "no_token_divergence"
+    assert _MOD._classify_divergence(0)[0] == "step0_divergence"
+    assert _MOD._classify_divergence(3)[0] == "early_decode_divergence"
+
+
+def test_diagnosis_clean_no_token_divergence(tmp_path) -> None:
+    rc, r = _run_diag([], tmp_path, "dclean")
+    assert rc == 0
+    assert r["stage"] == "plaintext_vs_folded_divergence_diagnosis"
+    d = r["per_example_diagnosis"][0]
+    assert d["first_free_running_divergent_step"] is None
+    assert d["divergence_class"] == "no_token_divergence"
+    # required per-example fields present
+    for k in ("prompt_token_count", "chat_template_sha256",
+              "plaintext_first_token_ids", "folded_first_token_ids",
+              "plaintext_total_tokens", "folded_total_tokens"):
+        assert k in d
+    assert r["plaintext_logits_or_sampling_on_gpu"] is False
+
+
+def test_diagnosis_inject_early_decode(tmp_path) -> None:
+    rc, r = _run_diag(["--diag-inject-divergence-step", "2"], tmp_path, "ddiv")
+    d = r["per_example_diagnosis"][0]
+    assert d["first_free_running_divergent_step"] == 2
+    assert d["divergence_class"] == "early_decode_divergence"
+    assert d["plaintext_token_at_divergence"] != d["folded_token_at_divergence"]
+
+
+def test_diagnosis_inject_step0(tmp_path) -> None:
+    _, r = _run_diag(["--diag-inject-divergence-step", "0"], tmp_path, "ddiv0")
+    d = r["per_example_diagnosis"][0]
+    assert d["first_free_running_divergent_step"] == 0
+    assert d["divergence_class"] == "step0_divergence"
+
+
+def test_diagnosis_batch_indices(tmp_path) -> None:
+    pj = tmp_path / "p.jsonl"
+    pj.write_text("\n".join(
+        json.dumps({"key": "k%d" % i, "prompt": "prompt %d" % i})
+        for i in range(3)) + "\n")
+    rc, r = _run_diag(["--example-indices", "0,2"], tmp_path, "dbatch",
+                      prompts_jsonl=pj)
+    assert r["num_examples_diagnosed"] == 2
+    assert r["example_indices"] == [0, 2]
+    assert len(r["per_example_diagnosis"]) == 2
+    assert "divergence_class_counts" in r
+
+
+def test_diagnosis_batch_from_strict_gap(tmp_path) -> None:
+    pj = tmp_path / "p.jsonl"
+    pj.write_text("\n".join(
+        json.dumps({"key": "k%d" % i, "prompt": "prompt %d" % i})
+        for i in range(3)) + "\n")
+    gap = tmp_path / "gap.json"
+    gap.write_text(json.dumps(
+        {"strict": {"plaintext_pass_folded_fail": ["k1", "k2"]}}))
+    _, r = _run_diag(["--batch-from-strict-gap", str(gap)], tmp_path, "dgap",
+                     prompts_jsonl=pj)
+    assert r["example_indices"] == [1, 2]
+    assert r["num_examples_diagnosed"] == 2
+
+
 def test_security_fields_clean_and_no_forbidden_keys(tmp_path) -> None:
     from pllo.protocol.remote import FORBIDDEN_WIRE_FIELDS
 

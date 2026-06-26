@@ -260,20 +260,35 @@ def _raw_greedy_generate(model, ids, attn, max_steps, eos_id):
 
 
 def _folded_steps(backend, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
-                  *, fed_tokens=None, eos_id=None):
+                  *, fed_tokens=None, eos_id=None, eos_ids=None, rep_penalty=None,
+                  seen_init=None):
     """Folded-package recovered logits, step by step. ``fed_tokens`` -> TEACHER
-    FORCING (feed the given plaintext tokens); ``None`` -> FREE RUNNING (feed the
-    folded path's own greedy token). The boundary owns masking + recovery; the
-    package only executes folded ops over masked tensors. Returns (logit_rows
-    [float32 cpu numpy V], token_ids)."""
+    FORCING (raw, for per-step fidelity); ``None`` -> FREE RUNNING. In FREE mode,
+    ``rep_penalty`` + ``eos_ids`` reproduce the EXACT folded_remote decode path
+    (trusted-side repetition_penalty after recovery, before argmax; trusted-side
+    EOS stop). ``seen_init`` seeds the rep-penalty token history with the prompt
+    ids (trusted-only). Returned rows are the DECISION logits (post-penalty in free
+    mode). The boundary owns masking/recovery; the package only runs folded ops."""
     import numpy as np
     import torch
+    from pllo.benchmarks.real_predictors import apply_repetition_penalty
+    eset = set(eos_ids) if eos_ids else ({eos_id} if eos_id is not None else set())
+    free = fed_tokens is None
+    seen = list(seen_init or []) if free else None
+
+    def _decision_row(rec_t):
+        if free and rep_penalty not in (None, 1.0) and seen:
+            rec_t = apply_repetition_penalty(rec_t, seen, rep_penalty)
+        return np.asarray(rec_t.detach().to("cpu").float().numpy())
+
     pre = backend.run_prefill(h_tilde, n_layers, cfg0, session._cos, session._sin,
                               session.eps)
     rec = session.recover(backend.run_head(pre["y_tilde"], session.eps)[:, -1, :])
-    row = np.asarray(rec[0].detach().to("cpu").float().numpy())
+    row = _decision_row(rec[0])
     rows, toks = [row], [int(row.argmax())]
     t = toks[0]
+    if seen is not None:
+        seen.append(t)
     position = seq_len
     for step in range(max_steps - 1):
         if fed_tokens is not None:
@@ -281,7 +296,7 @@ def _folded_steps(backend, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
                 break
             feed = int(fed_tokens[step])
         else:
-            if eos_id is not None and t == eos_id:
+            if eset and t in eset:
                 break
             feed = t
         x = session.mask_token_embedding(torch.tensor([feed]))
@@ -289,10 +304,12 @@ def _folded_steps(backend, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
                                  session.eps, num_exec_layers=n_layers)
         rec = session.recover(
             backend.run_head(dec["y_tilde"], session.eps)[:, -1, :])
-        row = np.asarray(rec[0].detach().to("cpu").float().numpy())
+        row = _decision_row(rec[0])
         rows.append(row)
         t = int(row.argmax())
         toks.append(t)
+        if seen is not None:
+            seen.append(t)
         position += 1
     return rows, toks
 
@@ -335,6 +352,303 @@ def _decode_text(tok, token_ids):
         return None
 
 
+def _classify_divergence(first_div):
+    """Map the first free-running divergent step to a likely cause class."""
+    if first_div is None:
+        return ("no_token_divergence", "free-running tokens match: any IFEval gap "
+                "is postprocessing / whitespace / special-token cleanup -- see "
+                "analyze_ifeval_strict_gap.py (do NOT trim/clean to chase score)")
+    if first_div == 0:
+        return ("step0_divergence", "prompt encoding / chat template / generation "
+                "config / logits processor mismatch (prefill step)")
+    return ("early_decode_divergence", "KV / position+RoPE / logits processor / "
+            "EOS-state mismatch (decode step %d)" % first_div)
+
+
+def _plaintext_generate_scores(model, ids, attn, max_steps, eos_id):
+    """Authoritative plaintext greedy (model.generate, applies the model's
+    generation_config incl repetition_penalty) WITH per-step processed logits.
+    Returns (token_ids, per_step_logit_rows[float32 cpu numpy V])."""
+    import numpy as np
+    import torch
+    kw = dict(max_new_tokens=max_steps, do_sample=False, num_beams=1,
+              pad_token_id=eos_id, output_scores=True,
+              return_dict_in_generate=True)
+    with torch.no_grad():
+        out = (model.generate(ids, attention_mask=attn, **kw) if attn is not None
+               else model.generate(ids, **kw))
+    toks = [int(t) for t in out.sequences[0, ids.shape[1]:].tolist()]
+    rows = [np.asarray(s[0].detach().to("cpu").float().numpy())
+            for s in (out.scores or [])]
+    return toks, rows
+
+
+def _diagnose_example(*, prompt, model, tok, predictor, mc, device, dtype,
+                      pkg_dir, n_layers, seed, max_steps, rep_penalty, eos_ids,
+                      stop_on_eos, first_n, inject_div_step, make_backend,
+                      example_index):
+    """Token-level free-running diagnosis for ONE example on the EXACT
+    folded_remote decode path (trusted-side repetition_penalty + EOS). No secret
+    tensors are emitted -- only scalars, token ids, token text, shape metadata."""
+    import hashlib
+    import numpy as np
+    import torch
+    from pllo.hf_wrappers.qwen_masked_session import MaskedQwenSession
+    from pllo.hf_wrappers.qwen_memory_optimized import (
+        MemoryOptimizedConfig, _cfg_to)
+
+    if predictor is not None:
+        ids, attn = predictor._encode(prompt)
+    else:
+        ids, attn = model_ids_fallback(model, mc, max_steps), None
+    seq_len = int(ids.shape[1])
+    eos0 = (sorted(eos_ids)[0] if eos_ids else None)
+
+    # plaintext authoritative (generation-config applied) + per-step logits
+    p_tokens, p_rows = _plaintext_generate_scores(model, ids, attn, max_steps, eos0)
+
+    # folded free-running on the EXACT folded_remote path (rep_penalty + EOS)
+    cfg = MemoryOptimizedConfig(
+        num_layers=n_layers, batch_size=1, seq_len=seq_len, max_new_tokens=max_steps,
+        device=device, dtype=dtype, folding_dtype="float32",
+        folded_weight_device=device, mlp_down_chunk_size=512, seed=seed)
+    session = MaskedQwenSession(model, mc, cfg)
+    h_tilde = session.mask_embeddings(ids)
+    cfg0 = _cfg_to(session.layer_configs[0], session.compute_device)
+    backend = make_backend()
+    prompt_ids = [int(t) for t in ids.reshape(-1).tolist()]
+    f_rows, f_tokens = _folded_steps(
+        backend, session, h_tilde, max_steps, seq_len, n_layers, cfg0,
+        fed_tokens=None, eos_ids=(eos_ids if stop_on_eos else None),
+        rep_penalty=rep_penalty, seen_init=prompt_ids)
+    if inject_div_step is not None and 0 <= inject_div_step < len(f_tokens):
+        f_tokens = list(f_tokens)
+        base = (p_tokens[inject_div_step] if inject_div_step < len(p_tokens)
+                else f_tokens[inject_div_step])
+        f_tokens[inject_div_step] = int(base) + 1            # TEST: force a fork
+
+    first_div = _first_divergent_tokens(p_tokens, f_tokens)
+    cls, cls_note = _classify_divergence(first_div)
+
+    def _txt(tids):
+        if tok is None:
+            return None
+        try:
+            return tok.decode([int(t) for t in tids], skip_special_tokens=False)
+        except Exception:                                    # noqa: BLE001
+            return None
+
+    at = {"max_abs_logit_err": None, "top1_match": None, "top5_overlap": None,
+          "plaintext_token_at_divergence": None, "folded_token_at_divergence": None,
+          "plaintext_token_text": None, "folded_token_text": None}
+    if first_div is not None:
+        pt = p_tokens[first_div] if first_div < len(p_tokens) else None
+        ft = f_tokens[first_div] if first_div < len(f_tokens) else None
+        at["plaintext_token_at_divergence"] = pt
+        at["folded_token_at_divergence"] = ft
+        at["plaintext_token_text"] = (tok.decode([pt]) if (tok and pt is not None)
+                                      else None)
+        at["folded_token_text"] = (tok.decode([ft]) if (tok and ft is not None)
+                                   else None)
+        if first_div < len(p_rows) and first_div < len(f_rows):
+            pa = np.asarray(p_rows[first_div]).reshape(-1)
+            fa = np.asarray(f_rows[first_div]).reshape(-1)
+            if pa.shape == fa.shape:
+                at["max_abs_logit_err"] = _np_err(pa, fa)[0]
+                at["top1_match"] = bool(int(pa.argmax()) == int(fa.argmax()))
+                at["top5_overlap"] = (len(set(_np_topk(pa, 5)) & set(_np_topk(fa, 5)))
+                                      / 5.0)
+
+    chat_tmpl = getattr(tok, "chat_template", None) if tok is not None else None
+    chat_sha = (hashlib.sha256(chat_tmpl.encode("utf-8")).hexdigest()
+                if isinstance(chat_tmpl, str) and chat_tmpl else None)
+    n = int(first_n)
+    return {
+        "example_index": example_index,
+        "prompt": prompt if isinstance(prompt, str) else None,
+        "prompt_token_count": seq_len,
+        "chat_template_sha256": chat_sha,
+        "plaintext_first_token_ids": p_tokens[:n],
+        "folded_first_token_ids": f_tokens[:n],
+        "plaintext_first_text": _txt(p_tokens[:n]),
+        "folded_first_text": _txt(f_tokens[:n]),
+        "plaintext_total_tokens": len(p_tokens),
+        "folded_total_tokens": len(f_tokens),
+        "first_free_running_divergent_step": first_div,
+        "divergence_class": cls,
+        "divergence_note": cls_note,
+        **at,
+    }
+
+
+def model_ids_fallback(model, mc, max_steps):
+    """Dry-run prompt ids when there is no real tokenizer/predictor."""
+    import torch
+    return torch.randint(0, int(getattr(mc, "vocab_size", 256)), (1, 8))
+
+
+def _run_diagnosis(args) -> int:
+    """Batch per-example free-running divergence diagnosis on the exact
+    folded_remote decode path. Writes markdown + JSON; emits only scalars / token
+    ids / token text / shape metadata (no logits / hidden / mask / secret)."""
+    import json as _json
+
+    from pllo.deployment import load_manifest
+    from pllo.experiments.folded_probe_common import seed_from_manifest, tiny_model
+    from pllo.experiments.nonlinear_designs import normalize_nonlinear_backend
+    from pllo.protocol.gpu_worker import Qwen7BFoldedPackageGpuBackend
+    from pllo.protocol.tee_gpu_messages import BoundaryInitRequest
+
+    args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+    dry_run = bool(args.dry_run or not args.model_path)
+
+    # prompts (loaded exactly like run_ifeval_generation.py)
+    prompts = []
+    if args.input_jsonl and Path(args.input_jsonl).exists():
+        with open(args.input_jsonl, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line and str(_json.loads(line).get("prompt", "")).strip():
+                    prompts.append(_json.loads(line))
+    if not prompts:
+        prompts = [{"prompt": args.prompt, "key": "ex-0"}]
+
+    # which example indices to diagnose
+    if args.batch_from_strict_gap and Path(args.batch_from_strict_gap).exists():
+        gap = _json.loads(Path(args.batch_from_strict_gap).read_text())
+        want_ids = list((gap.get("strict") or {}).get(
+            "plaintext_pass_folded_fail") or [])
+        keyidx = {}
+        for i, ex in enumerate(prompts):
+            for k in ("key", "id", "prompt"):
+                if k in ex:
+                    keyidx[str(ex[k])] = i
+        indices = [keyidx[i] for i in want_ids if i in keyidx]
+    elif args.example_indices:
+        indices = [int(x) for x in args.example_indices.split(",") if x.strip()]
+    else:
+        indices = [int(args.example_index)]
+    indices = [i for i in indices if 0 <= i < len(prompts)]
+
+    # build package (dry-run) + plaintext predictor/model
+    pkg_path = args.folded_package_path
+    if dry_run:
+        prof = _load_script("prof", "scripts/run_folded_worker_forward_profile.py")
+        out_dir = Path(args.output_json).resolve().parent / "_dry_run_pkg"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        pkg_path, _art = prof._build_dry_run(out_dir, args.num_layers, args.seed)
+
+    if dry_run:
+        model, mc = tiny_model()
+        device, dtype, tok, predictor = "cpu", "float32", None, None
+        eos_ids = ({int(mc.eos_token_id)} if getattr(mc, "eos_token_id", None)
+                   is not None else set())
+    else:
+        from pllo.benchmarks.real_predictors import build_predictor
+        predictor = build_predictor(
+            "plaintext_local", model_path=args.model_path,
+            model_name=args.model_name, seq_len=args.seq_len,
+            max_new_tokens=args.max_steps, dtype=args.dtype, device=args.device)
+        model, mc = predictor._model, predictor._model.config
+        tok = predictor._tok
+        device, dtype = args.device, args.dtype
+        eos_ids = _resolve_eos_ids(tok, args.model_path)
+
+    pkg_dir = Path(pkg_path)
+    n_layers = int(load_manifest(pkg_dir).num_layers)
+    seed = seed_from_manifest(pkg_dir, args.seed)
+    rep_penalty = _resolve_rep_penalty(args)
+    stop_on_eos = not args.disable_eos_stop
+
+    def make_backend():
+        b = Qwen7BFoldedPackageGpuBackend(
+            folded_package_path=str(pkg_dir), device=device, dtype=dtype,
+            nonlinear_backend=args.nonlinear_backend,
+            resident_folded_weights=bool(args.resident_folded_weights))
+        b.init(BoundaryInitRequest(
+            session_id="diag", hidden_size=int(getattr(mc, "hidden_size")),
+            vocab_size=int(getattr(mc, "vocab_size")), num_layers=n_layers,
+            dtype=dtype, gpu_backend="qwen7b_folded_package"))
+        return b
+
+    per = []
+    for idx in indices:
+        d = _diagnose_example(
+            prompt=str(prompts[idx]["prompt"]), model=model, tok=tok,
+            predictor=predictor, mc=mc, device=device, dtype=dtype, pkg_dir=pkg_dir,
+            n_layers=n_layers, seed=seed, max_steps=max(1, int(args.max_steps)),
+            rep_penalty=rep_penalty, eos_ids=eos_ids, stop_on_eos=stop_on_eos,
+            first_n=args.diag_first_n_tokens,
+            inject_div_step=args.diag_inject_divergence_step,
+            make_backend=make_backend, example_index=idx)
+        per.append(d)
+
+    classes = {}
+    for d in per:
+        classes[d["divergence_class"]] = classes.get(d["divergence_class"], 0) + 1
+    report = {
+        "stage": "plaintext_vs_folded_divergence_diagnosis",
+        "dry_run": dry_run, "device": device, "cli_dtype": dtype,
+        "align_generation_config": bool(args.align_generation_config),
+        "repetition_penalty": rep_penalty,
+        "stop_on_eos": stop_on_eos,
+        "eos_token_id": (sorted(eos_ids) if eos_ids else None),
+        "max_steps": max(1, int(args.max_steps)),
+        "num_examples_diagnosed": len(per),
+        "example_indices": indices,
+        "divergence_class_counts": dict(sorted(classes.items())),
+        "per_example_diagnosis": per,
+        "decode_path": "exact_folded_remote (trusted-side repetition_penalty + EOS)",
+        "analysis_scope": "token ids / token text / scalar metrics only; no "
+        "recovered logits / hidden / mask / inverse / PRG seed / raw LoRA emitted",
+        "plaintext_logits_or_sampling_on_gpu": False,
+    }
+    p = Path(args.output_json)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(_json.dumps(report, indent=2, default=str), encoding="utf-8")
+
+    print("=== plaintext vs folded DIVERGENCE diagnosis (%s, dry_run=%s) ==="
+          % (device, dry_run))
+    print("examples=%s rep_penalty=%s stop_on_eos=%s" % (indices, rep_penalty,
+                                                         stop_on_eos))
+    for d in per:
+        print("  ex%s: first_divergent_step=%s class=%s (plain=%s folded=%s)"
+              % (d["example_index"], d["first_free_running_divergent_step"],
+                 d["divergence_class"], d["plaintext_token_at_divergence"],
+                 d["folded_token_at_divergence"]))
+    print("class_counts=%s" % report["divergence_class_counts"])
+    return 0
+
+
+def _resolve_rep_penalty(args):
+    if args.repetition_penalty is not None:
+        return float(args.repetition_penalty)
+    if args.align_generation_config and args.model_path:
+        try:
+            from transformers import GenerationConfig
+            gc = GenerationConfig.from_pretrained(args.model_path,
+                                                  local_files_only=True)
+            rp = getattr(gc, "repetition_penalty", None)
+            return float(rp) if rp else None
+        except Exception:                                    # noqa: BLE001
+            return None
+    return None
+
+
+def _resolve_eos_ids(tok, model_path):
+    from pllo.benchmarks.real_predictors import _normalize_eos_ids
+    eos = None
+    try:
+        from transformers import GenerationConfig
+        gc = GenerationConfig.from_pretrained(model_path, local_files_only=True)
+        eos = getattr(gc, "eos_token_id", None)
+    except Exception:                                        # noqa: BLE001
+        eos = None
+    if eos is None:
+        eos = getattr(tok, "eos_token_id", None)
+    return _normalize_eos_ids(eos)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--model-path", default=None)
@@ -373,6 +687,33 @@ def main() -> int:
                     default=False)
     ap.add_argument("--compare-nonresident", action="store_true", default=False)
     ap.add_argument("--require-real", action="store_true", default=False)
+    # ---- generation-config alignment + per-example DIVERGENCE DIAGNOSIS (the
+    # exact folded_remote decode path: trusted-side repetition_penalty + EOS) ----
+    ap.add_argument("--align-generation-config", action="store_true",
+                    default=False, help="apply repetition_penalty (trusted-side) "
+                    "in the folded free-running rollout, matching folded_remote "
+                    "--align-generation-config")
+    ap.add_argument("--repetition-penalty", type=float, default=None,
+                    help="explicit repetition_penalty (else read from the model's "
+                    "generation_config.json under --align-generation-config)")
+    ap.add_argument("--disable-eos-stop", action="store_true", default=False,
+                    help="diagnosis mode: disable trusted-side EOS stop (default "
+                    "is EOS stop, matching folded_remote)")
+    ap.add_argument("--diagnose-divergence", action="store_true", default=False,
+                    help="run the per-example free-running token-level divergence "
+                    "diagnosis (exact folded_remote decode path) instead of the "
+                    "default rollout report")
+    ap.add_argument("--example-indices", default=None,
+                    help="comma-separated example indices for batch diagnosis "
+                    "(e.g. '0,3,19'); overrides --example-index")
+    ap.add_argument("--batch-from-strict-gap", default=None,
+                    help="analyze_ifeval_strict_gap.py JSON: batch-diagnose every "
+                    "strict plaintext-pass-but-folded-fail example (mapped to its "
+                    "index in --input-jsonl by prompt/id)")
+    ap.add_argument("--diag-first-n-tokens", type=int, default=50)
+    ap.add_argument("--diag-inject-divergence-step", type=int, default=None,
+                    help="TEST: force a folded free-token divergence at step K in "
+                    "the diagnosis path to validate classification")
     # TEST-ONLY fault injectors (validate the detectors; never use in real runs)
     ap.add_argument("--inject-folded-divergence-step", type=int, default=None,
                     help="TEST: corrupt the teacher-forced folded logits at step K")
@@ -390,6 +731,10 @@ def main() -> int:
                     "it to generation config, not an encoding bug")
     ap.add_argument("--output-json", required=True)
     args = ap.parse_args()
+
+    if (args.diagnose_divergence or args.example_indices
+            or args.batch_from_strict_gap):
+        return _run_diagnosis(args)
 
     # ---- prompt source (loaded exactly like run_ifeval_generation.py) ----
     if args.input_jsonl and Path(args.input_jsonl).exists():

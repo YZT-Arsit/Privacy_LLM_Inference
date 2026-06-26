@@ -70,7 +70,7 @@ def _match_extra(name: str, allowlist) -> str | None:
     for allowed in (allowlist or []):
         if allowed and str(allowed).lower() in name_lc:
             return None
-    for bad in LENGTH_HIDING_EXTRA_FORBIDDEN:
+    for bad in sorted(LENGTH_HIDING_EXTRA_FORBIDDEN):    # deterministic order
         if bad in name_lc:
             return bad
     return None
@@ -93,7 +93,7 @@ def forbidden_names_in_payload(payload: Any, *, allowlist=None) -> list[str]:
                     _walk(v)
                     continue
                 if not any(a and a in klc for a in allow):
-                    for bad in full:
+                    for bad in sorted(full):            # deterministic order
                         if bad in klc:
                             found.add(bad)
                             break

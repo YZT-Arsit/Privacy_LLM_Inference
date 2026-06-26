@@ -110,7 +110,10 @@ def test_dummy_token_id_in_transcript_is_caught() -> None:
     entries = [_entry("boundary_to_worker", meta_keys=["dummy_token_id"])]
     rep = scan_length_hiding_transcript(entries)
     assert rep["fail"] is True
-    assert "dummy_token_id" in rep["forbidden_fields_found"]
+    # the leaked field is the metadata key itself (matched substring may be the
+    # shorter "dummy_token"); assert on the field name for determinism
+    assert any(l["field"] == "dummy_token_id" for l in rep["extra_leaks"])
+    assert rep["forbidden_fields_found"]        # some dummy-token name matched
 
 
 def test_canonical_leak_still_caught_via_wrapper() -> None:
