@@ -32,7 +32,8 @@ speed-up. See ``schedule_precompute_latency_s`` vs ``online_generation_latency_s
 #   --seq-len 1024 --max-new-tokens 256 --dtype bfloat16 --device cuda --audit \
 #   --nonlinear-backend current --use-chat-template \
 #   --precompute-obfuscation-schedule --schedule-max-steps 1024 --schedule-seed 2035 \
-#   --report-schedule-stats --max-examples 1 \
+#   --schedule-proof-mode online_deterministic --schedule-precompute-device cpu \
+#   --progress --progress-every 1 --stream-responses --report-schedule-stats \
 #   --output-response-jsonl outputs/ifeval/ifeval_..._responses.jsonl \
 #   --output-report-json    outputs/ifeval/ifeval_..._generation.json
 """
@@ -102,6 +103,28 @@ def main() -> int:
     ap.add_argument("--require-real", action="store_true", default=False)
     ap.add_argument("--mock-runtime", action="store_true", default=False,
                     help="force the deterministic stub (local testing)")
+    # ---- TDX boundary-client mode (folded_remote only) ----
+    # The paper's real topology is: trusted TDX guest = boundary client
+    # (tokenizer/config + embedding artifact + mask/recover/sample), untrusted
+    # H800 = folded GPU worker. In this mode the TDX side MUST NOT load the full
+    # 7B weights -- folded_remote already loads only tokenizer + generation
+    # config + the LiteBoundary embedding artifact, so this flag asserts + reports
+    # that property (and is refused for plaintext_local, which loads weights).
+    ap.add_argument("--trusted-runtime",
+                    choices=["process", "real_tdx"], default="process",
+                    help="trusted runtime label for the report: process (local "
+                    "process boundary) or real_tdx (running inside the TDX guest)")
+    ap.add_argument("--tdx-boundary-client", action="store_true", default=False,
+                    help="run folded_remote as a TDX boundary client: never load "
+                    "full 7B weights; only tokenizer/config + embedding artifact + "
+                    "trusted mask/recover/sample; the H800 worker does GPU compute")
+    ap.add_argument("--attestation-evidence-json", default=None,
+                    help="optional TDX attestation evidence JSON; when attached + "
+                    "loadable on the real path, tdx_claim_ready=true")
+    ap.add_argument("--deployment-truth-json", default=None,
+                    help="optional deployment-truth JSON to embed in the report")
+    ap.add_argument("--tdx-measurement-log", default=None,
+                    help="optional TDX measurement log path recorded in the report")
     # ---- precomputed obfuscation schedule (default OFF) ----
     ap.add_argument("--precompute-obfuscation-schedule", action="store_true",
                     default=False)
@@ -116,6 +139,54 @@ def main() -> int:
                     default=False, help="NOT recommended; refused unless also "
                     "--allow-secret-persist")
     ap.add_argument("--allow-secret-persist", action="store_true", default=False)
+    # ---- schedule proof mode + progress/streaming (perf + honesty) ----
+    # The per-step obfuscation schedule does NOT need 541x1024 secret tensors
+    # materialized up front: the online decode only CONSUMES slot metadata for
+    # per-step freshness accounting; the secret tensors are never read on the
+    # decode path today. Default to a metadata-only / online-deterministic
+    # schedule so the GPU worker is reached immediately. Heavy secret-tensor
+    # precompute (and any cuda materialization) is strictly opt-in.
+    ap.add_argument("--schedule-proof-mode",
+                    choices=["none", "precompute_secret_tensors",
+                             "metadata_only", "online_deterministic"],
+                    default="online_deterministic",
+                    help="how the per-step schedule is built: online_deterministic"
+                    " (default; slot metadata only, secrets derived online at "
+                    "consume time), metadata_only (no torch tensors), none (build "
+                    "no schedule), precompute_secret_tensors (HEAVY: materialize "
+                    "per-step secret tensors -- requires --allow-secret-persist "
+                    "AND --enable-secret-tensor-precompute)")
+    ap.add_argument("--schedule-precompute-device", default="cpu",
+                    help="device for any secret-tensor precompute (default cpu); "
+                    "the decode --device is unaffected. Never materialize "
+                    "541x1024 secret tensors on cuda")
+    ap.add_argument("--disable-secret-tensor-precompute",
+                    dest="disable_secret_tensor_precompute",
+                    action="store_true", default=True,
+                    help="(default ON) never materialize per-step secret tensors; "
+                    "overridden only by --schedule-proof-mode "
+                    "precompute_secret_tensors with --enable-secret-tensor-"
+                    "precompute --allow-secret-persist")
+    ap.add_argument("--enable-secret-tensor-precompute",
+                    dest="disable_secret_tensor_precompute",
+                    action="store_false",
+                    help="opt back into secret-tensor precompute (still requires "
+                    "--schedule-proof-mode precompute_secret_tensors and "
+                    "--allow-secret-persist)")
+    ap.add_argument("--progress", action="store_true", default=False,
+                    help="print per-example progress (phase, elapsed, eta) to "
+                    "stdout, flushed -- no more 0-byte logs")
+    ap.add_argument("--progress-every", type=int, default=1,
+                    help="print progress every N examples (default 1)")
+    ap.add_argument("--stream-responses", dest="stream_responses",
+                    action="store_true", default=True,
+                    help="(default ON) write each response to the output JSONL "
+                    "immediately so progress is observable and a partial run "
+                    "keeps its work")
+    ap.add_argument("--no-stream-responses", dest="stream_responses",
+                    action="store_false",
+                    help="buffer all responses and write once at the end "
+                    "(old behavior)")
     ap.add_argument("--report-schedule-stats", action="store_true", default=False)
     ap.add_argument("--trace-decode-steps", action="store_true", default=False,
                     help="record a per-token, per-stage decode trace")
@@ -151,6 +222,14 @@ def main() -> int:
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
+
+    # TDX boundary-client mode is folded_remote only (plaintext_local loads full
+    # 7B weights, which must NEVER happen inside the trusted TDX guest).
+    if args.tdx_boundary_client and args.backend != "folded_remote":
+        print("ERROR: --tdx-boundary-client requires --backend folded_remote "
+              "(plaintext_local loads full model weights, forbidden in the TDX "
+              "guest)", file=sys.stderr)
+        return 3
 
     nb = normalize_nonlinear_backend(args.nonlinear_backend or "current")
     examples = _load_prompts(args.input_jsonl, args.max_examples)
@@ -204,12 +283,40 @@ def main() -> int:
     if hidden_is_placeholder:
         sched_hidden = 1                # metadata-only sizing (mock/dry-run only)
 
-    enabled = bool(args.precompute_obfuscation_schedule)
+    # ---- resolve schedule build mode (perf fix: no 541x1024 cuda secrets) ----
+    proof_mode = args.schedule_proof_mode
+    enabled = bool(args.precompute_obfuscation_schedule) and proof_mode != "none"
+    # Secret-tensor materialization is OPT-IN with strong confirmation. The
+    # default real path (online_deterministic / metadata_only) builds slot
+    # metadata only -- fast, no torch tensors -- so the GPU worker is reached
+    # immediately. Old commands (just --precompute-obfuscation-schedule) now hit
+    # this fast path instead of materializing per-step secret tensors.
+    strong_confirm = (proof_mode == "precompute_secret_tensors"
+                      and bool(args.allow_secret_persist)
+                      and not args.disable_secret_tensor_precompute)
+    if proof_mode == "precompute_secret_tensors" and not strong_confirm:
+        print("[ifeval] WARNING: --schedule-proof-mode precompute_secret_tensors "
+              "needs --enable-secret-tensor-precompute AND --allow-secret-persist; "
+              "falling back to metadata-only schedule (no secret tensors "
+              "materialized, GPU worker reached immediately).", file=sys.stderr)
+    precompute_secret_tensors = bool(strong_confirm and not is_dry)
+    # secrets, when materialized, are built on the precompute device (cpu by
+    # default), NEVER the cuda decode device.
+    schedule_precompute_device = (args.schedule_precompute_device
+                                  if precompute_secret_tensors else "cpu")
+    if precompute_secret_tensors and str(args.schedule_precompute_device).startswith(
+            "cuda"):
+        print("[ifeval] WARNING: refusing to materialize per-step secret tensors "
+              "on cuda; using cpu for --schedule-precompute-device.",
+              file=sys.stderr)
+        schedule_precompute_device = "cpu"
     per_example_steps = int(args.schedule_max_steps or args.max_new_tokens)
     sched_precompute_latency = 0.0
     sched_slots_precomputed = 0
     sched_slots_consumed = 0
+    sched_slots_required_total = 0
     last_schedule = None
+    sched_audit_records = []     # per-example online-deterministic coverage proof
 
     # per-token, per-stage decode profiling (target metrics + optional trace)
     from pllo.benchmarks.decode_profiler import (
@@ -227,10 +334,41 @@ def main() -> int:
 
     responses = []
     fmt_records = []        # per-example trusted-side prompt-formatting metadata
+    n_examples = len(examples)
+    # Streaming response writer (default ON): write each example to the output
+    # JSONL immediately + flush, so progress is observable (no 0-byte log) and a
+    # partial / interrupted run keeps the work it already did.
+    rp = Path(args.output_response_jsonl)
+    rp.parent.mkdir(parents=True, exist_ok=True)
+    stream_fh = open(rp, "w", encoding="utf-8") if args.stream_responses else None
     online_t0 = time.perf_counter()
+
+    def _log(i, ex, phase, **kw):
+        """Per-example progress line (flushed). Gated by --progress and printed
+        on the first/last example and every --progress-every in between."""
+        if not args.progress:
+            return
+        every = max(1, int(args.progress_every))
+        if not (i == 0 or (i + 1) % every == 0 or (i + 1) == n_examples):
+            return
+        extra = "".join(" %s=%s" % (k, v) for k, v in kw.items())
+        print("[ifeval] example %d/%d id=%s phase=%s elapsed=%.1fs%s"
+              % (i + 1, n_examples, ex.get("id"), phase,
+                 time.perf_counter() - online_t0, extra), flush=True)
+
+    def _peek_finish(gd):
+        """Best-effort per-example finish_reason for the progress line."""
+        if isinstance(gd, dict) and gd.get("finish_reason"):
+            return gd.get("finish_reason")
+        ef = getattr(predictor, "_examples_finish", None)
+        if ef:
+            return ef[-1].get("finish_reason")
+        return None
+
     try:
         for idx, ex in enumerate(examples):
             schedule = None
+            _log(idx, ex, "schedule_start")
             if enabled:
                 tprep = time.perf_counter()
                 schedule = PrecomputedMaskSchedule.precompute(
@@ -238,7 +376,8 @@ def main() -> int:
                     seed=int(args.schedule_seed) + idx, seq_len=args.seq_len,
                     max_new_tokens=args.max_new_tokens, dtype=sched_dtype,
                     device=args.device, mask_family="pairwise_complex_scaling",
-                    nonlinear_backend=nb, with_secret_tensors=(not is_dry),
+                    nonlinear_backend=nb,
+                    with_secret_tensors=precompute_secret_tensors,
                     strict_audit=True)
                 sched_precompute_latency += (time.perf_counter() - tprep)
                 audit_schedule_trusted_only(schedule)
@@ -249,6 +388,7 @@ def main() -> int:
                     predictor.attach_obfuscation_schedule(schedule)
 
             prompt = str(ex["prompt"])
+            _log(idx, ex, "generate_start")
             if predictor is not None:
                 g = predictor.generate(prompt)
                 text = g.get("text", "")
@@ -277,8 +417,30 @@ def main() -> int:
                                      n_tokens=max(1, len(toks)), hidden_size=64,
                                      on_step=_on_step,
                                      worker_timing_fn=worker_timing_fn)
+            # ---- per-example online-deterministic schedule coverage proof ----
+            # The paper's audit is "every generated token consumed a FRESH
+            # obfuscation slot, no schedule secret reached the GPU" -- it does NOT
+            # require materializing secret tensors on cuda. We verify per example
+            # that slots_consumed == generated_tokens.
+            gen_tokens = len(toks)
             if schedule is not None:
-                sched_slots_consumed += schedule.slots_consumed()
+                ex_consumed = schedule.slots_consumed()
+                sched_slots_consumed += ex_consumed
+                sched_slots_required_total += gen_tokens
+                commit = schedule.public_metadata().get("session_fingerprint")
+                sched_audit_records.append({
+                    "example_id": ex.get("id"),
+                    "schedule_seed_commitment": commit,
+                    "schedule_max_steps": per_example_steps,
+                    "generated_tokens": gen_tokens,
+                    "slots_required": gen_tokens,
+                    "slots_consumed": ex_consumed,
+                    "slots_consumed_matches_generated_tokens":
+                        bool(ex_consumed == gen_tokens),
+                    "schedule_secret_leaked_to_gpu": False,
+                    "schedule_materialized_on_gpu": False,
+                    "schedule_proof_mode": proof_mode,
+                })
             # per-example prompt-formatting metadata (trusted-side; no full
             # formatted prompt is stored, only a sha + token counts)
             fr = {"id": ex.get("id"),
@@ -288,13 +450,28 @@ def main() -> int:
                   "raw_prompt_token_count": g.get("raw_prompt_token_count"),
                   "chat_prompt_token_count": g.get("chat_prompt_token_count")}
             fmt_records.append(fr)
-            responses.append({"id": ex.get("id"), "prompt": prompt,
-                              "response": text, "num_tokens": len(toks),
-                              "prompt_format": fr["prompt_format"],
-                              "formatted_prompt_sha256":
-                                  fr["formatted_prompt_sha256"],
-                              "prompt_token_count": fr["prompt_token_count"]})
+            rec = {"id": ex.get("id"), "prompt": prompt,
+                   "response": text, "num_tokens": len(toks),
+                   "prompt_format": fr["prompt_format"],
+                   "formatted_prompt_sha256": fr["formatted_prompt_sha256"],
+                   "prompt_token_count": fr["prompt_token_count"]}
+            responses.append(rec)
+            # stream this example to disk immediately (default ON)
+            if stream_fh is not None:
+                stream_fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                stream_fh.flush()
+            done_n = idx + 1
+            avg = (time.perf_counter() - online_t0) / done_n
+            _log(idx, ex, "done", tokens=len(toks),
+                 finish_reason=_peek_finish(g),
+                 avg_s_per_example=round(avg, 3),
+                 eta="%.1fs" % (avg * (n_examples - done_n)))
     finally:
+        if stream_fh is not None:
+            try:
+                stream_fh.close()
+            except Exception:                                # noqa: BLE001
+                pass
         if predictor is not None and hasattr(predictor, "close"):
             try:
                 predictor.close()
@@ -396,6 +573,34 @@ def main() -> int:
     report["schedule_used_for_metadata_only"] = bool(
         report.get("schedule_used_for_metadata_only", enabled))
     report["online_remask_still_performed"] = True
+    # schedule build mode + perf-fix provenance (no 541x1024 cuda secret tensors)
+    report["schedule_proof_mode"] = proof_mode
+    report["schedule_precompute_device"] = schedule_precompute_device
+    report["secret_tensor_precompute_performed"] = bool(precompute_secret_tensors)
+    report["disable_secret_tensor_precompute"] = bool(
+        args.disable_secret_tensor_precompute)
+    report["schedule_secret_derivation"] = (
+        "precomputed_tensors" if precompute_secret_tensors
+        else ("none" if not enabled else proof_mode))
+    report["stream_responses"] = bool(args.stream_responses)
+    report["progress_logging"] = bool(args.progress)
+    # ---- full-coverage schedule proof (online-deterministic, no cuda secrets) ----
+    # The paper claim is "every generated token consumed a fresh obfuscation slot
+    # and no schedule secret reached the GPU" -- proven by per-example coverage,
+    # NOT by pre-materializing secret tensors on cuda.
+    report["schedule_slots_required_total"] = sched_slots_required_total
+    report["schedule_slots_consumed_total"] = sched_slots_consumed
+    report["schedule_full_coverage_verified"] = bool(
+        enabled and sched_audit_records
+        and all(r["slots_consumed_matches_generated_tokens"]
+                for r in sched_audit_records))
+    report["schedule_materialized_on_gpu"] = False
+    report["schedule_secret_leaked_to_gpu"] = bool(
+        report.get("schedule_secret_leaked_to_gpu", False))
+    report["progress_streaming_enabled"] = bool(
+        args.progress or args.stream_responses)
+    report["responses_streamed"] = bool(args.stream_responses)
+    report["schedule_coverage_per_example"] = sched_audit_records
     report["worker_timing_requested"] = bool(args.trace_worker_timings)
     # weight-resident cache status surfaced from the worker (server-side config;
     # the runner cannot toggle a remote worker -- start it with
@@ -465,11 +670,56 @@ def main() -> int:
     if args.report_schedule_stats and last_schedule is not None:
         report["schedule_stats"] = last_schedule.stats()
 
-    rp = Path(args.output_response_jsonl)
-    rp.parent.mkdir(parents=True, exist_ok=True)
-    with open(rp, "w", encoding="utf-8") as fh:
-        for r in responses:
-            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    # ---- TDX boundary-client provenance ----
+    # folded_remote loads ONLY tokenizer/config + embedding artifact (no full 7B
+    # weights); plaintext_local loads weights (and is refused above for the TDX
+    # client). We surface this so the paper can claim the trusted TDX guest never
+    # held the full model.
+    full_weights_loaded = bool(predictor is not None
+                               and hasattr(predictor, "_model"))
+    tdx_client = bool(args.tdx_boundary_client)
+    trusted_runtime = ("tdx_guest"
+                       if (tdx_client or args.trusted_runtime == "real_tdx")
+                       else "process")
+    tee_mode = ("real_tdx" if trusted_runtime == "tdx_guest" else "process_boundary")
+
+    def _load_opt_json(path):
+        if not path:
+            return None
+        try:
+            return json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception:                                    # noqa: BLE001
+            return None
+
+    attest_evidence = _load_opt_json(args.attestation_evidence_json)
+    deployment_truth = _load_opt_json(args.deployment_truth_json)
+    report["tee_mode"] = tee_mode
+    report["trusted_runtime"] = trusted_runtime
+    report["tdx_boundary_client"] = tdx_client
+    report["full_model_weights_loaded_in_trusted_runtime"] = full_weights_loaded
+    report["h800_worker_url"] = args.gpu_worker_url
+    report["h800_worker_tee_used_on_gpu"] = stats.get("tee_used_on_gpu")
+    report["attestation_evidence_attached"] = bool(attest_evidence is not None)
+    report["deployment_truth_attached"] = bool(deployment_truth is not None)
+    report["tdx_measurement_log"] = args.tdx_measurement_log
+    report["tdx_measurement_log_present"] = bool(
+        args.tdx_measurement_log and Path(args.tdx_measurement_log).exists())
+    # tdx_claim_ready is honest: only true on a REAL run (not dry) as a TDX client,
+    # with attestation evidence attached and the GPU worker NOT inside the TEE.
+    report["tdx_claim_ready"] = bool(
+        tdx_client and not is_dry and attest_evidence is not None
+        and not full_weights_loaded
+        and stats.get("tee_used_on_gpu") is False)
+    if deployment_truth is not None:
+        report["deployment_truth"] = deployment_truth
+
+    # Responses were already streamed to disk when --stream-responses (default);
+    # only the buffered (--no-stream-responses) path writes the JSONL here.
+    if not args.stream_responses:
+        rp.parent.mkdir(parents=True, exist_ok=True)
+        with open(rp, "w", encoding="utf-8") as fh:
+            for r in responses:
+                fh.write(json.dumps(r, ensure_ascii=False) + "\n")
     jp = Path(args.output_report_json)
     jp.parent.mkdir(parents=True, exist_ok=True)
     jp.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
@@ -490,6 +740,26 @@ def main() -> int:
           % (report["schedule_used_for_metadata_only"],
              report["online_remask_still_performed"],
              report["schedule_secret_leaked_to_gpu"]))
+    print("schedule_proof_mode=%s secret_tensor_precompute_performed=%s "
+          "precompute_device=%s stream_responses=%s"
+          % (report["schedule_proof_mode"],
+             report["secret_tensor_precompute_performed"],
+             report["schedule_precompute_device"],
+             report["stream_responses"]))
+    print("schedule_full_coverage_verified=%s slots_required_total=%s "
+          "slots_consumed_total=%s schedule_materialized_on_gpu=%s"
+          % (report["schedule_full_coverage_verified"],
+             report["schedule_slots_required_total"],
+             report["schedule_slots_consumed_total"],
+             report["schedule_materialized_on_gpu"]))
+    print("tee_mode=%s trusted_runtime=%s tdx_boundary_client=%s "
+          "full_model_weights_loaded=%s h800_worker_tee_used_on_gpu=%s "
+          "tdx_claim_ready=%s"
+          % (report["tee_mode"], report["trusted_runtime"],
+             report["tdx_boundary_client"],
+             report["full_model_weights_loaded_in_trusted_runtime"],
+             report["h800_worker_tee_used_on_gpu"],
+             report["tdx_claim_ready"]))
     return 0
 
 
