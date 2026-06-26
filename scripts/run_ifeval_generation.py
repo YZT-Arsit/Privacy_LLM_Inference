@@ -138,6 +138,16 @@ def main() -> int:
                     help="keep the old fixed-length decode (generate exactly "
                     "max_new_tokens). DEFAULT is EOS stopping, aligned with the "
                     "plaintext_local model.generate stop condition")
+    # ---- OPTIONAL strict length-hiding mode (default OFF; NOT the paper/perf
+    # path). After trusted-side EOS, keep issuing dummy masked decode rounds to a
+    # fixed budget so the GPU sees a constant decode-round count. ----
+    ap.add_argument("--length-hide-generation", action="store_true",
+                    default=False, help="STRICT length-hiding: dummy decode after "
+                    "EOS up to max_new_tokens so the GPU cannot infer true output "
+                    "length (extra GPU rounds + latency; do NOT mix with default "
+                    "perf/quality results)")
+    ap.add_argument("--dummy-decode-after-eos", action="store_true", default=False,
+                    help="alias for --length-hide-generation")
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
@@ -165,7 +175,9 @@ def main() -> int:
                 device=args.device, audit=args.audit, nonlinear_backend=nb,
                 align_generation_config=args.align_generation_config,
                 repetition_penalty=args.repetition_penalty,
-                stop_on_eos=(not args.disable_eos_stop))
+                stop_on_eos=(not args.disable_eos_stop),
+                length_hide_generation=(args.length_hide_generation
+                                        or args.dummy_decode_after_eos))
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but real backend unavailable: %s"
@@ -408,6 +420,19 @@ def main() -> int:
     report["max_new_tokens_requested"] = stats.get(
         "max_new_tokens_requested", int(args.max_new_tokens))
     report["max_new_tokens_consumed"] = stats.get("max_new_tokens_consumed")
+    # strict length-hiding mode (default OFF) -- clearly separated from the perf
+    # path; the report always states whether it was enabled.
+    report["length_hiding_enabled"] = bool(
+        args.length_hide_generation or args.dummy_decode_after_eos)
+    report["dummy_decode_after_eos"] = report["length_hiding_enabled"]
+    for k in ("true_finish_reason", "true_generated_tokens_per_example",
+              "output_tokens_returned_per_example", "gpu_decode_rounds_per_example",
+              "dummy_decode_rounds_per_example", "length_hiding_overhead_tokens",
+              "length_hiding_overhead_ratio", "length_hiding_security_note",
+              "true_output_latency_s", "dummy_decode_latency_s",
+              "latency_per_returned_token_s", "latency_per_gpu_decode_round_s",
+              "dummy_token_id_on_gpu"):
+        report[k] = stats.get(k)
     report["decode_trace_jsonl"] = (args.trace_output_jsonl
                                     if args.trace_decode_steps else None)
     if args.report_schedule_stats and last_schedule is not None:

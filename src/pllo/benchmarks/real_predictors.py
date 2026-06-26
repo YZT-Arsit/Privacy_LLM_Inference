@@ -212,7 +212,8 @@ class _RemoteMaskedPredictor:
                  embedding_path, folded_lora_package_path, attestation_evidence,
                  expected_mr_td, seq_len, max_new_tokens, dtype, device, audit,
                  nonlinear_backend="current", align_generation_config=False,
-                 repetition_penalty=None, stop_on_eos=True):
+                 repetition_penalty=None, stop_on_eos=True,
+                 length_hide_generation=False):
         self.backend = backend
         self.model_name = model_name
         from pllo.experiments.nonlinear_designs import (
@@ -241,6 +242,17 @@ class _RemoteMaskedPredictor:
         self._model_path = model_path
         self._eos_ids: set = set()
         self._pad_token_id = None
+        # STRICT length-hiding mode (default OFF -> high-performance default path).
+        # When on, after the trusted side detects EOS it keeps issuing DUMMY masked
+        # decode rounds to a fixed budget so the GPU only sees a constant number of
+        # decode rounds and cannot infer the true output length. The dummy token id
+        # is trusted-only and never reported / sent to the GPU.
+        self._length_hide = bool(length_hide_generation)
+        self._dummy_token_id = 0                 # set properly once pad is resolved
+        self._lh_true_latency_s = 0.0
+        self._lh_dummy_latency_s = 0.0
+        self._lh_gpu_rounds = 0
+        self._lh_returned_tokens = 0
         want_lora = backend in _LORA_BACKENDS
         want_attest = backend in _ATTESTED_BACKENDS
 
@@ -297,6 +309,10 @@ class _RemoteMaskedPredictor:
         if pad is None:
             pad = getattr(self._tok, "pad_token_id", None)
         self._pad_token_id = int(pad) if pad is not None else None
+        # fixed trusted-side dummy token for length-hiding (pad, else 0). Trusted
+        # only -- never reported, never sent to the GPU (only its masked embedding).
+        self._dummy_token_id = (self._pad_token_id
+                                if self._pad_token_id is not None else 0)
 
         try:
             self._boundary = LiteBoundary.from_artifact(embedding_path,
@@ -524,6 +540,7 @@ class _RemoteMaskedPredictor:
         No schedule secret / mask / pad / inverse is ever placed in a request."""
         from pllo.protocol.tee_gpu_messages import (
             MaskedDecodeRequest, MaskedPrefillRequest)
+        import time
         import torch
         seq_len = int(ids.shape[1])
         # trusted-only token history for generation-config processors (never sent
@@ -553,12 +570,43 @@ class _RemoteMaskedPredictor:
         gen = [tok]
         seen_ids.append(tok)
         pos = seq_len
-        # TRUSTED-SIDE EOS stop (default ON): if prefill already emitted EOS, skip
-        # the decode loop entirely (aligns model.generate's stop condition).
-        stopped = bool(self._stop_on_eos and tok in self._eos_ids)
+        # TRUSTED-SIDE EOS detection. The eos decision + token history stay
+        # trusted-side; nothing extra is ever placed in a GPU request. ``real_done``
+        # = the true sequence has ended; in length-hiding mode we keep issuing
+        # DUMMY decode rounds afterwards so the GPU sees a fixed round count.
+        eos_hit = (tok in self._eos_ids)
+        real_done = bool(eos_hit and (self._stop_on_eos or self._length_hide))
+        stopped_by_eos = real_done
+        real_decode_rounds = 0
+        dummy_decode_rounds = 0
+        t_real = 0.0
+        t_dummy = 0.0
 
-        # ---- decode steps (skipped when prefill already produced EOS) ----
-        for step in range(0 if stopped else self.max_new_tokens - 1):
+        # ---- decode steps ----
+        for step in range(self.max_new_tokens - 1):
+            if real_done and not self._length_hide:
+                break                               # DEFAULT mode: stop at EOS
+            if real_done and self._length_hide:
+                # DUMMY round: keep the GPU at a fixed decode-round budget. The
+                # dummy token id stays trusted-side; the GPU sees only its masked
+                # embedding. Recovered logits / token are DISCARDED (never appended
+                # to the real output, never recovered, never reported).
+                t0 = time.perf_counter()
+                xd = self._boundary.mask_token_embedding(
+                    torch.tensor([self._dummy_token_id]))
+                self._trace.bump_boundary("mask_token_embedding")
+                ddec_req = MaskedDecodeRequest(
+                    session_id="e9", masked_embedding=self._np(xd), position=pos,
+                    step=step + 1)
+                self._worker.decode(ddec_req)       # discard response
+                self._trace.bump_boundary("decode")
+                pos += 1
+                dummy_decode_rounds += 1
+                t_dummy += time.perf_counter() - t0
+                continue
+
+            # ---- real decode round ----
+            t0 = time.perf_counter()
             self._pbegin(step + 1, "decode")
             with self._pstage("prompt_token_prep"):
                 tok_tensor = torch.tensor([tok])
@@ -585,16 +633,30 @@ class _RemoteMaskedPredictor:
             gen.append(tok)
             seen_ids.append(tok)
             self._pend(tok)
-            # TRUSTED-SIDE EOS stop: the eos decision + token history stay
-            # trusted-side; nothing extra is ever placed in a GPU request.
-            if self._stop_on_eos and tok in self._eos_ids:
-                stopped = True
-                break
+            real_decode_rounds += 1
+            t_real += time.perf_counter() - t0
+            if tok in self._eos_ids and (self._stop_on_eos or self._length_hide):
+                real_done = True
+                stopped_by_eos = True
+                if not self._length_hide:
+                    break
+
+        finish_reason = "eos" if stopped_by_eos else "length"
+        gpu_decode_rounds = 1 + real_decode_rounds + dummy_decode_rounds  # +prefill
         self._examples_finish.append({
-            "finish_reason": "eos" if stopped else "length",
+            "finish_reason": finish_reason,
+            "true_finish_reason": finish_reason,
+            "stopped_by_eos": bool(stopped_by_eos),
             "generated_tokens": len(gen),
-            "stopped_by_eos": bool(stopped),
+            "true_generated_tokens": len(gen),
+            "output_tokens_returned": len(gen),
+            "gpu_decode_rounds": gpu_decode_rounds,
+            "dummy_decode_rounds": dummy_decode_rounds,
         })
+        self._lh_true_latency_s += t_real
+        self._lh_dummy_latency_s += t_dummy
+        self._lh_gpu_rounds += gpu_decode_rounds
+        self._lh_returned_tokens += len(gen)
         return gen, rec_last
 
     def predict(self, prompt, example):
@@ -654,6 +716,12 @@ class _RemoteMaskedPredictor:
         fin = self._examples_finish
         reasons = [e["finish_reason"] for e in fin]
         counts = [e["generated_tokens"] for e in fin]
+        true_counts = [e["true_generated_tokens"] for e in fin]
+        gpu_rounds = [e["gpu_decode_rounds"] for e in fin]
+        dummy_rounds = [e["dummy_decode_rounds"] for e in fin]
+        returned = [e["output_tokens_returned"] for e in fin]
+        total_dummy = sum(dummy_rounds)
+        total_returned = sum(returned)
         out.update({
             "eos_token_id": (sorted(self._eos_ids) if self._eos_ids else None),
             "pad_token_id": self._pad_token_id,
@@ -664,11 +732,46 @@ class _RemoteMaskedPredictor:
                                     else ("length"
                                           if all(r == "length" for r in reasons)
                                           else "mixed"))),
+            "true_finish_reason": (None if not reasons
+                                   else ("eos" if all(r == "eos" for r in reasons)
+                                         else ("length"
+                                               if all(r == "length"
+                                                      for r in reasons)
+                                               else "mixed"))),
             "finish_reason_per_example": reasons,
             "stopped_by_eos_per_example": [e["stopped_by_eos"] for e in fin],
             "generated_tokens_per_example": counts,
+            "true_generated_tokens_per_example": true_counts,
+            "output_tokens_returned_per_example": returned,
+            "gpu_decode_rounds_per_example": gpu_rounds,
+            "dummy_decode_rounds_per_example": dummy_rounds,
             "max_new_tokens_requested": int(self.max_new_tokens),
             "max_new_tokens_consumed": (max(counts) if counts else None),
+            # ---- strict length-hiding mode (public, no secret) ----
+            "length_hiding_enabled": bool(self._length_hide),
+            "dummy_decode_after_eos": bool(self._length_hide),
+            "length_hiding_overhead_tokens": int(total_dummy),
+            "length_hiding_overhead_ratio": (
+                round(total_dummy / total_returned, 6) if total_returned else None),
+            "length_hiding_security_note": (
+                "strict mode: after trusted-side EOS the boundary issues dummy "
+                "masked decode rounds to a fixed max_new_tokens budget, so the GPU "
+                "sees a constant decode-round count and cannot infer the true "
+                "output length; dummy tokens/logits stay trusted-side"
+                if self._length_hide else
+                "default mode: trusted-side EOS stop; the GPU observes the number "
+                "of decode rounds (coarse output length), as in any online decode"),
+            # ---- performance split (default vs strict length-hiding) ----
+            "true_output_latency_s": round(self._lh_true_latency_s, 6),
+            "dummy_decode_latency_s": round(self._lh_dummy_latency_s, 6),
+            "latency_per_returned_token_s": (
+                round(self._lh_true_latency_s / self._lh_returned_tokens, 6)
+                if self._lh_returned_tokens else None),
+            "latency_per_gpu_decode_round_s": (
+                round((self._lh_true_latency_s + self._lh_dummy_latency_s)
+                      / self._lh_gpu_rounds, 6) if self._lh_gpu_rounds else None),
+            "plaintext_logits_or_sampling_on_gpu": False,
+            "dummy_token_id_on_gpu": False,        # dummy id never leaves trusted
         })
         # measured nonlinear-design execution evidence from the worker (post-run
         # health): proves design B genuinely lifted the activation on the GPU.
@@ -739,7 +842,8 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     expected_mr_td=None, seq_len=256, max_new_tokens=8,
                     dtype="bfloat16", device="cuda", audit=True,
                     nonlinear_backend="current", align_generation_config=False,
-                    repetition_penalty=None, stop_on_eos=True):
+                    repetition_penalty=None, stop_on_eos=True,
+                    length_hide_generation=False):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -762,5 +866,6 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             max_new_tokens=max_new_tokens, dtype=dtype, device=device,
             audit=audit, nonlinear_backend=nonlinear_backend,
             align_generation_config=align_generation_config,
-            repetition_penalty=repetition_penalty, stop_on_eos=stop_on_eos)
+            repetition_penalty=repetition_penalty, stop_on_eos=stop_on_eos,
+            length_hide_generation=length_hide_generation)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))

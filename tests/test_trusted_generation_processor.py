@@ -137,10 +137,9 @@ class _FakeWorker:
     decode = _next
 
 
-def _run_loop(align, penalty, *, prompt_ids, logits=None, logits_seq=None,
-              max_new_tokens=4, eos_ids=None, stop_on_eos=False,
-              pad_token_id=None):
-    rows = logits_seq if logits_seq is not None else [logits]
+def _new_predictor(*, max_new_tokens, align=False, penalty=1.0, stop_on_eos=False,
+                   eos_ids=None, pad_token_id=None, length_hide=False,
+                   dummy_token_id=0):
     p = object.__new__(_RemoteMaskedPredictor)
     p.max_new_tokens = max_new_tokens
     p._align_gen = align
@@ -150,13 +149,30 @@ def _run_loop(align, penalty, *, prompt_ids, logits=None, logits_seq=None,
     p._eos_ids = set(eos_ids or ())
     p._pad_token_id = pad_token_id
     p._examples_finish = []
-    p._boundary = _FakeBoundary()
-    p._worker = _FakeWorker(rows)
+    p._length_hide = length_hide
+    p._dummy_token_id = dummy_token_id
+    p._lh_true_latency_s = 0.0
+    p._lh_dummy_latency_s = 0.0
+    p._lh_gpu_rounds = 0
+    p._lh_returned_tokens = 0
     p._trace = ProtocolTrace(boundary_backend="process",
                              gpu_backend="qwen7b_folded_package",
                              max_new_tokens=max_new_tokens, tee_used_on_gpu=False)
     p._profiler = None
     p._schedule = None
+    p._boundary = _FakeBoundary()
+    return p
+
+
+def _run_loop(align, penalty, *, prompt_ids, logits=None, logits_seq=None,
+              max_new_tokens=4, eos_ids=None, stop_on_eos=False,
+              pad_token_id=None, length_hide=False, dummy_token_id=0):
+    rows = logits_seq if logits_seq is not None else [logits]
+    p = _new_predictor(max_new_tokens=max_new_tokens, align=align, penalty=penalty,
+                       stop_on_eos=stop_on_eos, eos_ids=eos_ids,
+                       pad_token_id=pad_token_id, length_hide=length_hide,
+                       dummy_token_id=dummy_token_id)
+    p._worker = _FakeWorker(rows)
     gen, _ = p._decode_loop(torch.tensor([prompt_ids], dtype=torch.long))
     return p, gen
 
@@ -278,21 +294,7 @@ def test_eos_and_repetition_penalty_together() -> None:
 
 def test_per_example_finish_records_accumulate() -> None:
     # one predictor, two examples: first stops on EOS, second runs full length
-    p = object.__new__(_RemoteMaskedPredictor)
-    p.max_new_tokens = 4
-    p._align_gen = False
-    p._rep_penalty = 1.0
-    p._gen_processor_applied = False
-    p._stop_on_eos = True
-    p._eos_ids = {3}
-    p._pad_token_id = 0
-    p._examples_finish = []
-    p._trace = ProtocolTrace(boundary_backend="process",
-                             gpu_backend="qwen7b_folded_package",
-                             max_new_tokens=4, tee_used_on_gpu=False)
-    p._profiler = None
-    p._schedule = None
-    p._boundary = _FakeBoundary()
+    p = _new_predictor(max_new_tokens=4, stop_on_eos=True, eos_ids={3})
     p._worker = _FakeWorker([_ARGMAX3])
     p._decode_loop(torch.tensor([[1]], dtype=torch.long))   # -> eos at prefill
     p._eos_ids = {99}                                       # second: never eos
@@ -314,3 +316,116 @@ def test_eos_decision_not_in_gpu_requests() -> None:
         for forbidden in ("input_ids", "generated_tokens", "token_ids",
                           "eos_token_id", "recovered_logits", "prompt"):
             assert forbidden not in keys
+
+
+# ---- strict length-hiding mode --------------------------------------------
+
+def test_default_mode_gpu_rounds_below_budget_on_eos() -> None:
+    # default mode (no length hiding): EOS at prefill -> 1 GPU round (prefill only)
+    p, gen = _run_loop(False, 1.0, prompt_ids=[1], logits=_ARGMAX3,
+                       max_new_tokens=8, eos_ids=[3], stop_on_eos=True,
+                       length_hide=False)
+    assert gen == [3]
+    fin = p._examples_finish[0]
+    assert fin["gpu_decode_rounds"] == 1            # < max_new_tokens=8
+    assert fin["dummy_decode_rounds"] == 0
+    assert fin["true_generated_tokens"] == 1
+
+
+def test_length_hiding_fills_gpu_rounds_to_budget_on_eos() -> None:
+    # strict mode: EOS at prefill, but GPU still sees max_new_tokens rounds
+    p, gen = _run_loop(False, 1.0, prompt_ids=[1], logits=_ARGMAX3,
+                       max_new_tokens=8, eos_ids=[3], stop_on_eos=True,
+                       length_hide=True, dummy_token_id=0)
+    assert gen == [3]                               # returned output UNCHANGED
+    fin = p._examples_finish[0]
+    assert fin["gpu_decode_rounds"] == 8            # == max_new_tokens (prefill+7)
+    assert fin["dummy_decode_rounds"] == 7
+    assert fin["true_generated_tokens"] == 1        # real tokens unchanged
+    assert fin["output_tokens_returned"] == 1
+    assert fin["finish_reason"] == "eos"
+
+
+def test_length_hiding_returned_response_matches_default() -> None:
+    seq = [_ARGMAX3, _ARGMAX3, _ARGMAX5]            # eos (=5) at step 2
+    _, gen_default = _run_loop(False, 1.0, prompt_ids=[1], logits_seq=seq,
+                               max_new_tokens=8, eos_ids=[5], stop_on_eos=True,
+                               length_hide=False)
+    p_hide, gen_hide = _run_loop(False, 1.0, prompt_ids=[1], logits_seq=seq,
+                                 max_new_tokens=8, eos_ids=[5], stop_on_eos=True,
+                                 length_hide=True)
+    assert gen_hide == gen_default == [3, 3, 5]     # dummies do not change output
+    fin = p_hide._examples_finish[0]
+    assert fin["gpu_decode_rounds"] == 8            # filled to budget
+    assert fin["dummy_decode_rounds"] == 8 - 3      # prefill+2 real = 3 rounds
+
+
+def test_no_eos_both_modes_reach_budget() -> None:
+    for hide in (False, True):
+        p, gen = _run_loop(False, 1.0, prompt_ids=[1], logits=_ARGMAX3,
+                           max_new_tokens=5, eos_ids=[99], stop_on_eos=True,
+                           length_hide=hide)
+        assert gen == [3, 3, 3, 3, 3]
+        fin = p._examples_finish[0]
+        assert fin["gpu_decode_rounds"] == 5
+        assert fin["dummy_decode_rounds"] == 0      # never hit EOS -> no dummies
+        assert fin["finish_reason"] == "length"
+
+
+def test_length_hiding_dummy_rounds_no_forbidden_fields() -> None:
+    p, gen = _run_loop(True, 1.05, prompt_ids=[3, 4], logits=_ARGMAX3,
+                       max_new_tokens=8, eos_ids=[3], stop_on_eos=True,
+                       length_hide=True, dummy_token_id=99)
+    # 1 prefill + 7 dummy decode requests were sent
+    assert len(p._worker.sent) == 8
+    for req in p._worker.sent:
+        payload = encode_message(req)
+        keys = _walk_keys(payload)
+        assert forbidden_fields_in_payload(payload) == []
+        for forbidden in ("input_ids", "generated_tokens", "token_ids",
+                          "generated_token_history", "eos_decision",
+                          "finish_reason", "recovered_logits", "plaintext_logits",
+                          "dummy_token_id", "prompt"):
+            assert forbidden not in keys
+        # the trusted-only dummy token id (99) must never appear in a request
+        assert 99 not in _walk_values(payload)
+
+
+def test_true_tokens_vs_gpu_rounds_distinguished_in_records() -> None:
+    seq = [_ARGMAX3, _ARGMAX5]                      # eos at step 1
+    p, gen = _run_loop(False, 1.0, prompt_ids=[1], logits_seq=seq,
+                       max_new_tokens=6, eos_ids=[5], stop_on_eos=True,
+                       length_hide=True)
+    fin = p._examples_finish[0]
+    assert fin["true_generated_tokens"] == 2        # [3, 5]
+    assert gen == [3, 5]
+    assert fin["gpu_decode_rounds"] == 6            # filled to budget
+    assert fin["dummy_decode_rounds"] == 4          # 6 - (prefill + 1 real)
+    assert fin["true_generated_tokens"] != fin["gpu_decode_rounds"]
+
+
+def test_length_hiding_requests_pass_extended_audit() -> None:
+    # tie the non-measured length-hiding audit to the REAL decode path: every GPU
+    # request emitted in strict mode must pass the extended forbidden-name audit.
+    from pllo.security.length_hiding_audit import audit_gpu_request_payloads
+    p, gen = _run_loop(True, 1.05, prompt_ids=[3, 4], logits=_ARGMAX3,
+                       max_new_tokens=8, eos_ids=[3], stop_on_eos=True,
+                       length_hide=True, dummy_token_id=99)
+    payloads = [encode_message(req) for req in p._worker.sent]
+    rep = audit_gpu_request_payloads(payloads)
+    assert rep["fail"] is False
+    assert rep["forbidden_fields_found"] == []
+    assert len(payloads) == 8                       # prefill + 7 dummy rounds
+
+
+def _walk_values(obj):
+    out = []
+    if isinstance(obj, dict):
+        for v in obj.values():
+            out.extend(_walk_values(v))
+    elif isinstance(obj, (list, tuple)):
+        for v in obj:
+            out.extend(_walk_values(v))
+    else:
+        out.append(obj)
+    return out
