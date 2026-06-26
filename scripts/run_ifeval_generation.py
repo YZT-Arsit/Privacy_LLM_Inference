@@ -110,10 +110,17 @@ def main() -> int:
     # 7B weights -- folded_remote already loads only tokenizer + generation
     # config + the LiteBoundary embedding artifact, so this flag asserts + reports
     # that property (and is refused for plaintext_local, which loads weights).
-    ap.add_argument("--trusted-runtime",
-                    choices=["process", "real_tdx"], default="process",
+    ap.add_argument("--trusted-runtime", default="process",
                     help="trusted runtime label for the report: process (local "
-                    "process boundary) or real_tdx (running inside the TDX guest)")
+                    "process boundary) or tdx_guest / real_tdx (inside the TDX "
+                    "guest)")
+    ap.add_argument("--tee-mode", default=None,
+                    help="explicit TEE mode label for the report (e.g. real_tdx); "
+                    "if omitted it is derived from --trusted-runtime / "
+                    "--tdx-boundary-client")
+    ap.add_argument("--h800-worker-ssh-alias", default=None,
+                    help="SSH alias of the untrusted H800 GPU worker host (e.g. "
+                    "h800-new), recorded in the report for provenance")
     ap.add_argument("--tdx-boundary-client", action="store_true", default=False,
                     help="run folded_remote as a TDX boundary client: never load "
                     "full 7B weights; only tokenizer/config + embedding artifact + "
@@ -368,7 +375,7 @@ def main() -> int:
     try:
         for idx, ex in enumerate(examples):
             schedule = None
-            _log(idx, ex, "schedule_start")
+            _log(idx, ex, "start")
             if enabled:
                 tprep = time.perf_counter()
                 schedule = PrecomputedMaskSchedule.precompute(
@@ -600,6 +607,8 @@ def main() -> int:
     report["progress_streaming_enabled"] = bool(
         args.progress or args.stream_responses)
     report["responses_streamed"] = bool(args.stream_responses)
+    report["completed_examples"] = len(responses)
+    report["generated_tokens"] = total_tokens
     report["schedule_coverage_per_example"] = sched_audit_records
     report["worker_timing_requested"] = bool(args.trace_worker_timings)
     # weight-resident cache status surfaced from the worker (server-side config;
@@ -678,10 +687,11 @@ def main() -> int:
     full_weights_loaded = bool(predictor is not None
                                and hasattr(predictor, "_model"))
     tdx_client = bool(args.tdx_boundary_client)
-    trusted_runtime = ("tdx_guest"
-                       if (tdx_client or args.trusted_runtime == "real_tdx")
-                       else "process")
-    tee_mode = ("real_tdx" if trusted_runtime == "tdx_guest" else "process_boundary")
+    is_tdx = bool(tdx_client or args.trusted_runtime in ("real_tdx", "tdx_guest"))
+    trusted_runtime = "tdx_guest" if is_tdx else (args.trusted_runtime or "process")
+    # explicit --tee-mode wins; else derive
+    tee_mode = (args.tee_mode if args.tee_mode
+                else ("real_tdx" if is_tdx else "process_boundary"))
 
     def _load_opt_json(path):
         if not path:
@@ -691,25 +701,68 @@ def main() -> int:
         except Exception:                                    # noqa: BLE001
             return None
 
+    # best-effort public worker /health capture (trusted-side GET; no secrets)
+    def _worker_health(url):
+        if not url:
+            return None
+        try:
+            import urllib.request
+            with urllib.request.urlopen(url.rstrip("/") + "/health",
+                                        timeout=5) as fh:
+                return json.loads(fh.read().decode("utf-8"))
+        except Exception:                                    # noqa: BLE001
+            return None
+
+    # measurement-coverage gate: parse the log for an explicit OK marker
+    def _measurement_ok(path):
+        if not path:
+            return None
+        p = Path(path)
+        if not p.exists():
+            return False
+        try:
+            txt = p.read_text(encoding="utf-8", errors="replace")
+        except Exception:                                    # noqa: BLE001
+            return False
+        return ("TDX MEASUREMENT COVERAGE: OK" in txt
+                or "exit_code=0" in txt or "exit_code: 0" in txt)
+
+    import socket
     attest_evidence = _load_opt_json(args.attestation_evidence_json)
     deployment_truth = _load_opt_json(args.deployment_truth_json)
+    worker_health = _worker_health(args.gpu_worker_url)
+    coverage_ok = _measurement_ok(args.tdx_measurement_log)
+    worker_tee = (worker_health.get("tee_used_on_gpu")
+                  if isinstance(worker_health, dict)
+                  and "tee_used_on_gpu" in worker_health
+                  else stats.get("tee_used_on_gpu"))
     report["tee_mode"] = tee_mode
     report["trusted_runtime"] = trusted_runtime
     report["tdx_boundary_client"] = tdx_client
+    try:
+        report["tdx_host"] = socket.gethostname()
+    except Exception:                                        # noqa: BLE001
+        report["tdx_host"] = None
     report["full_model_weights_loaded_in_trusted_runtime"] = full_weights_loaded
     report["h800_worker_url"] = args.gpu_worker_url
-    report["h800_worker_tee_used_on_gpu"] = stats.get("tee_used_on_gpu")
+    report["h800_worker_ssh_alias"] = args.h800_worker_ssh_alias
+    report["h800_worker_tee_used_on_gpu"] = worker_tee
+    report["h800_worker_health"] = worker_health
+    report["attestation_evidence_json"] = args.attestation_evidence_json
+    report["deployment_truth_json"] = args.deployment_truth_json
     report["attestation_evidence_attached"] = bool(attest_evidence is not None)
     report["deployment_truth_attached"] = bool(deployment_truth is not None)
     report["tdx_measurement_log"] = args.tdx_measurement_log
     report["tdx_measurement_log_present"] = bool(
         args.tdx_measurement_log and Path(args.tdx_measurement_log).exists())
+    report["tdx_measurement_coverage_ok"] = coverage_ok
     # tdx_claim_ready is honest: only true on a REAL run (not dry) as a TDX client,
-    # with attestation evidence attached and the GPU worker NOT inside the TEE.
+    # with attestation evidence attached, the GPU worker NOT inside the TEE, and
+    # measurement coverage OK whenever a measurement log was supplied.
     report["tdx_claim_ready"] = bool(
         tdx_client and not is_dry and attest_evidence is not None
-        and not full_weights_loaded
-        and stats.get("tee_used_on_gpu") is False)
+        and not full_weights_loaded and worker_tee is False
+        and (coverage_ok is not False))
     if deployment_truth is not None:
         report["deployment_truth"] = deployment_truth
 

@@ -103,6 +103,125 @@ ssh -N -L $PORT:127.0.0.1:$PORT <h800-user>@<h800-host> &
 curl -s $URL/health        # from inside the TDX guest, confirm reachability
 ```
 
+## 3b. IFEval generation from the TDX boundary (folded_remote) — MAIN run
+
+> **The paper's main generation benchmark MUST be launched from the TDX guest**
+> as a `folded_remote` boundary client. The trusted TDX guest holds only the
+> tokenizer/config + embedding artifact + masking/recovery/sampling; the
+> untrusted H800 holds the resident folded weights and does the GPU compute:
+>
+> ```
+> TDX trusted boundary  --tunnel-->  http://127.0.0.1:18082  -->  H800 GPU worker
+> ```
+>
+> **A benchmark launched on the H800 itself is NOT a real TDX result.** Only a
+> run launched from the TDX guest with `--tdx-boundary-client` and TDX evidence
+> attached counts as the main experiment.
+
+The earlier hang was `--precompute-obfuscation-schedule` materializing 541×1024
+CUDA secret tensors before any GPU call. Those tensors are only consumed for
+freshness *accounting* (never read on the decode path), so the default is now
+`--schedule-proof-mode online_deterministic` (slot metadata only, proven full
+coverage). Heavy precompute is opt-in (`--schedule-proof-mode
+precompute_secret_tensors --enable-secret-tensor-precompute --allow-secret-persist`,
+always on `--schedule-precompute-device cpu`).
+
+### Sync the small inputs to the TDX guest (NO full 7B weights)
+
+```
+mkdir -p /root/autodl-tmp/datasets/privacy_llm_benchmarks/converted
+scp h800-new:/root/autodl-tmp/datasets/privacy_llm_benchmarks/converted/ifeval_prompts.jsonl \
+  /root/autodl-tmp/datasets/privacy_llm_benchmarks/converted/
+mkdir -p /root/autodl-tmp/privacy_llm_packages
+rsync -av --progress \
+  h800-new:/root/autodl-tmp/privacy_llm_packages/qwen7b_boundary_artifact_current/ \
+  /root/autodl-tmp/privacy_llm_packages/qwen7b_boundary_artifact_current/
+mkdir -p /root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct
+for f in config.json generation_config.json tokenizer.json tokenizer_config.json \
+         special_tokens_map.json vocab.json merges.txt; do
+  scp h800-new:/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct/$f \
+    /root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct/ 2>/dev/null || true
+done   # tokenizer/config ONLY — do NOT sync *.safetensors to the TDX guest
+```
+
+### Preflight the TDX -> H800 bridge
+
+```
+python scripts/preflight_tdx_h800_bridge.py \
+  --gpu-worker-url http://127.0.0.1:18082 --h800-worker-ssh-alias h800-new \
+  --input-jsonl $IFEVAL --embedding-path $EMBED --model-meta-path $MODEL_META \
+  --tdx-measurement-log outputs/tdx_evidence/tdx_measurement_coverage.log \
+  --output-json outputs/tdx_evidence/preflight.json \
+  --output-md   outputs/tdx_evidence/preflight.md
+# preflight_passed=true requires: ssh ok, worker /health ok, tee_used_on_gpu=false,
+# input + embedding present, tokenizer/config present, measurement coverage OK.
+```
+
+### TDX smoke (2 examples)
+
+```
+cd /root/Privacy_LLM_Inference
+source /root/miniconda3/bin/activate tdx310
+export PYTHONPATH=$PWD/src:$PYTHONPATH
+export IFEVAL=/root/autodl-tmp/datasets/privacy_llm_benchmarks/converted/ifeval_prompts.jsonl
+export EMBED=/root/autodl-tmp/privacy_llm_packages/qwen7b_boundary_artifact_current
+export MODEL_META=/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct
+mkdir -p outputs/tdx_ifeval
+PYTHONUNBUFFERED=1 python scripts/run_ifeval_generation.py \
+  --tdx-boundary-client --tee-mode real_tdx --trusted-runtime tdx_guest \
+  --h800-worker-ssh-alias h800-new \
+  --input-jsonl "$IFEVAL" --backend folded_remote \
+  --model-name Qwen2.5-7B-Instruct --model-path "$MODEL_META" \
+  --gpu-worker-url http://127.0.0.1:18082 --embedding-path "$EMBED" \
+  --seq-len 1024 --max-new-tokens 64 --dtype bfloat16 --device cpu --audit \
+  --nonlinear-backend current --use-chat-template --require-real \
+  --max-examples 2 --progress --progress-every 1 --stream-responses \
+  --schedule-proof-mode online_deterministic --trace-worker-timings \
+  --align-generation-config --repetition-penalty 1.05 \
+  --tdx-measurement-log outputs/tdx_evidence/tdx_measurement_coverage.log \
+  --output-response-jsonl outputs/tdx_ifeval/tdx_folded_smoke2_responses.jsonl \
+  --output-report-json    outputs/tdx_ifeval/tdx_folded_smoke2_generation.json \
+  2>&1 | tee outputs/tdx_ifeval/tdx_folded_smoke2_generation.log
+```
+
+Within seconds the log shows flushed per-example progress
+(`[ifeval] example 1/2 ... phase=start|generate_start|done`) and the responses
+JSONL gains one line per example immediately; the H800 worker log shows
+`/init /prefill /decode`.
+
+### TDX full run (541 examples)
+
+Same command with `--max-examples 541 --max-new-tokens 512`, the evidence
+attached, and `tdx_folded_ifeval541_*` output names:
+
+```
+PYTHONUNBUFFERED=1 python scripts/run_ifeval_generation.py \
+  --tdx-boundary-client --tee-mode real_tdx --trusted-runtime tdx_guest \
+  --h800-worker-ssh-alias h800-new \
+  --input-jsonl "$IFEVAL" --backend folded_remote \
+  --model-name Qwen2.5-7B-Instruct --model-path "$MODEL_META" \
+  --gpu-worker-url http://127.0.0.1:18082 --embedding-path "$EMBED" \
+  --seq-len 1024 --max-new-tokens 512 --dtype bfloat16 --device cpu --audit \
+  --nonlinear-backend current --use-chat-template --require-real \
+  --max-examples 541 --progress --progress-every 1 --stream-responses \
+  --schedule-proof-mode online_deterministic --trace-worker-timings \
+  --align-generation-config --repetition-penalty 1.05 \
+  --attestation-evidence-json outputs/tdx_evidence/attestation_evidence.json \
+  --deployment-truth-json     outputs/tdx_evidence/deployment_truth.json \
+  --tdx-measurement-log       outputs/tdx_evidence/tdx_measurement_coverage.log \
+  --output-response-jsonl outputs/tdx_ifeval/tdx_folded_ifeval541_responses.jsonl \
+  --output-report-json    outputs/tdx_ifeval/tdx_folded_ifeval541_generation.json \
+  2>&1 | tee outputs/tdx_ifeval/tdx_folded_ifeval541_generation.log
+```
+
+A run counts as the main TDX result only when the report shows
+`tdx_boundary_client=true`, `tee_mode=real_tdx`,
+`full_model_weights_loaded_in_trusted_runtime=false`,
+`h800_worker_tee_used_on_gpu=false`, `dry_run=false`, and `tdx_claim_ready=true`
+(evidence attached + measurement coverage OK). See the focused
+[`REAL_TDX_IFEVAL_BOUNDARY_RUNBOOK.md`](REAL_TDX_IFEVAL_BOUNDARY_RUNBOOK.md) for
+the full field list.
+
 ## 4. Run the no-LoRA remote / TDX eval
 
 ```
