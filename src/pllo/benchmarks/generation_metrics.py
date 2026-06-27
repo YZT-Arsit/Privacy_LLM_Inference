@@ -164,10 +164,11 @@ def extract_number(text) -> Optional[str]:
 
 
 def numeric_exact_match(pred, reference) -> bool:
-    """True iff the extracted numbers of pred and reference match."""
+    """True iff the extracted numbers of pred and reference match (Decimal
+    comparison, so ``3`` == ``3.0``)."""
     p = extract_number(pred)
     g = extract_number(reference)
-    return bool(p is not None and g is not None and p == g)
+    return M.numeric_values_equal(p, g)
 
 
 def output_length_tokens(token_ids) -> Optional[int]:

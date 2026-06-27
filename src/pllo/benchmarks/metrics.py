@@ -8,13 +8,20 @@ dispatcher used by the runner.
 from __future__ import annotations
 
 import re
+from decimal import Decimal, InvalidOperation
 from typing import List, Optional, Sequence
 
 __all__ = ["accuracy", "exact_match", "extract_numeric_answer",
-           "numeric_exact_match", "macro_f1", "rouge_l", "rouge_l_corpus",
-           "token_match_rate", "compute_metric"]
+           "numeric_exact_match", "numeric_values_equal", "macro_f1", "rouge_l",
+           "rouge_l_corpus", "token_match_rate", "compute_metric"]
 
-_NUM_RE = re.compile(r"-?\d[\d,]*(?:\.\d+)?")
+# a single number token: optional sign, digits with optional thousands commas,
+# optional decimal part. Used both for the GSM8K ``####`` marker and as fallback.
+_NUM = r"[+-]?\d[\d,]*(?:\.\d+)?"
+_NUM_RE = re.compile(_NUM)
+# GSM8K final-answer marker: ``#### 3`` / ``#### 1,234`` / ``#### -2`` / ``#### 3.5``
+# (allow whitespace and an optional leading ``$`` between the marker and number).
+_MARKER_RE = re.compile(r"####\s*\$?\s*(" + _NUM + r")")
 
 
 def _norm(x) -> str:
@@ -35,29 +42,54 @@ def exact_match(preds: Sequence, golds: Sequence) -> float:
     return accuracy(preds, golds)
 
 
-def extract_numeric_answer(text) -> Optional[str]:
-    """Extract a canonical numeric answer string from ``text``.
+def _canon_number(raw: str) -> str:
+    """Normalize a matched number token: strip thousands commas / ``$`` and
+    canonicalize via :class:`~decimal.Decimal` (``3.0`` -> ``3``, ``3.50`` ->
+    ``3.5``). Falls back to the cleaned raw string if it is not a valid number."""
+    cleaned = raw.replace(",", "").replace("$", "").strip()
+    try:
+        d = Decimal(cleaned)
+    except InvalidOperation:
+        return cleaned
+    if d == d.to_integral_value():
+        return str(d.to_integral_value())          # integer -> no decimal point
+    return str(d.normalize())                      # strip trailing zeros
 
-    Handles GSM8K-style ``"#### 42"`` markers, thousands separators and ``$``.
-    Returns the *last* number found (normalized: commas/``$`` stripped, trailing
-    ``.0`` removed), or ``None`` if there is no number.
+
+def extract_numeric_answer(text) -> Optional[str]:
+    """Extract the canonical numeric answer from ``text`` (GSM8K-style).
+
+    Resolution order:
+      1. the number attached to the FINAL ``####`` marker (the official GSM8K
+         final-answer convention) -- so trailing explanation numbers never
+         override the marked answer;
+      2. otherwise the LAST number in the text.
+
+    The result is normalized (thousands commas / ``$`` stripped, compared as a
+    :class:`~decimal.Decimal`). Returns ``None`` when there is no number.
     """
     if text is None:
         return None
     s = str(text)
-    if "####" in s:
-        s = s.split("####")[-1]
+    markers = _MARKER_RE.findall(s)
+    if markers:
+        return _canon_number(markers[-1])          # final #### marker wins
     matches = _NUM_RE.findall(s)
     if not matches:
         return None
-    raw = matches[-1].replace(",", "").replace("$", "")
+    return _canon_number(matches[-1])              # fallback: last number
+
+
+def numeric_values_equal(a, b) -> bool:
+    """True iff two extracted numeric-answer strings are numerically equal
+    (Decimal comparison, so ``"3"`` == ``"3.0"``). Falls back to string equality
+    for non-numeric tokens."""
+    if a is None or b is None:
+        return False
     try:
-        f = float(raw)
-    except ValueError:
-        return raw
-    if f == int(f):
-        return str(int(f))
-    return repr(f)
+        return Decimal(str(a)) == Decimal(str(b))
+    except InvalidOperation:
+        return str(a) == str(b)
 
 
 def numeric_exact_match(preds: Sequence, golds: Sequence) -> float:
@@ -69,7 +101,7 @@ def numeric_exact_match(preds: Sequence, golds: Sequence) -> float:
     for i in range(n):
         p = extract_numeric_answer(preds[i])
         g = extract_numeric_answer(golds[i])
-        if p is not None and g is not None and p == g:
+        if numeric_values_equal(p, g):
             hits += 1
     return hits / n
 

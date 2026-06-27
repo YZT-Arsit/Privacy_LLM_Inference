@@ -49,6 +49,22 @@ def test_extract_number_and_numeric_match() -> None:
     assert gm.numeric_exact_match("no digits here", "#### 42") is False
 
 
+def test_score_example_gsm8k_marker() -> None:
+    # the runner path: score_example -> extracted_number must NOT be null for a
+    # response containing "#### 3", and numeric_exact_match must be True vs gold.
+    row = gm.score_example("generation_exact", "#### 3", "#### 3", [1, 2, 3])
+    assert row["extracted_number"] == "3"
+    assert row["numeric_exact_match"] is True
+    # trailing explanation numbers must not override the marker
+    row2 = gm.score_example("generation_exact",
+                            "5+7=12 #### 12\nrecheck 6+6", "#### 12", None)
+    assert row2["extracted_number"] == "12"
+    assert row2["numeric_exact_match"] is True
+    # decimal equivalence
+    row3 = gm.score_example("generation_exact", "#### 3.0", "#### 3", None)
+    assert row3["numeric_exact_match"] is True
+
+
 def test_rouge_scores_fields_and_fallback() -> None:
     r = gm.rouge_scores("the cat sat on the mat", "the cat sat on the mat")
     for k in ("rouge1", "rouge2", "rougeL", "rouge_unavailable"):

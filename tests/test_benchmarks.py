@@ -181,10 +181,46 @@ def test_extract_numeric_answer():
     assert M.extract_numeric_answer("no number here") is None
 
 
+def test_extract_numeric_answer_gsm8k_marker():
+    # required GSM8K marker cases
+    assert M.extract_numeric_answer("#### 3") == "3"
+    assert M.extract_numeric_answer("#### 18") == "18"
+    assert M.extract_numeric_answer("#### -2") == "-2"
+    assert M.extract_numeric_answer("#### 1,234") == "1234"      # commas stripped
+    assert M.extract_numeric_answer("#### 3.5") == "3.5"
+    assert M.extract_numeric_answer("$18\n\n#### 18") == "18"
+
+
+def test_extract_numeric_answer_marker_beats_other_numbers():
+    # the FINAL #### marker wins over earlier reasoning AND trailing explanation
+    assert M.extract_numeric_answer(
+        "Step 1: 5 apples, step 2: 7 more, 5+7=12\n#### 12") == "12"
+    assert M.extract_numeric_answer(
+        "#### 3 (since 2+1=3, checked 2 times)") == "3"
+    assert M.extract_numeric_answer(
+        "first 5 then 7 #### 4 ... 1 2 3") == "4"
+
+
+def test_extract_numeric_answer_fallback_without_marker():
+    # only when there is NO #### marker do we use the last number in the text
+    assert M.extract_numeric_answer("the answer is 5 then finally 7") == "7"
+    assert M.extract_numeric_answer("the total is $1,234.00") == "1234"
+
+
+def test_numeric_values_equal_decimal():
+    assert M.numeric_values_equal("3", "3.0") is True
+    assert M.numeric_values_equal("3.5", "3.50") is True
+    assert M.numeric_values_equal("1234", "1234") is True
+    assert M.numeric_values_equal("3", "4") is False
+    assert M.numeric_values_equal(None, "3") is False
+
+
 def test_numeric_exact_match():
     preds = ["the answer is 72", "I think 16", "result 6"]
     golds = ["#### 72", "#### 15", "#### 6"]
     assert M.numeric_exact_match(preds, golds) == pytest.approx(2 / 3)
+    # decimal equivalence: "3" matches "3.0"
+    assert M.numeric_exact_match(["#### 3"], ["#### 3.0"]) == 1.0
 
 
 def test_macro_f1():
