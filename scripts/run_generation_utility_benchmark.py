@@ -72,6 +72,33 @@ def main() -> int:
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--audit", default="true")
     ap.add_argument("--require-real", action="store_true", default=False)
+    # ---- reuse the validated folded_remote boundary-client path (parity with
+    # run_ifeval_generation.py): chat template + generation-config alignment +
+    # EOS stop. folded_remote NEVER loads the full 7B on the trusted side. ----
+    ap.add_argument("--use-chat-template", action="store_true", default=False,
+                    help="apply the Qwen chat template trusted-side (same shared "
+                    "formatter the folded path validated for IFEval/GSM8K)")
+    ap.add_argument("--align-generation-config", action="store_true",
+                    default=False, help="apply the plaintext generation-config "
+                    "logit processors (repetition_penalty) TRUSTED-SIDE")
+    ap.add_argument("--repetition-penalty", type=float, default=None,
+                    help="explicit repetition_penalty for --align-generation-config "
+                    "(else read from the model generation_config.json)")
+    ap.add_argument("--disable-eos-stop", action="store_true", default=False,
+                    help="keep fixed-length decode (default is EOS stopping, "
+                    "aligned with the plaintext model.generate stop condition)")
+    # ---- TDX boundary-client provenance (folded_remote only) ----
+    ap.add_argument("--tdx-boundary-client", action="store_true", default=False,
+                    help="run folded_remote as a TDX boundary client: assert the "
+                    "trusted side loads NO full 7B weights (only tokenizer/config "
+                    "+ embedding artifact); the H800 worker does GPU compute")
+    ap.add_argument("--trusted-runtime", default="process",
+                    help="trusted runtime label for the report (process / "
+                    "tdx_guest / real_tdx)")
+    ap.add_argument("--tee-mode", default=None,
+                    help="explicit TEE mode label (else derived)")
+    ap.add_argument("--h800-worker-ssh-alias", default=None,
+                    help="SSH alias of the untrusted H800 GPU worker (provenance)")
     ap.add_argument("--output-json", required=True)
     ap.add_argument("--output-csv", default=None)
     ap.add_argument("--output-md", default=None)
@@ -90,6 +117,14 @@ def main() -> int:
         print("ERROR: no examples in %s" % args.dataset_jsonl, file=sys.stderr)
         return 3
 
+    # TDX boundary-client mode is folded_remote only (plaintext_local loads the
+    # full 7B weights, which must NEVER happen inside the trusted TDX guest).
+    if args.tdx_boundary_client and args.backend != "folded_remote":
+        print("ERROR: --tdx-boundary-client requires --backend folded_remote "
+              "(plaintext_local loads full model weights, forbidden in the TDX "
+              "guest)", file=sys.stderr)
+        return 3
+
     audit = str(args.audit).strip().lower() in {"1", "true", "yes", "y", "on"}
     if args.backend == "plaintext_local":
         have_real = bool(args.model_path)
@@ -105,13 +140,28 @@ def main() -> int:
                 model_name=args.model_name, gpu_worker_url=args.gpu_worker_url,
                 embedding_path=args.embedding_path, seq_len=args.seq_len,
                 max_new_tokens=args.max_new_tokens, dtype=args.dtype,
-                device=args.device, audit=audit, nonlinear_backend=nb)
+                device=args.device, audit=audit, nonlinear_backend=nb,
+                align_generation_config=args.align_generation_config,
+                repetition_penalty=args.repetition_penalty,
+                stop_on_eos=(not args.disable_eos_stop),
+                use_chat_template=bool(args.use_chat_template))
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but real backend unavailable: %s"
                       % exc, file=sys.stderr)
                 return 3
             predictor = None
+
+    # The folded_remote boundary client must hold NO full model weights on the
+    # trusted side (only tokenizer/config + embedding artifact). Prove it.
+    full_weights_loaded = bool(predictor is not None
+                               and hasattr(predictor, "_model"))
+    if args.tdx_boundary_client and full_weights_loaded:
+        print("ERROR: folded_remote boundary client unexpectedly loaded full "
+              "model weights on the trusted side", file=sys.stderr)
+        if predictor is not None and hasattr(predictor, "close"):
+            predictor.close()
+        return 3
 
     try:
         report = run_generation_utility_benchmark(
@@ -126,6 +176,20 @@ def main() -> int:
                 predictor.close()
             except Exception:                                # noqa: BLE001
                 pass
+
+    # ---- boundary-client provenance (parity with run_ifeval_generation.py) ----
+    tdx_client = bool(args.tdx_boundary_client)
+    is_tdx = bool(tdx_client or args.trusted_runtime in ("real_tdx", "tdx_guest"))
+    report["trusted_runtime"] = "tdx_guest" if is_tdx else (
+        args.trusted_runtime or "process")
+    report["tee_mode"] = (args.tee_mode if args.tee_mode
+                          else ("real_tdx" if is_tdx else "process_boundary"))
+    report["tdx_boundary_client"] = tdx_client
+    report["full_model_weights_loaded_in_trusted_runtime"] = full_weights_loaded
+    report["h800_worker_url"] = args.gpu_worker_url
+    report["h800_worker_ssh_alias"] = args.h800_worker_ssh_alias
+    report["use_chat_template"] = bool(args.use_chat_template)
+    report["align_generation_config"] = bool(args.align_generation_config)
 
     p = Path(args.output_json)
     p.parent.mkdir(parents=True, exist_ok=True)
