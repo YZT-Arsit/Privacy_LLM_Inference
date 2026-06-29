@@ -392,15 +392,70 @@ def load_folded_lora_layer(package_dir, ell: int) -> dict:
     raise FileNotFoundError("no folded-LoRA shard %r in %s" % (name, package_dir))
 
 
+def lora_pad_inheritance_fields(
+    base_package_dir: str | None,
+) -> dict[str, Any]:
+    """Pad-aware report fields stating how a folded-LoRA package relates to the
+    Linear-boundary additive pad.
+
+    The LoRA package itself never stores pad tensors (pad belongs to the base
+    folded package). When the base package is pad-enabled, folded LoRA inherits
+    the pad and the merge path recomputes ``cpad = xpad @ W_merged`` against the
+    merged folded weight. Status is read from the base package's ACTUAL shard
+    tensor names, never a metadata-only claim."""
+    from pllo.deployment.linear_boundary_pad import (
+        package_linear_boundary_pad_status,
+    )
+
+    if base_package_dir is None:
+        return {
+            "base_linear_boundary_pad_enabled": False,
+            "base_linear_pad_all_modules_covered": False,
+            "lora_inherits_linear_boundary_pad_from_base": False,
+            "lora_merge_recomputes_cpad": True,
+            "lora_package_contains_pad": False,
+            "pad_scope": "base_folded_linear_boundary",
+            "paper_ready_lora_pad_status": False,
+            "paper_ready": False,
+            "paper_ready_blocker": (
+                "folded-LoRA built without a base folded package path; cannot "
+                "verify the base uses linear-boundary additive padding"),
+        }
+    status = package_linear_boundary_pad_status(base_package_dir)
+    base_enabled = bool(status.get("base_linear_boundary_pad_enabled"))
+    base_all = bool(status.get("base_linear_pad_all_modules_covered"))
+    fields: dict[str, Any] = {
+        "base_linear_boundary_pad_enabled": base_enabled,
+        "base_linear_pad_all_modules_covered": base_all,
+        "base_linear_pad_coverage": status.get("linear_pad_coverage"),
+        "lora_inherits_linear_boundary_pad_from_base": base_enabled,
+        "lora_merge_recomputes_cpad": True,
+        "lora_package_contains_pad": False,
+        "pad_scope": "base_folded_linear_boundary",
+        "paper_ready_lora_pad_status": bool(base_enabled and base_all),
+    }
+    if not base_enabled:
+        fields["paper_ready"] = False
+        fields["paper_ready_blocker"] = (
+            "folded-LoRA was built against a base folded package without "
+            "linear-boundary additive padding")
+    return fields
+
+
 def build_lora_folded_package(out_dir, *, session, lora: dict, target_modules,
                               rank: int, alpha: float, rank_seed: int,
                               base_manifest_hash: str | None,
+                              base_package_dir: str | None = None,
                               model_name: str | None = None,
                               created_by: str = "trusted_setup",
                               nonlinear_backend: str = "current",
                               build_command: str | None = None) -> dict:
     """Fold the adapter layer-by-layer and stream folded-LoRA shards + a manifest
-    + a ``lora_meta.json`` sidecar. Returns a build report."""
+    + a ``lora_meta.json`` sidecar. Returns a build report.
+
+    ``base_package_dir`` (when given) is the pad-enabled base folded package; its
+    Linear-boundary pad status is read from disk and surfaced in the report so the
+    LoRA package is honestly labeled as inheriting (or not) the pad."""
     from pllo.deployment.folded_package import FoldedPackageWriter
     from pllo.deployment.folded_package_manifest import build_manifest, write_manifest
 
@@ -441,16 +496,29 @@ def build_lora_folded_package(out_dir, *, session, lora: dict, target_modules,
         "contains_raw_lora": False, "contains_optimizer_state": False,
         "contains_training_data": False, "contains_mask_secrets": False,
     }
+
+    pad_fields = lora_pad_inheritance_fields(base_package_dir)
+    meta.update({
+        "base_linear_boundary_pad_enabled":
+            pad_fields["base_linear_boundary_pad_enabled"],
+        "lora_inherits_linear_boundary_pad_from_base":
+            pad_fields["lora_inherits_linear_boundary_pad_from_base"],
+        "lora_merge_recomputes_cpad": pad_fields["lora_merge_recomputes_cpad"],
+        "lora_package_contains_pad": pad_fields["lora_package_contains_pad"],
+        "pad_scope": pad_fields["pad_scope"],
+    })
     (Path(out_dir) / LORA_MANIFEST_FILENAME).write_text(
         json.dumps(meta, indent=2), encoding="utf-8")
 
     from pllo.deployment.folded_package import package_size_gb
-    return {"out_dir": str(out_dir), "num_shards": len(writer.shard_index),
-            "size_gb": round(package_size_gb(out_dir), 6),
-            "adapter_hash": a_hash, "rank": rank, "alpha": alpha,
-            "scaling": scaling, "target_modules": list(target_modules),
-            "covered_layers": covered,
-            "base_package_manifest_hash": base_manifest_hash, "meta": meta}
+    report = {"out_dir": str(out_dir), "num_shards": len(writer.shard_index),
+              "size_gb": round(package_size_gb(out_dir), 6),
+              "adapter_hash": a_hash, "rank": rank, "alpha": alpha,
+              "scaling": scaling, "target_modules": list(target_modules),
+              "covered_layers": covered,
+              "base_package_manifest_hash": base_manifest_hash, "meta": meta}
+    report.update(pad_fields)
+    return report
 
 
 # raw-LoRA tensor-name patterns that must NEVER appear in a folded-LoRA shard

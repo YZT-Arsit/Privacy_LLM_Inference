@@ -275,6 +275,21 @@ def _g(d, *keys, default=None):
     return cur
 
 
+def _base_pad_status(base_package_dir) -> dict:
+    """Read the base folded package's Linear-boundary pad status from disk.
+
+    Returns {} if the package/manifest is unavailable (dry-run / plan-only)."""
+    if not base_package_dir:
+        return {}
+    try:
+        from pllo.deployment.linear_boundary_pad import (
+            package_linear_boundary_pad_status,
+        )
+        return package_linear_boundary_pad_status(base_package_dir)
+    except Exception:
+        return {}
+
+
 def consolidate(args, results: dict, step_status: dict) -> dict:
     build = results.get("build_lora_package")
     verify = results.get("verify_lora_package")
@@ -347,6 +362,32 @@ def consolidate(args, results: dict, step_status: dict) -> dict:
         "local_tokens_exact_match": _g(local, "tokens_exact_match"),
     }
     rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
+
+    # ---- Linear-boundary pad status (read from the actual base package) ----
+    base_pad = _base_pad_status(getattr(args, "base_folded_package_path", None))
+    base_enabled = bool(
+        base_pad.get("base_linear_boundary_pad_enabled",
+                     _g(build, "base_linear_boundary_pad_enabled",
+                        default=False)))
+    base_all = bool(
+        base_pad.get("base_linear_pad_all_modules_covered",
+                     _g(build, "base_linear_pad_all_modules_covered",
+                        default=False)))
+    rep.update({
+        "main_scheme": "linear_boundary_additive_pad",
+        "linear_boundary_pad_enabled": base_enabled,
+        "qwen_production_path_uses_linear_input_pad": base_enabled,
+        "linear_pad_all_modules_covered": base_all,
+        "base_linear_boundary_pad_enabled": base_enabled,
+        "lora_inherits_linear_boundary_pad_from_base": base_enabled,
+        "lora_merge_recomputes_cpad": bool(
+            _g(build, "lora_merge_recomputes_cpad", default=True)),
+    })
+    if not base_enabled:
+        rep["paper_ready"] = False
+        rep["paper_ready_blocker"] = (
+            "E6 LoRA pipeline ran against a base folded package without "
+            "linear-boundary additive padding (not the main paper scheme)")
 
     security_ok = (rep["worker_has_raw_lora"] is False
                    and rep["worker_has_mask_secrets"] is False

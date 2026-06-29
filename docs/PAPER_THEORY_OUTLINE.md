@@ -388,3 +388,31 @@ production Qwen7B path unless explicitly integrated.
 `scripts/run_amulet_right_mask_nonlinear_experiments.py`,
 `tests/test_amulet_right_mask_nonlinear.py`,
 `outputs/amulet_right_mask_nonlinear_experiments.{json,md}`.
+
+## 13. Main scheme + LoRA pad inheritance (paper-facing status)
+
+**Main scheme.** Linear-boundary additive padding (§11) is the main production
+scheme and is ON by default in `build_qwen7b_folded_package.py`
+(`main_scheme = linear_boundary_additive_pad`). A `--no-linear-boundary-pad` build
+is `main_scheme = mask_only_legacy`, `paper_ready = false` (legacy/ablation).
+
+**Nonlinear.** For nonlinear layers we use compatible right-mask mechanisms; the
+Amulet right-mask island (§12) maps `U N → phi(U) N`. In the Amulet experiments
+the surrounding gate/up/down Linear layers are pad-enabled, so the island receives
+clean right-masked inputs after Linear pad compensation
+(`pad_enters_nonlinear_island = false`). Scope stays
+`production_qwen7b_integration = false` until the full decode path uses it and
+passes token/logit checks.
+
+**LoRA.** LoRA inherits Linear-boundary additive padding from the pad-enabled base
+folded package. The LoRA package stores only folded low-rank deltas
+(`lora_package_contains_pad = false`); on merge into a pad-enabled base, the
+compensation is recomputed against the merged folded weight
+(`cpad = xpad @ W_merged`, `lora_merge_recomputes_cpad = true`). Reports surface
+`base_linear_boundary_pad_enabled` and
+`lora_inherits_linear_boundary_pad_from_base`; a LoRA build over a non-pad base is
+`paper_ready = false`.
+
+**Limitations.** We do not claim persistent residual additive padding, and we do
+not claim arbitrary dense affine masks commute with RMSNorm/RoPE/softmax/
+GELU/SiLU/SwiGLU. `formal_security_claim = False`.

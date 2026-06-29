@@ -26,7 +26,7 @@ from pllo.ops.amulet_right_mask_islands import (  # noqa: E402
     amulet_right_mask_island_report_fields,
     amulet_right_mask_swiglu,
     make_right_mask_amulet_params,
-    run_amulet_right_mask_qwen_mlp,
+    run_amulet_right_mask_qwen_mlp_with_linear_pad,
 )
 from pllo.ops.nonlinear_islands import (  # noqa: E402
     gelu_reference,
@@ -106,44 +106,87 @@ def run(args: argparse.Namespace) -> dict:
     n_in_inv = torch.linalg.inv(n_in)
     n_ff_mlp = _invertible(f, dtype, g)
     n_out = _invertible(d, dtype, g)
-    mlp = run_amulet_right_mask_qwen_mlp(
+    # Pad-enabled gate/up/down Linear layers feed the Amulet SwiGLU island.
+    mlp = run_amulet_right_mask_qwen_mlp_with_linear_pad(
         X, wg, bg, wu, bu, wd, bd, n_in, n_in_inv, n_ff_mlp, n_out,
-        k=k, generator=g,
+        k=k, generator=g, pad_scale=args.pad_scale,
     )
     mlp_abs, mlp_rel = _errors(mlp["y_tilde"], mlp["expected_y_tilde"])
     rec_abs, _ = _errors(mlp["y_recovered"], mlp["y_plain"])
     last_rf = mlp["params"].r_factors
+    mlp_report = mlp["report"]
     probes.append({
-        "probe": "qwen_style_mlp",
+        "probe": "qwen_style_mlp_with_linear_pad",
         "activation": "swiglu_mlp",
         "shape": [m, d], "intermediate": f, "k": k,
         "max_abs_error": mlp_abs, "relative_l2_error": mlp_rel,
         "recover_max_abs_error": rec_abs,
+        "gate_clean_err": mlp["gate_clean_err"],
+        "up_clean_err": mlp["up_clean_err"],
         "right_mask_output_verified": mlp_abs <= args.tol,
-        "pad_enters_nonlinear_island": mlp["metadata"]["pad_enters_nonlinear_island"],
+        "linear_boundary_pad_enabled": mlp_report["linear_boundary_pad_enabled"],
+        "gate_linear_pad_enabled": mlp_report["gate_linear_pad_enabled"],
+        "up_linear_pad_enabled": mlp_report["up_linear_pad_enabled"],
+        "down_linear_pad_enabled": mlp_report["down_linear_pad_enabled"],
+        "pad_enters_nonlinear_island": mlp_report["pad_enters_nonlinear_island"],
+        "qwen_mlp_with_pad_verified": (mlp_abs <= args.tol),
     })
 
     overall_max = max(p["max_abs_error"] for p in probes)
-    audit = amulet_right_mask_island_report_fields(
+    audit = dict(mlp_report)  # pad-enabled MLP audit (the main probe)
+    audit.update(amulet_right_mask_island_report_fields(
         last_rf, max_abs_error=overall_max,
         relative_l2_error=max(p["relative_l2_error"] for p in probes),
-        swiglu_verified=swiglu_ok,
-    )
-    return {
-        "experiment": "amulet_right_mask_nonlinear_island",
+        swiglu_verified=swiglu_ok, used_pad=True,
+    ))
+    # restore the pad-enabled experiment headline fields (island audit overwrote
+    # experiment/main_scheme), so the top-level audit reflects the pad pipeline
+    audit.update({
+        "experiment": "amulet_right_mask_nonlinear_with_linear_boundary_pad",
+        "main_scheme":
+            "linear_boundary_additive_pad_plus_amulet_right_mask_nonlinear",
+        "linear_boundary_pad_enabled": True,
+        "linear_layers_feeding_nonlinear_are_pad_enabled": True,
+        "gate_linear_pad_enabled": True,
+        "up_linear_pad_enabled": True,
+        "down_linear_pad_enabled": True,
+        "pad_enters_nonlinear_island": False,
+        "qwen_mlp_with_pad_verified": bool(mlp_abs <= args.tol),
+    })
+    all_passed = all(p["right_mask_output_verified"] for p in probes)
+    report = {
+        "experiment": "amulet_right_mask_nonlinear_with_linear_boundary_pad",
+        "main_scheme":
+            "linear_boundary_additive_pad_plus_amulet_right_mask_nonlinear",
         "note": "Nonlinear-island experiment only; NOT a full Qwen7B production "
-                "benchmark unless later integrated.",
+                "benchmark unless later integrated. The surrounding gate/up/down "
+                "Linear layers are pad-enabled so the island receives clean "
+                "right-masked inputs after Linear pad compensation.",
         "dtype": args.dtype,
         "tolerance": args.tol,
+        "pad_scale": args.pad_scale,
         "config": {
             "batch_tokens": m, "hidden_size": d,
             "intermediate_size": f, "kronecker_size": k, "seed": args.seed,
         },
-        "all_probes_passed": all(p["right_mask_output_verified"] for p in probes),
+        "all_probes_passed": all_passed,
         "max_abs_error_overall": overall_max,
+        "linear_boundary_pad_enabled": True,
+        "linear_layers_feeding_nonlinear_are_pad_enabled": True,
+        "qwen_mlp_with_pad_verified": bool(mlp_abs <= args.tol),
+        "pad_enters_nonlinear_island": False,
+        "formal_security_claim": False,
+        "paper_scope": "nonlinear_island_correctness_experiment",
+        "production_qwen7b_integration": False,
         "audit": audit,
         "probes": probes,
     }
+    if not (all_passed and mlp_abs <= args.tol):
+        report["paper_ready"] = False
+        report["paper_ready_blocker"] = (
+            "Amulet nonlinear experiment did not verify with Linear-boundary "
+            "additive padding enabled")
+    return report
 
 
 def _markdown(report: dict) -> str:
@@ -209,6 +252,20 @@ def _markdown(report: dict) -> str:
         f"- `nonlinear_island_output_form`: `{a['nonlinear_island_output_form']}`",
         f"- `swiglu_verified`: {a['swiglu_verified']}",
         "",
+        "## Linear-boundary pad around the nonlinear island",
+        "",
+        f"- `main_scheme`: `{report['main_scheme']}`",
+        f"- `linear_boundary_pad_enabled`: {report['linear_boundary_pad_enabled']}",
+        "- `linear_layers_feeding_nonlinear_are_pad_enabled`: "
+        f"{report['linear_layers_feeding_nonlinear_are_pad_enabled']}",
+        f"- `gate_linear_pad_enabled`: {a['gate_linear_pad_enabled']}",
+        f"- `up_linear_pad_enabled`: {a['up_linear_pad_enabled']}",
+        f"- `down_linear_pad_enabled`: {a['down_linear_pad_enabled']}",
+        f"- `qwen_mlp_with_pad_verified`: {report['qwen_mlp_with_pad_verified']}",
+        f"- `pad_enters_nonlinear_island`: {report['pad_enters_nonlinear_island']}",
+        f"- `paper_scope`: `{report['paper_scope']}`",
+        f"- `production_qwen7b_integration`: {report['production_qwen7b_integration']}",
+        "",
         f"**All probes passed:** {report['all_probes_passed']} "
         f"(overall max abs error {report['max_abs_error_overall']:.3e}, "
         f"dtype {report['dtype']}).",
@@ -231,6 +288,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--kronecker-size", type=int, default=3)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--tol", type=float, default=1e-7)
+    p.add_argument("--pad-scale", type=float, default=0.1,
+                   help="magnitude of the masked-basis Linear-boundary pad "
+                   "(output is mathematically invariant to it)")
+    p.add_argument("--linear-boundary-pad", dest="linear_boundary_pad",
+                   action="store_true", default=True,
+                   help="(default) surround the Amulet island with pad-enabled "
+                   "gate/up/down Linear layers")
     p.add_argument(
         "--output-json", type=Path,
         default=PROJECT_ROOT / "outputs" / "amulet_right_mask_nonlinear_experiments.json",

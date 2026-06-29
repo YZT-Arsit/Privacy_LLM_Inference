@@ -44,8 +44,12 @@ def pkg4(tmp_path):
     """A dry-run 4-layer folded package built by the build script."""
     builder = _load("buildpkg", "scripts/build_qwen7b_folded_package.py")
     pkg = tmp_path / "pkg4"
+    # mask-only build so the probe's mask-only reference matches bit-exactly
+    # (the Linear-boundary pad is the build default; it perturbs the matmul
+    # operand view -> output is mathematically identical but not bit-exact)
     assert _main(builder, ["prog", "--dry-run", "--output-dir", str(pkg),
                            "--num-layers", "4", "--seed", "2035",
+                           "--no-linear-boundary-pad",
                            "--write-manifest", "true"]) == 0
     assert (pkg / "manifest.json").exists()
     return pkg

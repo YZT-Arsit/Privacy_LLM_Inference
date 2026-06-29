@@ -81,11 +81,13 @@ from pllo.ops.nonlinear_islands import (
 __all__ = [
     "AmuletRFactors",
     "RightMaskAmuletIslandParams",
+    "amulet_pad_mlp_report_fields",
     "amulet_right_mask_activation",
     "amulet_right_mask_island_report_fields",
     "amulet_right_mask_swiglu",
     "make_right_mask_amulet_params",
     "run_amulet_right_mask_qwen_mlp",
+    "run_amulet_right_mask_qwen_mlp_with_linear_pad",
     "sample_amulet_r_factors",
     "sample_dense_single_one_rbar",
     "selection_e1",
@@ -546,6 +548,188 @@ def run_amulet_right_mask_qwen_mlp(
 
 
 # ---------------------------------------------------------------------------
+# 8b. Pad-enabled Qwen MLP: gate/up/down Linear-boundary additive padding
+# ---------------------------------------------------------------------------
+
+
+def _masked_basis_pad(
+    w_tilde: torch.Tensor, *, generator: torch.Generator | None, scale: float
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Sample a per-input-channel masked-basis pad ``xpad = T N_in`` and its
+    compensation ``cpad = xpad @ w_tilde`` (= ``T W N_out``).
+
+    Reuses the production routine in ``pllo.deployment.linear_boundary_pad`` so the
+    Amulet experiment exercises the exact same Linear-boundary pad as the folded
+    package path. Raw ``T`` / masks are never formed."""
+    from pllo.deployment.linear_boundary_pad import (
+        masked_input_pad_and_compensation,
+    )
+
+    return masked_input_pad_and_compensation(
+        w_tilde, generator=generator, scale=scale
+    )
+
+
+def run_amulet_right_mask_qwen_mlp_with_linear_pad(
+    x: torch.Tensor,
+    w_gate: torch.Tensor,
+    b_gate: torch.Tensor | None,
+    w_up: torch.Tensor,
+    b_up: torch.Tensor | None,
+    w_down: torch.Tensor,
+    b_down: torch.Tensor | None,
+    n_in: torch.Tensor,
+    n_in_inv: torch.Tensor,
+    n_ff: torch.Tensor,
+    n_out: torch.Tensor,
+    *,
+    n_ff_inv: torch.Tensor | None = None,
+    k: int = 3,
+    seed: int | None = None,
+    generator: torch.Generator | None = None,
+    pad_scale: float = 0.1,
+) -> dict[str, Any]:
+    """Qwen-style SwiGLU MLP with **Linear-boundary additive padding on every
+    surrounding Linear** (gate / up / down) feeding the Amulet right-mask island.
+
+    Pipeline::
+
+        X --(pad-enabled gate Linear)--> G_tilde = G N_ff
+        X --(pad-enabled up   Linear)--> U_tilde = U N_ff
+                 Amulet SwiGLU island --> A_tilde = [SiLU(G) * U] N_ff
+        A --(pad-enabled down Linear)--> Y_tilde = Y N_out
+
+    Each Linear samples its own masked-basis pad ``xpad`` and precomputed
+    compensation ``cpad`` (= ``xpad @ W_tilde``). The pad is compensated at the
+    Linear boundary, so the nonlinear island only ever sees the clean masked
+    activations ``G N_ff`` / ``U N_ff`` -- the pad never enters SiLU/SwiGLU."""
+    device = x.device
+    dtype = x.dtype
+    m, d = x.shape
+    f = w_gate.shape[1]
+    if n_ff_inv is None:
+        n_ff_inv = torch.linalg.inv(n_ff)
+    if generator is None and seed is not None:
+        generator = _gen(seed, device)
+
+    # ---- Plain reference -------------------------------------------------
+    g_plain = x @ w_gate + (b_gate if b_gate is not None else 0.0)
+    u_plain = x @ w_up + (b_up if b_up is not None else 0.0)
+    a_plain = silu_reference(g_plain) * u_plain
+    y_plain = a_plain @ w_down + (b_down if b_down is not None else 0.0)
+
+    # ---- Pad-enabled gate / up Linear -> G N_ff, U N_ff ------------------
+    w_gate_tilde = n_in_inv @ w_gate @ n_ff
+    w_up_tilde = n_in_inv @ w_up @ n_ff
+    x_tilde_in = x @ n_in
+    xpad_gate, cpad_gate = _masked_basis_pad(
+        w_gate_tilde, generator=generator, scale=pad_scale)
+    xpad_up, cpad_up = _masked_basis_pad(
+        w_up_tilde, generator=generator, scale=pad_scale)
+    g_tilde = (x_tilde_in - xpad_gate) @ w_gate_tilde + cpad_gate
+    u_tilde = (x_tilde_in - xpad_up) @ w_up_tilde + cpad_up
+    if b_gate is not None:
+        g_tilde = g_tilde + b_gate @ n_ff
+    if b_up is not None:
+        u_tilde = u_tilde + b_up @ n_ff
+
+    # ---- Amulet SwiGLU island (receives clean U N_ff, no pad) ------------
+    params = make_right_mask_amulet_params(
+        m, f, k, n_ff, n_ff_inv, dtype=dtype, device=device, generator=generator)
+    a_tilde = amulet_right_mask_swiglu(g_tilde, u_tilde, params)
+
+    # ---- Pad-enabled down Linear -> Y N_out ------------------------------
+    w_down_tilde = n_ff_inv @ w_down @ n_out
+    xpad_down, cpad_down = _masked_basis_pad(
+        w_down_tilde, generator=generator, scale=pad_scale)
+    y_tilde = (a_tilde - xpad_down) @ w_down_tilde + cpad_down
+    if b_down is not None:
+        y_tilde = y_tilde + b_down @ n_out
+
+    expected_y_tilde = y_plain @ n_out
+    y_recovered = y_tilde @ torch.linalg.inv(n_out)
+    max_abs = float((y_tilde - expected_y_tilde).abs().max().item())
+    rel_l2 = float(
+        (torch.linalg.norm(y_tilde - expected_y_tilde)
+         / (torch.linalg.norm(expected_y_tilde) + 1e-30)).item())
+    # The island input must equal the clean masked activations (pad compensated).
+    gate_clean_err = float((g_tilde - g_plain @ n_ff).abs().max().item())
+    up_clean_err = float((u_tilde - u_plain @ n_ff).abs().max().item())
+
+    fields = amulet_pad_mlp_report_fields(
+        params.r_factors,
+        max_abs_error=max_abs, relative_l2_error=rel_l2,
+        qwen_mlp_with_pad_verified=(max_abs <= 1e-6),
+        swiglu_verified=(max_abs <= 1e-6),
+    )
+    return {
+        "y_plain": y_plain,
+        "y_tilde": y_tilde,
+        "expected_y_tilde": expected_y_tilde,
+        "y_recovered": y_recovered,
+        "g_tilde": g_tilde,
+        "u_tilde": u_tilde,
+        "expected_g_tilde": g_plain @ n_ff,
+        "expected_u_tilde": u_plain @ n_ff,
+        "a_tilde": a_tilde,
+        "expected_a_tilde": a_plain @ n_ff,
+        "params": params,
+        "max_abs_error": max_abs,
+        "relative_l2_error": rel_l2,
+        "gate_clean_err": gate_clean_err,
+        "up_clean_err": up_clean_err,
+        "report": fields,
+        "metadata": {
+            "k": int(k),
+            "lift_dim_features": int(f * k),
+            "activation_type": "swiglu",
+            "linear_boundary_pad_enabled": True,
+            "pad_enters_nonlinear_island": False,
+            "online_extra_matmul_count_delta": 0,
+        },
+    }
+
+
+def amulet_pad_mlp_report_fields(
+    r_factors: AmuletRFactors,
+    *,
+    max_abs_error: float | None = None,
+    relative_l2_error: float | None = None,
+    qwen_mlp_with_pad_verified: bool = True,
+    swiglu_verified: bool = True,
+) -> dict[str, Any]:
+    """Audit fields for the pad-enabled Amulet Qwen MLP experiment.
+
+    Combines the right-mask island audit with the explicit statement that the
+    surrounding gate/up/down Linear layers are pad-enabled and that the pad never
+    enters the nonlinear island."""
+    fields = amulet_right_mask_island_report_fields(
+        r_factors, max_abs_error=max_abs_error,
+        relative_l2_error=relative_l2_error, swiglu_verified=swiglu_verified,
+        used_pad=True,
+    )
+    fields.update({
+        "experiment": "amulet_right_mask_nonlinear_with_linear_boundary_pad",
+        "main_scheme":
+            "linear_boundary_additive_pad_plus_amulet_right_mask_nonlinear",
+        "linear_boundary_pad_enabled": True,
+        "linear_layers_feeding_nonlinear_are_pad_enabled": True,
+        "gate_linear_pad_enabled": True,
+        "up_linear_pad_enabled": True,
+        "down_linear_pad_enabled": True,
+        "pad_enters_nonlinear_island": False,
+        "nonlinear_island_input_form": "U N",
+        "nonlinear_island_output_form": "phi(U) N",
+        "swiglu_verified": bool(swiglu_verified),
+        "qwen_mlp_with_pad_verified": bool(qwen_mlp_with_pad_verified),
+        "formal_security_claim": False,
+        "paper_scope": "nonlinear_island_correctness_experiment",
+        "production_qwen7b_integration": False,
+    })
+    return fields
+
+
+# ---------------------------------------------------------------------------
 # 10. Audit fields
 # ---------------------------------------------------------------------------
 
@@ -596,6 +780,9 @@ def amulet_right_mask_island_report_fields(
         "nonlinear_island_input_form": "U N",
         "nonlinear_island_output_form": "phi(U) N",
         "used_pad": bool(used_pad),
+        "formal_security_claim": False,
+        "paper_scope": "nonlinear_island_correctness_experiment",
+        "production_qwen7b_integration": False,
     }
     if max_abs_error is not None:
         fields["max_abs_error"] = float(max_abs_error)

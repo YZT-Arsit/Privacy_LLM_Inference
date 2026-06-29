@@ -43,6 +43,7 @@ add (``online_extra_matmul_for_pad == 0``).
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -61,6 +62,7 @@ __all__ = [
     "module_name_for_weight_key",
     "linear_boundary_pad_report_fields",
     "default_linear_boundary_pad_report_fields",
+    "package_linear_boundary_pad_status",
 ]
 
 # Folded weight keys for the per-layer Linear families (row-vector ``y = x @ W``).
@@ -286,4 +288,44 @@ def linear_boundary_pad_report_fields(
     })
     if scale is not None:
         fields["linear_pad_scale"] = float(scale)
+    return fields
+
+
+def package_linear_boundary_pad_status(
+    package_dir: str | Path,
+) -> dict[str, Any]:
+    """Read the Linear-boundary pad status of a folded package from disk.
+
+    Loads the package manifest, reads the ACTUAL shard tensor names (never a
+    metadata-only claim), computes per-module ``linear_pad_coverage``, and returns
+    the same audit fields as :func:`linear_boundary_pad_report_fields` plus::
+
+        base_linear_boundary_pad_enabled
+        base_linear_pad_all_modules_covered
+
+    A module is covered only if BOTH ``<w>_xpad_tilde`` and ``<w>_cpad_tilde`` are
+    present in the shard tensors. Pad is considered enabled iff at least one module
+    is covered."""
+    from pllo.deployment.folded_package_manifest import load_manifest
+
+    manifest = load_manifest(package_dir)
+    layer_names: list[str] = []
+    head_names: list[str] = []
+    for sh in manifest.shard_index:
+        name = str(sh.get("name", ""))
+        tensors = list(sh.get("tensors", []))
+        if name.startswith("layer_") or name == "layers":
+            layer_names += tensors
+        elif name == "head":
+            head_names += tensors
+        else:
+            # Unknown shard layout: fold everything in so coverage is not
+            # under-counted (still based on real tensor names).
+            layer_names += tensors
+    cov = layer_pad_coverage(layer_names, head_names)
+    all_covered = all(cov.get(m, False) for m in ALL_PAD_MODULES)
+    enabled = any(cov.get(m, False) for m in ALL_PAD_MODULES)
+    fields = linear_boundary_pad_report_fields(enabled=enabled, coverage=cov)
+    fields["base_linear_boundary_pad_enabled"] = bool(enabled)
+    fields["base_linear_pad_all_modules_covered"] = bool(all_covered)
     return fields

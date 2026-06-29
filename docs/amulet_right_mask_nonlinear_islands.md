@@ -98,13 +98,44 @@ Y_tilde = A_tilde W_down_tilde + b_down N_out = Y N_out
 
 `recover(Y_tilde, N_out^{-1}) ≈ Y`.
 
-## Interaction with the Linear-boundary additive pad
+## Interaction with the Linear-boundary additive pad (pad-enabled by default)
 
-The additive pad stays boundary-local (`X_pad_tilde = (X - T) N_in`,
-`C_pad = T W N_out`, `Y_tilde = X_pad_tilde W_tilde + b_tilde + C_pad = Y N_out`).
-The nonlinear island receives the already-compensated `U N_ff`; the pad never
-enters GELU/SiLU/SwiGLU. (No persistent residual additive pad is implemented
-here.)
+Linear-boundary additive padding is the **main paper scheme**, so the Amulet Qwen
+MLP experiment surrounds the island with pad-enabled gate/up/down Linear layers by
+default (`run_amulet_right_mask_qwen_mlp_with_linear_pad`):
+
+```
+Gate:  X_tilde=(X-T_gate)N_in ; C_gate=T_gate W_gate N_ff ; G_tilde=...+C_gate = G N_ff
+Up:    X_tilde=(X-T_up)  N_in ; C_up  =T_up   W_up   N_ff ; U_tilde=...+C_up   = U N_ff
+Island: A_tilde = AmuletSwiGLU(G_tilde, U_tilde) = [SiLU(G) * U] N_ff
+Down:  A_pad=(A-T_down)N_ff   ; C_down=T_down W_down N_out; Y_tilde=...+C_down = Y N_out
+```
+
+Each Linear samples its pad directly in the masked basis (`xpad = T N_in`,
+`cpad = xpad @ W_tilde`), reusing the production routine in
+`pllo.deployment.linear_boundary_pad`. The additive pad stays boundary-local and
+is compensated at each Linear, so the nonlinear island only ever sees the clean
+masked activations `G N_ff` / `U N_ff` — **the pad never enters GELU/SiLU/SwiGLU**
+(`pad_enters_nonlinear_island = false`). No persistent residual additive pad is
+used. Report fields:
+`linear_boundary_pad_enabled`, `linear_layers_feeding_nonlinear_are_pad_enabled`,
+`gate_linear_pad_enabled`, `up_linear_pad_enabled`, `down_linear_pad_enabled`,
+`qwen_mlp_with_pad_verified`.
+
+## Scope (honest)
+
+```
+formal_security_claim: false
+paper_scope: nonlinear_island_correctness_experiment   (small real-Qwen probe:
+             small_model_real_weight_nonlinear_island_probe)
+production_qwen7b_integration: false
+```
+
+This is a nonlinear-island correctness experiment plus a small real-weight
+(Qwen2.5-0.5B / 3B) MLP probe (`scripts/run_qwen_small_amulet_pad_mlp_probe.py`).
+It is **not** the full Qwen7B production nonlinear backend and is not wired into
+the full decode path; it must not be described as such unless the full decode
+path uses it and passes token/logit correctness.
 
 ## Audit fields
 

@@ -204,7 +204,28 @@ def build_e8_report(inputs: dict) -> dict:
     provided = {k: (inputs.get(k) is not None) for k in (
         "local", "remote", "attested", "lora_build", "lora_verify",
         "base_decode", "training")}
-    return {
+    # ---- Linear-boundary pad provenance (read from the LoRA build report) ----
+    lora_build = inputs.get("lora_build")
+    base_pad_enabled = bool(
+        _g(lora_build, "base_linear_boundary_pad_enabled", default=False)
+        or _g(remote, "base_linear_boundary_pad_enabled", default=False))
+    lora_inherits = bool(
+        _g(lora_build, "lora_inherits_linear_boundary_pad_from_base",
+           default=False)
+        or _g(remote, "lora_inherits_linear_boundary_pad_from_base",
+              default=False))
+    lora_recomputes = bool(
+        _g(lora_build, "lora_merge_recomputes_cpad", default=True))
+    pad_section = {
+        "main_scheme": "linear_boundary_additive_pad",
+        "lora_case_study_uses_pad_enabled_base": base_pad_enabled,
+        "base_linear_boundary_pad_enabled": base_pad_enabled,
+        "lora_inherits_linear_boundary_pad_from_base": lora_inherits,
+        "lora_merge_recomputes_cpad": lora_recomputes,
+        "lora_package_contains_pad": False,
+        "pad_scope": "base_folded_linear_boundary",
+    }
+    report = {
         "experiment": "E8", "stage": "lora_final_report",
         "inputs_provided": provided,
         "correctness": lora_correctness_section(
@@ -212,14 +233,24 @@ def build_e8_report(inputs: dict) -> dict:
         "security_matrix": lora_security_matrix_section(
             local, remote, attested, training),
         "cost": lora_cost_section(
-            lora_build=inputs.get("lora_build"),
+            lora_build=lora_build,
             lora_verify=inputs.get("lora_verify"), remote=remote,
             base_decode=inputs.get("base_decode"), local=local),
         "training": lora_training_section(training=training),
+        "linear_boundary_pad": pad_section,
         "note": "Consolidated from prior LoRA experiment outputs; missing inputs "
                 "are not-provided (not assumed). TDX attestation is reflected only "
                 "from the provided attested JSON.",
     }
+    report.update(pad_section)
+    if not (base_pad_enabled and lora_inherits):
+        report["paper_ready"] = False
+        report["paper_ready_blocker"] = (
+            "E8 final report: LoRA case study is not over a pad-enabled base "
+            "folded package (main_scheme=linear_boundary_additive_pad requires "
+            "base_linear_boundary_pad_enabled and "
+            "lora_inherits_linear_boundary_pad_from_base)")
+    return report
 
 
 def _fmt(v: Any) -> str:

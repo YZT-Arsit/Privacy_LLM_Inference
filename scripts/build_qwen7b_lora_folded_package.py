@@ -169,6 +169,7 @@ def main() -> int:
         args.output_dir, session=session, lora=lora,
         target_modules=target_modules, rank=rank, alpha=alpha,
         rank_seed=rank_seed, base_manifest_hash=base_manifest_hash,
+        base_package_dir=args.base_folded_package_path,
         model_name=args.model_name,
         created_by="trusted_setup" if not dry_run else "test",
         nonlinear_backend=args.nonlinear_backend, build_command=build_command)
@@ -201,6 +202,15 @@ def main() -> int:
              report["target_modules"], report["adapter_hash"]))
     print("contains_raw_lora=False contains_optimizer_state=False "
           "contains_training_data=False contains_mask_secrets=False")
+    print("base_linear_boundary_pad_enabled=%s "
+          "lora_inherits_linear_boundary_pad_from_base=%s "
+          "lora_merge_recomputes_cpad=%s lora_package_contains_pad=%s"
+          % (report.get("base_linear_boundary_pad_enabled"),
+             report.get("lora_inherits_linear_boundary_pad_from_base"),
+             report.get("lora_merge_recomputes_cpad"),
+             report.get("lora_package_contains_pad")))
+    if report.get("paper_ready") is False:
+        print("paper_ready=False blocker=%s" % report.get("paper_ready_blocker"))
     return 0
 
 

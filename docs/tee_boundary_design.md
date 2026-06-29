@@ -207,3 +207,26 @@ the selected unit-copy channel inside the Kronecker-expanded shuffled space. We 
 not claim arbitrary dense masks commute with nonlinear functions; correctness
 relies on the lift/shuffle/squeeze construction and the unique-one selected
 coordinate. See `docs/amulet_right_mask_nonlinear_islands.md`.
+
+## Main scheme: Linear-boundary additive padding (+ LoRA inheritance)
+
+Linear-boundary additive padding is the main paper scheme. The GPU Linear operand
+is `(X−T)N`, and the compensation `C_pad = T W N_out` returns the output to the
+compatible right-masked basis `Y N_out`. Pads are boundary-local and do not enter
+nonlinear cores. It is the default for `build_qwen7b_folded_package.py`; a
+`--no-linear-boundary-pad` build is labeled `main_scheme=mask_only_legacy` /
+`paper_ready=false` (legacy/ablation only).
+
+For nonlinear layers we use compatible right-mask mechanisms. The Amulet-style
+nonlinear island maps `U N` to `phi(U) N` using lift/shuffle/squeeze. In the
+Amulet experiments the surrounding Linear layers are also pad-enabled, so the
+nonlinear island receives clean right-masked inputs after Linear pad
+compensation.
+
+We do not claim persistent residual additive padding. We do not claim arbitrary
+dense affine masks commute with RMSNorm, RoPE, softmax, GELU, SiLU, or SwiGLU.
+
+LoRA inherits Linear-boundary additive padding from the pad-enabled base folded
+package. The LoRA package itself stores only folded low-rank deltas. When folded
+LoRA is merged into a pad-enabled base layer, the compensation `cpad` is
+recomputed against the merged folded weight (`cpad = xpad @ W_merged`).

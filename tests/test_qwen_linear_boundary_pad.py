@@ -380,3 +380,61 @@ def test_7b_pad_changes_operand_but_not_output():
     lt = load_folded_layer(pkg1, 0)
     assert "wq_xpad_tilde" in lt and float(lt["wq_xpad_tilde"].abs().max()) > 0
     assert "wq_cpad_tilde" in lt and float(lt["wq_cpad_tilde"].abs().max()) > 0
+
+
+# ---------------------------------------------------------------------------
+# Test A / B: pad is the DEFAULT main scheme; --no-linear-boundary-pad is legacy
+# (exercises the real build script + package_linear_boundary_pad_status helper)
+# ---------------------------------------------------------------------------
+
+
+def _run_build(tmp_path, *extra):
+    import importlib.util
+    import json
+    import sys
+
+    repo = __import__("pathlib").Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "bp_main", repo / "scripts" / "build_qwen7b_folded_package.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    out = tmp_path / "pkg"
+    js = tmp_path / "build.json"
+    old = sys.argv
+    try:
+        sys.argv = ["x", "--dry-run", "--output-dir", str(out),
+                    "--num-layers", "2", "--output-json", str(js), *extra]
+        assert mod.main() == 0
+    finally:
+        sys.argv = old
+    return out, json.loads(js.read_text())
+
+
+def test_A_pad_is_default_main_scheme(tmp_path):
+    """A build WITHOUT --no-linear-boundary-pad is pad-enabled + paper-ready."""
+    from pllo.deployment.linear_boundary_pad import (
+        package_linear_boundary_pad_status)
+    pkg, rep = _run_build(tmp_path)
+    assert rep["main_scheme"] == "linear_boundary_additive_pad"
+    assert rep["linear_boundary_pad_enabled"] is True
+    assert rep["qwen_production_path_uses_linear_input_pad"] is True
+    assert rep.get("paper_ready", True) is not False
+    assert all(rep["linear_pad_coverage"][m] for m in ALL_PAD_MODULES)
+    # helper reads coverage from the REAL written shard tensor names
+    status = package_linear_boundary_pad_status(pkg)
+    assert status["base_linear_boundary_pad_enabled"] is True
+    assert status["base_linear_pad_all_modules_covered"] is True
+
+
+def test_B_no_pad_is_legacy_not_paper_ready(tmp_path):
+    """--no-linear-boundary-pad -> mask_only_legacy + paper_ready False."""
+    from pllo.deployment.linear_boundary_pad import (
+        package_linear_boundary_pad_status)
+    pkg, rep = _run_build(tmp_path, "--no-linear-boundary-pad")
+    assert rep["main_scheme"] == "mask_only_legacy"
+    assert rep["paper_ready"] is False
+    assert "legacy" in rep["paper_ready_blocker"].lower()
+    assert rep["linear_boundary_pad_enabled"] is False
+    status = package_linear_boundary_pad_status(pkg)
+    assert status["base_linear_boundary_pad_enabled"] is False
+    assert status["base_linear_pad_all_modules_covered"] is False

@@ -274,3 +274,93 @@ def test_no_lora_path_unchanged(lora_pkgs) -> None:
         worker.close()
     finally:
         server.shutdown()
+
+
+# ---------------------------------------------------------------------------
+# C / D: LoRA pad-inheritance from the base folded package
+# ---------------------------------------------------------------------------
+
+
+def _build_base(tmp_path, name, *extra):
+    base = tmp_path / name
+    bp = _load("bp_%s" % name, "scripts/build_qwen7b_folded_package.py")
+    assert _main(bp, ["x", "--dry-run", "--output-dir", str(base),
+                      "--num-layers", str(N), "--seed", str(SEED), *extra]) == 0
+    return base
+
+
+def test_C_lora_over_pad_enabled_base(tmp_path):
+    from pllo.deployment.lora_folded_package import lora_pad_inheritance_fields
+    base = _build_base(tmp_path, "base_pad")  # pad ON by default
+    f = lora_pad_inheritance_fields(str(base))
+    assert f["base_linear_boundary_pad_enabled"] is True
+    assert f["lora_inherits_linear_boundary_pad_from_base"] is True
+    assert f["lora_merge_recomputes_cpad"] is True
+    assert f["lora_package_contains_pad"] is False
+    assert f["paper_ready_lora_pad_status"] is True
+    assert "paper_ready" not in f or f["paper_ready"] is not False
+
+
+def test_D_lora_over_no_pad_base_not_paper_ready(tmp_path):
+    from pllo.deployment.lora_folded_package import lora_pad_inheritance_fields
+    base = _build_base(tmp_path, "base_nopad", "--no-linear-boundary-pad")
+    f = lora_pad_inheritance_fields(str(base))
+    assert f["base_linear_boundary_pad_enabled"] is False
+    assert f["lora_inherits_linear_boundary_pad_from_base"] is False
+    assert f["paper_ready"] is False
+    assert "without linear-boundary" in f["paper_ready_blocker"].lower()
+
+
+def test_lora_build_report_is_pad_aware(tmp_path):
+    """The folded-LoRA build report surfaces base pad status (real package)."""
+    base = _build_base(tmp_path, "base_for_lora")
+    lpkg = tmp_path / "lora_pad"
+    lb = _load("lb_pad", "scripts/build_qwen7b_lora_folded_package.py")
+    js = tmp_path / "lora_build.json"
+    assert _main(lb, ["x", "--dry-run", "--output-dir", str(lpkg),
+                      "--base-folded-package-path", str(base),
+                      "--target-modules", ",".join(DEFAULT_TARGET_MODULES),
+                      "--rank", str(RANK), "--alpha", str(ALPHA),
+                      "--seed", str(SEED), "--output-json", str(js)]) == 0
+    rep = json.loads(js.read_text())
+    assert rep["base_linear_boundary_pad_enabled"] is True
+    assert rep["lora_inherits_linear_boundary_pad_from_base"] is True
+    assert rep["lora_merge_recomputes_cpad"] is True
+    assert rep["lora_package_contains_pad"] is False
+    # the lora package itself stores NO pad tensors
+    from pllo.deployment.linear_boundary_pad import (
+        package_linear_boundary_pad_status)
+    st = package_linear_boundary_pad_status(lpkg)
+    assert st["base_linear_boundary_pad_enabled"] is False
+
+
+def test_lora_merge_recomputes_cpad_not_stale() -> None:
+    """LoRA merge over a pad-enabled base must recompute cpad = xpad @ W_merged.
+
+    Fails if cpad is left stale after ``W_tilde += a_tilde @ b_tilde``."""
+    torch.manual_seed(0)
+    model, mc = tiny_model()
+    tm = list(ALL_TARGET_MODULES)
+    scaling = lora_scaling(ALPHA, RANK)
+    lora = synthetic_lora_adapter(mc, N, tm, RANK, seed=SEED)
+    pad_cfg = MemoryOptimizedConfig(
+        num_layers=N, batch_size=1, seq_len=SL, max_new_tokens=NN, device="cpu",
+        dtype="float32", folding_dtype="float32", folded_weight_device="cpu",
+        seed=SEED, use_linear_boundary_pad=True, linear_pad_scale=0.3)
+    sess = MaskedQwenSession(model, mc, pad_cfg)
+    base = {k: v.clone()
+            for k, v in sess.export_folded_layer_tensors(0).items()}
+    # sanity: pad tensors are present in the base
+    assert "wq_xpad_tilde" in base and "wq_cpad_tilde" in base
+    fl = fold_lora_for_layer(sess, 0, lora[0], scaling=scaling, rank=RANK,
+                             rank_seed=SEED, target_modules=tm)
+    merged = merge_folded_lora(base, fl, tm)
+    # cpad must equal xpad @ merged W_tilde for every padded module that got a delta
+    for wkey in ("wq_tilde", "wk_tilde", "wv_tilde", "wo_tilde",
+                 "wgate_tilde", "wup_tilde", "wdown_tilde"):
+        xk = wkey[:-len("_tilde")] + "_xpad_tilde"
+        ck = wkey[:-len("_tilde")] + "_cpad_tilde"
+        if xk in merged and ck in merged:
+            recomputed = merged[xk].to(merged[wkey].dtype) @ merged[wkey]
+            err = (merged[ck] - recomputed).abs().max().item()
+            assert err < 1e-4, f"{ck} stale after merge (err {err})"

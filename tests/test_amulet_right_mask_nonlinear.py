@@ -15,6 +15,7 @@ from pllo.ops.amulet_right_mask_islands import (
     amulet_right_mask_swiglu,
     make_right_mask_amulet_params,
     run_amulet_right_mask_qwen_mlp,
+    run_amulet_right_mask_qwen_mlp_with_linear_pad,
     sample_amulet_r_factors,
     sample_dense_single_one_rbar,
     selection_e1,
@@ -260,3 +261,48 @@ def test_rbar_factor_product_fails_loudly_on_bad_tol() -> None:
         sample_amulet_r_factors(
             3, dtype=DT, device="cpu", generator=g, product_tol=-1.0,
         )
+
+
+# ---------------------------------------------------------------------------
+# Test E: Amulet Qwen MLP uses pad-enabled gate/up/down Linear by default
+# ---------------------------------------------------------------------------
+
+
+def test_E_amulet_qwen_mlp_requires_pad() -> None:
+    g = _gen(41)
+    m, d, f, k = 4, 8, 16, 3
+
+    def _inv(dim):
+        M = torch.randn(dim, dim, dtype=DT, generator=g)
+        while abs(float(torch.linalg.det(M).item())) < 1e-3:
+            M = torch.randn(dim, dim, dtype=DT, generator=g)
+        return M
+
+    wg = torch.randn(d, f, dtype=DT, generator=g)
+    wu = torch.randn(d, f, dtype=DT, generator=g)
+    wd = torch.randn(f, d, dtype=DT, generator=g)
+    X = torch.randn(m, d, dtype=DT, generator=g)
+    n_in = _inv(d)
+    n_in_inv = torch.linalg.inv(n_in)
+    n_ff = _inv(f)
+    n_out = _inv(d)
+
+    r = run_amulet_right_mask_qwen_mlp_with_linear_pad(
+        X, wg, None, wu, None, wd, None, n_in, n_in_inv, n_ff, n_out,
+        k=k, generator=g, pad_scale=0.1,
+    )
+    rep = r["report"]
+    assert rep["linear_boundary_pad_enabled"] is True
+    assert rep["linear_layers_feeding_nonlinear_are_pad_enabled"] is True
+    assert rep["gate_linear_pad_enabled"] is True
+    assert rep["up_linear_pad_enabled"] is True
+    assert rep["down_linear_pad_enabled"] is True
+    assert rep["pad_enters_nonlinear_island"] is False
+    assert rep["qwen_mlp_with_pad_verified"] is True
+    assert rep["production_qwen7b_integration"] is False
+    assert rep["formal_security_claim"] is False
+    # correctness: Y_tilde == Y N_out, island sees clean U N_ff (pad compensated)
+    assert (r["y_tilde"] - r["expected_y_tilde"]).abs().max().item() <= 1e-7
+    assert (r["y_recovered"] - r["y_plain"]).abs().max().item() <= 1e-7
+    assert r["gate_clean_err"] <= 1e-8
+    assert r["up_clean_err"] <= 1e-8

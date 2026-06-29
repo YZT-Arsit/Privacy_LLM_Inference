@@ -94,8 +94,11 @@ def test_probe_consumes_package_built_by_build_script(tmp_path) -> None:
     builder = _load("buildpkg", "scripts/build_qwen7b_folded_package.py")
     old = sys.argv
     try:
+        # mask-only build so the probe's mask-only reference matches bit-exactly
+        # (Linear-boundary pad is the build default and perturbs the operand view)
         sys.argv = ["prog", "--dry-run", "--output-dir", str(pkg),
                     "--num-layers", "1", "--seed", "2035",
+                    "--no-linear-boundary-pad",
                     "--write-manifest", "true"]
         assert builder.main() == 0
     finally:

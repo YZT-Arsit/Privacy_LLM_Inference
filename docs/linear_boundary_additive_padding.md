@@ -1,9 +1,33 @@
 # Linear-boundary additive padding (production Qwen folded path)
 
+> **Linear-boundary additive padding is the MAIN paper scheme.** The GPU Linear
+> operand is `(X − T) N`, and the compensation `C_pad = T W N_out` returns the
+> output to the compatible right-masked basis `Y N_out`. Pads are boundary-local
+> and do not enter nonlinear cores. It is **on by default** in
+> `scripts/build_qwen7b_folded_package.py`; `--no-linear-boundary-pad` produces a
+> `main_scheme = mask_only_legacy` / `paper_ready = false` legacy/ablation
+> package. We do **not** claim persistent residual additive padding, and we do
+> **not** claim arbitrary dense affine masks commute with RMSNorm, RoPE, softmax,
+> GELU, SiLU, or SwiGLU.
+>
+> For nonlinear layers we use compatible right-mask mechanisms. The Amulet-style
+> nonlinear island maps `U N` to `phi(U) N` via lift/shuffle/squeeze; in the
+> Amulet experiments the surrounding Linear layers are also pad-enabled, so the
+> nonlinear island receives clean right-masked inputs after Linear pad
+> compensation (see
+> [`amulet_right_mask_nonlinear_islands.md`](amulet_right_mask_nonlinear_islands.md)).
+>
+> **LoRA** inherits Linear-boundary additive padding from the pad-enabled base
+> folded package. The LoRA package itself stores only folded low-rank deltas.
+> When folded LoRA is merged into a pad-enabled base layer, the compensation
+> `cpad` is recomputed against the merged folded weight
+> (`cpad = xpad @ W_merged`).
+
 This documents the Linear-boundary additive input padding implemented in the
 **production Qwen2.5-7B folded-package / H800 worker path** (not only the small
 GPT-2 / tiny-decoder validation wrappers). It is wired through
-`scripts/build_qwen7b_folded_package.py` (`--linear-boundary-pad`),
+`scripts/build_qwen7b_folded_package.py` (default ON; `--no-linear-boundary-pad`
+for a legacy/ablation mask-only build),
 `MaskedQwenSession.export_folded_layer_tensors` / `export_folded_head_tensors`,
 `src/pllo/deployment/linear_boundary_pad.py`, `src/pllo/deployment/folded_worker.py`
 (`_linear` / `apply_folded_layer_prefill` / `apply_folded_layer_decode` /

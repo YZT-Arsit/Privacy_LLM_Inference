@@ -123,14 +123,23 @@ def main() -> int:
     ap.add_argument("--created-at", default=None,
                     help="ISO timestamp for the manifest (else filled at runtime)")
     ap.add_argument("--seed", type=int, default=2035)
-    ap.add_argument("--linear-boundary-pad", action="store_true", default=False,
+    # Linear-boundary additive padding is the MAIN paper scheme and is ON by
+    # default. Use --no-linear-boundary-pad for a legacy/ablation mask-only build.
+    ap.set_defaults(linear_boundary_pad=True)
+    ap.add_argument("--linear-boundary-pad", dest="linear_boundary_pad",
+                    action="store_true",
                     help="enable Linear-boundary additive input padding for every "
                     "folded Linear (q/k/v/o/gate/up/down/lm_head): the GPU matmul "
                     "operand becomes (X - T) N_in with a precomputed folded "
                     "compensation C_pad = T W N_out, output stays in the masked "
                     "basis Y N_out. Pads are boundary-local (not in nonlinear "
                     "cores, not persisted in the residual). Raw T/N never leave "
-                    "trusted setup.")
+                    "trusted setup. THIS IS THE DEFAULT (main paper scheme).")
+    ap.add_argument("--no-linear-boundary-pad", dest="linear_boundary_pad",
+                    action="store_false",
+                    help="disable the Linear-boundary pad and build a mask-only "
+                    "package. This is a LEGACY/ABLATION build and is reported as "
+                    "main_scheme=mask_only_legacy / paper_ready=false.")
     ap.add_argument("--linear-pad-scale", type=float, default=0.1,
                     help="magnitude of the (masked-basis) additive input pad; "
                     "output is mathematically invariant to it -- it only changes "
@@ -286,6 +295,7 @@ def main() -> int:
         cov = layer_pad_coverage(layer_names, head_names)
         rep.update(linear_boundary_pad_report_fields(
             enabled=True, coverage=cov, scale=float(args.linear_pad_scale)))
+        rep["main_scheme"] = "linear_boundary_additive_pad"
         all_covered = all(cov.get(m, False) for m in ALL_PAD_MODULES)
         if not all_covered:
             rep["paper_ready"] = False
@@ -293,7 +303,13 @@ def main() -> int:
                 "linear_boundary_pad enabled but these Linear modules lack pad "
                 "coverage: %s" % [m for m in ALL_PAD_MODULES if not cov.get(m)])
     else:
+        # Mask-only legacy / ablation build: NOT the main paper scheme.
         rep.update(linear_boundary_pad_report_fields(enabled=False))
+        rep["main_scheme"] = "mask_only_legacy"
+        rep["paper_ready"] = False
+        rep["paper_ready_blocker"] = (
+            "linear-boundary additive padding disabled; this is a "
+            "legacy/ablation package, not the main paper scheme")
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -308,6 +324,8 @@ def main() -> int:
     print(f"contains_mask_secrets={rep['contains_mask_secrets']} "
           f"worker_has_mask_secrets={rep['worker_has_mask_secrets']} "
           f"tee_used_on_gpu={rep['tee_used_on_gpu']}")
+    print(f"main_scheme={rep.get('main_scheme')} "
+          f"paper_ready={rep.get('paper_ready', True)}")
     print(f"linear_boundary_pad_enabled={rep['linear_boundary_pad_enabled']} "
           f"linear_input_form={rep['linear_input_form']!r} "
           f"online_extra_matmul_for_pad={rep['online_extra_matmul_for_pad']}")
