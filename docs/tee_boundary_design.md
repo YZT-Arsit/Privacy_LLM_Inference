@@ -184,3 +184,26 @@ is precomputed (no online extra matmul); raw pads/masks never reach the GPU (onl
 the composed offsets `T N_in` and `T W N_out`). See
 [`linear_boundary_additive_padding.md`](linear_boundary_additive_padding.md) for
 the exact fold, audit fields, and validation.
+
+## Right-mask Amulet nonlinear islands (experiment)
+
+For decoder-only generation we keep the right-mask stable invariant
+`H_tilde = H N`. For nonlinear activations we instantiate an Amulet-style
+lift/shuffle/squeeze island with `P = I` and `Q = N`. The island maps `U N` to
+`phi(U) N` without entering a TEE. We choose a dense target `R_bar = R1 R2 R3`
+with exactly one secret entry equal to 1 and all other entries random non-1
+values. Selection matrices squeeze only that unit-copy, yielding `phi(U)`, while
+the final right mask `N` is restored by `M4`. The same construction extends to
+Qwen's SwiGLU by lifting both gate and up branches with the same schedule and
+selecting the shared unit-copy after `SiLU(gate) ⊙ up`.
+
+The token-side permutation is island-internal and undone before the output, so
+the stable state never uses a left/sequence mask, and no intermediate TEE
+boundary call is introduced. Additive Linear-boundary pads are compensated before
+the island, so the pad never enters the nonlinear core.
+
+**Limitation.** This construction assumes the adversary cannot reliably identify
+the selected unit-copy channel inside the Kronecker-expanded shuffled space. We do
+not claim arbitrary dense masks commute with nonlinear functions; correctness
+relies on the lift/shuffle/squeeze construction and the unique-one selected
+coordinate. See `docs/amulet_right_mask_nonlinear_islands.md`.

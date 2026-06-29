@@ -339,3 +339,52 @@ masks. `formal_security_claim`: `False`.
 `scripts/build_qwen7b_folded_package.py --linear-boundary-pad`,
 `tests/test_qwen_linear_boundary_pad.py`,
 [`linear_boundary_additive_padding.md`](linear_boundary_additive_padding.md).
+
+## 12. Amulet-style right-mask nonlinear islands
+
+**Claim.** For decoder-only generation with a right-mask stable invariant
+`H_tilde = H N`, a nonlinear activation `phi` (ReLU/GELU/SiLU) and the two-input
+SwiGLU operator can be evaluated on the untrusted GPU as an Amulet-style
+lift/shuffle/squeeze island with `P = I`, `Q = N`, satisfying the external
+contract `U N -> phi(U) N` without entering a TEE and without any intermediate
+TEE boundary call.
+
+**Construction.** Choose a dense target `R_bar ∈ R^{k×k}` with exactly one secret
+entry `R_bar[a,b] = 1` and every other entry not equal to 1; factor
+`R_bar = R1 R2 R3`. With permutation matrices `pi1..pi4` and selection matrices
+`E1 = I_m ⊗ e_a^T`, `E2 = I_d ⊗ e_b`:
+
+```
+M1 = pi3 (pi1 ⊗ R1)        M2 = (N^{-1} pi2 ⊗ R3) pi4
+M3 = pi1^T E1 pi3^T        M4 = pi4^T E2 pi2^T N
+Z  = M1 (U_tilde ⊗ R2) M2 = pi3 ((pi1 U pi2) ⊗ R_bar) pi4
+out_tilde = M3 phi(Z) M4
+```
+
+**Proof sketch.** Kronecker mixed-product gives
+`(pi1 ⊗ R1)(UN ⊗ R2)(N^{-1}pi2 ⊗ R3) = (pi1 U pi2) ⊗ R_bar`. Permutations commute
+with elementwise `phi`, so `phi(Z) = pi3 phi((pi1 U pi2) ⊗ R_bar) pi4`. Because
+`R_bar[a,b] = 1`, the block at sub-position `(a,b)` is exactly `phi((pi1 U pi2))`,
+which `E1 · E2` squeezes out; `pi1^T … pi2^T` and the trailing `N` restore
+`phi(U) N`. SwiGLU shares the schedule across the gate/up branches so the same
+unit-copy is selected after `SiLU(gate) ⊙ up`: `A_tilde = (SiLU(G) ⊙ U) N`.
+
+**Stable-state / boundary properties.** `pi1` (token side) and `pi3` are
+island-internal transient permutations undone by `M3`, so the stable decoder state
+never carries a left/sequence mask (`uses_left_sequence_mask = false`); no
+left mask is applied over the sequence dimension. `intermediate_tee_boundary_calls = 0`.
+Any Linear-boundary additive pad is compensated *before* the island, which always
+receives the clean masked activation `U N_ff` (`pad_enters_nonlinear_island = false`).
+
+**Scope / limitation.** This construction assumes the adversary cannot reliably
+identify the selected unit-copy channel inside the shuffled Kronecker-expanded
+space. We do **not** claim arbitrary dense right masks commute with
+GELU/SiLU/SwiGLU; correctness relies on the lift/shuffle/squeeze construction and
+the unique-one secret coordinate `(a,b)`, which is never published.
+`formal_security_claim`: `False`. This is a nonlinear-island experiment, not the
+production Qwen7B path unless explicitly integrated.
+
+**Artifact.** `src/pllo/ops/amulet_right_mask_islands.py`,
+`scripts/run_amulet_right_mask_nonlinear_experiments.py`,
+`tests/test_amulet_right_mask_nonlinear.py`,
+`outputs/amulet_right_mask_nonlinear_experiments.{json,md}`.
