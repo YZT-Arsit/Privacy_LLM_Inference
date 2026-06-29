@@ -11,6 +11,7 @@ from typing import Any
 from pllo.nonlinear.amulet_backend import AmuletMigratedNonlinearBackend
 from pllo.nonlinear.backends import NonlinearBackend
 from pllo.nonlinear.current_backend import CurrentNonlinearBackend
+from pllo.nonlinear.right_multiply_backend import RightMultiplyNonlinearBackend
 
 __all__ = [
     "NONLINEAR_BACKENDS",
@@ -22,6 +23,8 @@ __all__ = [
 NONLINEAR_BACKENDS: dict[str, type[NonlinearBackend]] = {
     "current": CurrentNonlinearBackend,
     "amulet_migrated": AmuletMigratedNonlinearBackend,
+    # A_rightmul: compatible right-multiply nonlinear islands (paper design A_rightmul)
+    "compatible_right_multiply": RightMultiplyNonlinearBackend,
 }
 
 

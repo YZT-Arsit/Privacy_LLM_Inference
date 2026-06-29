@@ -53,6 +53,9 @@ __all__ = [
     "real_path_execution_status",
     "assert_real_path_execution",
     "report_has_amulet_execution",
+    "report_has_right_multiply_execution",
+    "report_has_real_nonlinear_execution",
+    "nonlinear_tag_only",
     "trusted_shortcut_tag_only",
     "add_nonlinear_backend_arg",
     "add_nonlinear_backends_arg",
@@ -149,6 +152,54 @@ NONLINEAR_DESIGNS: Dict[str, Dict[str, Any]] = {
             "must be re-attested separately; cannot reuse design A evidence",
         ],
     },
+    "A_rightmul": {
+        "name": "A_rightmul",
+        "design_label": "design_A_rightmul",
+        "version": "1.0",
+        # op-backend key in pllo.nonlinear.registry
+        "op_backend": "compatible_right_multiply",
+        "aliases": [
+            "a_rightmul", "rightmul", "right_multiply", "right_mul",
+            "compatible_right_multiply", "compatible_nonlinear_islands",
+            "compatible_right_multiply_islands", "ours_compatible_nonlinear_islands",
+        ],
+        "description": (
+            "A_rightmul design: every transformer nonlinear island (SiLU/SwiGLU "
+            "MLP, attention softmax, RMSNorm/LayerNorm core) is evaluated "
+            "directly on the untrusted accelerator over the compatible "
+            "right-multiply / permutation-masked state, with NO trusted-boundary "
+            "crossing for the nonlinearity. The TEE is entered once (input mask) "
+            "and exited once (logits recovery); no nonlinear op runs in the TEE."),
+        "trusted_boundary_role": (
+            "input embedding + mask (once) and final logits recovery + sampling "
+            "(once); holds NO nonlinear reduction shortcut -- zero nonlinear "
+            "crossings."),
+        "gpu_worker_role": (
+            "evaluates every nonlinear island in place on the masked state using "
+            "compatible right-multiply / permutation masks (signed-permutation "
+            "residual mask, per-head Q/K/V masks with Q~K~^T=QK^T, SwiGLU channel "
+            "permutation); output stays in the masked basis."),
+        "supports_gelu": True,
+        "supports_silu": True,
+        "supports_mlp": True,
+        "correctness_expectation": "exact_vs_float64_reference",
+        "security_status": "under_development",
+        "security_claim_status": "under_development",
+        "security_notes": (
+            "Compatible right-multiply security argument is under development "
+            "(proofs not yet completed in this repo); NOT formally claimed. "
+            "Numerically identical to design A (current); the trade is a single "
+            "TEE entry/exit with zero trusted nonlinear crossings."),
+        "expected_extra_boundary_calls": 0,
+        "expected_extra_trusted_bytes": 0,
+        "nonlinear_masking_mode": "compatible_right_multiply_or_permutation",
+        "limitations": [
+            "compatible right-multiply security proof under development",
+            "requires compatible masks (signed-permutation residual, per-head "
+            "Q/K/V, SwiGLU channel permutation) -- arbitrary dense masks do not "
+            "commute with the nonlinear cores",
+        ],
+    },
 }
 
 # alias -> canonical name (built once; case/space/hyphen-insensitive lookups go
@@ -232,9 +283,15 @@ def op_backend_for_design(name: str) -> str:
 # ``report_has_amulet_execution`` (measured counters). A non-execution report (a
 # folded-package BUILD, which only folds weights and never runs a nonlinearity)
 # is therefore NOT treated as tag-only -- see ``_report_is_execution_bearing``.
+#   * "A_rightmul"        -> "right_multiply_on_accelerator": every nonlinear
+#       island runs in place on the masked state on the untrusted accelerator
+#       (compatible right-multiply / permutation masks); the folded worker stamps
+#       measured evidence (right_multiply_nonlinear_executed /
+#       right_multiply_nonlinear_ops_count, trusted_nonlinear_ops_count == 0).
 _REAL_PATH_EXECUTION: Dict[str, str] = {
     "current": "trusted_boundary_inline",
     "trusted_shortcut": "lifted_on_accelerator",
+    "A_rightmul": "right_multiply_on_accelerator",
 }
 
 # Report stages / signals that DO execute the model nonlinearity (and therefore
@@ -323,6 +380,65 @@ def report_has_amulet_execution(report: Dict[str, Any]) -> bool:
             and (report.get("lifted_gpu_bytes") or 0) > 0)
 
 
+def report_has_right_multiply_execution(report: Dict[str, Any]) -> bool:
+    """True iff a report carries genuine runtime evidence that the A_rightmul
+    compatible right-multiply nonlinear backend actually executed on the
+    accelerator (not just a design tag): the op backend is
+    ``compatible_right_multiply``, the right-multiply path executed at least one
+    op, and NO nonlinear work crossed the trusted boundary."""
+    if not isinstance(report, dict):
+        return False
+    return (report.get("nonlinear_op_backend") == "compatible_right_multiply"
+            and report.get("right_multiply_nonlinear_executed") is True
+            and (report.get("right_multiply_nonlinear_ops_count") or 0) > 0
+            and (report.get("trusted_nonlinear_ops_count") or 0) == 0
+            and (report.get("nonlinear_trusted_calls") or 0) == 0)
+
+
+def report_has_real_nonlinear_execution(report: Dict[str, Any]) -> bool:
+    """True iff an execution-bearing report carries genuine measured evidence
+    that its tagged nonlinear design actually executed (design-agnostic).
+
+    ``current`` always executes (trusted-island inline). ``trusted_shortcut``
+    must show Amulet-lift evidence; ``A_rightmul`` must show right-multiply
+    evidence. Used by the non-tag-only validation."""
+    if not isinstance(report, dict):
+        return False
+    nb = report.get("nonlinear_backend") or report.get("nonlinear_design_name")
+    try:
+        canon = normalize_nonlinear_backend(nb) if nb else None
+    except UnknownNonlinearBackend:
+        return False
+    if canon == "trusted_shortcut":
+        return report_has_amulet_execution(report)
+    if canon == "A_rightmul":
+        return report_has_right_multiply_execution(report)
+    if canon == "current":
+        return True
+    return False
+
+
+def nonlinear_tag_only(report: Dict[str, Any]) -> bool:
+    """True iff an EXECUTION-bearing report is TAGGED with a migrated design
+    (``trusted_shortcut`` or ``A_rightmul``) but lacks the corresponding measured
+    execution evidence (i.e. tag-only). Build/setup/estimate reports are never
+    flagged (they run no nonlinearity)."""
+    if not isinstance(report, dict):
+        return False
+    nb = report.get("nonlinear_backend") or report.get("nonlinear_design_name")
+    if not nb:
+        return False
+    try:
+        canon = normalize_nonlinear_backend(nb)
+    except UnknownNonlinearBackend:
+        return False
+    if canon not in ("trusted_shortcut", "A_rightmul"):
+        return False
+    if not _report_is_execution_bearing(report):
+        return False
+    return not report_has_real_nonlinear_execution(report)
+
+
 def trusted_shortcut_tag_only(report: Dict[str, Any]) -> bool:
     """True iff an EXECUTION-bearing report is TAGGED trusted_shortcut but lacks
     real Amulet-lift execution evidence (i.e. tag-only -- it ran the 'current'
@@ -370,7 +486,7 @@ def nonlinear_design_report_fields(name: str) -> Dict[str, Any]:
     canon = normalize_nonlinear_backend(name)
     rec = NONLINEAR_DESIGNS[canon]
     executed = real_path_executes(canon)
-    return {
+    fields = {
         "nonlinear_backend": canon,
         "nonlinear_design_name": canon,
         "nonlinear_design_label": rec["design_label"],
@@ -401,6 +517,21 @@ def nonlinear_design_report_fields(name: str) -> Dict[str, Any]:
         },
         "nonlinear_design_limitations": list(rec["limitations"]),
     }
+    if canon == "A_rightmul":
+        # A_rightmul capability stamp. ``right_multiply_nonlinear_executed`` stays
+        # False here (a BUILD folds weights and runs no nonlinearity); an
+        # execution-bearing run (probe/decode/demo/ifeval) OVERRIDES it with the
+        # measured runner evidence (trusted_nonlinear_ops_count == 0).
+        fields.update({
+            "right_multiply_nonlinear_executed": False,
+            "right_multiply_nonlinear_ops_count": 0,
+            "trusted_nonlinear_ops_count": 0,
+            "nonlinear_trusted_calls": 0,
+            "nonlinear_masking_mode": "compatible_right_multiply_or_permutation",
+            "nonlinear_single_tee_entry_exit": True,
+            "linear_boundary_pad": True,
+        })
+    return fields
 
 
 # ---------------------------------------------------------------------------

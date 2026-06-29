@@ -222,9 +222,12 @@ def main() -> int:
     # 2. verify
     vrep = verify_package(pkg_dir)
 
-    # 3. load in the untrusted worker (NO masks)
+    # 3. load in the untrusted worker (NO masks); the worker EXECUTES the
+    # selected nonlinear design over the folded layer (A_rightmul runs every
+    # nonlinear island on the accelerator, zero trusted crossings).
     backend = Qwen7BFoldedPackageGpuBackend(
-        folded_package_path=str(pkg_dir), device=device, dtype=dtype)
+        folded_package_path=str(pkg_dir), device=device, dtype=dtype,
+        nonlinear_backend=args.nonlinear_backend)
     init_resp = backend.init(BoundaryInitRequest(
         session_id="probe", hidden_size=int(getattr(mc, "hidden_size")),
         vocab_size=int(getattr(mc, "vocab_size")), num_layers=1, dtype=dtype,
@@ -275,6 +278,12 @@ def main() -> int:
     # Linear-boundary additive-pad audit (read back from the LOADED package the
     # worker will actually execute -- not a build-time flag).
     report.update(backend.linear_boundary_pad_status())
+    # Nonlinear design capability stamp + MEASURED execution evidence from the
+    # layer that just ran (A_rightmul -> right_multiply_nonlinear_executed=True,
+    # trusted_nonlinear_ops_count=0; never a tag-only claim).
+    from pllo.experiments.nonlinear_designs import nonlinear_design_report_fields
+    report.update(nonlinear_design_report_fields(args.nonlinear_backend))
+    report.update(backend.nonlinear_execution_evidence())
 
     if args.output_json:
         p = Path(args.output_json)

@@ -27,7 +27,8 @@ from pllo.experiments import nonlinear_designs as nd  # noqa: E402
 # ---------------------------------------------------------------------------
 
 def test_registry_normalization_and_aliases() -> None:
-    assert nd.list_nonlinear_backends() == ["current", "trusted_shortcut"]
+    assert nd.list_nonlinear_backends() == [
+        "current", "trusted_shortcut", "A_rightmul"]
     assert nd.normalize_nonlinear_backend("amulet_migrated") == "trusted_shortcut"
     assert nd.normalize_nonlinear_backend("TEE-Shortcut-Nonlinear") == \
         "trusted_shortcut"

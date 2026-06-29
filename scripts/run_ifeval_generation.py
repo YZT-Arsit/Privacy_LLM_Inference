@@ -587,6 +587,23 @@ def main() -> int:
         "paper_ready": (not is_dry),
     }
     report.update(sfields)
+    # nonlinear design capability stamp + MEASURED worker execution evidence
+    # (so an A_rightmul / trusted_shortcut run carries genuine, non-tag-only
+    # evidence: right_multiply_nonlinear_executed / amulet_lift_executed etc.).
+    from pllo.experiments.nonlinear_designs import nonlinear_design_report_fields
+    report.update(nonlinear_design_report_fields(nb))
+    report["nonlinear_backend"] = nb
+    if args.gpu_worker_url and not is_dry:
+        try:
+            from pllo.protocol.remote import RemoteGpuWorker
+            _h = RemoteGpuWorker(
+                args.gpu_worker_url, "qwen7b_folded_package").health()
+            _ev = (_h or {}).get("nonlinear_execution_evidence") or {}
+            if _ev:
+                report.update(_ev)
+                report["nonlinear_execution_evidence_source"] = "worker_health"
+        except Exception:                                    # noqa: BLE001
+            pass
     # per-token decode profile -> target metrics + honest bottleneck localisation
     report.update(decode_metrics)
     report["bottleneck_stage"] = decode_metrics.get("bottleneck_stage")

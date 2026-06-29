@@ -82,6 +82,10 @@ class NonlinearExecAccumulator:
     lifted_nonlinear_ops_count: int = 0
     lift_k: int = 0
     lifted_gpu_bytes: int = 0
+    # A_rightmul (compatible right-multiply) accounting
+    right_multiply_executed: bool = False
+    right_multiply_ops_count: int = 0
+    right_multiply_gpu_bytes: int = 0
     trusted_nonlinear_ops_count: int = 0
     trusted_calls: int = 0
     trusted_bytes: int = 0
@@ -126,17 +130,33 @@ class NonlinearExecAccumulator:
         self.trusted_calls += int(result.trusted_calls)
         self.trusted_bytes += int(result.trusted_bytes)
 
+    def record_right_multiply(self, op_type: str, result: Any) -> None:
+        """An A_rightmul compatible right-multiply island run in place on the
+        accelerator (design A_rightmul): ZERO trusted crossings."""
+        self._bump(op_type)
+        self.right_multiply_executed = True
+        self.right_multiply_ops_count += 1
+        gb = int(result.gpu_bytes)
+        self.right_multiply_gpu_bytes += gb
+        self.gpu_bytes += gb
+        # right-multiply islands never cross the trusted boundary
+        self.trusted_calls += int(result.trusted_calls)   # == 0 by construction
+        self.trusted_bytes += int(result.trusted_bytes)   # == 0 by construction
+
     def to_report_fields(self) -> Dict[str, Any]:
         """The runtime execution-evidence fields a paper-facing report stamps
         AFTER ``nonlinear_design_report_fields`` (override the default tag-only
         stamp with measured counters)."""
-        if self.amulet_lift_executed:
+        if self.right_multiply_executed:
+            status = "right_multiply_on_accelerator"
+        elif self.amulet_lift_executed:
             status = "lifted_on_accelerator"
         elif self.nonlinear_op_backend == "amulet_migrated":
             status = "migrated_with_trusted_shortcut"
         else:
             status = "executed_trusted_boundary_inline"
-        return {
+        out = {
+            "nonlinear_backend": self.nonlinear_backend,
             "nonlinear_op_backend": self.nonlinear_op_backend,
             "nonlinear_real_path_executed": True,
             "amulet_lift_executed": bool(self.amulet_lift_executed),
@@ -152,6 +172,21 @@ class NonlinearExecAccumulator:
             "unsupported_nonlinear_ops": list(self.unsupported_ops),
             "nonlinear_execution_status": status,
         }
+        if self.nonlinear_op_backend == "compatible_right_multiply":
+            # A_rightmul measured execution evidence (single TEE entry/exit;
+            # every nonlinear island ran on the accelerator, zero trusted calls).
+            out.update({
+                "right_multiply_nonlinear_executed":
+                    bool(self.right_multiply_executed),
+                "right_multiply_nonlinear_ops_count":
+                    int(self.right_multiply_ops_count),
+                "right_multiply_gpu_bytes": int(self.right_multiply_gpu_bytes),
+                "nonlinear_masking_mode":
+                    "compatible_right_multiply_or_permutation",
+                "nonlinear_single_tee_entry_exit": True,
+                "linear_boundary_pad": True,
+            })
+        return out
 
 
 class FoldedNonlinearRunner:
@@ -168,15 +203,25 @@ class FoldedNonlinearRunner:
         self.op_backend = op_backend_for_design(self.nonlinear_backend)
         self.lift_k = int(lift_k)
         self._amulet = None
+        self._rightmul = None
         if self.op_backend == "amulet_migrated":
             self._amulet = make_nonlinear_backend(
                 "amulet_migrated", lift_k=self.lift_k, seed=int(seed))
+        elif self.op_backend == "compatible_right_multiply":
+            # A_rightmul: every nonlinear island runs on the accelerator over the
+            # masked state; no trusted crossing, no fallback to the 'current'
+            # trusted-island path.
+            self._rightmul = make_nonlinear_backend("compatible_right_multiply")
         self.acc = NonlinearExecAccumulator(
             nonlinear_backend=self.nonlinear_backend,
             nonlinear_op_backend=self.op_backend)
 
-    # -- MLP activation (the lifted island for design B) ----------------------
+    # -- MLP activation (lifted for design B; right-multiply for A_rightmul) ---
     def silu(self, x: torch.Tensor) -> torch.Tensor:
+        if self._rightmul is not None:
+            r = self._rightmul.silu(x)
+            self.acc.record_right_multiply("silu", r)
+            return r.output
         if self._amulet is None:
             out = _silu_fn(x)
             self.acc.record_trusted("silu", x, out)
@@ -186,6 +231,10 @@ class FoldedNonlinearRunner:
         return r.output
 
     def gelu(self, x: torch.Tensor) -> torch.Tensor:
+        if self._rightmul is not None:
+            r = self._rightmul.gelu(x)
+            self.acc.record_right_multiply("gelu", r)
+            return r.output
         if self._amulet is None:
             out = torch.nn.functional.gelu(x)
             self.acc.record_trusted("gelu", x, out)
@@ -196,6 +245,10 @@ class FoldedNonlinearRunner:
 
     # -- RMSNorm core (weight is folded into the linear; weight-free here) -----
     def rmsnorm_core(self, x: torch.Tensor, eps: float) -> torch.Tensor:
+        if self._rightmul is not None:
+            r = self._rightmul.rmsnorm(x, weight=None, eps=eps)
+            self.acc.record_right_multiply("rmsnorm", r)
+            return r.output
         if self._amulet is None:
             out = _rmsnorm_core_fn(x, eps)
             self.acc.record_trusted("rmsnorm", x, out)
@@ -206,6 +259,10 @@ class FoldedNonlinearRunner:
 
     # -- attention softmax ----------------------------------------------------
     def softmax(self, x: torch.Tensor, dim: int = -1) -> torch.Tensor:
+        if self._rightmul is not None:
+            r = self._rightmul.softmax(x, dim=dim)
+            self.acc.record_right_multiply("softmax", r)
+            return r.output
         if self._amulet is None:
             out = torch.softmax(x, dim=dim)
             self.acc.record_trusted("softmax", x, out)
