@@ -488,6 +488,28 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             session_id=req.session_id, ok=True, gpu_backend=self.name,
             tee_used_on_gpu=False, notes=notes)
 
+    def linear_boundary_pad_status(self) -> dict[str, Any]:
+        """Linear-boundary additive-pad audit, read back from the LOADED package's
+        shard tensor names (a module counts only if BOTH its xpad+cpad tensors are
+        present). Reflects what the worker will actually execute; no secrets."""
+        from pllo.deployment.linear_boundary_pad import (
+            default_linear_boundary_pad_report_fields,
+            layer_pad_coverage, linear_boundary_pad_report_fields)
+        if not self.folded_package_loaded or not self.folded_package_path:
+            return default_linear_boundary_pad_report_fields()
+        from pllo.deployment import load_manifest
+        layer_names: list[str] = []
+        head_names: list[str] = []
+        for sh in load_manifest(self.folded_package_path).shard_index:
+            tn = sh.get("tensors", [])
+            if str(sh.get("path", "")).startswith("head"):
+                head_names += tn
+            else:
+                layer_names += tn
+        cov = layer_pad_coverage(layer_names, head_names)
+        return linear_boundary_pad_report_fields(
+            enabled=any(cov.values()), coverage=cov)
+
     def describe(self) -> dict[str, Any]:
         return {"backend": self.name, "tee_used": self.tee_used,
                 "nonlinear_backend": self.nonlinear_backend,
@@ -508,6 +530,7 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "worker_has_raw_lora": self.worker_has_raw_lora,
                 "peak_gpu_memory_mb": self.peak_gpu_memory_mb,
                 **self.resident_status(),
+                **self.linear_boundary_pad_status(),
                 "tee_used_on_gpu": False}
 
     def _ensure_exec_context(self):
@@ -624,14 +647,15 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
             return False
         from pllo.deployment.folded_worker import (
             build_resident_folded_layers, folded_layers_nbytes,
-            load_resident_head)
+            load_resident_head_dict)
         t0 = time.perf_counter()
         try:
             layers = build_resident_folded_layers(
                 self.folded_package_path, int(num_layers), device=device,
                 dtype=fdtype, lora_package_dir=self.folded_lora_package_path)
-            head = load_resident_head(self.folded_package_path, device=device,
-                                      dtype=fdtype)
+            # full head dict so the optional Linear-boundary head pad survives
+            head = load_resident_head_dict(self.folded_package_path,
+                                           device=device, dtype=fdtype)
         except RuntimeError as exc:                   # CUDA OOM or similar
             self._resident_layers = None
             self._resident_head = None

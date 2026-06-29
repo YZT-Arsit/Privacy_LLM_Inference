@@ -39,6 +39,16 @@ from pllo.deployment.folded_package_manifest import (
     validate_manifest,
     write_manifest,
 )
+from pllo.deployment.linear_boundary_pad import (
+    ALL_PAD_MODULES,
+    add_input_pad_to_folded_head,
+    add_input_pads_to_folded_layer,
+    default_linear_boundary_pad_report_fields,
+    fold_linear_with_input_pad,
+    layer_pad_coverage,
+    linear_boundary_pad_report_fields,
+    masked_input_pad_and_compensation,
+)
 
 # NOTE: ``folded_worker`` (worker-side, imports torch + the masked kernels) is
 # intentionally NOT imported here, so ``import pllo.deployment`` stays light for
@@ -66,4 +76,12 @@ __all__ = [
     "load_manifest",
     "validate_manifest",
     "write_manifest",
+    "ALL_PAD_MODULES",
+    "add_input_pad_to_folded_head",
+    "add_input_pads_to_folded_layer",
+    "default_linear_boundary_pad_report_fields",
+    "fold_linear_with_input_pad",
+    "layer_pad_coverage",
+    "linear_boundary_pad_report_fields",
+    "masked_input_pad_and_compensation",
 ]

@@ -268,9 +268,31 @@ def extract_hf_single_block_weights(
 
 
 def _linear(x: torch.Tensor, w: torch.Tensor,
-            b: torch.Tensor | None) -> torch.Tensor:
-    out = x @ w
-    return out if b is None else out + b
+            b: torch.Tensor | None,
+            xpad: torch.Tensor | None = None,
+            cpad: torch.Tensor | None = None) -> torch.Tensor:
+    """Folded Linear ``y = x @ w (+ b)`` with OPTIONAL Linear-boundary additive
+    input padding. When ``xpad`` (= ``T N_in``) and ``cpad`` (= ``T W N_out``) are
+    given, the GPU matmul operand becomes ``(x - xpad)`` -- i.e. the masked padded
+    input view ``(X - T) N_in`` -- and ``cpad`` is added back so the output returns
+    to the compatible masked basis ``Y N_out`` (algebraically unchanged:
+    ``xpad @ w == cpad``). ``xpad``/``cpad`` are precomputed composed offsets; the
+    runtime cost is a fused broadcast subtract + add (no extra matmul). Defaults
+    (None) keep the historical mask-only path byte-for-byte."""
+    xin = x if xpad is None else x - xpad
+    out = xin @ w
+    if b is not None:
+        out = out + b
+    if cpad is not None:
+        out = out + cpad
+    return out
+
+
+def _pad(folded: dict[str, Any], weight_key: str) -> tuple:
+    """Return ``(xpad, cpad)`` for a folded weight key from the layer dict (both
+    None when the package was built mask-only)."""
+    base = weight_key[:-len("_tilde")]
+    return folded.get(base + "_xpad_tilde"), folded.get(base + "_cpad_tilde")
 
 
 def _causal_bias(t_q: int, t_k: int, dtype: torch.dtype,
@@ -435,11 +457,11 @@ def _masked_attention(
     nh, nkv, hd = config.num_heads, config.num_key_value_heads, config.head_dim
     scale = 1.0 / math.sqrt(hd)
     q_t = split_heads(_linear(r1_core_tilde, folded["wq_tilde"],
-                              folded["bq_tilde"]), nh)
+                              folded["bq_tilde"], *_pad(folded, "wq_tilde")), nh)
     k_t = split_heads(_linear(r1_core_tilde, folded["wk_tilde"],
-                              folded["bk_tilde"]), nkv)
+                              folded["bk_tilde"], *_pad(folded, "wk_tilde")), nkv)
     v_t = split_heads(_linear(r1_core_tilde, folded["wv_tilde"],
-                              folded["bv_tilde"]), nkv)
+                              folded["bv_tilde"], *_pad(folded, "wv_tilde")), nkv)
     qr_t = apply_rope(q_t, cos, sin, position_ids=position_ids)
     kr_t_new = apply_rope(k_t, cos, sin, position_ids=position_ids)
     if past_key_rope is not None:
@@ -450,7 +472,8 @@ def _masked_attention(
     scores, probs, av = _sdpa(qr_t, repeat_kv(kr_t, nh, nkv),
                               repeat_kv(v_full, nh, nkv), scale, causal_offset,
                               runner=runner)
-    out = _linear(merge_heads(av), folded["wo_tilde"], folded["bo_tilde"])
+    out = _linear(merge_heads(av), folded["wo_tilde"], folded["bo_tilde"],
+                  *_pad(folded, "wo_tilde"))
     return {
         "out": out, "q_pre_rope": q_t, "k_pre_rope": k_t, "v": v_t,
         "k_rope_new": kr_t_new, "scores": scores, "probs": probs, "av": av,
@@ -460,15 +483,20 @@ def _masked_attention(
 
 def _masked_mlp(r2_core_tilde: torch.Tensor, folded: dict[str, Any],
                 runner: Any = None) -> dict[str, torch.Tensor]:
-    gate = _linear(r2_core_tilde, folded["wgate_tilde"], folded["bgate_tilde"])
-    up = _linear(r2_core_tilde, folded["wup_tilde"], folded["bup_tilde"])
+    gate = _linear(r2_core_tilde, folded["wgate_tilde"], folded["bgate_tilde"],
+                   *_pad(folded, "wgate_tilde"))
+    up = _linear(r2_core_tilde, folded["wup_tilde"], folded["bup_tilde"],
+                 *_pad(folded, "wup_tilde"))
     # The SwiGLU activation is the MLP nonlinear island. ``runner`` (optional)
     # dispatches the SiLU through the selected design: design B *lifts* it onto
     # the accelerator (exact after the folded squeeze); default None keeps the
-    # historical ``silu_reference`` inline path exactly.
+    # historical ``silu_reference`` inline path exactly. The additive pad does NOT
+    # enter the activation: gate/up are de-padded to ``Y N_out`` BEFORE SiLU, and
+    # the down-projection re-pads its OWN input view independently.
     act = runner.silu(gate) if runner is not None else silu_reference(gate)
     hidden = act * up
-    out = _linear(hidden, folded["wdown_tilde"], folded["bdown_tilde"])
+    out = _linear(hidden, folded["wdown_tilde"], folded["bdown_tilde"],
+                  *_pad(folded, "wdown_tilde"))
     return {"gate": gate, "up": up, "hidden": hidden, "out": out}
 
 

@@ -161,3 +161,26 @@ State plainly what is and is not demonstrated.
 In short: this stage demonstrates a *deployable boundary architecture* with a
 small trusted base and verified correctness/negative-controls, on a platform
 where TDX execution is confirmed but full remote attestation is still pending.
+
+## Linear-boundary additive padding (production Qwen folded path)
+
+The trusted boundary initializes the private input embedding and mask schedule
+once. The untrusted GPU executes all intermediate decoder layers. Linear
+boundaries use additive input padding: the GPU receives `X_tilde = (X − T) N`
+and applies a folded compensation `C_pad = T W N_out` so that the Linear output
+returns to the compatible masked basis `Y N_out`. Pads are boundary-local and do
+not enter RMSNorm, RoPE, softmax, or activation cores. Nonlinear operations are
+handled by compatible right-multiply or permutation masks. The trusted boundary
+is invoked again only for final logits recovery and sampling.
+
+**Limitation.** We do not claim that arbitrary dense affine masks commute with
+nonlinear operations. Additive pads are used only at Linear boundaries and are
+compensated before nonlinear cores. Nonlinear islands rely on compatible mask
+families such as permutations, signed permutations, or Q/K/V masks satisfying the
+attention invariants.
+
+Coverage spans every Linear family (`q/k/v/o/gate/up/down/lm_head`); compensation
+is precomputed (no online extra matmul); raw pads/masks never reach the GPU (only
+the composed offsets `T N_in` and `T W N_out`). See
+[`linear_boundary_additive_padding.md`](linear_boundary_additive_padding.md) for
+the exact fold, audit fields, and validation.

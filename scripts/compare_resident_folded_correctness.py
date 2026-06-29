@@ -96,7 +96,15 @@ def _checksum_resident(layers, head):
             sums.append("%s:%s" % (k, _checksum_tensor(v) if v is not None
                                    else "none"))
     if head is not None:
-        sums.append("head:%s" % _checksum_tensor(head))
+        # the resident head is a dict (w_lm_tilde + optional Linear-boundary pad
+        # tensors); older packages stored a bare tensor.
+        if isinstance(head, dict):
+            for k in sorted(head):
+                v = head[k]
+                sums.append("head.%s:%s" % (k, _checksum_tensor(v)
+                                            if v is not None else "none"))
+        else:
+            sums.append("head:%s" % _checksum_tensor(head))
     return sums
 
 
@@ -248,7 +256,10 @@ def main() -> int:
             {k: (v.double() if v is not None else None) for k, v in L.items()}
             for L in rb._resident_layers]
         if rb._resident_head is not None:
-            rb._resident_head = rb._resident_head.double()
+            h = rb._resident_head
+            rb._resident_head = (
+                {k: (v.double() if v is not None else None) for k, v in h.items()}
+                if isinstance(h, dict) else h.double())
     resident_dtype = str(rb._resident_layers[0]["wq_tilde"].dtype)
     resident_dtype_mismatch = bool(resident_dtype != base_dtype)
     chk_before = _checksum_resident(rb._resident_layers, rb._resident_head)

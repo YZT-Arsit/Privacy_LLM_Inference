@@ -142,6 +142,13 @@ class MemoryOptimizedConfig:
     # Permute q/k output features so the project's adjacent-pair RoPE reproduces
     # HuggingFace Qwen2's half-split RoPE exactly (required for HF parity).
     align_rope_to_hf: bool = True
+    # Linear-boundary additive input padding (default OFF for back-compat). When
+    # on, every folded Linear (q/k/v/o/gate/up/down/lm_head) carries a masked
+    # input pad ``xpad = T N_in`` + compensation ``cpad = T W N_out`` so the GPU
+    # matmul operand is ``(X - T) N_in`` while the output stays in the compatible
+    # masked basis ``Y N_out`` (no persistent residual pad; not in nonlinear cores).
+    use_linear_boundary_pad: bool = False
+    linear_pad_scale: float = 0.1
 
 
 _DTYPE = {"float16": torch.float16, "fp16": torch.float16,

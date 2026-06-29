@@ -167,19 +167,40 @@ class MaskedQwenSession:
         weight package. Contains ONLY folded operators (``*_tilde``): attention
         q/k/v/o, MLP gate/up, and the fully-folded down projection
         ``wdown_tilde = down[perm] @ n_res``. The masks (``perm``/``n_res``) are
-        used to compute these but are NEVER part of the output."""
+        used to compute these but are NEVER part of the output.
+
+        When ``config.use_linear_boundary_pad`` is set, also emits the per-module
+        Linear-boundary additive pad ``<w>_xpad_tilde`` (= ``T N_in``) and
+        compensation ``<w>_cpad_tilde`` (= ``T W N_out``) for q/k/v/o/gate/up/down
+        -- composed offsets only (raw pads/masks never leave the trusted setup)."""
         folded, down_info, _ = self._folded_layer(ell)
         down_w, perm, n_res, bdown_tilde = down_info
         out = {k: v for k, v in folded.items() if isinstance(v, torch.Tensor)}
         out["wdown_tilde"] = down_w.index_select(0, perm) @ n_res
         if bdown_tilde is not None:
             out["bdown_tilde"] = bdown_tilde
+        if getattr(self.config, "use_linear_boundary_pad", False):
+            from pllo.deployment.linear_boundary_pad import (
+                add_input_pads_to_folded_layer)
+            # independent pad per (session seed, layer); reproducible builds.
+            add_input_pads_to_folded_layer(
+                out, seed=int(self.config.seed) + 31 * (ell + 1),
+                scale=float(getattr(self.config, "linear_pad_scale", 0.1)))
         return out
 
     def export_folded_head_tensors(self) -> dict[str, torch.Tensor]:
         """Folded final-norm + LM-head operator (with the vocab mask baked in)
-        as ``{"w_lm_tilde": ...}`` -- the only head artifact the worker needs."""
-        return {"w_lm_tilde": self._w_lm_tilde}
+        as ``{"w_lm_tilde": ...}`` -- the only head artifact the worker needs.
+        With ``config.use_linear_boundary_pad`` also emits the head's input pad +
+        compensation (``w_lm_xpad_tilde`` / ``w_lm_cpad_tilde``)."""
+        out = {"w_lm_tilde": self._w_lm_tilde}
+        if getattr(self.config, "use_linear_boundary_pad", False):
+            from pllo.deployment.linear_boundary_pad import (
+                add_input_pad_to_folded_head)
+            add_input_pad_to_folded_head(
+                out, seed=int(self.config.seed),
+                scale=float(getattr(self.config, "linear_pad_scale", 0.1)))
+        return out
 
     def worker_prefill(self, h_tilde: torch.Tensor) -> dict[str, Any]:
         """Masked prefill: ``h_tilde`` -> masked logits ``[B, T, V]`` + masked KV."""

@@ -123,6 +123,18 @@ def main() -> int:
     ap.add_argument("--created-at", default=None,
                     help="ISO timestamp for the manifest (else filled at runtime)")
     ap.add_argument("--seed", type=int, default=2035)
+    ap.add_argument("--linear-boundary-pad", action="store_true", default=False,
+                    help="enable Linear-boundary additive input padding for every "
+                    "folded Linear (q/k/v/o/gate/up/down/lm_head): the GPU matmul "
+                    "operand becomes (X - T) N_in with a precomputed folded "
+                    "compensation C_pad = T W N_out, output stays in the masked "
+                    "basis Y N_out. Pads are boundary-local (not in nonlinear "
+                    "cores, not persisted in the residual). Raw T/N never leave "
+                    "trusted setup.")
+    ap.add_argument("--linear-pad-scale", type=float, default=0.1,
+                    help="magnitude of the (masked-basis) additive input pad; "
+                    "output is mathematically invariant to it -- it only changes "
+                    "the obfuscated matmul-operand view")
     ap.add_argument("--estimate-only", action="store_true",
                     help="report projected size/shards without folding/writing")
     ap.add_argument("--dry-run", action="store_true")
@@ -161,7 +173,9 @@ def main() -> int:
         seq_len=args.seq_len, max_new_tokens=1, device=device, dtype=dtype,
         folding_dtype="float32",
         folded_weight_device=args.folded_weight_device or device,
-        mlp_down_chunk_size=args.mlp_down_chunk_size, seed=args.seed)
+        mlp_down_chunk_size=args.mlp_down_chunk_size, seed=args.seed,
+        use_linear_boundary_pad=bool(args.linear_boundary_pad),
+        linear_pad_scale=float(args.linear_pad_scale))
 
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
@@ -255,6 +269,31 @@ def main() -> int:
         "build_command": build_command,
     }
     rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
+
+    # ---- Linear-boundary additive pad audit + per-module coverage ----
+    from pllo.deployment.linear_boundary_pad import (  # noqa: E402
+        layer_pad_coverage, linear_boundary_pad_report_fields, ALL_PAD_MODULES)
+    if bool(args.linear_boundary_pad):
+        # coverage read back from the actually-written shard tensor names (a
+        # module counts only if BOTH its xpad+cpad tensors are present)
+        layer_names: list[str] = []
+        head_names: list[str] = []
+        for e in writer.shard_index:
+            if e["name"].startswith("layer_") or e["name"] == "layers":
+                layer_names += e.get("tensors", [])
+            elif e["name"] == "head":
+                head_names += e.get("tensors", [])
+        cov = layer_pad_coverage(layer_names, head_names)
+        rep.update(linear_boundary_pad_report_fields(
+            enabled=True, coverage=cov, scale=float(args.linear_pad_scale)))
+        all_covered = all(cov.get(m, False) for m in ALL_PAD_MODULES)
+        if not all_covered:
+            rep["paper_ready"] = False
+            rep["paper_ready_blocker"] = (
+                "linear_boundary_pad enabled but these Linear modules lack pad "
+                "coverage: %s" % [m for m in ALL_PAD_MODULES if not cov.get(m)])
+    else:
+        rep.update(linear_boundary_pad_report_fields(enabled=False))
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -269,6 +308,14 @@ def main() -> int:
     print(f"contains_mask_secrets={rep['contains_mask_secrets']} "
           f"worker_has_mask_secrets={rep['worker_has_mask_secrets']} "
           f"tee_used_on_gpu={rep['tee_used_on_gpu']}")
+    print(f"linear_boundary_pad_enabled={rep['linear_boundary_pad_enabled']} "
+          f"linear_input_form={rep['linear_input_form']!r} "
+          f"online_extra_matmul_for_pad={rep['online_extra_matmul_for_pad']}")
+    if rep["linear_boundary_pad_enabled"]:
+        print(f"linear_pad_coverage={rep['linear_pad_coverage']}")
+        print(f"raw_pad_visible_to_gpu={rep['raw_pad_visible_to_gpu']} "
+              f"raw_mask_visible_to_gpu={rep['raw_mask_visible_to_gpu']} "
+              f"c_pad_visible_to_gpu={rep['c_pad_visible_to_gpu']}")
     return 0
 
 

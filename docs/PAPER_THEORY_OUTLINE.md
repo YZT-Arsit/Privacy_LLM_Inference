@@ -311,3 +311,31 @@ theorem + experimentally validated; not a security guarantee), T10
 related claim is graded in the next document.
 
 `formal_security_claim`: `False` everywhere it is recorded.
+
+## 11. Linear-boundary additive padding (production Qwen folded path)
+
+**Claim.** Each Linear in the production folded path admits an additive input
+pad whose compensation is precomputed and folded, so the GPU's matmul operand is
+`X_tilde = (X − T) N_in` while the output stays in the existing compatible masked
+basis `Y N_out`.
+
+**Assumptions.** `N_in`, `N_out` orthogonal (signed-permutation / per-head / SwiGLU
+permutation families); pad `T` is boundary-local (sampled in the masked basis as
+`xpad = T N_in`).
+
+**Proof sketch.** With `W_tilde = N_in^{-1} W N_out`, `b_tilde = b N_out`, and
+`C_pad = T W N_out = xpad @ W_tilde`,
+`(X−T)N_in · W_tilde + b_tilde + C_pad = (XW+b) N_out`. Recovery is unchanged, so
+recovered logits and greedy tokens equal the mask-only path (and plaintext within
+fp tolerance).
+
+**Scope / limitation.** The pad obfuscates the Linear matmul operand view only; it
+is compensated before any nonlinear core and is never persisted in the residual
+stream. We do **not** claim that arbitrary dense affine masks commute with
+RMSNorm / softmax / SwiGLU — those keep compatible permutation / Q·Kᵀ-invariant
+masks. `formal_security_claim`: `False`.
+
+**Artifact.** `src/pllo/deployment/linear_boundary_pad.py`,
+`scripts/build_qwen7b_folded_package.py --linear-boundary-pad`,
+`tests/test_qwen_linear_boundary_pad.py`,
+[`linear_boundary_additive_padding.md`](linear_boundary_additive_padding.md).

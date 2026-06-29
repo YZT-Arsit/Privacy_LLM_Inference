@@ -309,6 +309,18 @@ def merge_folded_lora(base_layer_tensors: dict, lora_layer_tensors: dict,
             delta = a_t.to(base_layer_tensors[wkey].dtype) @ \
                 b_t.to(base_layer_tensors[wkey].dtype)
             base_layer_tensors[wkey] = base_layer_tensors[wkey] + delta
+            # Linear-boundary pad: the masked input pad ``xpad = T N_in`` is
+            # unchanged by LoRA (same input basis), but the compensation
+            # ``cpad = xpad @ W_tilde`` must be recomputed against the MERGED
+            # weight so ``(x - xpad) @ W_merged + cpad == x @ W_merged`` still
+            # holds. One vector-matmul per merged module at merge time (load /
+            # resident build), NOT per decode step.
+            base = wkey[:-len("_tilde")]
+            xk, ck = base + "_xpad_tilde", base + "_cpad_tilde"
+            xpad = base_layer_tensors.get(xk)
+            if xpad is not None and ck in base_layer_tensors:
+                base_layer_tensors[ck] = xpad.to(
+                    base_layer_tensors[wkey].dtype) @ base_layer_tensors[wkey]
     return base_layer_tensors
 
 

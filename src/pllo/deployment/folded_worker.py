@@ -21,13 +21,16 @@ from typing import Any
 
 import torch
 
-from pllo.hf_wrappers.llama_qwen_single_block import _masked_attention, _masked_mlp
+from pllo.hf_wrappers.llama_qwen_single_block import (
+    _linear, _masked_attention, _masked_mlp)
 from pllo.ops.nonlinear_islands import rmsnorm_core
 
 __all__ = [
     "FOLDED_LAYER_KEYS",
     "load_folded_layer",
     "load_folded_head",
+    "load_folded_head_dict",
+    "load_resident_head_dict",
     "build_folded_layer_dict",
     "build_resident_folded_layers",
     "load_resident_head",
@@ -60,11 +63,19 @@ def _empty_cache(device) -> None:
         pass
 
 # Keys the masked kernels index on ``folded`` (biases may be None / absent).
+# The ``*_xpad_tilde`` (masked input pad ``T N_in``) + ``*_cpad_tilde``
+# (compensation ``T W N_out``) are present only when the package was built with
+# the Linear-boundary additive pad; absent -> mask-only (kernels use None).
 FOLDED_LAYER_KEYS = (
     "wq_tilde", "wk_tilde", "wv_tilde", "wo_tilde",
     "bq_tilde", "bk_tilde", "bv_tilde", "bo_tilde",
     "wgate_tilde", "wup_tilde", "bgate_tilde", "bup_tilde",
     "wdown_tilde", "bdown_tilde",
+    # Linear-boundary additive pad (optional)
+    "wq_xpad_tilde", "wk_xpad_tilde", "wv_xpad_tilde", "wo_xpad_tilde",
+    "wgate_xpad_tilde", "wup_xpad_tilde", "wdown_xpad_tilde",
+    "wq_cpad_tilde", "wk_cpad_tilde", "wv_cpad_tilde", "wo_cpad_tilde",
+    "wgate_cpad_tilde", "wup_cpad_tilde", "wdown_cpad_tilde",
 )
 
 
@@ -84,13 +95,18 @@ def load_folded_layer(package_dir: str | Path, layer_index: int
     return load_shard(_shard_for_layer(Path(package_dir), layer_index))
 
 
-def load_folded_head(package_dir: str | Path) -> torch.Tensor:
-    """Load the folded final-norm + LM-head operator (``w_lm_tilde``)."""
+def load_folded_head_dict(package_dir: str | Path) -> dict[str, torch.Tensor]:
+    """Load the full folded head shard (``w_lm_tilde`` + optional pad tensors)."""
     from pllo.deployment.folded_package import list_package_shards, load_shard
     for p in list_package_shards(Path(package_dir)):
         if p.stem == "head":
-            return load_shard(p)["w_lm_tilde"]
+            return load_shard(p)
     raise FileNotFoundError(f"no head shard in {package_dir}")
+
+
+def load_folded_head(package_dir: str | Path) -> torch.Tensor:
+    """Load the folded final-norm + LM-head operator (``w_lm_tilde``)."""
+    return load_folded_head_dict(package_dir)["w_lm_tilde"]
 
 
 def build_folded_layer_dict(layer_tensors: dict[str, torch.Tensor], *,
@@ -139,21 +155,40 @@ def build_resident_folded_layers(package_dir, num_exec_layers: int, *,
 
 
 def load_resident_head(package_dir, *, device: Any, dtype: Any) -> torch.Tensor:
-    """Load the folded final-norm+LM-head operator ONCE and move it to device."""
+    """Load the folded final-norm+LM-head operator ONCE and move it to device
+    (bare ``w_lm_tilde`` tensor; back-compatible). Use
+    :func:`load_resident_head_dict` to also keep the optional head pad tensors."""
     return load_folded_head(package_dir).to(device=device, dtype=dtype)
 
 
+def load_resident_head_dict(package_dir, *, device: Any, dtype: Any
+                            ) -> dict[str, torch.Tensor]:
+    """Load the full folded head shard ONCE (``w_lm_tilde`` + optional Linear-
+    boundary pad tensors) and move it to device. Returns a dict so the head pad
+    survives into the resident decode path."""
+    head = load_folded_head_dict(package_dir)
+    return {k: v.to(device=device, dtype=dtype) for k, v in head.items()}
+
+
+def _head_nbytes(head: Any) -> int:
+    if head is None:
+        return 0
+    if isinstance(head, dict):
+        return int(sum(v.numel() * v.element_size() for v in head.values()
+                       if v is not None))
+    return int(head.numel()) * int(head.element_size())
+
+
 def folded_layers_nbytes(layers: list[dict[str, Any]],
-                         head: torch.Tensor | None = None) -> int:
-    """Total bytes of the resident folded operators (for memory accounting)."""
+                         head: Any = None) -> int:
+    """Total bytes of the resident folded operators (for memory accounting).
+    ``head`` may be a bare ``w_lm_tilde`` tensor or the full head dict."""
     total = 0
     for folded in layers:
         for v in folded.values():
             if v is not None:
                 total += int(v.numel()) * int(v.element_size())
-    if head is not None:
-        total += int(head.numel()) * int(head.element_size())
-    return total
+    return total + _head_nbytes(head)
 
 
 def apply_folded_layer_prefill(x_tilde: torch.Tensor,
@@ -322,15 +357,26 @@ def apply_folded_decode(x_next_tilde: torch.Tensor, package_dir, kv: list,
 
 def apply_folded_head(h_tilde: torch.Tensor, package_dir, eps: float,
                       runner: Any = None, timer: Any = None,
-                      folded_head: torch.Tensor | None = None) -> torch.Tensor:
+                      folded_head: Any = None) -> torch.Tensor:
     """Masked logits from the folded final-norm+LM-head operator:
     ``rmsnorm_core(h_tilde) @ w_lm_tilde`` (no masks; vocab mask is pre-folded).
-    Supply ``folded_head`` to reuse a resident head (no shard load / H2D copy).
+    Supply ``folded_head`` to reuse a resident head (no shard load / H2D copy);
+    it may be a bare ``w_lm_tilde`` tensor OR the full head dict (which carries the
+    optional Linear-boundary pad ``w_lm_xpad_tilde`` / ``w_lm_cpad_tilde``).
     ``runner`` routes the final RMSNorm through the design; ``timer`` records the
     LM-head time (excludes the shard load)."""
-    if folded_head is not None:
-        w = folded_head
+    xpad = cpad = None
+    if folded_head is None:
+        head = load_folded_head_dict(package_dir)
+        w = head["w_lm_tilde"].to(h_tilde.device, h_tilde.dtype)
+        if head.get("w_lm_xpad_tilde") is not None:
+            xpad = head["w_lm_xpad_tilde"].to(h_tilde.device, h_tilde.dtype)
+            cpad = head["w_lm_cpad_tilde"].to(h_tilde.device, h_tilde.dtype)
+    elif isinstance(folded_head, dict):
+        w = folded_head["w_lm_tilde"]
+        xpad = folded_head.get("w_lm_xpad_tilde")
+        cpad = folded_head.get("w_lm_cpad_tilde")
     else:
-        w = load_folded_head(package_dir).to(h_tilde.device, h_tilde.dtype)
+        w = folded_head
     with _region(timer, "lm_head"):
-        return _rmsnorm(h_tilde, eps, runner) @ w
+        return _linear(_rmsnorm(h_tilde, eps, runner), w, None, xpad, cpad)

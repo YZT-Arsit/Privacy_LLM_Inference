@@ -139,6 +139,10 @@ def main() -> int:
     ap.add_argument("--nonlinear-backend", default="current")
     ap.add_argument("--mask-schedule", default="session")
     ap.add_argument("--seed", type=int, default=2035)
+    ap.add_argument("--linear-boundary-pad", action="store_true", default=False,
+                    help="build + exercise the package with Linear-boundary "
+                    "additive input padding ((X-T)N_in + folded C_pad=T W N_out)")
+    ap.add_argument("--linear-pad-scale", type=float, default=0.1)
     ap.add_argument("--atol", type=float, default=1e-3)
     ap.add_argument("--rtol", type=float, default=1e-3)
     ap.add_argument("--dry-run", action="store_true")
@@ -185,7 +189,9 @@ def main() -> int:
         num_layers=session_layers, batch_size=1, seq_len=int(ids.shape[1]),
         max_new_tokens=1, device=device, dtype=dtype, folding_dtype="float32",
         folded_weight_device=args.folded_weight_device or device,
-        mlp_down_chunk_size=args.mlp_down_chunk_size, seed=seed)
+        mlp_down_chunk_size=args.mlp_down_chunk_size, seed=seed,
+        use_linear_boundary_pad=bool(args.linear_boundary_pad),
+        linear_pad_scale=float(args.linear_pad_scale))
     session = MaskedQwenSession(model, mc, cfg)
     h_tilde = session.mask_embeddings(ids)                 # boundary-masked input
 
@@ -266,6 +272,9 @@ def main() -> int:
         "verify_missing_shards": vrep["missing_shards"],
         "folded_weight_source": "test" if dry_run else "trusted_setup",
     }
+    # Linear-boundary additive-pad audit (read back from the LOADED package the
+    # worker will actually execute -- not a build-time flag).
+    report.update(backend.linear_boundary_pad_status())
 
     if args.output_json:
         p = Path(args.output_json)
