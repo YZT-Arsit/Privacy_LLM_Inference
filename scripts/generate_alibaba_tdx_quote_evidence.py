@@ -94,13 +94,19 @@ def _norm_hex(v) -> str | None:
     return re.sub(r"[^0-9a-f]", "", s) or None
 
 
+def _reverse_hex_bytes(s: str) -> str:
+    return "".join([s[i:i + 2] for i in range(0, len(s), 2)][::-1])
+
+
 def _alibaba_qgen_reportdata_hex(report_data_hex: str) -> str:
     s = _norm_hex(report_data_hex)
     if s is None:
         raise ValueError("invalid report_data_hex")
     if len(s) != 128:
         raise ValueError("Alibaba TDX report_data must be 64 bytes / 128 hex chars")
-    return s[64:128] + s[0:64]
+    first = s[:64]
+    second = s[64:128]
+    return _reverse_hex_bytes(second) + _reverse_hex_bytes(first)
 
 
 def _debug_from_tdx_attributes(v):
