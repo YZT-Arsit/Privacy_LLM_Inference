@@ -32,6 +32,7 @@ __all__ = [
     "append_jsonl_record",
     "RunState",
     "plan_examples",
+    "recount_status_from_jsonl",
 ]
 
 
@@ -81,6 +82,63 @@ def failed_ids_from_jsonl(path: str | Path) -> set[str]:
         else:
             ok.add(str(rid))
     return failed - ok            # a later success clears an earlier failure
+
+
+def recount_status_from_jsonl(path: str | Path, *, mt_bench: bool = False,
+                              required_turns: dict[str, int] | None = None
+                              ) -> dict[str, Any]:
+    """Recompute the FULL completion state from a response JSONL (resume-aware).
+
+    Uses the *latest* record per id (and per turn for MT-Bench), so an id that was
+    ``failed`` and later succeeded counts as completed, never failed. ``skipped``
+    records are ignored (neither ok nor failed).
+
+    For MT-Bench a *question* is completed only when every required turn is ok
+    (``required_turns[id]`` if given, else every turn seen for that id). Returns
+    completed_total / failed_total / ok_ids / failed_ids / total_records (and
+    turn_completed_total for MT-Bench)."""
+    rows = _read_jsonl_lenient(path)
+    total_records = len(rows)
+    if mt_bench:
+        # id -> {turn_index -> latest status}
+        per: dict[str, dict[int, str]] = {}
+        for r in rows:
+            rid = r.get("id")
+            if rid is None:
+                continue
+            status = r.get("status", "ok")
+            if status == "skipped":
+                continue
+            ti = int(r.get("turn_index") or 0)
+            per.setdefault(str(rid), {})[ti] = status
+        ok_ids, failed_ids, turn_ok = [], [], 0
+        for rid, turns in per.items():
+            turn_ok += sum(1 for s in turns.values() if s == "ok")
+            need = (range(int(required_turns[rid])) if required_turns
+                    and rid in required_turns else turns.keys())
+            complete = bool(turns) and all(turns.get(ti) == "ok" for ti in need)
+            if complete:
+                ok_ids.append(rid)
+            elif any(s == "failed" for s in turns.values()):
+                failed_ids.append(rid)
+        return {"completed_total": len(ok_ids), "failed_total": len(failed_ids),
+                "ok_ids": sorted(ok_ids), "failed_ids": sorted(failed_ids),
+                "total_records": total_records, "turn_completed_total": turn_ok}
+    # single-turn: latest status per id
+    latest: dict[str, str] = {}
+    for r in rows:
+        rid = r.get("id")
+        if rid is None:
+            continue
+        status = r.get("status", "ok")
+        if status == "skipped":
+            continue
+        latest[str(rid)] = status
+    ok_ids = sorted(k for k, v in latest.items() if v in (None, "ok", "completed"))
+    failed_ids = sorted(k for k, v in latest.items() if v == "failed")
+    return {"completed_total": len(ok_ids), "failed_total": len(failed_ids),
+            "ok_ids": ok_ids, "failed_ids": failed_ids,
+            "total_records": total_records}
 
 
 def append_jsonl_record(fh, record: dict[str, Any]) -> None:

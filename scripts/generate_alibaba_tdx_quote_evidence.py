@@ -65,14 +65,23 @@ ALIBABA_QGEN_APP = "/opt/alibaba/tdx-quote-generation-sample/app"
 ALIBABA_QVERIFY_DIR = "/opt/alibaba/tdx-quote-verification-sample"
 QUOTE_SOURCE = "alibaba_tdx_quote_generation_sample"
 
+# Alibaba install command (printed, NEVER executed by this wrapper)
+_ALIBABA_INSTALL_CMD = (
+    "sudo yum install -y tdx-quote-generation-sample tee-appraisal-tool "
+    "libsgx-dcap-ql-devel libsgx-dcap-quote-verify-devel "
+    "libsgx-dcap-default-qpl-devel tdx-quote-verification-sample")
+_PCCS_HINT = ("configure the DCAP quote-provider / PCCS_URL (e.g. "
+              "/etc/sgx_default_qcnl.conf -> \"pccs_url\": \"https://<PCCS_HOST>:"
+              "8081/sgx/certification/v4/\") so the verifier can fetch the TDX "
+              "collateral")
+
 # install hints (printed, NEVER executed)
 _INSTALL_HINTS = {
     "tdx_guest_cpu": "ensure the VM is a TDX guest (Alibaba g8i TDX instance)",
     "tdx_guest_dev": "modprobe tdx_guest; ls -l /dev/tdx_guest",
-    "qgen_app": "build the Alibaba TDX quote-generation sample at %s"
-                % ALIBABA_QGEN_APP,
-    "qverify": "build the Alibaba TDX quote-verification sample (verifier + "
-               "relying_party) under %s" % ALIBABA_QVERIFY_DIR,
+    "qgen_app": "%s   # provides %s" % (_ALIBABA_INSTALL_CMD, ALIBABA_QGEN_APP),
+    "qverify": "%s   # provides %s/{verifier,relying_party}; then %s"
+               % (_ALIBABA_INSTALL_CMD, ALIBABA_QVERIFY_DIR, _PCCS_HINT),
 }
 
 
@@ -181,12 +190,16 @@ def generate_quote_alibaba(report_data_hex, out_dir, *, qgen_app=ALIBABA_QGEN_AP
         if rc != 0:
             raise RuntimeError(
                 "Alibaba quote app failed (%d): %s" % (rc, err[:400]))
-        # the sample writes quote.dat in cwd; copy it to the canonical name
+    # the Alibaba sample writes quote.dat in cwd; copy it to the canonical name
+    # whenever {quote_out} was not produced directly (works for the default app
+    # AND for a custom command that still emits quote.dat).
+    if not quote_out.exists() or quote_out.stat().st_size == 0:
         default = out_dir / "quote.dat"
         if default.exists() and default.resolve() != quote_out.resolve():
             shutil.copyfile(default, quote_out)
     if not quote_out.exists() or quote_out.stat().st_size == 0:
-        raise RuntimeError("no quote produced at %s" % quote_out)
+        raise RuntimeError("no quote produced at %s (expected the sample to write "
+                           "quote.dat or {quote_out})" % quote_out)
     return quote_out
 
 
@@ -250,7 +263,8 @@ def verify_quote_alibaba(quote_path, out_dir, *, qverify_dir=ALIBABA_QVERIFY_DIR
 
 def build_evidence(*, runtime_hash_hex, report_data_hex, nonlinear_backend,
                    nonlinear_design_metadata_hash, appraisal, expected_mr_td,
-                   quote_source=QUOTE_SOURCE, simulated=False) -> dict:
+                   quote_source=QUOTE_SOURCE, simulated=False,
+                   command_provenance=None) -> dict:
     """Assemble the evidence JSON; paper_facing only when fully verified + real."""
     debug_val = appraisal.get("debug")
     mr_td = appraisal.get("mr_td") or _norm_hex(expected_mr_td)
@@ -270,6 +284,7 @@ def build_evidence(*, runtime_hash_hex, report_data_hex, nonlinear_backend,
                                   if debug_val is not None else False}},
         "generated_by": "generate_alibaba_tdx_quote_evidence.py",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "command_provenance": command_provenance or {},
     }
     if simulated:
         evidence["simulated_unsigned"] = True
@@ -301,6 +316,38 @@ def verify_bindings(evidence, *, runtime_hash_hex, report_data_hex,
         "all_bindings_ok": bool(reportdata_binds and mr_ok and debug_false
                                 and appraisal_ok),
     }
+
+
+def _diagnose_failure(exc, preflight, args) -> list[str]:
+    """Map a quote/verify failure to actionable diagnoses (no system changes)."""
+    pf = preflight or {}
+    diag = []
+    if pf.get("cpu_tdx_guest") is False:
+        diag.append("CPU is not a TDX guest (lscpu has no tdx_guest) -> %s"
+                    % _INSTALL_HINTS["tdx_guest_cpu"])
+    if pf.get("dev_tdx_guest") is False:
+        diag.append("/dev/tdx_guest missing -> %s"
+                    % _INSTALL_HINTS["tdx_guest_dev"])
+    if pf.get("kernel_ok") is False:
+        diag.append("kernel %s too old for the TDX guest interface"
+                    % pf.get("kernel_release"))
+    if pf.get("qgen_app_present") is False:
+        diag.append("quote-generation sample missing -> %s"
+                    % _INSTALL_HINTS["qgen_app"])
+    if not (pf.get("qverify_verifier_present")
+            or pf.get("qverify_relying_party_present")):
+        diag.append("quote-verification sample missing -> %s"
+                    % _INSTALL_HINTS["qverify"])
+    msg = str(exc).lower()
+    if "pccs" in msg or "qcnl" in msg or "collateral" in msg:
+        diag.append("verifier could not fetch collateral -> %s" % _PCCS_HINT)
+    if "verify" in msg or "appraisal" in msg or "relying" in msg:
+        diag.append("verifier/relying_party failed: check the quote is fresh and "
+                    "the PCCS/QPL is reachable")
+    if not diag:
+        diag.append("re-run the preflight (--skip-preflight off) and confirm the "
+                    "Alibaba samples + PCCS config; re-quote after any code change")
+    return diag
 
 
 def main() -> int:
@@ -398,19 +445,36 @@ def main() -> int:
                 quote_path, out_dir, qverify_dir=args.qverify_dir,
                 verify_command=args.verify_command)
         except Exception as exc:                                # noqa: BLE001
+            diag = _diagnose_failure(exc, pf, args)
             print("ERROR: quote generation/verification failed: %s" % exc,
                   file=sys.stderr)
+            for d in diag:
+                print("  DIAGNOSIS: %s" % d, file=sys.stderr)
+            (out_dir / "failure_diagnosis.json").write_text(
+                json.dumps({"error": str(exc)[:400], "diagnosis": diag},
+                           indent=2), encoding="utf-8")
             return 1
         quote_source = QUOTE_SOURCE
     (out_dir / "appraisal.json").write_text(json.dumps(appraisal, indent=2),
                                             encoding="utf-8")
+
+    command_provenance = {
+        "quote_command": (args.quote_command
+                          or ("%s -d <report_data_hex>" % args.qgen_app)),
+        "verify_command": (args.verify_command
+                           or ("%s/relying_party <quote_file>"
+                               % args.qverify_dir)),
+        "qgen_app": args.qgen_app, "qverify_dir": args.qverify_dir,
+        "simulate": bool(args.simulate),
+    }
 
     # 5. evidence + binding verification ------------------------------------
     evidence = build_evidence(
         runtime_hash_hex=runtime_hash_hex, report_data_hex=report_data_hex,
         nonlinear_backend=nb, nonlinear_design_metadata_hash=design_hash,
         appraisal=appraisal, expected_mr_td=args.expected_mr_td,
-        quote_source=quote_source, simulated=args.simulate)
+        quote_source=quote_source, simulated=args.simulate,
+        command_provenance=command_provenance)
     verdict = verify_bindings(
         evidence, runtime_hash_hex=runtime_hash_hex,
         report_data_hex=report_data_hex, expected_mr_td=args.expected_mr_td)

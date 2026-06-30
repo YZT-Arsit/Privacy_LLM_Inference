@@ -234,4 +234,12 @@ def staged_schedule_report_fields(manifest: dict[str, Any],
         "sampling_location": "trusted_boundary",
         "plaintext_logits_on_gpu": False,
         "sampled_token_on_gpu": False,
+        # HONESTY: the base runner still performs the online remask/pad/inverse on
+        # the critical path -- staging only proves freshness coverage with a
+        # non-secret artifact set; it does NOT yet fabricate a speed-up. These
+        # flags forbid using a staged run as a latency-improvement claim until a
+        # real online-cost reduction is implemented and measured.
+        "staged_schedule_metadata_only": True,
+        "online_remask_still_performed": True,
+        "do_not_use_as_latency_claim": True,
     }

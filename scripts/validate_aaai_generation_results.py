@@ -31,6 +31,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from pllo.benchmarks.aaai_paper_facing import aaai_generation_violations  # noqa: E402
 from pllo.benchmarks.aaai_preservation import (  # noqa: E402
     aggregate_preservation, case_studies, compare_responses)
+from pllo.benchmarks.run_state import recount_status_from_jsonl  # noqa: E402
 
 
 def _load_json(path):
@@ -69,7 +70,45 @@ def _ok_records(rows):
     return out
 
 
-def _general_checks(rep, label, expected_n):
+def _completed_total(rep, resp_rows, *, dataset):
+    """Resume-aware completed count: prefer report.completed_total, else recount
+    the response JSONL (latest-status-per-id; per-question for MT-Bench)."""
+    rep = rep or {}
+    if rep.get("completed_total") is not None:
+        return int(rep["completed_total"])
+    rc = _recount_rows(resp_rows, dataset=dataset)
+    return rc["completed_total"]
+
+
+def _recount_rows(rows, *, dataset):
+    """Recount completion from already-loaded response rows (latest-status-per-id;
+    per-question for MT-Bench). Mirrors run_state.recount_status_from_jsonl."""
+    mt = (dataset == "mt_bench")
+    if mt:
+        per = {}
+        for r in rows:
+            rid = r.get("id")
+            if rid is None or r.get("status") == "skipped":
+                continue
+            per.setdefault(str(rid), {})[int(r.get("turn_index") or 0)] = \
+                r.get("status", "ok")
+        ok = [rid for rid, t in per.items()
+              if t and all(s == "ok" for s in t.values())]
+        failed = [rid for rid, t in per.items()
+                  if rid not in ok and any(s == "failed" for s in t.values())]
+        return {"completed_total": len(ok), "failed_total": len(failed)}
+    latest = {}
+    for r in rows:
+        rid = r.get("id")
+        if rid is None or r.get("status") == "skipped":
+            continue
+        latest[str(rid)] = r.get("status", "ok")
+    ok = [k for k, v in latest.items() if v in (None, "ok", "completed")]
+    failed = [k for k, v in latest.items() if v == "failed"]
+    return {"completed_total": len(ok), "failed_total": len(failed)}
+
+
+def _general_checks(rep, label, expected_n, *, completed_total=None):
     c = []
 
     def chk(name, ok, detail=""):
@@ -82,10 +121,12 @@ def _general_checks(rep, label, expected_n):
     chk("not_dry_run", rep.get("dry_run") is not True)
     chk("not_mock", rep.get("mock_runtime") is not True)
     if expected_n is not None:
-        chk("completed==expected",
-            int(rep.get("completed_examples") or 0) == int(expected_n),
-            "completed=%s expected=%s" % (rep.get("completed_examples"),
-                                          expected_n))
+        # resume-aware: completed_total (this run + prior runs), NOT the per-run
+        # completed_examples (which would falsely fail after a resume).
+        got = completed_total if completed_total is not None else int(
+            rep.get("completed_total") or rep.get("completed_examples") or 0)
+        chk("completed==expected", int(got) == int(expected_n),
+            "completed_total=%s expected=%s" % (got, expected_n))
     return c
 
 
@@ -94,17 +135,29 @@ def validate(plaintext_rep, ours_rep, plaintext_resp, ours_resp, *, dataset,
     checks = []
     expected_n = (card or {}).get("num_examples")
 
+    # resume-aware completion totals (this run + prior runs) for both sides
+    p_completed = _completed_total(plaintext_rep, plaintext_resp, dataset=dataset)
+    o_completed = _completed_total(ours_rep, ours_resp, dataset=dataset)
+
     # general (both sides)
-    checks += _general_checks(plaintext_rep or {}, "plaintext", expected_n)
-    checks += _general_checks(ours_rep or {}, "ours", expected_n)
+    checks += _general_checks(plaintext_rep or {}, "plaintext", expected_n,
+                              completed_total=p_completed)
+    checks += _general_checks(ours_rep or {}, "ours", expected_n,
+                              completed_total=o_completed)
 
     def chk(name, ok, detail=""):
         checks.append({"check": name, "ok": bool(ok), "detail": detail})
 
-    for label, rep in (("plaintext", plaintext_rep), ("ours", ours_rep)):
-        failed = int((rep or {}).get("failed_examples") or 0)
-        chk("%s:failed_examples_zero" % label, failed == 0 or allow_failed,
-            "failed=%d" % failed)
+    # failure count: prefer the resume-aware failed_total (a later success clears
+    # an earlier failure), else the report's per-run failed_examples.
+    for label, rep, resp in (("plaintext", plaintext_rep, plaintext_resp),
+                             ("ours", ours_rep, ours_resp)):
+        rep = rep or {}
+        failed = rep.get("failed_total")
+        if failed is None:
+            failed = _recount_rows(resp, dataset=dataset)["failed_total"]
+        chk("%s:failed_examples_zero" % label, int(failed) == 0 or allow_failed,
+            "failed_total=%d" % int(failed))
 
     # ours AAAI contract
     ours_viol = aaai_generation_violations(ours_rep or {}, evidence=evidence,

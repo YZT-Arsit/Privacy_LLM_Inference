@@ -33,15 +33,20 @@ MODELS = {
     "llama-7b": {"role": "generalization", "model_arg": "Llama-7B"},
     "gpt2": {"role": "sanity", "model_arg": "gpt2"},
 }
-# AAAI backends actually run: plaintext baseline + ours (unstaged) + ours (staged).
-# The pure-TEE / Slalom slot is reserved, NOT planned/run here.
-BACKENDS = ("plaintext_local", "folded_remote_unstaged", "folded_remote_staged")
+# AAAI default backends: plaintext baseline + ours (unstaged). The staged backend
+# is NOT in the default matrix -- the base runner still performs the online
+# remask/pad on the critical path (staged proves freshness coverage only, not a
+# speed-up), so it is opt-in via --include-staged and is flagged experimental
+# (do_not_use_as_latency_claim). The pure-TEE / Slalom slot is reserved, NOT run.
+DEFAULT_BACKENDS = ("plaintext_local", "folded_remote_unstaged")
+STAGED_BACKEND = "folded_remote_staged"
+BACKENDS = DEFAULT_BACKENDS                         # back-compat alias (default)
 BASELINES_RESERVED = ("pure_tee_slalom_style",)   # future; never planned/run here
 
 
 def _gen_cmd(*, dataset, backend, model_key, model_path, dataset_jsonl,
              gpu_worker_url, embedding_path, evidence, expected_mr_td,
-             out_dir, paper_facing, sanity, staged_dir):
+             out_dir, paper_facing, sanity, staged_dir, require_staged=False):
     out = Path(out_dir) / model_key / backend / dataset
     run_id = "%s_%s_%s" % (model_key, dataset, backend)
     is_folded = backend.startswith("folded_remote")
@@ -67,8 +72,10 @@ def _gen_cmd(*, dataset, backend, model_key, model_path, dataset_jsonl,
         if expected_mr_td:
             cmd += ["--expected-mr-td", expected_mr_td]
         if is_staged:
-            cmd += ["--use-gpu-staged-schedule", "--require-staged-schedule",
+            cmd += ["--use-gpu-staged-schedule",
                     "--gpu-staged-schedule-dir", staged_dir or "<STAGED_DIR>"]
+            if require_staged or paper_facing:
+                cmd += ["--require-staged-schedule"]
     else:
         cmd += ["--require-real"]
     # paper-facing only for the AAAI headline models (main + generalization),
@@ -108,9 +115,19 @@ def _val_cmd(*, dataset, model_key, out_dir, card, evidence, expected_mr_td):
 def build_plan(args):
     models = args.models or list(MODELS)
     datasets = args.datasets or list(DATASETS)
+    # default = plaintext + ours(unstaged); staged is opt-in + experimental.
+    backends = list(DEFAULT_BACKENDS)
+    if getattr(args, "include_staged", False):
+        backends.append(STAGED_BACKEND)
     plan = {"stage": "aaai_experiment_matrix_plan",
             "comparison": ["plaintext_local", "folded_remote(A_rightmul,TDX,H800)"],
             "excluded": ["pure_tee", "lora", "amulet_secure_R"],
+            "backends": backends,
+            "staged_included": bool(getattr(args, "include_staged", False)),
+            "staged_is_experimental": bool(
+                getattr(args, "staged_is_experimental", False)
+                or getattr(args, "include_staged", False)),
+            "staged_latency_claim_allowed": False,
             "reserved_baseline_slot": list(BASELINES_RESERVED),
             "config": {"seq_len": 1024, "max_new_tokens": 512, "eos": True,
                        "decoding": "greedy", "batch_size": 1},
@@ -122,8 +139,9 @@ def build_plan(args):
         for ds in datasets:
             ds_jsonl = str(Path(args.dataset_dir) / ("%s.jsonl" % ds))
             card = str(Path(args.dataset_dir) / "cards" / ("%s_card.json" % ds))
-            for be in BACKENDS:
+            for be in backends:
                 is_folded = be.startswith("folded_remote")
+                is_staged = be == STAGED_BACKEND
                 run_id, out, cmd = _gen_cmd(
                     dataset=ds, backend=be, model_key=mk, model_path=mp,
                     dataset_jsonl=ds_jsonl, gpu_worker_url=args.gpu_worker_url,
@@ -131,13 +149,16 @@ def build_plan(args):
                     evidence=args.attestation_evidence_json,
                     expected_mr_td=args.expected_mr_td, out_dir=args.output_dir,
                     paper_facing=args.paper_facing_aaai, sanity=sanity,
-                    staged_dir=args.gpu_staged_schedule_dir)
+                    staged_dir=args.gpu_staged_schedule_dir,
+                    require_staged=getattr(args, "require_staged_schedule", False))
                 plan["generation"].append({
                     "run_id": run_id, "model": mk, "role": MODELS[mk]["role"],
                     "dataset": ds, "backend": be, "output_dir": out,
                     "needs_h800": is_folded, "needs_tdx": is_folded,
                     "needs_quote": is_folded,
-                    "needs_staged_schedule": be == "folded_remote_staged",
+                    "needs_staged_schedule": is_staged,
+                    "experimental": is_staged,
+                    "latency_claim_allowed": (not is_staged),
                     "estimated_runtime": None, "command": cmd})
             vout, vcmd = _val_cmd(
                 dataset=ds, model_key=mk, out_dir=args.output_dir, card=card,
@@ -169,6 +190,16 @@ def main() -> int:
     ap.add_argument("--expected-mr-td", default=None)
     ap.add_argument("--gpu-staged-schedule-dir", default=None,
                     help="staged-schedule dir for the folded_remote_staged backend")
+    ap.add_argument("--include-staged", action="store_true", default=False,
+                    help="ALSO plan the experimental folded_remote_staged backend "
+                         "(NOT in the default matrix; the base runner still does "
+                         "the online remask, so staged is not yet a latency claim)")
+    ap.add_argument("--staged-is-experimental", action="store_true", default=False,
+                    help="mark staged runs experimental in the plan "
+                         "(do_not_use_as_latency_claim); implied by --include-staged")
+    ap.add_argument("--require-staged-schedule", action="store_true",
+                    default=False, help="pass --require-staged-schedule to staged "
+                    "runs (no unsafe fallback); implied under --paper-facing-aaai")
     ap.add_argument("--paper-facing-aaai", action="store_true", default=False)
     ap.add_argument("--output-json", default=None)
     ap.add_argument("--continue-on-error", action="store_true", default=False)

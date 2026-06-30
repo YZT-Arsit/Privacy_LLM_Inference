@@ -17,7 +17,27 @@ produces the real attestation evidence binding the A_rightmul runtime hash.
 Placeholders (never hard-code secrets / SSH keys / passwords):
 `<H800_HOST>`, `<TDX_HOST>`, `<MRTD>`, `<MODEL_QWEN_PATH>`, `<MODEL_LLAMA_PATH>`,
 `<MODEL_GPT2_PATH>`, `<EMB_ARTIFACT>`, `<H800_WORKER_URL>`, `<DATA_DIR>`,
-`<PKG_DIR>`, `<EVIDENCE_JSON>`.
+`<PKG_DIR>`, `<EVIDENCE_JSON>`, `<ARTIFACT_DIR>`.
+
+> **This is the single canonical AAAI runbook.** The AAAI mainline uses ONLY:
+> `scripts/run_aaai_generation_benchmark.py` (runner),
+> `scripts/validate_aaai_generation_results.py` (validator), and
+> `scripts/run_aaai_experiment_matrix.py` (matrix), with the paper-facing flag
+> **`--paper-facing-aaai`**. The TDX quote is produced by
+> `scripts/generate_alibaba_tdx_quote_evidence.{sh,py}`.
+>
+> **Legacy / debug runners — do NOT use for AAAI results:**
+> `scripts/run_ifeval_generation.py` (single-dataset debug runner;
+> `--paper-facing-generation` is its own legacy gate) and
+> `scripts/run_generation_benchmark.py` (legacy adapter). They are kept for
+> debugging only and are not paper-facing AAAI sources.
+>
+> **Staged backend (`folded_remote_staged`) is NOT in the default matrix.** The
+> base runner still performs the online remask/pad on the critical path, so the
+> staged path only proves freshness coverage with a non-secret artifact set — its
+> report carries `do_not_use_as_latency_claim=true`. Run it only with
+> `run_aaai_experiment_matrix.py --include-staged` (experimental; never a latency
+> claim until a real online-cost reduction is implemented and measured).
 
 ---
 
@@ -69,17 +89,42 @@ python scripts/run_gpu_worker_server.py --backend qwen7b_folded_package \
 # the worker REFUSES A_rightmul unless the package certifies compatible_masks_verified=True
 ```
 
-## 5. TDX: generate the A_rightmul runtime hash + real TD quote
+## 5. TDX: generate the A_rightmul runtime hash + real TD quote (Alibaba)
+
+Use the Alibaba Cloud TDX wrapper. It runs a **non-destructive preflight**
+(`lscpu | grep tdx_guest`, `/dev/tdx_guest`, kernel, the
+`/opt/alibaba/tdx-quote-generation-sample/app` and the
+`tdx-quote-verification-sample` `verifier` / `relying_party`), generates the quote
+with `app -d <report_data_hex>` (copying `quote.dat` to the output), verifies it
+locally with the relying-party verifier, and asserts
+`tdx_reportdata == report_data == runtime_hash`, `debug == false`, and
+`mr_td == <MRTD>`. Missing dependencies are printed with the install command
+(`sudo yum install -y tdx-quote-generation-sample tee-appraisal-tool
+libsgx-dcap-ql-devel libsgx-dcap-quote-verify-devel
+libsgx-dcap-default-qpl-devel tdx-quote-verification-sample`) + the PCCS hint; the
+wrapper never modifies the system and never uses `--simulate` for a real run.
 
 ```bash
-# (TDX guest) bind the quote to the A_rightmul design
-python scripts/generate_tdx_attestation_evidence.py --nonlinear-backend A_rightmul \
-  --expected-mr-td <MRTD> --quote-command '<REAL_TDX_QUOTE_CMD>' \
-  --attest-command '<REAL_TDX_ATTEST_CMD>' \
-  --output-evidence <EVIDENCE_JSON>
-# real quote required: tee=tdx, debug=false, 3-part JWT, report_data==runtime_hash,
-# runtime_hash_binds_nonlinear_backend=True, mr_td==<MRTD>. --simulate => non-paper-facing.
+# (TDX guest) bind the quote to the A_rightmul design; real evidence only.
+scripts/generate_alibaba_tdx_quote_evidence.sh \
+  <ARTIFACT_DIR> <EVIDENCE_JSON> <MRTD>
+# or the Python entrypoint directly:
+python scripts/generate_alibaba_tdx_quote_evidence.py \
+  --nonlinear-backend A_rightmul --expected-mr-td <MRTD> \
+  --qgen-app /opt/alibaba/tdx-quote-generation-sample/app \
+  --qverify-dir /opt/alibaba/tdx-quote-verification-sample \
+  --output-dir <ARTIFACT_DIR> --output-evidence <EVIDENCE_JSON>
+# evidence MUST carry: tee=tdx, quote_source=alibaba_tdx_quote_generation_sample,
+# verifier_overall_appraisal_result, tdx_reportdata, runtime_hash, report_data,
+# runtime_hash_binds_nonlinear_backend=true, nonlinear_backend=A_rightmul,
+# tdx.td_attributes.debug=false, paper_facing=true, generated_at, command_provenance.
 ```
+
+> **STALE QUOTE — re-quote on EVERY code change.** The quote binds the current
+> code hash + A_rightmul metadata; any change to a measured boundary file changes
+> the runtime hash and the old quote fails `tdx_reportdata == runtime_hash`. On
+> failure the wrapper prints a structured diagnosis (kernel / tdx_guest / dev node
+> / missing sample / PCCS config / verifier failure).
 
 ## 6. TDX boundary client: run ours (folded_remote) — per dataset
 

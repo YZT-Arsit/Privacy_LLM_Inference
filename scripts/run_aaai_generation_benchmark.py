@@ -34,7 +34,8 @@ from pllo.benchmarks.generation_datasets import (  # noqa: E402
 from pllo.benchmarks.real_predictors import (  # noqa: E402
     RealBackendUnavailable, build_predictor)
 from pllo.benchmarks.run_state import (  # noqa: E402
-    RunState, append_jsonl_record, completed_ids_from_jsonl, plan_examples)
+    RunState, append_jsonl_record, completed_ids_from_jsonl, plan_examples,
+    recount_status_from_jsonl)
 from pllo.experiments.nonlinear_designs import (  # noqa: E402
     normalize_nonlinear_backend)
 from pllo.protocol.resilient_remote import (  # noqa: E402
@@ -282,9 +283,12 @@ def main() -> int:
                 recs = _run_example(
                     predictor, ex, turns, two_turn, args, nb, is_dry)
             except _ExampleFailure as ef:
+                # ef.message is already sanitized (no raw prompt / sensitive span)
                 failed = {"id": rid, "dataset": args.dataset, "status": "failed",
                           "error_type": ef.error_type,
-                          "error_message": ef.message, "retries": ef.retries}
+                          "error_message": ef.message,
+                          "error_message_sanitized": ef.message,
+                          "retries": ef.retries}
                 append_jsonl_record(fh, failed)
                 failed_records.append(failed)
                 state.record_failed(rid, error_type=ef.error_type,
@@ -329,8 +333,17 @@ def main() -> int:
             stats = {}
     worker_health = _worker_health(args.gpu_worker_url) if args.gpu_worker_url \
         else None
+    # full (resume-aware) completion state recomputed from the response JSONL
+    required_turns = None
+    if args.dataset == "mt_bench":
+        required_turns = {str(ex.get("id")): len(ex.get("turns") or [1])
+                          for ex in examples}
+    recount = recount_status_from_jsonl(
+        resp_path, mt_bench=(args.dataset == "mt_bench"),
+        required_turns=required_turns)
     report = _build_report(args, nb, state, stats, worker_health,
-                           attest_evidence, is_dry, failed_records, staged_fields)
+                           attest_evidence, is_dry, failed_records, staged_fields,
+                           recount=recount)
     Path(args.output_report_json).parent.mkdir(parents=True, exist_ok=True)
     Path(args.output_report_json).write_text(
         json.dumps(report, indent=2, default=str), encoding="utf-8")
@@ -356,8 +369,31 @@ class _ExampleFailure(Exception):
     def __init__(self, error_type, message, retries):
         super().__init__(message)
         self.error_type = error_type
-        self.message = message
+        self.message = message          # already sanitized at raise time
         self.retries = retries
+
+
+def _sanitize_error(exc, *, raw_prompt=None, sensitive_spans=None):
+    """Return (error_type, sanitized_message) with NO raw prompt / sensitive span.
+
+    Mirrors run_ifeval_generation._sanitize_error: the exception class is kept, but
+    any literal occurrence of the raw prompt or a fabricated sensitive span is
+    replaced with ``<redacted>`` so a failed record / error log can never leak the
+    user input (or a token-id / mask dump embedded in a message)."""
+    etype = type(exc).__name__ if exc is not None else "GenerationError"
+    msg = str(exc) if exc is not None else ""
+    needles = list(sensitive_spans or [])
+    if raw_prompt:
+        needles.append(raw_prompt)
+        # also redact long line-fragments of the prompt (>=24 chars) defensively
+        for frag in str(raw_prompt).splitlines():
+            frag = frag.strip()
+            if len(frag) >= 24:
+                needles.append(frag)
+    for s in needles:
+        if s and str(s) in msg:
+            msg = msg.replace(str(s), "<redacted>")
+    return etype, msg[:500]
 
 
 def _gen(predictor, prompt, args, is_dry):
@@ -387,8 +423,12 @@ def _run_example(predictor, ex, turns, two_turn, args, nb, is_dry):
         t0 = time.perf_counter()
         g, retries, err = _gen(predictor, prompt, args, is_dry)
         if g is None:
-            raise _ExampleFailure(type(err).__name__ if err else "GenerationError",
-                                  str(err), retries)
+            # sanitize: never let a raw prompt / sensitive span reach the failed
+            # record, the error log, or stdout/stderr.
+            etype, smsg = _sanitize_error(
+                err, raw_prompt=prompt,
+                sensitive_spans=ex.get("sensitive_spans"))
+            raise _ExampleFailure(etype, smsg, retries)
         text = g.get("text", "")
         toks = g.get("token_ids") or []
         rec = {"id": rid, "dataset": args.dataset, "status": "ok",
@@ -414,7 +454,7 @@ def _hash(s):
 
 
 def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry,
-                  failed_records, staged_fields=None):
+                  failed_records, staged_fields=None, recount=None):
     nonlinear_ev = {}
     if isinstance(worker_health, dict):
         nonlinear_ev = worker_health.get("nonlinear_execution_evidence") or {}
@@ -427,10 +467,12 @@ def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry
         "stop_on_eos": (not args.disable_eos_stop),
         "dry_run": is_dry, "mock_runtime": bool(args.mock_runtime),
         "require_real": bool(args.require_real),
-        # run-state summary
+        # run-state summary (THIS invocation)
         "total_examples": state.total_examples,
         "completed_examples": state.completed_examples,
         "failed_examples": state.failed_examples,
+        "completed_this_run": state.completed_examples,
+        "failed_this_run": state.failed_examples,
         "skipped_existing_examples": state.skipped_existing_examples,
         "resume_from_existing": state.resume_from_existing,
         "last_completed_id": state.last_completed_id,
@@ -452,6 +494,18 @@ def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry
             args.backend == "plaintext_local" and not is_dry),
         "paper_ready": (not is_dry),
     }
+    # ---- full (resume-aware) completion totals recomputed from the JSONL ----
+    # completed_examples above counts only THIS invocation; the validator must use
+    # the FULL total (this run + already-completed-on-a-prior-run), so we recount
+    # the response JSONL by latest-status-per-id (per-question for MT-Bench).
+    if recount is not None:
+        report["completed_total"] = recount.get("completed_total")
+        report["failed_total"] = recount.get("failed_total")
+        report["response_ok_ids_total"] = len(recount.get("ok_ids") or [])
+        report["response_failed_ids_total"] = len(recount.get("failed_ids") or [])
+        report["response_total_records"] = recount.get("total_records")
+        if args.dataset == "mt_bench":
+            report["turn_completed_total"] = recount.get("turn_completed_total")
     # merge measured nonlinear evidence + pad/compatible flags from worker
     for k in ("nonlinear_trusted_calls", "trusted_nonlinear_ops_count",
               "nonlinear_single_tee_entry_exit", "compatible_masks_verified",
