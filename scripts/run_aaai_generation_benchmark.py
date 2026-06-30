@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -411,18 +412,11 @@ def _redact_technical_payload(msg: str) -> str:
 
 
 def _sanitize_error(exc, *, raw_prompt=None, sensitive_spans=None):
-    """Return (error_type, sanitized_message) with NO raw prompt / sensitive span /
-    technical payload.
-
-    The exception class is kept, but (1) any literal occurrence of the raw prompt
-    or a fabricated sensitive span is replaced with ``<redacted>``, and (2) generic
-    technical payloads (token-id / mask / pad / logits field dumps,
-    tensor/array(...) dumps) are replaced with ``<redacted_technical_payload>`` --
-    so a failed record / error log can never leak the user input OR a secret-bearing
-    intermediate, even when no prompt/span was supplied."""
+    """Return (error_type, sanitized_message) with no raw input or technical dump."""
     etype = type(exc).__name__ if exc is not None else "GenerationError"
     msg = str(exc) if exc is not None else ""
-    # 1. exact raw prompt + sensitive spans (+ long prompt line fragments)
+
+    # First redact exact private strings.
     needles = list(sensitive_spans or [])
     if raw_prompt:
         needles.append(raw_prompt)
@@ -433,10 +427,31 @@ def _sanitize_error(exc, *, raw_prompt=None, sensitive_spans=None):
     for s in needles:
         if s and str(s) in msg:
             msg = msg.replace(str(s), "<redacted>")
-    # 2. generic technical-payload redaction (defense in depth)
-    msg = _redact_technical_payload(msg)
-    return etype, msg[:500]
 
+    # Then redact technical payloads that should never enter failed records/logs.
+    tech_fields = (
+        "input_ids", "token_ids", "plaintext_embedding", "plaintext_logits",
+        "recovered_logits", "raw_mask", "raw_N", "N_inv", "raw_pad",
+        "recovery_matrix", "masked_embeddings", "masked_logits",
+    )
+    field_alt = "|".join(re.escape(f) for f in tech_fields)
+    msg = re.sub(
+        rf"\b(?:{field_alt})\b\s*[:=]\s*(?:tensor|array|ndarray)?\s*(?:\[[^\n;]*\]|\([^\n;]*\)|\{{[^\n;]*\}}|[^,\s;]+)",
+        "<redacted_technical_payload>",
+        msg,
+        flags=re.IGNORECASE,
+    )
+    msg = re.sub(
+        r"\b(?:array|tensor|ndarray)\s*\([^\n]*?\)",
+        "<redacted_technical_payload>",
+        msg,
+        flags=re.IGNORECASE,
+    )
+    # If a field name survived without an assignment, redact the marker itself.
+    msg = re.sub(rf"\b(?:{field_alt})\b", "<redacted_technical_payload>", msg,
+                 flags=re.IGNORECASE)
+
+    return etype, msg[:500]
 
 def _gen(predictor, prompt, args, is_dry):
     if is_dry:
