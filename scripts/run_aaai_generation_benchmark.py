@@ -91,6 +91,14 @@ def _build_args():
     ap.add_argument("--mock-runtime", action="store_true", default=False)
     ap.add_argument("--max-examples", type=int, default=0)
     ap.add_argument("--disable-eos-stop", action="store_true", default=False)
+    # generation-config alignment (SAME trusted-side greedy processor on both
+    # backends). repetition_penalty / eos / pad default to the model's
+    # generation_config unless overridden here.
+    ap.add_argument("--align-generation-config", action="store_true",
+                    default=False)
+    ap.add_argument("--repetition-penalty", type=float, default=None)
+    ap.add_argument("--eos-token-id", type=int, default=None)
+    ap.add_argument("--pad-token-id", type=int, default=None)
     ap.add_argument("--paper-facing-aaai", action="store_true", default=False)
     ap.add_argument("--tdx-boundary-client", action="store_true", default=False)
     ap.add_argument("--trusted-runtime", default="process")
@@ -242,7 +250,10 @@ def main() -> int:
                 max_new_tokens=args.max_new_tokens, dtype=args.dtype,
                 device=args.device, audit=args.audit, nonlinear_backend=nb,
                 stop_on_eos=(not args.disable_eos_stop),
-                use_chat_template=bool(args.use_chat_template))
+                use_chat_template=bool(args.use_chat_template),
+                align_generation_config=bool(args.align_generation_config),
+                repetition_penalty=args.repetition_penalty,
+                eos_token_id=args.eos_token_id, pad_token_id=args.pad_token_id)
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but backend unavailable: %s" % exc,
@@ -342,9 +353,11 @@ def main() -> int:
     recount = recount_status_from_jsonl(
         resp_path, mt_bench=(args.dataset == "mt_bench"),
         required_turns=required_turns)
+    degeneration = scan_degeneration(
+        resp_path, max_new_tokens=int(args.max_new_tokens))
     report = _build_report(args, nb, state, stats, worker_health,
                            attest_evidence, is_dry, failed_records, staged_fields,
-                           recount=recount)
+                           recount=recount, degeneration=degeneration)
     Path(args.output_report_json).parent.mkdir(parents=True, exist_ok=True)
     Path(args.output_report_json).write_text(
         json.dumps(report, indent=2, default=str), encoding="utf-8")
@@ -510,8 +523,64 @@ def _hash(s):
     return hashlib.sha256((s or "").encode("utf-8")).hexdigest()[:16]
 
 
+def _most_common_fraction(token_ids) -> float:
+    """Fraction of the response taken by its single most-common token id."""
+    if not token_ids:
+        return 0.0
+    from collections import Counter
+    c = Counter(int(t) for t in token_ids)
+    return max(c.values()) / len(token_ids)
+
+
+def scan_degeneration(resp_path, *, max_new_tokens: int,
+                      repeat_ratio_threshold: float = 0.5) -> dict:
+    """Scan the response JSONL for degenerate / unterminated generations.
+
+    A record is DEGENERATE when it ran to the full ``max_new_tokens`` budget AND a
+    single token dominates the output (``most_common_fraction`` exceeds the
+    threshold) -- the IFEval id=1005 failure mode (same token repeated to 512 with
+    finish_reason=null). Also flags any ok record with ``finish_reason is None``."""
+    null_finish_ids, degenerate = [], []
+    worst = 0.0
+    try:
+        with open(resp_path, "r", encoding="utf-8") as fh:
+            for ln in fh:
+                ln = ln.strip()
+                if not ln:
+                    continue
+                try:
+                    r = json.loads(ln)
+                except json.JSONDecodeError:
+                    continue
+                if r.get("status") == "failed":
+                    continue
+                rid = str(r.get("id"))
+                if r.get("finish_reason") is None:
+                    null_finish_ids.append(rid)
+                toks = r.get("token_ids") or []
+                frac = _most_common_fraction(toks)
+                worst = max(worst, frac)
+                ran_full = int(r.get("num_tokens") or 0) >= int(max_new_tokens)
+                if ran_full and frac > repeat_ratio_threshold \
+                        and r.get("finish_reason") != "eos":
+                    degenerate.append({"id": rid, "most_common_fraction":
+                                       round(frac, 4),
+                                       "num_tokens": r.get("num_tokens")})
+    except FileNotFoundError:
+        pass
+    return {
+        "any_finish_reason_null": bool(null_finish_ids),
+        "finish_reason_null_ids": sorted(set(null_finish_ids)),
+        "degenerate_response_count": len(degenerate),
+        "degenerate_responses": degenerate,
+        "max_repeat_ratio": round(worst, 4),
+        "repeat_ratio_threshold": repeat_ratio_threshold,
+    }
+
+
 def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry,
-                  failed_records, staged_fields=None, recount=None):
+                  failed_records, staged_fields=None, recount=None,
+                  degeneration=None):
     nonlinear_ev = {}
     if isinstance(worker_health, dict):
         nonlinear_ev = worker_health.get("nonlinear_execution_evidence") or {}
@@ -577,6 +646,45 @@ def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry
             _all_pad_covered(worker_health.get("linear_pad_coverage")))
         report["compatible_masks_verified"] = worker_health.get(
             "compatible_masks_verified", report.get("compatible_masks_verified"))
+        # P1: surface the FOUR formal compatible-mask sub-conditions (signed-perm
+        # residual / score-preserving Q,K / shared SwiGLU channel perm / dense
+        # rejected) from the worker's compatible_mask_audit so the gate proves each
+        # condition rather than only the rolled-up compatible_masks_verified.
+        audit = worker_health.get("compatible_mask_audit") or {}
+        for k in ("residual_mask_is_signed_permutation",
+                  "attention_qk_scores_preserved",
+                  "swiglu_shared_channel_permutation",
+                  "arbitrary_dense_mask_rejected", "compatible_mask_family"):
+            if k in audit:
+                report[k] = audit[k]
+        report["compatible_mask_audit"] = audit
+    # ---- P6: TEE-claim wording (honest) ----
+    # There are ZERO nonlinear TEE crossings, but generation is NOT one literal
+    # trusted operation: every decode step still uses trusted-side
+    # mask_token_embedding + logits recovery/sampling. The accurate claim is a
+    # SINGLE trusted runtime session with zero nonlinear TEE crossings.
+    report["trusted_runtime_session"] = "single"
+    report["nonlinear_tee_crossings"] = report.get("nonlinear_trusted_calls", 0)
+    report["per_decode_trusted_ops"] = [
+        "mask_token_embedding", "logits_recovery", "sampling"]
+    report["tee_claim"] = ("single trusted runtime session, zero nonlinear TEE "
+                           "crossings")
+    report["tee_claim_note"] = ("each decode step uses trusted-side "
+                                "mask_token_embedding + logits recovery/sampling; "
+                                "no nonlinearity ever crosses into a TEE op on the "
+                                "GPU. This is NOT a single literal trusted op for "
+                                "the whole generation.")
+    # ---- generation-config alignment surfaced (P4) ----
+    report["align_generation_config"] = bool(args.align_generation_config)
+    report["repetition_penalty"] = (stats.get("repetition_penalty")
+                                    if stats.get("repetition_penalty") is not None
+                                    else args.repetition_penalty)
+    report["eos_token_id_override"] = args.eos_token_id
+    report["pad_token_id_override"] = args.pad_token_id
+    report["truncation_policy"] = "keep_last_seq_len"
+    # ---- P7: degeneration / finish_reason aggregates (any backend) ----
+    if degeneration is not None:
+        report.update(degeneration)
     # gsm8k accuracy summary
     if args.dataset == "gsm8k":
         report.update(_gsm8k_summary(args.output_response_jsonl))

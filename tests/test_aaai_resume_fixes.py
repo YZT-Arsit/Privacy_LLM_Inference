@@ -365,7 +365,7 @@ def test_alibaba_parse_verifier_field_aliases() -> None:
     mod = _alibaba()
     # JSON with alias field names + nested td_attributes.debug
     j = mod.parse_verifier_output(
-        '{"result":"OK","tdx_report_data":"AB","tdx_mr_td":"FF",'
+        '{"appraisal_result":"OK","tdx_report_data":"AB","tdx_mr_td":"FF",'
         '"td_attributes":{"debug":false}}')
     assert j["tdx_reportdata"] == "ab" and j["mr_td"] == "ff"
     assert j["debug"] is False and j["overall_appraisal_result"] == "OK"
@@ -376,7 +376,8 @@ def test_alibaba_parse_verifier_field_aliases() -> None:
     assert t["tdx_reportdata"] == "abcd" and t["mr_td"] == "ffee"
     assert t["debug"] is False
     # a missing debug stays None (never coerced to false)
-    n = mod.parse_verifier_output('{"result":"PASS","tdx_reportdata":"ab"}')
+    n = mod.parse_verifier_output(
+        '{"appraisal_result":"PASS","tdx_reportdata":"ab"}')
     assert n["debug"] is None
 
 

@@ -101,6 +101,25 @@ def aaai_generation_violations(report: dict[str, Any], *,
     if backend not in AAAI_BACKENDS:
         v.append("backend=%r (must be one of %s)" % (backend, list(AAAI_BACKENDS)))
 
+    # ---- generation-health gate (BOTH backends) ----
+    # A degenerate / unterminated decode (e.g. the IFEval id=1005 same-token-to-512
+    # failure) must never pass as a paper result.
+    if _t(report.get("any_finish_reason_null")):
+        v.append("any_finish_reason_null=True (ids=%s): a response has "
+                 "finish_reason=None (unterminated decode)"
+                 % (report.get("finish_reason_null_ids") or [])[:5])
+    if int(report.get("degenerate_response_count") or 0) > 0:
+        v.append("degenerate_response_count=%s (num_tokens==max_new_tokens with "
+                 "repeated-token ratio > %s): %s"
+                 % (report.get("degenerate_response_count"),
+                    report.get("repeat_ratio_threshold"),
+                    [d.get("id") for d in (report.get("degenerate_responses")
+                                           or [])][:5]))
+    # logits-parity sanity (only fails when an explicit diagnostic ran and FAILED)
+    if report.get("logits_parity_sanity_passed") is False:
+        v.append("logits_parity_sanity_passed=False (folded_remote top1 parity "
+                 "diagnostic failed on the sanity prompts)")
+
     if backend == "folded_remote":
         if report.get("nonlinear_backend") != PAPER_FACING_GENERATION_DESIGN:
             v.append("nonlinear_backend=%r (folded_remote must be %r)"
@@ -141,6 +160,20 @@ def aaai_generation_violations(report: dict[str, Any], *,
             v.append("nonlinear_single_tee_entry_exit != True")
         if not _t(report.get("compatible_masks_verified")):
             v.append("compatible_masks_verified != True")
+        # P1: A_rightmul is compatible right-multiply ONLY -- each formal condition
+        # must be individually proven (no arbitrary dense right-multiplication).
+        for cond, desc in (
+                ("residual_mask_is_signed_permutation",
+                 "RMSNorm residual mask must be a signed permutation / orthogonal "
+                 "monomial"),
+                ("attention_qk_scores_preserved",
+                 "attention Q/K masks must be score-preserving"),
+                ("swiglu_shared_channel_permutation",
+                 "SwiGLU must use a shared channel permutation"),
+                ("arbitrary_dense_mask_rejected",
+                 "arbitrary dense / complex masks must be rejected")):
+            if not _t(report.get(cond)):
+                v.append("%s != True (%s)" % (cond, desc))
         if not _t(report.get("base_linear_pad_all_modules_covered")):
             v.append("base_linear_pad_all_modules_covered != True")
         # schedule full-coverage proof (only enforced when a schedule was enabled)

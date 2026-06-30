@@ -241,6 +241,10 @@ def test_paper_facing_gate_requires_staged_when_required() -> None:
             "trusted_nonlinear_ops_count": 0,
             "nonlinear_single_tee_entry_exit": True,
             "compatible_masks_verified": True,
+            "residual_mask_is_signed_permutation": True,
+            "attention_qk_scores_preserved": True,
+            "swiglu_shared_channel_permutation": True,
+            "arbitrary_dense_mask_rejected": True,
             "base_linear_pad_all_modules_covered": True,
             "require_staged_schedule": True}
     ev = {"tee": "tdx", "runtime_hash_binds_nonlinear_backend": True,

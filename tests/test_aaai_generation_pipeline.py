@@ -162,6 +162,10 @@ def _good_report(**over):
          "h800_worker_tee_used_on_gpu": False, "nonlinear_trusted_calls": 0,
          "trusted_nonlinear_ops_count": 0, "nonlinear_single_tee_entry_exit": True,
          "compatible_masks_verified": True,
+         "residual_mask_is_signed_permutation": True,
+         "attention_qk_scores_preserved": True,
+         "swiglu_shared_channel_permutation": True,
+         "arbitrary_dense_mask_rejected": True,
          "base_linear_pad_all_modules_covered": True}
     r.update(over)
     return r

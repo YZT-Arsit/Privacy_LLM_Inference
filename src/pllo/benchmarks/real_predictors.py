@@ -182,7 +182,9 @@ class _PlaintextLocalPredictor:
     backend = "plaintext_local"
 
     def __init__(self, *, model_path, model_name, seq_len, max_new_tokens,
-                 dtype, device, use_chat_template=False, adapter_path=None):
+                 dtype, device, use_chat_template=False, adapter_path=None,
+                 align_generation_config=False, repetition_penalty=None,
+                 eos_token_id=None, pad_token_id=None):
         try:
             import torch  # noqa: F401
             from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -212,6 +214,37 @@ class _PlaintextLocalPredictor:
         self.max_new_tokens = int(max_new_tokens)
         self.device = device
         self._use_chat_template = bool(use_chat_template)
+        # trusted-side greedy-processor alignment (shared with folded_remote)
+        self._align_gen = bool(align_generation_config)
+        # resolve repetition_penalty / eos / pad from the model's generation_config
+        # unless explicitly overridden, so both backends greedily decode identically
+        gc = None
+        try:
+            from transformers import GenerationConfig
+            gc = GenerationConfig.from_pretrained(model_path,
+                                                  local_files_only=True)
+        except Exception:                                    # noqa: BLE001
+            gc = None
+        if repetition_penalty is not None:
+            self._rep_penalty = float(repetition_penalty)
+        else:
+            rp = getattr(gc, "repetition_penalty", None) if gc else None
+            self._rep_penalty = float(rp) if rp else None
+        eos = eos_token_id
+        if eos is None:
+            eos = getattr(gc, "eos_token_id", None) if gc else None
+        if eos is None:
+            eos = getattr(self._tok, "eos_token_id", None)
+        self._eos_ids = _normalize_eos_ids(eos)
+        if pad_token_id is not None:
+            self._pad_token_id = int(pad_token_id)
+        else:
+            pad = getattr(gc, "pad_token_id", None) if gc else None
+            if pad is None:
+                pad = getattr(self._tok, "pad_token_id", None)
+            if pad is None:
+                pad = getattr(self._tok, "eos_token_id", None)
+            self._pad_token_id = int(pad) if pad is not None else None
 
     def format_prompt(self, prompt):
         """Apply the shared chat-template formatting (trusted-side)."""
@@ -224,14 +257,18 @@ class _PlaintextLocalPredictor:
 
     def _encode(self, prompt):
         """Format (chat template if enabled) -> tokenize -> (input_ids,
-        attention_mask), truncated to seq_len and on the model device. The
-        attention mask is always passed so padding / left-truncation never
-        corrupts the logits."""
+        attention_mask), truncated to seq_len and on the model device.
+
+        Truncation policy (SHARED with folded_remote): for generation/chat we keep
+        the LAST seq_len tokens (``[:, -seq_len:]``) so the most recent context /
+        the chat turn being answered is never dropped. The attention mask is sliced
+        the same way and always passed, so position ids restart from 0 over the
+        kept window (matching the folded decode's ``positions=range(seq_len)``)."""
         enc = self._tok(self.format_prompt(prompt), return_tensors="pt")
-        ids = enc["input_ids"][:, :self.seq_len].to(self._model.device)
+        ids = enc["input_ids"][:, -self.seq_len:].to(self._model.device)
         attn = enc.get("attention_mask")
         if attn is not None:
-            attn = attn[:, :self.seq_len].to(self._model.device)
+            attn = attn[:, -self.seq_len:].to(self._model.device)
         return ids, attn
 
     def _ids(self, prompt):
@@ -266,15 +303,57 @@ class _PlaintextLocalPredictor:
         token-level preservation can be measured."""
         import torch
         ids, attn = self._encode(prompt)
+        gen_kwargs = dict(max_new_tokens=self.max_new_tokens, do_sample=False,
+                          num_beams=1, pad_token_id=self._pad_token_id,
+                          eos_token_id=(sorted(self._eos_ids) if self._eos_ids
+                                        else None))
+        # shared trusted-side greedy processor: apply the SAME repetition_penalty
+        # the folded path applies (HF RepetitionPenaltyLogitsProcessor) when
+        # generation-config alignment is on, so both backends greedily decode under
+        # identical logit processing.
+        if self._align_gen and self._rep_penalty not in (None, 1.0):
+            gen_kwargs["repetition_penalty"] = float(self._rep_penalty)
         with torch.no_grad():
-            out = self._model.generate(
-                ids, attention_mask=attn, max_new_tokens=self.max_new_tokens,
-                do_sample=False, num_beams=1,
-                pad_token_id=getattr(self._tok, "eos_token_id", None))
+            out = self._model.generate(ids, attention_mask=attn, **gen_kwargs)
         new = out[0, ids.shape[1]:]
+        n_new = int(new.numel())
+        last_tok = int(new[-1]) if n_new else None
+        stopped_by_eos = bool(n_new < self.max_new_tokens
+                              or (last_tok is not None
+                                  and last_tok in self._eos_ids))
         info = self.prompt_info(prompt)
         return {"text": self._tok.decode(new, skip_special_tokens=True),
-                "token_ids": [int(t) for t in new.tolist()], **info}
+                "token_ids": [int(t) for t in new.tolist()],
+                "finish_reason": ("eos" if stopped_by_eos else "length"),
+                "stopped_by_eos": stopped_by_eos, **info}
+
+    def greedy_with_logits(self, prompt, *, max_steps=8):
+        """Trusted plaintext greedy loop that RECORDS the last-position logits at
+        each step (prefill + decode) for the stepwise logits-parity diagnostic.
+        Returns (token_ids, per_step_logits) where per_step_logits[i] is a full
+        float vocab vector. Greedy + KV-cache, mirroring model.generate."""
+        import torch
+        ids, attn = self._encode(prompt)
+        per_step: list = []
+        gen: list = []
+        with torch.no_grad():
+            out = self._model(ids, attention_mask=attn, use_cache=True)
+            past = out.past_key_values
+            logits = out.logits[0, -1, :].float()
+            per_step.append([float(x) for x in logits.tolist()])
+            tok = int(logits.argmax(-1))
+            gen.append(tok)
+            for _ in range(max_steps - 1):
+                if tok in self._eos_ids:
+                    break
+                step_ids = torch.tensor([[tok]], device=ids.device)
+                out = self._model(step_ids, past_key_values=past, use_cache=True)
+                past = out.past_key_values
+                logits = out.logits[0, -1, :].float()
+                per_step.append([float(x) for x in logits.tolist()])
+                tok = int(logits.argmax(-1))
+                gen.append(tok)
+        return gen, per_step
 
     def stats(self):
         # plaintext baseline: no GPU privacy boundary (it IS plaintext).
@@ -302,10 +381,14 @@ class _RemoteMaskedPredictor:
                  repetition_penalty=None, stop_on_eos=True,
                  length_hide_generation=False, use_chat_template=False,
                  use_resilient_worker=True, worker_max_retries=5,
-                 worker_backoff_base_sec=0.5):
+                 worker_backoff_base_sec=0.5, eos_token_id=None,
+                 pad_token_id=None):
         self.backend = backend
         self.model_name = model_name
         self._use_chat_template = bool(use_chat_template)
+        # explicit eos/pad overrides (applied during eos/pad resolution below)
+        self._eos_override = eos_token_id
+        self._pad_override = pad_token_id
         from pllo.experiments.nonlinear_designs import (
             normalize_nonlinear_backend)
         self.nonlinear_backend = normalize_nonlinear_backend(
@@ -391,14 +474,20 @@ class _RemoteMaskedPredictor:
         if self._align_gen and self._rep_penalty is None:
             rp = getattr(gc, "repetition_penalty", None) if gc else None
             self._rep_penalty = float(rp) if rp else None
-        eos = getattr(gc, "eos_token_id", None) if gc else None
+        # explicit --eos-token-id / --pad-token-id override the config/tokenizer so
+        # both backends use the SAME stop / pad tokens (parity).
+        eos = self._eos_override if self._eos_override is not None else (
+            getattr(gc, "eos_token_id", None) if gc else None)
         if eos is None:
             eos = getattr(self._tok, "eos_token_id", None)
         self._eos_ids = _normalize_eos_ids(eos)
-        pad = getattr(gc, "pad_token_id", None) if gc else None
-        if pad is None:
-            pad = getattr(self._tok, "pad_token_id", None)
-        self._pad_token_id = int(pad) if pad is not None else None
+        if self._pad_override is not None:
+            self._pad_token_id = int(self._pad_override)
+        else:
+            pad = getattr(gc, "pad_token_id", None) if gc else None
+            if pad is None:
+                pad = getattr(self._tok, "pad_token_id", None)
+            self._pad_token_id = int(pad) if pad is not None else None
         # fixed trusted-side dummy token for length-hiding (pad, else 0). Trusted
         # only -- never reported, never sent to the GPU (only its masked embedding).
         self._dummy_token_id = (self._pad_token_id
@@ -523,8 +612,11 @@ class _RemoteMaskedPredictor:
 
     def _ids(self, prompt):
         import torch
+        # SHARED truncation policy with the plaintext baseline: keep the LAST
+        # seq_len tokens so the decode positions (range(seq_len)) start at 0 over
+        # the same kept window on both backends (session<->HTTP parity).
         enc = self._tok(self.format_prompt(prompt), return_tensors="pt")[
-            "input_ids"][:, :self.seq_len]
+            "input_ids"][:, -self.seq_len:]
         return enc.to(torch.long)
 
     def _np(self, t):
@@ -540,6 +632,28 @@ class _RemoteMaskedPredictor:
         self._trace.trusted_bytes += int(
             np.asarray(rec.detach().to("cpu")).nbytes)
         return rec
+
+    def enable_logits_capture(self, max_steps: int = 8) -> None:
+        """Record the per-step recovered logits (prefill + first decode steps) for
+        the stepwise logits-parity diagnostic. Trusted-side only (these are the
+        recovered/restored logits; nothing extra crosses to the GPU)."""
+        self._capture_logits = True
+        self._capture_max_steps = int(max_steps)
+        self._captured_logits: list = []
+
+    def captured_logits(self) -> list:
+        return list(getattr(self, "_captured_logits", []))
+
+    def _maybe_capture_logits(self, rec) -> None:
+        if not getattr(self, "_capture_logits", False):
+            return
+        if len(self._captured_logits) >= getattr(self, "_capture_max_steps", 8):
+            return
+        try:
+            self._captured_logits.append(
+                [float(x) for x in rec.reshape(-1).detach().to("cpu").tolist()])
+        except Exception:                                    # noqa: BLE001
+            pass
 
     def model_runtime_config(self) -> Dict[str, Any]:
         """The genuine runtime model config (no mock placeholders) so the schedule
@@ -666,6 +780,7 @@ class _RemoteMaskedPredictor:
             self._consume_slot(0)                   # step 0 obfuscation slot
         with self._pstage("trusted_nonlinear_restore_logits"):
             rec_last = self._recover_last(pre.masked_logits)
+        self._maybe_capture_logits(rec_last)            # parity diagnostic (step 0)
         with self._pstage("sampling"):
             rec_proc = self._apply_generation_processors(rec_last, seen_ids)
             tok = int(rec_proc.argmax(-1))
@@ -728,6 +843,7 @@ class _RemoteMaskedPredictor:
             self._record_worker_timing(dec)
             with self._pstage("trusted_nonlinear_restore_logits"):
                 rec = self._recover_last(dec.masked_logits)
+            self._maybe_capture_logits(rec)             # parity diagnostic (decode)
             with self._pstage("sampling"):
                 rec_proc = self._apply_generation_processors(rec, seen_ids)
                 tok = int(rec_proc.argmax(-1))
@@ -785,9 +901,15 @@ class _RemoteMaskedPredictor:
         GPU; tokenization + recovery + sampling stay trusted-side."""
         ids = self._ids(prompt)
         gen, _ = self._decode_loop(ids)
+        # finish_reason is decided by _decode_loop (trusted-side EOS detection) and
+        # recorded as the last entry of _examples_finish; surface it on generate()
+        # so the runner record carries a real per-example finish_reason (not null).
+        last = self._examples_finish[-1] if self._examples_finish else {}
         info = self.prompt_info(prompt)
         return {"text": self._tok.decode(gen, skip_special_tokens=True),
-                "token_ids": [int(t) for t in gen], **info}
+                "token_ids": [int(t) for t in gen],
+                "finish_reason": last.get("finish_reason"),
+                "stopped_by_eos": last.get("stopped_by_eos"), **info}
 
     def stats(self):
         bc = sum(self._trace.boundary_calls.values()) \
@@ -963,7 +1085,8 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     repetition_penalty=None, stop_on_eos=True,
                     length_hide_generation=False, use_chat_template=False,
                     adapter_path=None, use_resilient_worker=True,
-                    worker_max_retries=5, worker_backoff_base_sec=0.5):
+                    worker_max_retries=5, worker_backoff_base_sec=0.5,
+                    eos_token_id=None, pad_token_id=None):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -977,7 +1100,10 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
         return _PlaintextLocalPredictor(
             model_path=model_path, model_name=model_name, seq_len=seq_len,
             max_new_tokens=max_new_tokens, dtype=dtype, device=device,
-            use_chat_template=use_chat_template, adapter_path=adapter_path)
+            use_chat_template=use_chat_template, adapter_path=adapter_path,
+            align_generation_config=align_generation_config,
+            repetition_penalty=repetition_penalty, eos_token_id=eos_token_id,
+            pad_token_id=pad_token_id)
     if backend in REMOTE_BACKENDS:
         return _RemoteMaskedPredictor(
             backend, model_path=model_path, model_name=model_name,
@@ -993,5 +1119,6 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             use_chat_template=use_chat_template,
             use_resilient_worker=use_resilient_worker,
             worker_max_retries=worker_max_retries,
-            worker_backoff_base_sec=worker_backoff_base_sec)
+            worker_backoff_base_sec=worker_backoff_base_sec,
+            eos_token_id=eos_token_id, pad_token_id=pad_token_id)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))
