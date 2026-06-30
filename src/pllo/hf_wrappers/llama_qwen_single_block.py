@@ -317,7 +317,14 @@ def _sdpa(qr: torch.Tensor, kr_rep: torch.Tensor, v_rep: torch.Tensor,
     # shortcut); default None keeps the historical ``torch.softmax`` path exactly.
     probs = runner.softmax(scores, dim=-1) if runner is not None \
         else torch.softmax(scores, dim=-1)
-    av = probs @ v_rep
+    # Align dtype at the attention matmul boundary only. The nonlinear ``runner``
+    # softmax (design B) may return ``probs`` in float32 while ``v_rep`` stays
+    # bf16, which raises "expected scalar type Float but found BFloat16". Casting
+    # ``v_rep`` to ``probs.dtype`` is a no-op when they already match (same-dtype
+    # ``.to`` returns the same tensor), so the float32 path stays bitwise-identical
+    # and the pure-bf16 path is numerically unchanged; it only repairs the mixed
+    # path. No change to softmax / masking / projections / output semantics.
+    av = probs @ v_rep.to(probs.dtype)
     return scores, probs, av
 
 
