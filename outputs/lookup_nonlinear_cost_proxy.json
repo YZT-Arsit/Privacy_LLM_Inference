@@ -148,26 +148,26 @@
   "microbench": {
     "batch_size": 1,
     "compatible_swiglu_island_current": {
-      "mean_ms": 0.06581649649888277,
-      "median_ms": 0.061875005485489964,
-      "std_ms": 0.010941804079519734
+      "mean_ms": 0.05925809673499316,
+      "median_ms": 0.058145495131611824,
+      "std_ms": 0.00401047538506517
     },
     "enabled": true,
     "intermediate_size": 1024,
     "lookup_swiglu_proxy_4bit": {
-      "mean_ms": 0.15010830538813025,
-      "median_ms": 0.1411460107192397,
-      "std_ms": 0.022846853490108395
+      "mean_ms": 0.13118759961798787,
+      "median_ms": 0.12750050518661737,
+      "std_ms": 0.019954479680375767
     },
     "lookup_swiglu_proxy_6bit": {
-      "mean_ms": 0.1303041004575789,
-      "median_ms": 0.1323120086453855,
-      "std_ms": 0.010432420729044082
+      "mean_ms": 0.1251958019565791,
+      "median_ms": 0.12866650649812073,
+      "std_ms": 0.01590353844638136
     },
     "lookup_swiglu_proxy_8bit": {
-      "mean_ms": 0.14193730021361262,
-      "median_ms": 0.14439599181059748,
-      "std_ms": 0.008265083019118165
+      "mean_ms": 0.13683319848496467,
+      "median_ms": 0.14218698197510093,
+      "std_ms": 0.013077922334523498
     },
     "repeats": 10,
     "seq_len": 128
