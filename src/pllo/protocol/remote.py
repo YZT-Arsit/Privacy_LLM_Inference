@@ -131,7 +131,9 @@ class _Handler(BaseHTTPRequestHandler):
             # without any plaintext/secret crossing the channel.
             ev_fn = getattr(srv.backend, "nonlinear_execution_evidence", None)
             rs_fn = getattr(srv.backend, "resident_status", None)
-            self._send_json(200, {
+            pad_fn = getattr(srv.backend, "linear_boundary_pad_status", None)
+            pad = pad_fn() if callable(pad_fn) else {}
+            health = {
                 "status": "ok", "gpu_backend": srv.gpu_backend_name,
                 "tee_used_on_gpu": False,
                 "nonlinear_backend": getattr(
@@ -143,7 +145,16 @@ class _Handler(BaseHTTPRequestHandler):
                 "resident_status": rs_fn() if callable(rs_fn) else {},
                 # measured server-side by compute backends; None until any run
                 "peak_gpu_memory_mb": getattr(
-                    srv.backend, "peak_gpu_memory_mb", None)})
+                    srv.backend, "peak_gpu_memory_mb", None)}
+            if isinstance(pad, dict):
+                health.update(pad)
+                cov = pad.get("linear_pad_coverage")
+                if isinstance(cov, dict):
+                    health["base_linear_pad_all_modules_covered"] = all(
+                        cov.get(m) for m in (
+                            "q_proj", "k_proj", "v_proj", "o_proj",
+                            "gate_proj", "up_proj", "down_proj", "lm_head"))
+            self._send_json(200, health)
         else:
             self._send_json(404, {"error": "not_found", "path": self.path})
 
