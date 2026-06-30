@@ -36,6 +36,8 @@ __all__ = [
     "load_mt_bench",
     "load_humaneval",
     "load_mbpp",
+    "load_longbench_1024_lite",
+    "load_sensitive_prompt",
     "extract_gsm8k_answer",
     "normalize_number",
     "gsm8k_exact_match",
@@ -269,8 +271,9 @@ OPTIONAL_DATASETS = ("humaneval", "mbpp")
 
 
 def load_humaneval(path: str | Path) -> list[dict[str, Any]]:
-    """OPTIONAL: HumanEval ``{task_id, prompt, ...}`` -> normalised rows. The
-    function-execution scorer is a separate offline step (not run on the H800)."""
+    """OPTIONAL: HumanEval ``{task_id, prompt, entry_point, test, ...}`` ->
+    normalised rows (code fields surfaced at the top level). The
+    function-execution scorer is a separate offline CPU step (not run on H800)."""
     out = []
     for i, ex in enumerate(_read_jsonl(path)):
         prompt = _first_prompt(ex)
@@ -279,9 +282,51 @@ def load_humaneval(path: str | Path) -> list[dict[str, Any]]:
                              % ex.get("task_id", i))
         out.append({"id": str(ex.get("task_id", ex.get("id", "he-%d" % i))),
                     "dataset": "humaneval", "prompt": prompt,
-                    "meta": {k: ex[k] for k in
-                             ("entry_point", "test", "canonical_solution")
+                    "entry_point": ex.get("entry_point"),
+                    "test": ex.get("test"),
+                    "canonical_solution": ex.get("canonical_solution"),
+                    "meta": {k: ex[k] for k in ("docstring", "task_id")
                              if k in ex}})
+    return out
+
+
+def load_longbench_1024_lite(path: str | Path) -> list[dict[str, Any]]:
+    """OPTIONAL: a 1024-token-capped LongBench-style stress set. **NOT** an
+    official LongBench score -- inputs are truncated to <=1024 tokens and used for
+    latency / scaling / long-prompt-security stress only."""
+    out = []
+    for i, ex in enumerate(_read_jsonl(path)):
+        prompt = _first_prompt(ex)
+        if not prompt:
+            raise ValueError("longbench_1024_lite example %r missing prompt"
+                             % ex.get("id", i))
+        out.append({
+            "id": str(ex.get("id", ex.get("_id", "lb-%d" % i))),
+            "dataset": "longbench_1024_lite", "prompt": prompt,
+            "answer": ex.get("answer") or ex.get("answers"),
+            "task": ex.get("task") or ex.get("dataset_task"),
+            "original_length_estimate": ex.get("original_length_estimate"),
+            "truncated": bool(ex.get("truncated", False)),
+            "meta": {"not_official_longbench_score": True}})
+    return out
+
+
+def load_sensitive_prompt(path: str | Path) -> list[dict[str, Any]]:
+    """A synthetic sensitive-prompt stress set. ``sensitive_spans`` are the
+    substrings a transcript scan must NEVER find on a GPU-visible channel."""
+    out = []
+    for i, ex in enumerate(_read_jsonl(path)):
+        prompt = _first_prompt(ex)
+        if not prompt:
+            raise ValueError("sensitive_prompt example %r missing prompt"
+                             % ex.get("id", i))
+        out.append({
+            "id": str(ex.get("id", "sp-%d" % i)),
+            "dataset": "sensitive_prompt_1024", "prompt": prompt,
+            "sensitive_spans": list(ex.get("sensitive_spans", []) or []),
+            "length_bucket": ex.get("length_bucket"),
+            "task": ex.get("task", "summarize"),
+            "meta": ex.get("meta", {})})
     return out
 
 
@@ -313,6 +358,10 @@ def load_dataset(dataset: str, path: str | Path, *, max_examples: int = 0,
         rows = load_humaneval(path)
     elif dataset == "mbpp":
         rows = load_mbpp(path)
+    elif dataset == "longbench_1024_lite":
+        rows = load_longbench_1024_lite(path)
+    elif dataset == "sensitive_prompt_1024":
+        rows = load_sensitive_prompt(path)
     else:
         raise ValueError("unknown dataset %r (expected %s)"
                          % (dataset, ", ".join(DATASETS + OPTIONAL_DATASETS)))

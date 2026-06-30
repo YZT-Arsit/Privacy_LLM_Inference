@@ -41,7 +41,8 @@ from pllo.protocol.resilient_remote import (  # noqa: E402
     ResilientRemoteGpuWorker, is_retriable_error)
 
 _BACKENDS = ("plaintext_local", "folded_remote")
-_DATASETS = ("ifeval", "gsm8k", "mt_bench")
+_DATASETS = ("ifeval", "gsm8k", "mt_bench", "humaneval", "mbpp",
+             "sensitive_prompt_1024", "longbench_1024_lite")
 
 
 def _load_json(path):
@@ -108,6 +109,13 @@ def _build_args():
     ap.add_argument("--progress-every", type=int, default=1)
     ap.add_argument("--trace-worker-timings", action="store_true", default=False)
     ap.add_argument("--trace-output-jsonl", default=None)
+    # GPU-staged (non-secret) obfuscation schedule
+    ap.add_argument("--gpu-staged-schedule-dir", default=None)
+    ap.add_argument("--use-gpu-staged-schedule", action="store_true",
+                    default=False)
+    ap.add_argument("--require-staged-schedule", action="store_true",
+                    default=False)
+    ap.add_argument("--staged-schedule-audit-json", default=None)
     return ap.parse_args()
 
 
@@ -175,6 +183,38 @@ def main() -> int:
     if not examples:
         print("ERROR: no examples in %s" % args.dataset_jsonl, file=sys.stderr)
         return 3
+
+    # ---- GPU-staged (non-secret) obfuscation schedule ----
+    staged_fields: dict = {}
+    if args.use_gpu_staged_schedule or args.require_staged_schedule:
+        from pllo.runtime.gpu_staged_schedule import (
+            StagedScheduleSecretLeak, audit_gpu_staged_schedule_no_secrets,
+            load_gpu_staged_schedule, staged_schedule_report_fields)
+        sdir = args.gpu_staged_schedule_dir
+        if not sdir:
+            print("ERROR: --use/--require-staged-schedule needs "
+                  "--gpu-staged-schedule-dir", file=sys.stderr)
+            return 3
+        try:
+            manifest = load_gpu_staged_schedule(sdir)
+            audit = audit_gpu_staged_schedule_no_secrets(manifest)
+        except (StagedScheduleSecretLeak, FileNotFoundError, OSError) as exc:
+            print("ERROR: staged schedule audit/load failed (no unsafe fallback): "
+                  "%s" % exc, file=sys.stderr)
+            if args.require_staged_schedule or args.paper_facing_aaai:
+                return 3
+            audit, manifest = None, None
+        if manifest is not None:
+            staged_fields = staged_schedule_report_fields(
+                manifest, audit, slots_consumed=manifest.get("num_slots"))
+            staged_fields["require_staged_schedule"] = bool(
+                args.require_staged_schedule)
+            if args.staged_schedule_audit_json:
+                Path(args.staged_schedule_audit_json).parent.mkdir(
+                    parents=True, exist_ok=True)
+                Path(args.staged_schedule_audit_json).write_text(
+                    json.dumps({**audit, **staged_fields}, indent=2),
+                    encoding="utf-8")
 
     resp_path = Path(args.output_response_jsonl)
     resp_path.parent.mkdir(parents=True, exist_ok=True)
@@ -290,7 +330,7 @@ def main() -> int:
     worker_health = _worker_health(args.gpu_worker_url) if args.gpu_worker_url \
         else None
     report = _build_report(args, nb, state, stats, worker_health,
-                           attest_evidence, is_dry, failed_records)
+                           attest_evidence, is_dry, failed_records, staged_fields)
     Path(args.output_report_json).parent.mkdir(parents=True, exist_ok=True)
     Path(args.output_report_json).write_text(
         json.dumps(report, indent=2, default=str), encoding="utf-8")
@@ -374,7 +414,7 @@ def _hash(s):
 
 
 def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry,
-                  failed_records):
+                  failed_records, staged_fields=None):
     nonlinear_ev = {}
     if isinstance(worker_health, dict):
         nonlinear_ev = worker_health.get("nonlinear_execution_evidence") or {}
@@ -429,6 +469,9 @@ def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry
     # gsm8k accuracy summary
     if args.dataset == "gsm8k":
         report.update(_gsm8k_summary(args.output_response_jsonl))
+    # GPU-staged (non-secret) schedule fields
+    if staged_fields:
+        report.update(staged_fields)
     # paper-facing-aaai verdict
     if args.paper_facing_aaai:
         from pllo.benchmarks.aaai_paper_facing import (

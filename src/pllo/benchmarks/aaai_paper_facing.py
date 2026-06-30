@@ -30,7 +30,8 @@ __all__ = [
     "aaai_paper_facing_report_fields",
 ]
 
-AAAI_DATASETS = ("ifeval", "gsm8k", "mt_bench")
+AAAI_DATASETS = ("ifeval", "gsm8k", "mt_bench", "humaneval", "mbpp",
+                 "sensitive_prompt_1024", "longbench_1024_lite")
 AAAI_BACKENDS = ("plaintext_local", "folded_remote")
 
 
@@ -146,6 +147,20 @@ def aaai_generation_violations(report: dict[str, Any], *,
         if report.get("precompute_obfuscation_schedule") and \
                 not _t(report.get("schedule_full_coverage_verified")):
             v.append("schedule_full_coverage_verified != True")
+        # GPU-staged schedule (only enforced when the run REQUIRES it). The audit
+        # must pass and no raw secret may be staged -- never fall back to unsafe.
+        if _t(report.get("require_staged_schedule")):
+            if not _t(report.get("staged_schedule_used")):
+                v.append("require_staged_schedule but staged_schedule_used != True")
+            if not _t(report.get("staged_schedule_no_secret_audit_passed")):
+                v.append("staged_schedule_no_secret_audit_passed != True")
+            for flag in ("gpu_staged_schedule_contains_raw_masks",
+                         "gpu_staged_schedule_contains_raw_pad",
+                         "gpu_staged_schedule_contains_plaintext_input",
+                         "gpu_staged_schedule_contains_token_ids"):
+                if report.get(flag) is True:
+                    v.append("%s=True (staged schedule must carry no secrets)"
+                             % flag)
 
     elif backend == "plaintext_local":
         if _t(report.get("tdx_boundary_client")):

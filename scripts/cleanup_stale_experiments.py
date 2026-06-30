@@ -34,6 +34,9 @@ from pathlib import Path
 from typing import Any
 
 _LEGACY_NONLINEAR = {"current", "trusted_shortcut", "amulet_secure_R"}
+# backend labels that are NOT part of the AAAI experiment
+_NON_AAAI_BACKEND_HINTS = ("amulet", "secure_r", "lora", "puretee", "pure_tee",
+                           "full_tee")
 # path components that mark a PROTECTED dir (never cleaned without an explicit flag)
 _PROTECTED_PARTS = ("models", "model", "raw", "datasets_raw", "checkpoints",
                     "packages", "folded", "package")
@@ -92,6 +95,20 @@ def classify_report(report: dict[str, Any], path: Path) -> tuple[str, str]:
     nb = report.get("nonlinear_backend")
     if _is_aaai(path) and nb in _LEGACY_NONLINEAR:
         return "stale", "legacy nonlinear_backend=%s under AAAI dir" % nb
+    # non-AAAI backend (amulet / secure_R / LoRA / pure-TEE) under an AAAI dir
+    be = str(report.get("backend") or "").lower()
+    if _is_aaai(path) and any(h in be for h in _NON_AAAI_BACKEND_HINTS):
+        return "stale", "non-AAAI backend=%s under AAAI dir" % report.get("backend")
+    # claims staged but the no-secret audit did not pass / was absent
+    if report.get("staged_schedule_used") is True and \
+            report.get("staged_schedule_no_secret_audit_passed") is not True:
+        return "stale", "claims staged schedule but no-secret audit not passed"
+    # staged schedule that leaked a secret flag
+    for flag in ("contains_raw_mask", "contains_raw_pad",
+                 "gpu_staged_schedule_contains_raw_masks",
+                 "gpu_staged_schedule_contains_raw_pad"):
+        if report.get(flag) is True:
+            return "stale", "%s=true (raw secret on GPU)" % flag
     pf = (report.get("paper_facing_aaai") or report.get("paper_facing")
           or _is_aaai(path))
     if pf:
@@ -100,6 +117,8 @@ def classify_report(report: dict[str, Any], path: Path) -> tuple[str, str]:
                 "max_new_tokens")
         if report.get("seq_len") not in (None, 1024):
             return "stale", "seq_len=%s != 1024" % report.get("seq_len")
+        if report.get("stop_on_eos") is False:
+            return "stale", "EOS disabled under paper-facing dir"
     return "keep", "valid/paper-facing"
 
 

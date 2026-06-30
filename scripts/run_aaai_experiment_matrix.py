@@ -26,26 +26,31 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-DATASETS = ("ifeval", "gsm8k", "mt_bench")
+DATASETS = ("ifeval", "gsm8k", "mt_bench", "humaneval", "sensitive_prompt_1024",
+            "longbench_1024_lite")
 MODELS = {
     "qwen2.5-7b-instruct": {"role": "main", "model_arg": "Qwen2.5-7B-Instruct"},
     "llama-7b": {"role": "generalization", "model_arg": "Llama-7B"},
     "gpt2": {"role": "sanity", "model_arg": "gpt2"},
 }
-# AAAI backends actually run. The pure-TEE / Slalom slot is reserved, not run.
-BACKENDS = ("plaintext_local", "folded_remote")
+# AAAI backends actually run: plaintext baseline + ours (unstaged) + ours (staged).
+# The pure-TEE / Slalom slot is reserved, NOT planned/run here.
+BACKENDS = ("plaintext_local", "folded_remote_unstaged", "folded_remote_staged")
 BASELINES_RESERVED = ("pure_tee_slalom_style",)   # future; never planned/run here
 
 
 def _gen_cmd(*, dataset, backend, model_key, model_path, dataset_jsonl,
              gpu_worker_url, embedding_path, evidence, expected_mr_td,
-             out_dir, paper_facing, sanity):
+             out_dir, paper_facing, sanity, staged_dir):
     out = Path(out_dir) / model_key / backend / dataset
     run_id = "%s_%s_%s" % (model_key, dataset, backend)
+    is_folded = backend.startswith("folded_remote")
+    is_staged = backend == "folded_remote_staged"
     cmd = [sys.executable, str(REPO_ROOT / "scripts"
                                / "run_aaai_generation_benchmark.py"),
            "--dataset", dataset, "--dataset-jsonl", dataset_jsonl,
-           "--backend", backend, "--model-name", MODELS[model_key]["model_arg"],
+           "--backend", ("folded_remote" if is_folded else "plaintext_local"),
+           "--model-name", MODELS[model_key]["model_arg"],
            "--model-path", model_path or "<MODEL_PATH>",
            "--seq-len", "1024", "--max-new-tokens", "512",
            "--use-chat-template", "--run-id", run_id, "--resume",
@@ -53,7 +58,7 @@ def _gen_cmd(*, dataset, backend, model_key, model_path, dataset_jsonl,
            "--output-report-json", str(out / "report.json"),
            "--status-json", str(out / "status.json"),
            "--heartbeat-json", str(out / "heartbeat.json")]
-    if backend == "folded_remote":
+    if is_folded:
         cmd += ["--nonlinear-backend", "A_rightmul", "--require-real",
                 "--tdx-boundary-client",
                 "--gpu-worker-url", gpu_worker_url or "<H800_WORKER_URL>",
@@ -61,7 +66,10 @@ def _gen_cmd(*, dataset, backend, model_key, model_path, dataset_jsonl,
                 "--attestation-evidence-json", evidence or "<EVIDENCE_JSON>"]
         if expected_mr_td:
             cmd += ["--expected-mr-td", expected_mr_td]
-    if backend == "plaintext_local":
+        if is_staged:
+            cmd += ["--use-gpu-staged-schedule", "--require-staged-schedule",
+                    "--gpu-staged-schedule-dir", staged_dir or "<STAGED_DIR>"]
+    else:
         cmd += ["--require-real"]
     # paper-facing only for the AAAI headline models (main + generalization),
     # not the GPT-2 sanity check.
@@ -81,9 +89,9 @@ def _val_cmd(*, dataset, model_key, out_dir, card, evidence, expected_mr_td):
            "--plaintext-responses",
            str(base / "plaintext_local" / dataset / "responses.jsonl"),
            "--ours-report",
-           str(base / "folded_remote" / dataset / "report.json"),
+           str(base / "folded_remote_unstaged" / dataset / "report.json"),
            "--ours-responses",
-           str(base / "folded_remote" / dataset / "responses.jsonl"),
+           str(base / "folded_remote_unstaged" / dataset / "responses.jsonl"),
            "--run-id", "%s_%s" % (model_key, dataset),
            "--output-json", str(out / ("aaai_validation_%s.json" % dataset)),
            "--output-md", str(out / ("aaai_validation_%s.md" % dataset)),
@@ -115,19 +123,21 @@ def build_plan(args):
             ds_jsonl = str(Path(args.dataset_dir) / ("%s.jsonl" % ds))
             card = str(Path(args.dataset_dir) / "cards" / ("%s_card.json" % ds))
             for be in BACKENDS:
+                is_folded = be.startswith("folded_remote")
                 run_id, out, cmd = _gen_cmd(
                     dataset=ds, backend=be, model_key=mk, model_path=mp,
                     dataset_jsonl=ds_jsonl, gpu_worker_url=args.gpu_worker_url,
                     embedding_path=args.embedding_path,
                     evidence=args.attestation_evidence_json,
                     expected_mr_td=args.expected_mr_td, out_dir=args.output_dir,
-                    paper_facing=args.paper_facing_aaai, sanity=sanity)
+                    paper_facing=args.paper_facing_aaai, sanity=sanity,
+                    staged_dir=args.gpu_staged_schedule_dir)
                 plan["generation"].append({
                     "run_id": run_id, "model": mk, "role": MODELS[mk]["role"],
                     "dataset": ds, "backend": be, "output_dir": out,
-                    "needs_h800": be == "folded_remote",
-                    "needs_tdx": be == "folded_remote",
-                    "needs_quote": be == "folded_remote",
+                    "needs_h800": is_folded, "needs_tdx": is_folded,
+                    "needs_quote": is_folded,
+                    "needs_staged_schedule": be == "folded_remote_staged",
                     "estimated_runtime": None, "command": cmd})
             vout, vcmd = _val_cmd(
                 dataset=ds, model_key=mk, out_dir=args.output_dir, card=card,
@@ -157,6 +167,8 @@ def main() -> int:
     ap.add_argument("--embedding-path", default=None)
     ap.add_argument("--attestation-evidence-json", default=None)
     ap.add_argument("--expected-mr-td", default=None)
+    ap.add_argument("--gpu-staged-schedule-dir", default=None,
+                    help="staged-schedule dir for the folded_remote_staged backend")
     ap.add_argument("--paper-facing-aaai", action="store_true", default=False)
     ap.add_argument("--output-json", default=None)
     ap.add_argument("--continue-on-error", action="store_true", default=False)
