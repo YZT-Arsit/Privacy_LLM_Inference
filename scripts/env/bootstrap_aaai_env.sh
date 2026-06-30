@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 _fail() {
   echo "[bootstrap][ERROR] $*" >&2
@@ -85,7 +86,11 @@ if [[ "$PLLO_ROLE" == "h800" ]]; then
   export PLLO_GPU_WORKER_PORT="${PLLO_GPU_WORKER_PORT:-18082}"
 fi
 
-export PYTHONPATH="$PWD/src:$PWD/src/pllo/third_party"
+if [[ -d "$PWD/src/pllo/third_party" ]]; then
+  export PYTHONPATH="$PWD/src:$PWD/src/pllo/third_party"
+else
+  export PYTHONPATH="$PWD/src"
+fi
 
 mkdir -p "$PLLO_DATA_DIR" "$PLLO_OUTPUT_DIR" "$PLLO_STATUS_DIR" "$PWD/artifacts"
 
@@ -98,8 +103,8 @@ repo = Path.cwd()
 src = repo / "src"
 third_party = repo / "src" / "pllo" / "third_party"
 
-assert src.exists(), f"missing src: {src}"
-assert third_party.exists(), f"missing third_party: {third_party}"
+if not src.exists():
+    raise SystemExit(f"missing src: {src}")
 
 print("[bootstrap] python =", sys.executable)
 print("[bootstrap] python_version =", sys.version.replace("\n", " "))
@@ -110,6 +115,8 @@ print("[bootstrap] repo =", str(repo))
 print("[bootstrap] data_dir =", os.environ.get("PLLO_DATA_DIR"))
 print("[bootstrap] output_dir =", os.environ.get("PLLO_OUTPUT_DIR"))
 print("[bootstrap] status_dir =", os.environ.get("PLLO_STATUS_DIR"))
+print("[bootstrap] third_party =", str(third_party) if third_party.exists() else "<absent>")
+print("[bootstrap] pythonpath =", os.environ.get("PYTHONPATH"))
 PY
 
 _info "bootstrap finished"
