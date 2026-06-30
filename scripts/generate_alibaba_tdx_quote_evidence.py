@@ -203,38 +203,72 @@ def generate_quote_alibaba(report_data_hex, out_dir, *, qgen_app=ALIBABA_QGEN_AP
     return quote_out
 
 
+def _coerce_debug(v):
+    """Return True/False if v clearly encodes a bool, else None (UNKNOWN)."""
+    if isinstance(v, bool):
+        return v
+    if v is None:
+        return None
+    s = str(v).strip().lower()
+    if s in ("true", "1", "yes"):
+        return True
+    if s in ("false", "0", "no"):
+        return False
+    return None
+
+
 def parse_verifier_output(text) -> dict:
     """Extract appraisal / reportdata / mr_td / debug from the verifier output.
 
-    Accepts a JSON object or the sample's plain-text output (regex fallback)."""
+    Accepts a JSON object or the sample's plain-text output (regex fallback).
+    A field that is genuinely absent stays ``None`` (it is NEVER defaulted) so the
+    strict binding check can fail closed on a missing debug / mr_td."""
     text = text or ""
     # JSON first
     try:
         obj = json.loads(text)
         if isinstance(obj, dict):
+            td_attrs = obj.get("td_attributes")
+            if not isinstance(td_attrs, dict):
+                tdx = obj.get("tdx")
+                td_attrs = tdx.get("td_attributes") if isinstance(tdx, dict) else {}
+            if not isinstance(td_attrs, dict):
+                td_attrs = {}
+            debug_raw = obj.get("debug")
+            if debug_raw is None:
+                debug_raw = obj.get("td_attributes.debug")
+            if debug_raw is None:
+                debug_raw = td_attrs.get("debug")
             return {
                 "overall_appraisal_result": obj.get("overall_appraisal_result")
                 or obj.get("appraisal_result") or obj.get("result"),
                 "tdx_reportdata": _norm_hex(
-                    obj.get("tdx_reportdata") or obj.get("report_data")
-                    or obj.get("reportdata")),
-                "mr_td": _norm_hex(obj.get("tdx_mr_td") or obj.get("mr_td")
-                                   or obj.get("mrtd")),
-                "debug": obj.get("debug"),
+                    obj.get("tdx_reportdata") or obj.get("tdx_report_data")
+                    or obj.get("report_data") or obj.get("reportdata")),
+                "mr_td": _norm_hex(
+                    obj.get("tdx_mr_td") or obj.get("mr_td") or obj.get("mrtd")
+                    or obj.get("mr td")),
+                "debug": _coerce_debug(debug_raw),
             }
     except (json.JSONDecodeError, TypeError):
         pass
+
     # plain-text fallback
     def _grab(pat):
         m = re.search(pat, text, re.IGNORECASE)
         return m.group(1).strip() if m else None
-    appraisal = _grab(r"overall[_ ]appraisal[_ ]result\s*[:=]\s*([A-Za-z0-9_\- ]+)")
-    rd = _norm_hex(_grab(r"report\s*data\s*[:=]\s*([0-9a-fx]+)"))
-    mrtd = _norm_hex(_grab(r"mr[_ ]?td\s*[:=]\s*([0-9a-fx]+)"))
-    debug = _grab(r"debug\s*[:=]\s*(true|false)")
+    appraisal = _grab(
+        r"overall[_ ]appraisal[_ ]result\s*[:=]\s*([A-Za-z0-9_\- ]+)")
+    # report data: tdx_reportdata / tdx_report_data / report_data / "report data"
+    rd = _norm_hex(_grab(
+        r"(?:tdx[_ ]?report[_ ]?data|report[_ ]data)\s*[:=]\s*([0-9a-fx]+)"))
+    # mr_td: mr_td / "mr td" / "mrt d" / tdx_mr_td
+    mrtd = _norm_hex(_grab(
+        r"(?:tdx[_ ]?mr[_ ]?td|mr[_ ]?t?\s?d)\s*[:=]\s*([0-9a-fx]+)"))
+    # debug: "td_attributes.debug" or "debug"
+    debug = _grab(r"(?:td_attributes\.)?debug\s*[:=]\s*(true|false|1|0|yes|no)")
     return {"overall_appraisal_result": appraisal, "tdx_reportdata": rd,
-            "mr_td": mrtd, "debug": (None if debug is None
-                                     else debug.lower() == "true")}
+            "mr_td": mrtd, "debug": _coerce_debug(debug)}
 
 
 def verify_quote_alibaba(quote_path, out_dir, *, qverify_dir=ALIBABA_QVERIFY_DIR,
@@ -265,23 +299,33 @@ def build_evidence(*, runtime_hash_hex, report_data_hex, nonlinear_backend,
                    nonlinear_design_metadata_hash, appraisal, expected_mr_td,
                    quote_source=QUOTE_SOURCE, simulated=False,
                    command_provenance=None) -> dict:
-    """Assemble the evidence JSON; paper_facing only when fully verified + real."""
-    debug_val = appraisal.get("debug")
-    mr_td = appraisal.get("mr_td") or _norm_hex(expected_mr_td)
+    """Assemble the evidence JSON; paper_facing only when fully verified + real.
+
+    Fields the verifier did NOT surface are recorded faithfully (mr_td stays the
+    verifier's value or None -- it is NEVER backfilled from expected_mr_td; debug
+    stays True/False or None/"unknown" -- a missing debug is NEVER treated as
+    false). expected_mr_td is used only for COMPARISON in verify_bindings."""
+    debug_val = appraisal.get("debug")           # True / False / None (unknown)
+    mr_td = appraisal.get("mr_td")               # verifier value only, no backfill
     evidence = {
         "tee": "tdx",
         "quote_source": quote_source,
         "verifier_overall_appraisal_result":
             appraisal.get("overall_appraisal_result"),
+        "verifier_returncode": appraisal.get("verifier_returncode"),
         "tdx_reportdata": appraisal.get("tdx_reportdata"),
         "report_data": report_data_hex,
         "runtime_hash": runtime_hash_hex,
         "mr_td": mr_td,
+        "mr_td_present": mr_td is not None,
+        "expected_mr_td": _norm_hex(expected_mr_td),
         "nonlinear_backend": nonlinear_backend,
         "nonlinear_design_metadata_hash": nonlinear_design_metadata_hash,
         "runtime_hash_binds_nonlinear_backend": True,
-        "tdx": {"td_attributes": {"debug": bool(debug_val)
-                                  if debug_val is not None else False}},
+        # debug is the verifier's value; a missing value is "unknown" (NOT false)
+        "tdx": {"td_attributes": {"debug": (debug_val if debug_val is not None
+                                            else "unknown")}},
+        "debug_present": debug_val is not None,
         "generated_by": "generate_alibaba_tdx_quote_evidence.py",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "command_provenance": command_provenance or {},
@@ -292,29 +336,67 @@ def build_evidence(*, runtime_hash_hex, report_data_hex, nonlinear_backend,
     return evidence
 
 
+# a positive appraisal must be one of these tokens AND contain none of the
+# negative tokens (so "SIMULATED_PASS" / "UNKNOWN" / "PASS but ERROR" all FAIL).
+_APPRAISAL_POSITIVE = re.compile(r"\b(pass|passed|ok|success|succeeded|trusted|"
+                                 r"trustworthy)\b", re.IGNORECASE)
+_APPRAISAL_NEGATIVE = re.compile(r"simulat|unknown|fail|reject|error|untrust|"
+                                 r"deny|denied|invalid|none", re.IGNORECASE)
+
+
+def _appraisal_pass(appraisal) -> bool:
+    s = str(appraisal or "").strip()
+    if not s:
+        return False
+    if _APPRAISAL_NEGATIVE.search(s):
+        return False
+    return bool(_APPRAISAL_POSITIVE.search(s))
+
+
 def verify_bindings(evidence, *, runtime_hash_hex, report_data_hex,
                     expected_mr_td) -> dict:
-    """Check the three Alibaba bindings + debug=false. Returns a verdict dict."""
+    """STRICT Alibaba binding check (fail-closed on missing verifier fields).
+
+    Requires: tdx_reportdata present AND == report_data == runtime_hash; debug
+    genuinely parsed to False (a missing/UNKNOWN debug FAILS); verifier returncode
+    0; appraisal an explicit PASS/OK/SUCCESS/TRUSTED (empty / UNKNOWN / SIMULATED /
+    FAILED / ERROR all FAIL); and, when expected_mr_td is given, the verifier
+    output MUST actually contain mr_td and it MUST match (expected_mr_td is used
+    ONLY for comparison, never to backfill a missing value)."""
     rd = _norm_hex(evidence.get("tdx_reportdata"))
     reportdata_binds = bool(rd is not None
                             and rd == _norm_hex(report_data_hex)
                             and rd == _norm_hex(runtime_hash_hex))
-    mr_ok = True
+
+    # mr_td: only compared. If expected given, the verifier MUST have surfaced one.
+    ev_mr = _norm_hex(evidence.get("mr_td"))
     if expected_mr_td:
-        mr_ok = (_norm_hex(evidence.get("mr_td")) == _norm_hex(expected_mr_td))
+        mr_ok = (ev_mr is not None and ev_mr == _norm_hex(expected_mr_td))
+    else:
+        mr_ok = True                      # nothing to compare against
+
+    # debug: must be genuinely False; missing / "unknown" / True all fail closed.
     debug = (((evidence.get("tdx") or {}).get("td_attributes") or {})
              .get("debug"))
     debug_false = (debug is False)
-    appraisal = str(evidence.get("verifier_overall_appraisal_result") or "")
-    appraisal_ok = bool(appraisal) and not re.search(
-        r"fail|reject|error|untrust", appraisal, re.IGNORECASE)
+
+    rc = evidence.get("verifier_returncode")
+    verifier_returncode_ok = (rc == 0)
+
+    appraisal_ok = _appraisal_pass(
+        evidence.get("verifier_overall_appraisal_result"))
+
+    all_ok = bool(reportdata_binds and mr_ok and debug_false
+                  and verifier_returncode_ok and appraisal_ok)
     return {
         "tdx_reportdata_binds_runtime_hash": reportdata_binds,
+        "mr_td_present": ev_mr is not None,
         "mr_td_match": mr_ok,
+        "debug_present": debug not in (None, "unknown"),
         "debug_false": debug_false,
+        "verifier_returncode_ok": verifier_returncode_ok,
         "appraisal_ok": appraisal_ok,
-        "all_bindings_ok": bool(reportdata_binds and mr_ok and debug_false
-                                and appraisal_ok),
+        "all_bindings_ok": all_ok,
     }
 
 

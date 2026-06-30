@@ -373,19 +373,59 @@ class _ExampleFailure(Exception):
         self.retries = retries
 
 
-def _sanitize_error(exc, *, raw_prompt=None, sensitive_spans=None):
-    """Return (error_type, sanitized_message) with NO raw prompt / sensitive span.
+import re as _re
 
-    Mirrors run_ifeval_generation._sanitize_error: the exception class is kept, but
-    any literal occurrence of the raw prompt or a fabricated sensitive span is
-    replaced with ``<redacted>`` so a failed record / error log can never leak the
-    user input (or a token-id / mask dump embedded in a message)."""
+# Technical-payload patterns that must never survive into a failed record / log,
+# even if no raw prompt / span was supplied. These catch tensor / array dumps and
+# secret-bearing field assignments (token ids, plaintext logits, raw masks/pad).
+_TECH_PAYLOAD_PATTERNS = (
+    # tensor([...]) / array([...]) / ndarray([...]) dumps (possibly multi-line)
+    _re.compile(r"(?:tensor|array|ndarray)\s*\(\s*\[.*?\]\s*\)", _re.DOTALL),
+    # field=<value> for known secret-bearing fields (value = a bracketed list,
+    # a tensor/array dump, or a token up to whitespace/;)
+    _re.compile(
+        r"(?:input_ids|token_ids|plaintext_embedding|plaintext_logits|"
+        r"recovered_logits|raw_mask|raw_N|N_inv|raw_pad|recovery_matrix|"
+        r"masked_embeddings|masked_logits)\s*=\s*"
+        r"(?:(?:tensor|array|ndarray)\s*\(\s*\[.*?\]\s*\)|\[[^\]]*\]|[^\s;,)]+)",
+        _re.IGNORECASE | _re.DOTALL),
+    # bare bracketed numeric dumps like [1, 2, 3, ...]
+    _re.compile(r"\[\s*-?\d[\d,.\s+eE-]{8,}\]"),
+)
+# bare field NAMES that, even without '=', should be scrubbed if they appear
+_TECH_FIELD_NAMES = (
+    "input_ids", "token_ids", "plaintext_embedding", "plaintext_logits",
+    "recovered_logits", "raw_mask", "raw_N", "N_inv", "raw_pad",
+    "recovery_matrix", "masked_embeddings", "masked_logits",
+)
+_TECH_TOKEN = "<redacted_technical_payload>"
+
+
+def _redact_technical_payload(msg: str) -> str:
+    """Replace tensor/array dumps + secret-bearing field assignments/names."""
+    for pat in _TECH_PAYLOAD_PATTERNS:
+        msg = pat.sub(_TECH_TOKEN, msg)
+    for name in _TECH_FIELD_NAMES:
+        msg = _re.sub(_re.escape(name), _TECH_TOKEN, msg, flags=_re.IGNORECASE)
+    return msg
+
+
+def _sanitize_error(exc, *, raw_prompt=None, sensitive_spans=None):
+    """Return (error_type, sanitized_message) with NO raw prompt / sensitive span /
+    technical payload.
+
+    The exception class is kept, but (1) any literal occurrence of the raw prompt
+    or a fabricated sensitive span is replaced with ``<redacted>``, and (2) generic
+    technical payloads (token-id / mask / pad / logits field dumps,
+    tensor/array(...) dumps) are replaced with ``<redacted_technical_payload>`` --
+    so a failed record / error log can never leak the user input OR a secret-bearing
+    intermediate, even when no prompt/span was supplied."""
     etype = type(exc).__name__ if exc is not None else "GenerationError"
     msg = str(exc) if exc is not None else ""
+    # 1. exact raw prompt + sensitive spans (+ long prompt line fragments)
     needles = list(sensitive_spans or [])
     if raw_prompt:
         needles.append(raw_prompt)
-        # also redact long line-fragments of the prompt (>=24 chars) defensively
         for frag in str(raw_prompt).splitlines():
             frag = frag.strip()
             if len(frag) >= 24:
@@ -393,6 +433,8 @@ def _sanitize_error(exc, *, raw_prompt=None, sensitive_spans=None):
     for s in needles:
         if s and str(s) in msg:
             msg = msg.replace(str(s), "<redacted>")
+    # 2. generic technical-payload redaction (defense in depth)
+    msg = _redact_technical_payload(msg)
     return etype, msg[:500]
 
 
