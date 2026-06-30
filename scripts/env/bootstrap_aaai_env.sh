@@ -29,14 +29,17 @@ fi
 
 cd "$PLLO_REPO" || _fail "Cannot cd to $PLLO_REPO"
 
-if [[ ! -d .git ]]; then
-  _fail "$PLLO_REPO is not a git repository."
-fi
-
 if [[ -n "${PLLO_COMMIT:-}" ]]; then
-  current_commit="$(git rev-parse HEAD)"
+  if [[ -d .git ]]; then
+    current_commit="$(git rev-parse HEAD)"
+  elif [[ -f .pllo_commit ]]; then
+    current_commit="$(cat .pllo_commit | tr -d '[:space:]')"
+  else
+    _fail "Cannot verify commit: neither .git nor .pllo_commit exists."
+  fi
+
   if [[ "$current_commit" != "$PLLO_COMMIT" ]]; then
-    _fail "Commit mismatch. HEAD=$current_commit expected=$PLLO_COMMIT"
+    _fail "Commit mismatch. current=$current_commit expected=$PLLO_COMMIT"
   fi
 fi
 
