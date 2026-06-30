@@ -175,6 +175,62 @@ def test_scan_degeneration_catches_repeat_and_null() -> None:
     assert sc["max_repeat_ratio"] == 1.0
 
 
+def test_scan_degeneration_consecutive_run(tmp_path) -> None:
+    run = _load("aaai_deg2", "scripts/run_aaai_generation_benchmark.py")
+    p = tmp_path / "r.jsonl"
+    _write_jsonl(p, [
+        # 70-long single-token run, NOT full budget -> still degenerate (run>64)
+        {"id": "run70", "status": "ok", "num_tokens": 70, "finish_reason": "length",
+         "token_ids": [5] * 70},
+        # high ratio but short, no long run, not >0.8? 8/10=0.8 not >0.8 -> clean
+        {"id": "ok", "status": "ok", "num_tokens": 10, "finish_reason": "eos",
+         "token_ids": [1, 1, 1, 1, 2, 3, 4, 5, 6, 7]}])
+    sc = run.scan_degeneration(p, max_new_tokens=512)
+    ids = [d["id"] for d in sc["degenerate_responses"]]
+    assert "run70" in ids and "ok" not in ids
+    assert sc["max_consecutive_run_overall"] == 70
+    assert sc["consecutive_run_threshold"] == 64
+
+
+def test_debug_steps_and_suspect_helpers() -> None:
+    dbg = _load("dbg_help", "scripts/debug_folded_remote_generation_parity.py")
+    # prefill OK (top1=id0) then decode collapses to id3 -> KV/position suspect
+    cap = [[9, 1, 0, 0], [0, 0, 0, 9], [0, 0, 0, 9]]
+    plain = [[9, 1, 0, 0], [9, 1, 0, 0], [9, 1, 0, 0]]   # plaintext stays id0
+    steps = dbg._steps_from_logits(cap, tok=None, plain_steps=plain)
+    assert steps[0]["plaintext_top1_agree"] is True
+    assert steps[1]["plaintext_top1_agree"] is False
+    s = dbg._suspect(steps, with_plaintext=True)
+    assert "decode" in s and "KV cache" in s
+    # prefill disagrees -> LM head suspect
+    cap2 = [[0, 0, 0, 9]]
+    plain2 = [[9, 0, 0, 0]]
+    steps2 = dbg._steps_from_logits(cap2, tok=None, plain_steps=plain2)
+    assert "LM head" in dbg._suspect(steps2, with_plaintext=True)
+
+
+def test_prompt_format_info_truncation_fields() -> None:
+    from pllo.benchmarks.real_predictors import prompt_format_info
+
+    class _FakeTok:
+        def __call__(self, s):
+            # 3 "tokens" per word -> controllable length
+            return {"input_ids": list(range(len(s.split()) * 3))}
+
+        def apply_chat_template(self, msgs, tokenize=False,
+                                add_generation_prompt=True):
+            return msgs[0]["content"] + " ASSIST"
+
+    tok = _FakeTok()
+    long_prompt = " ".join(["w"] * 10)            # 30 formatted tokens
+    info = prompt_format_info(tok, long_prompt, False, seq_len=8)
+    assert info["truncation_side"] == "left"
+    assert info["truncated"] is True
+    assert info["prompt_token_count"] == 8         # capped to seq_len
+    short = prompt_format_info(tok, "w w", False, seq_len=64)
+    assert short["truncated"] is False
+
+
 def test_runner_report_has_finish_reason_and_tee_claim_fields(tmp_path) -> None:
     run = _load("aaai_run_r3", "scripts/run_aaai_generation_benchmark.py")
     inp = tmp_path / "in.jsonl"

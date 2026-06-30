@@ -532,16 +532,33 @@ def _most_common_fraction(token_ids) -> float:
     return max(c.values()) / len(token_ids)
 
 
+def _max_consecutive_run(token_ids) -> int:
+    """Longest run of the SAME consecutive token id (the literal repeat-loop)."""
+    best = run = 0
+    prev = object()
+    for t in token_ids or []:
+        if t == prev:
+            run += 1
+        else:
+            run = 1
+            prev = t
+        best = max(best, run)
+    return best
+
+
 def scan_degeneration(resp_path, *, max_new_tokens: int,
-                      repeat_ratio_threshold: float = 0.5) -> dict:
+                      repeat_ratio_threshold: float = 0.8,
+                      consecutive_run_threshold: int = 64) -> dict:
     """Scan the response JSONL for degenerate / unterminated generations.
 
-    A record is DEGENERATE when it ran to the full ``max_new_tokens`` budget AND a
-    single token dominates the output (``most_common_fraction`` exceeds the
-    threshold) -- the IFEval id=1005 failure mode (same token repeated to 512 with
-    finish_reason=null). Also flags any ok record with ``finish_reason is None``."""
+    An ok record is DEGENERATE when EITHER (a) its single most-common token takes
+    > ``repeat_ratio_threshold`` of the output, OR (b) it has a same-token run
+    longer than ``consecutive_run_threshold`` -- the IFEval id=1005 failure mode
+    (token 104755 repeated to max_new_tokens). Also flags any ok record with
+    ``finish_reason is None`` and records whether it ran to the full budget."""
     null_finish_ids, degenerate = [], []
-    worst = 0.0
+    worst_frac = 0
+    worst_run = 0
     try:
         with open(resp_path, "r", encoding="utf-8") as fh:
             for ln in fh:
@@ -559,13 +576,17 @@ def scan_degeneration(resp_path, *, max_new_tokens: int,
                     null_finish_ids.append(rid)
                 toks = r.get("token_ids") or []
                 frac = _most_common_fraction(toks)
-                worst = max(worst, frac)
+                run = _max_consecutive_run(toks)
+                worst_frac = max(worst_frac, frac)
+                worst_run = max(worst_run, run)
                 ran_full = int(r.get("num_tokens") or 0) >= int(max_new_tokens)
-                if ran_full and frac > repeat_ratio_threshold \
-                        and r.get("finish_reason") != "eos":
-                    degenerate.append({"id": rid, "most_common_fraction":
-                                       round(frac, 4),
-                                       "num_tokens": r.get("num_tokens")})
+                if frac > repeat_ratio_threshold \
+                        or run > consecutive_run_threshold:
+                    degenerate.append({
+                        "id": rid, "most_common_fraction": round(frac, 4),
+                        "max_consecutive_run": run, "ran_full_budget": ran_full,
+                        "num_tokens": r.get("num_tokens"),
+                        "finish_reason": r.get("finish_reason")})
     except FileNotFoundError:
         pass
     return {
@@ -573,8 +594,10 @@ def scan_degeneration(resp_path, *, max_new_tokens: int,
         "finish_reason_null_ids": sorted(set(null_finish_ids)),
         "degenerate_response_count": len(degenerate),
         "degenerate_responses": degenerate,
-        "max_repeat_ratio": round(worst, 4),
+        "max_repeat_ratio": round(worst_frac, 4),
+        "max_consecutive_run_overall": worst_run,
         "repeat_ratio_threshold": repeat_ratio_threshold,
+        "consecutive_run_threshold": consecutive_run_threshold,
     }
 
 

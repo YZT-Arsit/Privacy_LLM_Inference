@@ -126,15 +126,20 @@ def prompt_format_info(tokenizer, raw, use_chat_template, seq_len):
             return None
     raw_n = _count(raw)
     chat_n = _count(format_prompt_for_generation(raw, tokenizer, True))
-    used = _count(formatted)
-    used = min(used, int(seq_len)) if used is not None else None
+    full = _count(formatted)
+    used = min(full, int(seq_len)) if full is not None else None
+    # symmetric truncation policy = keep the LAST seq_len tokens (side="left").
+    truncated = bool(full is not None and full > int(seq_len))
     return {
         "prompt_format": "chat" if use_chat_template else "raw",
         "formatted_prompt_sha256": hashlib.sha256(
             formatted.encode("utf-8")).hexdigest(),
         "raw_prompt_token_count": raw_n,
         "chat_prompt_token_count": chat_n,
+        "formatted_prompt_token_count": full,
         "prompt_token_count": used,
+        "truncation_side": "left",
+        "truncated": truncated,
     }
 
 
