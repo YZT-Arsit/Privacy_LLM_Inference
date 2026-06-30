@@ -94,6 +94,37 @@ def _norm_hex(v) -> str | None:
     return re.sub(r"[^0-9a-f]", "", s) or None
 
 
+def _alibaba_qgen_reportdata_hex(report_data_hex: str) -> str:
+    s = _norm_hex(report_data_hex)
+    if s is None:
+        raise ValueError("invalid report_data_hex")
+    if len(s) != 128:
+        raise ValueError("Alibaba TDX report_data must be 64 bytes / 128 hex chars")
+    return s[64:128] + s[0:64]
+
+
+def _debug_from_tdx_attributes(v):
+    s = _norm_hex(v)
+    if s is None:
+        return None
+    if s == "0000000010000000":
+        return False
+    return None
+
+
+def _normalize_appraisal_result(v):
+    if v is None:
+        return None
+    if isinstance(v, bool):
+        return "SUCCESS" if v else "FAIL"
+    sv = str(v).strip()
+    if sv == "1":
+        return "SUCCESS"
+    if sv == "0":
+        return "FAIL"
+    return sv
+
+
 def _run(cmd, *, cwd=None, timeout=120):
     """Run a command (list or shell string); return (rc, stdout, stderr)."""
     shell = isinstance(cmd, str)
@@ -179,14 +210,15 @@ def generate_quote_alibaba(report_data_hex, out_dir, *, qgen_app=ALIBABA_QGEN_AP
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     quote_out = out_dir / quote_out_name
+    qgen_report_data_hex = _alibaba_qgen_reportdata_hex(report_data_hex)
     if quote_command:
-        cmd = (quote_command.replace("{report_data_hex}", report_data_hex)
+        cmd = (quote_command.replace("{report_data_hex}", qgen_report_data_hex)
                .replace("{quote_out}", str(quote_out)))
         rc, out, err = _run(cmd, cwd=str(out_dir))
         if rc != 0:
             raise RuntimeError("quote command failed (%d): %s" % (rc, err[:400]))
     else:
-        rc, out, err = _run([qgen_app, "-d", report_data_hex], cwd=str(out_dir))
+        rc, out, err = _run([qgen_app, "-d", qgen_report_data_hex], cwd=str(out_dir))
         if rc != 0:
             raise RuntimeError(
                 "Alibaba quote app failed (%d): %s" % (rc, err[:400]))
@@ -258,20 +290,23 @@ def parse_verifier_output(text) -> dict:
     # JSON first, including nested td_attributes.debug-like outputs.
     try:
         obj = json.loads(text)
-        if isinstance(obj, dict):
+        if isinstance(obj, (dict, list)):
+            overall = _find_key(obj, {"overall_appraisal_result"})
+            if overall is None:
+                overall = _find_key(obj, {"appraisal_result"})
+            debug = _parse_bool(_find_key(obj, {"debug", "td_attributes.debug"}))
+            if debug is None:
+                debug = _debug_from_tdx_attributes(_find_key(
+                    obj, {"tdx_attributes", "td_attributes"}))
             return {
-                "overall_appraisal_result": (
-                    _find_key(obj, {"overall_appraisal_result", "appraisal_result", "result"})
-                ),
+                "overall_appraisal_result": _normalize_appraisal_result(overall),
                 "tdx_reportdata": _norm_hex(_find_key(
                     obj, {"tdx_reportdata", "tdx_report_data", "report_data", "reportdata"}
                 )),
                 "mr_td": _norm_hex(_find_key(
-                    obj, {"tdx_mr_td", "mr_td", "mrtd", "mrt d"}
+                    obj, {"tdx_mrtd", "tdx_mr_td", "mr_td", "mrtd", "mrt d"}
                 )),
-                "debug": _parse_bool(_find_key(
-                    obj, {"debug", "td_attributes.debug"}
-                )),
+                "debug": debug,
                 "verifier_returncode": _find_key(
                     obj, {"verifier_returncode", "returncode", "return_code", "rc"}
                 ),
@@ -284,14 +319,14 @@ def parse_verifier_output(text) -> dict:
         m = re.search(pat, text, re.IGNORECASE)
         return m.group(1).strip() if m else None
 
-    appraisal = _grab(
+    appraisal = _normalize_appraisal_result(_grab(
         r"(?:overall[_ ]appraisal[_ ]result|appraisal[_ ]result|result)\s*[:=]\s*([A-Za-z0-9_\- ]+)"
-    )
+    ))
     rd = _norm_hex(_grab(
         r"(?:tdx[_ ]reportdata|tdx[_ ]report[_ ]data|report[_ ]data|report\s+data)\s*[:=]\s*(0x[0-9a-fA-F]+|[0-9a-fA-F]+)"
     ))
     mrtd = _norm_hex(_grab(
-        r"(?:tdx[_ ]mr[_ ]td|mr[_ ]td|mrt\s*d|mrtd)\s*[:=]\s*(0x[0-9a-fA-F]+|[0-9a-fA-F]+)"
+        r"(?:tdx[_ ]mrtd|tdx[_ ]mr[_ ]td|mr[_ ]td|mrt\s*d|mrtd)\s*[:=]\s*(0x[0-9a-fA-F]+|[0-9a-fA-F]+)"
     ))
     debug = _grab(r"(?:td[_ ]attributes\.debug|td_attributes\.debug|debug)\s*[:=]\s*(true|false|0|1|yes|no)")
     rc = _grab(r"(?:verifier[_ ]returncode|returncode|return[_ ]code|rc)\s*[:=]\s*(-?\d+)")
