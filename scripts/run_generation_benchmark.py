@@ -49,19 +49,36 @@ from pllo.benchmarks.generation_datasets import (  # noqa: E402
 
 _INNER = REPO_ROOT / "scripts" / "run_ifeval_generation.py"
 
+# datasets this unified runner can drive: the 3 AAAI generation benchmarks plus
+# the single-turn code / sensitive-prompt stress sets (all share the same folded-
+# remote / TDX-boundary pipeline). mt_bench is the only two-turn dataset.
+_SINGLE_TURN = ("ifeval", "gsm8k", "humaneval", "sensitive_prompt_1024",
+                "longbench_1024_lite")
+_RUNNER_DATASETS = _SINGLE_TURN + ("mt_bench",)
 
-def _write_prompts(rows, path) -> None:
+
+def _write_prompts(rows, path, *, dataset=None) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as fh:
         for r in rows:
-            fh.write(json.dumps({"id": r["id"], "prompt": r["prompt"]},
-                                ensure_ascii=False) + "\n")
+            row = {"id": r["id"], "prompt": r["prompt"]}
+            if dataset:
+                row["dataset"] = dataset
+            # carry sensitive spans so the inner runner can scrub them from any
+            # error/failure record (raw prompt is never persisted regardless)
+            if r.get("sensitive_spans"):
+                row["sensitive_spans"] = r["sensitive_spans"]
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def _run_inner(input_jsonl, resp_jsonl, report_json, passthrough) -> int:
+def _run_inner(input_jsonl, resp_jsonl, report_json, passthrough,
+               dataset=None) -> int:
     cmd = [sys.executable, str(_INNER), "--input-jsonl", str(input_jsonl),
            "--output-response-jsonl", str(resp_jsonl),
-           "--output-report-json", str(report_json)] + list(passthrough)
+           "--output-report-json", str(report_json)]
+    if dataset:
+        cmd += ["--dataset", dataset]
+    cmd += list(passthrough)
     print("[gen-bench] -> %s" % " ".join(cmd), flush=True)
     return subprocess.call(cmd)
 
@@ -82,7 +99,7 @@ def _read_jsonl(path):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--dataset", required=True, choices=list(DATASETS))
+    ap.add_argument("--dataset", required=True, choices=list(_RUNNER_DATASETS))
     ap.add_argument("--input-jsonl", required=True)
     ap.add_argument("--output-dir", required=True,
                     help="dir for the responses JSONL, the inner report JSON, and "
@@ -106,12 +123,12 @@ def main() -> int:
         print("ERROR: no examples in %s" % args.input_jsonl, file=sys.stderr)
         return 3
 
-    if ds in ("ifeval", "gsm8k"):
+    if ds in _SINGLE_TURN:
         prompts = out / ("%s_prompts.jsonl" % ds)
-        _write_prompts(rows, prompts)
+        _write_prompts(rows, prompts, dataset=ds)
         resp = out / ("%s_responses.jsonl" % ds)
         report = out / ("%s_generation.json" % ds)
-        rc = _run_inner(prompts, resp, report, passthrough)
+        rc = _run_inner(prompts, resp, report, passthrough, dataset=ds)
         if rc != 0:
             print("ERROR: inner generation runner failed (rc=%d)" % rc,
                   file=sys.stderr)
@@ -173,10 +190,11 @@ def _run_mt_bench(rows, out, passthrough) -> int:
     # turn 1
     t1_prompts = out / "mt_bench_turn1_prompts.jsonl"
     _write_prompts([{"id": r["id"], "prompt": r["turns"][0]} for r in rows],
-                   t1_prompts)
+                   t1_prompts, dataset="mt_bench")
     t1_resp = out / "mt_bench_turn1_responses.jsonl"
     t1_report = out / "mt_bench_turn1_generation.json"
-    rc = _run_inner(t1_prompts, t1_resp, t1_report, passthrough)
+    rc = _run_inner(t1_prompts, t1_resp, t1_report, passthrough,
+                    dataset="mt_bench")
     if rc != 0:
         print("ERROR: mt_bench turn-1 failed (rc=%d)" % rc, file=sys.stderr)
         return rc
@@ -194,10 +212,11 @@ def _run_mt_bench(rows, out, passthrough) -> int:
             convo = ("%s\n\n%s\n\n%s" % (r["turns"][0], r1, r["turns"][1]))
             t2_rows.append({"id": r["id"], "prompt": convo})
         t2_prompts = out / "mt_bench_turn2_prompts.jsonl"
-        _write_prompts(t2_rows, t2_prompts)
+        _write_prompts(t2_rows, t2_prompts, dataset="mt_bench")
         t2_resp = out / "mt_bench_turn2_responses.jsonl"
         t2_report = out / "mt_bench_turn2_generation.json"
-        rc = _run_inner(t2_prompts, t2_resp, t2_report, passthrough)
+        rc = _run_inner(t2_prompts, t2_resp, t2_report, passthrough,
+                        dataset="mt_bench")
         if rc != 0:
             print("ERROR: mt_bench turn-2 failed (rc=%d)" % rc, file=sys.stderr)
             return rc

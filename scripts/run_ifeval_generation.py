@@ -55,6 +55,13 @@ from pllo.benchmarks.real_predictors import (  # noqa: E402
     RealBackendUnavailable,
     build_predictor,
 )
+from pllo.benchmarks.run_state import (  # noqa: E402
+    RunState,
+    append_jsonl_record,
+    completed_ids_from_jsonl,
+    failed_ids_from_jsonl,
+    plan_examples,
+)
 from pllo.experiments.nonlinear_designs import (  # noqa: E402
     normalize_nonlinear_backend,
 )
@@ -83,6 +90,27 @@ def _load_prompts(path, max_examples):
     if max_examples and max_examples > 0:
         out = out[:max_examples]
     return out
+
+
+def _sha256(text: str | None) -> str | None:
+    if text is None:
+        return None
+    return hashlib.sha256(str(text).encode("utf-8")).hexdigest()
+
+
+def _sanitize_error(exc: BaseException, *, sensitive_spans=None,
+                    raw_prompt=None) -> tuple[str, str]:
+    """Return (error_type, error_message) with NO raw prompt / sensitive span.
+
+    The message is the exception class + str(exc), then any literal occurrence of
+    the raw prompt or a sensitive span is stripped so a failure record / error log
+    can never leak user input."""
+    etype = type(exc).__name__
+    msg = str(exc)
+    for s in (list(sensitive_spans or []) + ([raw_prompt] if raw_prompt else [])):
+        if s and str(s) in msg:
+            msg = msg.replace(str(s), "<redacted>")
+    return etype, msg[:500]
 
 
 def main() -> int:
@@ -236,9 +264,70 @@ def main() -> int:
                     "health readable, nonlinear_trusted_calls=0, "
                     "compatible_masks_verified, schedule_full_coverage_verified. "
                     "Any unmet condition -> paper_ready=False and exit non-zero.")
+    # ---- resume / crash-safety / status + heartbeat (long real runs) ----
+    ap.add_argument("--dataset", default=None,
+                    help="dataset label recorded per response (e.g. ifeval / "
+                    "gsm8k / mt_bench / humaneval / sensitive_prompt_1024); also "
+                    "drives sensitive-prompt raw-prompt protection")
+    ap.add_argument("--run-id", default=None,
+                    help="run id for the status/heartbeat files (default derived "
+                    "from the output path)")
+    ap.add_argument("--resume", action="store_true", default=False,
+                    help="resume: read the existing --output-response-jsonl, skip "
+                    "already-completed ids, append (never overwrite)")
+    ap.add_argument("--status-json", default=None,
+                    help="status checkpoint JSON (counts / last id / timestamps)")
+    ap.add_argument("--heartbeat-json", default=None,
+                    help="heartbeat JSON (alive / pid / host / elapsed), updated "
+                    "frequently so a monitor can tell the run is alive")
+    ap.add_argument("--heartbeat-interval-sec", type=float, default=10.0)
+    ap.add_argument("--max-retries-per-example", type=int, default=0,
+                    help="retry a failing example this many times before marking "
+                    "it failed (transport/transient errors)")
+    ap.add_argument("--retry-sleep-sec", type=float, default=2.0)
+    ap.add_argument("--retry-backoff", type=float, default=2.0,
+                    help="exponential backoff multiplier for per-example retries")
+    ap.add_argument("--fail-fast", action="store_true", default=False,
+                    help="abort the whole run on the first example that fails all "
+                    "retries (default: record failed + continue)")
+    ap.add_argument("--skip-failed-existing", action="store_true", default=False,
+                    help="on --resume, do NOT retry ids whose existing record is "
+                    "status=failed (default: retry them)")
+    # ---- raw-prompt output protection (user-input privacy) ----
+    ap.add_argument("--save-raw-prompts", action="store_true", default=False,
+                    help="store the raw prompt text in the response JSONL "
+                    "(default OFF; only a prompt_sha256 is written). FORBIDDEN "
+                    "under --paper-facing-generation and for sensitive datasets")
+    ap.add_argument("--redact-raw-prompts", action="store_true", default=False,
+                    help="explicitly force raw-prompt redaction (default behaviour; "
+                    "kept for clarity in scripts)")
+    ap.add_argument("--paper-facing-no-raw-prompts", action="store_true",
+                    default=False, help="assert no raw prompt is ever written "
+                    "(implied by --paper-facing-generation)")
+    ap.add_argument("--worker-health-jsonl", default=None,
+                    help="append the worker /health snapshot (public, no secrets) "
+                    "to this JSONL for the security/robustness audit")
+    ap.add_argument("--use-resilient-worker", dest="use_resilient_worker",
+                    action="store_true", default=True,
+                    help="(default ON) drive folded_remote through the "
+                    "retry/backoff/reconnect ResilientRemoteGpuWorker")
+    ap.add_argument("--no-resilient-worker", dest="use_resilient_worker",
+                    action="store_false",
+                    help="use the bare RemoteGpuWorker (no auto-retry/reconnect)")
+    ap.add_argument("--worker-max-retries", type=int, default=5,
+                    help="resilient worker: max transport retries per request")
+    ap.add_argument("--worker-backoff-base-sec", type=float, default=0.5)
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
+
+    # --save-raw-prompts is incompatible with the paper-facing contract.
+    if args.save_raw_prompts and (args.paper_facing_generation
+                                  or args.paper_facing_no_raw_prompts):
+        print("ERROR: --save-raw-prompts is forbidden under "
+              "--paper-facing-generation / --paper-facing-no-raw-prompts "
+              "(raw user input must never be persisted)", file=sys.stderr)
+        return 3
 
     # Fail fast on the statically-knowable paper-facing violations (so a bad
     # invocation never even starts a long real run).
@@ -280,6 +369,34 @@ def main() -> int:
         print("ERROR: no prompts in %s" % args.input_jsonl, file=sys.stderr)
         return 3
 
+    # ---- dataset label + raw-prompt protection policy ----
+    dataset_name = (args.dataset
+                    or (examples[0].get("dataset") if examples else None))
+    is_sensitive = bool(dataset_name and "sensitive" in str(dataset_name).lower())
+    # Raw prompt is NEVER persisted unless explicitly opted in AND it is not a
+    # paper-facing / sensitive run. The static guard above already rejected
+    # --save-raw-prompts under --paper-facing-generation.
+    paper_no_raw = bool(args.paper_facing_generation
+                        or args.paper_facing_no_raw_prompts)
+    save_raw_prompts = bool(args.save_raw_prompts
+                            and not paper_no_raw and not is_sensitive)
+    if args.save_raw_prompts and is_sensitive:
+        print("[ifeval] NOTE: sensitive dataset -> raw prompts are NOT saved "
+              "(overriding --save-raw-prompts).", file=sys.stderr)
+
+    # ---- resume planning: skip completed ids, optionally retry failed ones ----
+    rp = Path(args.output_response_jsonl)
+    completed_ids: set = set()
+    failed_existing: set = set()
+    if args.resume and rp.exists():
+        completed_ids = completed_ids_from_jsonl(rp)
+        failed_existing = failed_ids_from_jsonl(rp)
+        if args.skip_failed_existing:
+            # treat existing failures as terminal: do not retry them
+            completed_ids |= failed_existing
+    to_run, skipped_ids = plan_examples(examples, completed_ids,
+                                        resume=bool(args.resume))
+
     # build the real predictor or fall back to the stub (mock/local)
     if args.backend == "plaintext_local":
         have_real = bool(args.model_path) and not args.mock_runtime
@@ -300,7 +417,10 @@ def main() -> int:
                 stop_on_eos=(not args.disable_eos_stop),
                 length_hide_generation=(args.length_hide_generation
                                         or args.dummy_decode_after_eos),
-                use_chat_template=bool(args.use_chat_template))
+                use_chat_template=bool(args.use_chat_template),
+                use_resilient_worker=bool(args.use_resilient_worker),
+                worker_max_retries=int(args.worker_max_retries),
+                worker_backoff_base_sec=float(args.worker_backoff_base_sec))
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but real backend unavailable: %s"
@@ -385,13 +505,29 @@ def main() -> int:
 
     responses = []
     fmt_records = []        # per-example trusted-side prompt-formatting metadata
-    n_examples = len(examples)
-    # Streaming response writer (default ON): write each example to the output
-    # JSONL immediately + flush, so progress is observable (no 0-byte log) and a
-    # partial / interrupted run keeps the work it already did.
-    rp = Path(args.output_response_jsonl)
+    n_examples = len(to_run)
+    failed_records = []      # per-example failure records (no raw prompt)
+    # Streaming response writer: APPEND so a resumed run never overwrites prior
+    # work; each example is flushed + fsync'd immediately (crash-safe). With
+    # --no-stream-responses (and no resume) the old buffered single-write path is
+    # used. Resume always streams (append) so prior records survive.
     rp.parent.mkdir(parents=True, exist_ok=True)
-    stream_fh = open(rp, "w", encoding="utf-8") if args.stream_responses else None
+    stream_mode = bool(args.stream_responses or args.resume)
+    open_mode = "a" if args.resume else "w"
+    stream_fh = open(rp, open_mode, encoding="utf-8") if stream_mode else None
+
+    # ---- run state: status + heartbeat checkpoints ----
+    run_id = args.run_id or rp.stem
+    state = RunState(
+        run_id, dataset=dataset_name, backend=args.backend, model=args.model_name,
+        nonlinear_backend=nb, output_response_jsonl=str(rp),
+        paper_facing_generation=bool(args.paper_facing_generation),
+        total_examples=len(examples), status_json=args.status_json,
+        heartbeat_json=args.heartbeat_json,
+        resume_from_existing=bool(args.resume))
+    state.skipped_existing_examples = len(skipped_ids)
+    state.checkpoint()
+    last_hb = time.perf_counter()
     online_t0 = time.perf_counter()
 
     def _log(i, ex, phase, **kw):
@@ -416,58 +552,130 @@ def main() -> int:
             return ef[-1].get("finish_reason")
         return None
 
+    def _build_and_attach_schedule(idx):
+        """Build + attach one per-example schedule; return (schedule, latency)."""
+        if not enabled:
+            return None, 0.0
+        tprep = time.perf_counter()
+        schedule = PrecomputedMaskSchedule.precompute(
+            max_steps=per_example_steps, hidden_size=int(sched_hidden),
+            seed=int(args.schedule_seed) + idx, seq_len=args.seq_len,
+            max_new_tokens=args.max_new_tokens, dtype=sched_dtype,
+            device=args.device, mask_family="pairwise_complex_scaling",
+            nonlinear_backend=nb,
+            with_secret_tensors=precompute_secret_tensors, strict_audit=True)
+        lat = time.perf_counter() - tprep
+        audit_schedule_trusted_only(schedule)
+        if predictor is not None and hasattr(
+                predictor, "attach_obfuscation_schedule"):
+            predictor.attach_obfuscation_schedule(schedule)
+        return schedule, lat
+
+    def _generate_once(ex, schedule):
+        """One generation attempt (real predictor or mock). Raises on failure."""
+        prompt = str(ex["prompt"])
+        if predictor is not None:
+            g = predictor.generate(prompt)
+            return g, g.get("text", ""), g.get("token_ids") or []
+        g = stub_generate(ex, args.max_new_tokens)
+        text, toks = g["text"], g["token_ids"]
+
+        def _on_step(kind, step, phase, _sched=schedule):
+            if kind == "schedule" and _sched is not None:
+                try:
+                    _sched.consume(step)
+                except Exception:                        # noqa: BLE001
+                    pass
+        worker_timing_fn = None
+        if args.trace_worker_timings:
+            from pllo.protocol.worker_timing import (
+                audit_worker_timing_no_secrets, synthetic_worker_timing)
+
+            def worker_timing_fn(step, phase):           # noqa: F811
+                wt = synthetic_worker_timing(phase=phase, num_layers=28)
+                audit_worker_timing_no_secrets(wt)
+                return wt
+        simulate_mock_decode(profiler, mock_counters,
+                             n_tokens=max(1, len(toks)), hidden_size=64,
+                             on_step=_on_step, worker_timing_fn=worker_timing_fn)
+        return g, text, toks
+
+    def _maybe_heartbeat(force=False):
+        nonlocal last_hb
+        now = time.perf_counter()
+        if force or (now - last_hb) >= max(0.0, args.heartbeat_interval_sec):
+            state.heartbeat()
+            last_hb = now
+
     try:
-        for idx, ex in enumerate(examples):
-            schedule = None
+        for idx, ex in enumerate(to_run):
+            rid = str(ex.get("id"))
+            raw_spans = ex.get("sensitive_spans") or []
+            state.begin_example(rid)
             _log(idx, ex, "start")
-            if enabled:
-                tprep = time.perf_counter()
-                schedule = PrecomputedMaskSchedule.precompute(
-                    max_steps=per_example_steps, hidden_size=int(sched_hidden),
-                    seed=int(args.schedule_seed) + idx, seq_len=args.seq_len,
-                    max_new_tokens=args.max_new_tokens, dtype=sched_dtype,
-                    device=args.device, mask_family="pairwise_complex_scaling",
-                    nonlinear_backend=nb,
-                    with_secret_tensors=precompute_secret_tensors,
-                    strict_audit=True)
-                sched_precompute_latency += (time.perf_counter() - tprep)
-                audit_schedule_trusted_only(schedule)
+            prompt = str(ex["prompt"])
+            ex_t0 = time.perf_counter()
+            max_attempts = max(1, int(args.max_retries_per_example) + 1)
+            attempt = 0
+            schedule = None
+            sched_lat = 0.0
+            g = text = None
+            toks = []
+            last_exc = None
+            while attempt < max_attempts:
+                attempt += 1
+                try:
+                    schedule, sched_lat = _build_and_attach_schedule(idx)
+                    _log(idx, ex, "generate_start", attempt=attempt)
+                    g, text, toks = _generate_once(ex, schedule)
+                    last_exc = None
+                    break
+                except Exception as exc:                 # noqa: BLE001
+                    last_exc = exc
+                    from pllo.protocol.resilient_remote import is_retriable_error
+                    retriable = is_retriable_error(exc)
+                    if attempt >= max_attempts or not retriable:
+                        break
+                    delay = (args.retry_sleep_sec
+                             * (args.retry_backoff ** (attempt - 1)))
+                    etype, _ = _sanitize_error(exc, sensitive_spans=raw_spans,
+                                               raw_prompt=prompt)
+                    print("[ifeval] example %s attempt %d/%d failed (%s); "
+                          "retrying in %.1fs" % (rid, attempt, max_attempts,
+                                                 etype, delay), file=sys.stderr,
+                          flush=True)
+                    time.sleep(delay)
+            retries = attempt - 1
+            # ---- failure: record (NO raw prompt), continue unless --fail-fast --
+            if last_exc is not None:
+                etype, emsg = _sanitize_error(
+                    last_exc, sensitive_spans=raw_spans, raw_prompt=prompt)
+                state.record_failed(rid, error_type=etype, error_message=emsg,
+                                    retries=retries)
+                frec = {"id": rid, "dataset": dataset_name,
+                        "backend": args.backend, "nonlinear_backend": nb,
+                        "model_name": args.model_name, "response": None,
+                        "num_tokens": 0, "finish_reason": None,
+                        "latency_s": round(time.perf_counter() - ex_t0, 6),
+                        "retries": retries, "status": "failed",
+                        "error_type": etype, "error_message": emsg,
+                        "prompt_sha256": _sha256(prompt),
+                        "prompt_token_count": None}
+                failed_records.append(frec)
+                if stream_fh is not None:
+                    append_jsonl_record(stream_fh, frec)
+                state.checkpoint()
+                _maybe_heartbeat(force=True)
+                if args.fail_fast:
+                    print("ERROR: --fail-fast: example %s failed all %d attempt(s)"
+                          % (rid, max_attempts), file=sys.stderr)
+                    raise last_exc
+                continue
+            # ---- success: commit schedule counters for THIS attempt only ----
+            if enabled and schedule is not None:
+                sched_precompute_latency += sched_lat
                 last_schedule = schedule
                 sched_slots_precomputed += len(schedule.slots)
-                if predictor is not None and hasattr(
-                        predictor, "attach_obfuscation_schedule"):
-                    predictor.attach_obfuscation_schedule(schedule)
-
-            prompt = str(ex["prompt"])
-            _log(idx, ex, "generate_start")
-            if predictor is not None:
-                g = predictor.generate(prompt)
-                text = g.get("text", "")
-                toks = g.get("token_ids") or []
-            else:
-                g = stub_generate(ex, args.max_new_tokens)
-                text, toks = g["text"], g["token_ids"]
-                # mock path: synthetic profiled decode that consumes one fresh
-                # slot per generated token (no model/GPU); honest mock timings.
-                def _on_step(kind, step, phase, _sched=schedule):
-                    if kind == "schedule" and _sched is not None:
-                        try:
-                            _sched.consume(step)
-                        except Exception:            # noqa: BLE001
-                            pass
-                worker_timing_fn = None
-                if args.trace_worker_timings:
-                    from pllo.protocol.worker_timing import (
-                        audit_worker_timing_no_secrets, synthetic_worker_timing)
-
-                    def worker_timing_fn(step, phase):   # noqa: F811
-                        wt = synthetic_worker_timing(phase=phase, num_layers=28)
-                        audit_worker_timing_no_secrets(wt)
-                        return wt
-                simulate_mock_decode(profiler, mock_counters,
-                                     n_tokens=max(1, len(toks)), hidden_size=64,
-                                     on_step=_on_step,
-                                     worker_timing_fn=worker_timing_fn)
             # ---- per-example online-deterministic schedule coverage proof ----
             # The paper's audit is "every generated token consumed a FRESH
             # obfuscation slot, no schedule secret reached the GPU" -- it does NOT
@@ -513,20 +721,32 @@ def main() -> int:
                   "raw_prompt_token_count": g.get("raw_prompt_token_count"),
                   "chat_prompt_token_count": g.get("chat_prompt_token_count")}
             fmt_records.append(fr)
-            rec = {"id": ex.get("id"), "prompt": prompt,
+            finish_reason = _peek_finish(g)
+            rec = {"id": rid, "dataset": dataset_name, "backend": args.backend,
+                   "nonlinear_backend": nb, "model_name": args.model_name,
                    "response": text, "num_tokens": len(toks),
+                   "finish_reason": finish_reason,
+                   "latency_s": round(time.perf_counter() - ex_t0, 6),
+                   "retries": retries, "status": "ok", "error_type": None,
+                   "error_message": None, "prompt_sha256": _sha256(prompt),
                    "prompt_format": fr["prompt_format"],
                    "formatted_prompt_sha256": fr["formatted_prompt_sha256"],
                    "prompt_token_count": fr["prompt_token_count"]}
+            # Raw prompt is persisted ONLY when explicitly opted-in and the run is
+            # neither paper-facing nor a sensitive dataset (gate resolved above).
+            if save_raw_prompts:
+                rec["prompt"] = prompt
             responses.append(rec)
-            # stream this example to disk immediately (default ON)
+            # stream this example to disk immediately (append + flush + fsync)
             if stream_fh is not None:
-                stream_fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-                stream_fh.flush()
+                append_jsonl_record(stream_fh, rec)
+            state.record_completed(rid, tokens=len(toks))
+            state.checkpoint()
+            _maybe_heartbeat()
             done_n = idx + 1
             avg = (time.perf_counter() - online_t0) / done_n
             _log(idx, ex, "done", tokens=len(toks),
-                 finish_reason=_peek_finish(g),
+                 finish_reason=finish_reason,
                  avg_s_per_example=round(avg, 3),
                  eta="%.1fs" % (avg * (n_examples - done_n)))
     finally:
@@ -561,6 +781,13 @@ def main() -> int:
             stats = predictor.stats() or {}
         except Exception:                                    # noqa: BLE001
             stats = {}
+
+    # worker robustness (resilient client): retries / reconnects / last error
+    worker_retry_count = stats.get("worker_retry_count")
+    worker_reconnects_total = stats.get("worker_reconnect_count")
+    worker_last_error = stats.get("worker_last_error_sanitized")
+    state.record_robustness(retries=int(worker_retry_count or 0),
+                            reconnects=int(worker_reconnects_total or 0))
 
     total_tokens = sum(r["num_tokens"] for r in responses) or None
     boundary_calls = stats.get("boundary_calls")
@@ -618,10 +845,39 @@ def main() -> int:
         "gpu_visible_plaintext_fields": stats.get("gpu_visible_plaintext_fields"),
         "leaked_secret_fields": stats.get("leaked_secret_fields"),
         "gpu_calls": stats.get("gpu_calls"),
+        "dataset": dataset_name,
+        "run_id": run_id,
         "dry_run": is_dry,
         "paper_ready": (not is_dry),
     }
     report.update(sfields)
+    # ---- resume / crash-safety / failure accounting ----
+    report["resume"] = bool(args.resume)
+    report["resumed_from_existing"] = bool(args.resume and rp.exists())
+    report["skipped_existing_examples"] = len(skipped_ids)
+    report["completed_this_run"] = len(responses)
+    report["failed_examples"] = len(failed_records)
+    report["failed_ids"] = [f["id"] for f in failed_records]
+    report["status_json"] = args.status_json
+    report["heartbeat_json"] = args.heartbeat_json
+    # a single failed example forces paper_ready=False (cannot claim a clean run)
+    if failed_records:
+        report["paper_ready"] = False
+        report["paper_ready_blocker"] = "%d example(s) failed" % len(failed_records)
+    # ---- raw-prompt output protection (user-input privacy) ----
+    report["raw_prompts_saved"] = bool(save_raw_prompts)
+    report["paper_facing_no_raw_prompts"] = bool(paper_no_raw)
+    report["sensitive_dataset"] = is_sensitive
+    report["response_jsonl_contains_raw_prompt"] = bool(save_raw_prompts)
+    report["prompt_sha256_only"] = (not save_raw_prompts)
+    # ---- worker robustness (resilient client) ----
+    report["use_resilient_worker"] = bool(args.use_resilient_worker)
+    report["worker_retry_count"] = worker_retry_count
+    report["worker_reconnects_total"] = worker_reconnects_total
+    report["worker_last_error_sanitized"] = worker_last_error
+    report["worker_health_snapshots_jsonl"] = args.worker_health_jsonl
+    report["retries_total"] = state.retries_total
+    report["max_retries_per_example"] = int(args.max_retries_per_example)
     # nonlinear design capability stamp + MEASURED worker execution evidence
     # (so an A_rightmul / trusted_shortcut run carries genuine, non-tag-only
     # evidence: right_multiply_nonlinear_executed / amulet_lift_executed etc.).
@@ -807,6 +1063,15 @@ def main() -> int:
     attest_evidence = _load_opt_json(args.attestation_evidence_json)
     deployment_truth = _load_opt_json(args.deployment_truth_json)
     worker_health = _worker_health(args.gpu_worker_url)
+    # append the (public, no-secret) worker health snapshot for the audit
+    if args.worker_health_jsonl and worker_health is not None:
+        try:
+            whp = Path(args.worker_health_jsonl)
+            whp.parent.mkdir(parents=True, exist_ok=True)
+            with open(whp, "a", encoding="utf-8") as _wh:
+                append_jsonl_record(_wh, {"run_id": run_id, **worker_health})
+        except Exception:                                    # noqa: BLE001
+            pass
     coverage_ok = _measurement_ok(args.tdx_measurement_log)
     worker_tee = (worker_health.get("tee_used_on_gpu")
                   if isinstance(worker_health, dict)
@@ -865,13 +1130,16 @@ def main() -> int:
                 % pf["paper_facing_generation_violations"])
             paper_facing_gen_failed = True
 
-    # Responses were already streamed to disk when --stream-responses (default);
-    # only the buffered (--no-stream-responses) path writes the JSONL here.
-    if not args.stream_responses:
+    # Responses were already streamed to disk (append + fsync) when streaming was
+    # active; only the buffered (--no-stream-responses, no --resume) path writes
+    # the JSONL here. Never overwrite when a stream handle was used (resume-safe).
+    if stream_fh is None:
         rp.parent.mkdir(parents=True, exist_ok=True)
         with open(rp, "w", encoding="utf-8") as fh:
             for r in responses:
                 fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    # final status/heartbeat checkpoint (alive=false)
+    state.finish()
     jp = Path(args.output_report_json)
     jp.parent.mkdir(parents=True, exist_ok=True)
     jp.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")

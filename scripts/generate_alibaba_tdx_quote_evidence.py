@@ -1,0 +1,455 @@
+"""Generate REAL TDX attestation evidence on an Alibaba Cloud TDX guest.
+
+This is the Alibaba-Cloud-specific driver around the SAME runtime-hash recipe and
+the SAME ``verify_evidence`` verifier used by
+``scripts/generate_tdx_attestation_evidence.py``. It adapts the flow to Alibaba's
+local quote-generation + quote-verification samples (which verify the TD Quote
+*locally* with the relying-party verifier -- there is no remote JWT here):
+
+1. **Preflight** (never destructive): ``lscpu | grep tdx_guest``,
+   ``/dev/tdx_guest``, kernel version, and the presence of
+   ``/opt/alibaba/tdx-quote-generation-sample/app`` and the
+   ``tdx-quote-verification-sample`` verifier / relying_party. Missing pieces are
+   reported with the install command to run by hand -- the script never modifies
+   the system.
+2. **Runtime hash** bound to ``--nonlinear-backend A_rightmul`` (same recipe the
+   cross-machine demo verifies), folded into the 64-byte ``report_data``.
+3. **Quote**: run the Alibaba generation sample
+   ``<app> -d <report_data_hex>`` (writing ``quote.dat``; copied to the output
+   dir). The quote is therefore bound to the current code + A_rightmul metadata.
+4. **Verify**: run the Alibaba verification sample (verifier / relying_party) on
+   the quote, then extract ``overall_appraisal_result``, ``tdx_reportdata``, the
+   ``mr_td``, and ``td_attributes.debug``. We assert
+   ``tdx_reportdata == report_data == runtime_hash``, ``debug == false``, and
+   ``mr_td == --expected-mr-td`` (when supplied).
+5. **Evidence JSON** with ``tee=tdx``,
+   ``quote_source=alibaba_tdx_quote_generation_sample``,
+   ``verifier_overall_appraisal_result``, ``tdx_reportdata``, ``runtime_hash``,
+   ``report_data``, ``runtime_hash_binds_nonlinear_backend=true``,
+   ``nonlinear_backend=A_rightmul``, ``td_attributes.debug=false``,
+   ``paper_facing=true`` (only on a real, fully-verified run).
+
+STALE QUOTES: a previously-generated quote binds the *previous* code hash. Any
+code change to a measured boundary file changes the runtime hash, so the quote
+must be regenerated before each formal experiment; an old quote fails the
+``tdx_reportdata == runtime_hash`` check.
+
+Off-TDX, ``--simulate`` exercises the full plumbing with a clearly-marked unsigned
+flow (``paper_facing=false``); it is never real evidence. stdlib + the pllo
+attestation module only. No passwords / SSH keys are read or written here.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from pllo.protocol.attestation import (  # noqa: E402
+    boundary_manifest_metadata,
+    build_trusted_boundary_manifest,
+    compute_runtime_hash_from_manifest,
+    runtime_report_data_hex,
+    verify_evidence,
+)
+
+ALIBABA_QGEN_APP = "/opt/alibaba/tdx-quote-generation-sample/app"
+ALIBABA_QVERIFY_DIR = "/opt/alibaba/tdx-quote-verification-sample"
+QUOTE_SOURCE = "alibaba_tdx_quote_generation_sample"
+
+# install hints (printed, NEVER executed)
+_INSTALL_HINTS = {
+    "tdx_guest_cpu": "ensure the VM is a TDX guest (Alibaba g8i TDX instance)",
+    "tdx_guest_dev": "modprobe tdx_guest; ls -l /dev/tdx_guest",
+    "qgen_app": "build the Alibaba TDX quote-generation sample at %s"
+                % ALIBABA_QGEN_APP,
+    "qverify": "build the Alibaba TDX quote-verification sample (verifier + "
+               "relying_party) under %s" % ALIBABA_QVERIFY_DIR,
+}
+
+
+def _norm_hex(v) -> str | None:
+    if v is None:
+        return None
+    s = str(v).strip().lower()
+    if s.startswith("0x"):
+        s = s[2:]
+    return re.sub(r"[^0-9a-f]", "", s) or None
+
+
+def _run(cmd, *, cwd=None, timeout=120):
+    """Run a command (list or shell string); return (rc, stdout, stderr)."""
+    shell = isinstance(cmd, str)
+    proc = subprocess.run(cmd, shell=shell, cwd=cwd, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, timeout=timeout)
+    return (proc.returncode, proc.stdout.decode("utf-8", "replace"),
+            proc.stderr.decode("utf-8", "replace"))
+
+
+# ---------------------------------------------------------------------------
+# preflight
+# ---------------------------------------------------------------------------
+
+
+def run_preflight(*, qgen_app=ALIBABA_QGEN_APP, qverify_dir=ALIBABA_QVERIFY_DIR,
+                  min_kernel=(5, 19)) -> dict:
+    """Non-destructive environment check. Returns a dict of booleans + hints."""
+    checks: dict = {}
+    missing: list = []
+
+    # 1. TDX guest CPU flag
+    try:
+        rc, out, _ = _run(["lscpu"], timeout=20)
+        checks["cpu_tdx_guest"] = (rc == 0 and "tdx_guest" in out.lower())
+    except Exception:                                            # noqa: BLE001
+        checks["cpu_tdx_guest"] = False
+    if not checks["cpu_tdx_guest"]:
+        missing.append(("cpu_tdx_guest", _INSTALL_HINTS["tdx_guest_cpu"]))
+
+    # 2. /dev/tdx_guest device
+    checks["dev_tdx_guest"] = Path("/dev/tdx_guest").exists()
+    if not checks["dev_tdx_guest"]:
+        missing.append(("dev_tdx_guest", _INSTALL_HINTS["tdx_guest_dev"]))
+
+    # 3. kernel version (>= min_kernel for the configfs-tsm/TDX guest interface)
+    kernel_ok = None
+    try:
+        rc, out, _ = _run(["uname", "-r"], timeout=10)
+        m = re.match(r"(\d+)\.(\d+)", out.strip())
+        if m:
+            kv = (int(m.group(1)), int(m.group(2)))
+            kernel_ok = kv >= min_kernel
+            checks["kernel_release"] = out.strip()
+    except Exception:                                            # noqa: BLE001
+        kernel_ok = None
+    checks["kernel_ok"] = kernel_ok
+
+    # 4. Alibaba quote-generation sample app
+    checks["qgen_app_present"] = Path(qgen_app).exists()
+    if not checks["qgen_app_present"]:
+        missing.append(("qgen_app", _INSTALL_HINTS["qgen_app"]))
+
+    # 5. Alibaba quote-verification sample (verifier + relying_party)
+    verifier = Path(qverify_dir) / "verifier"
+    relying_party = Path(qverify_dir) / "relying_party"
+    checks["qverify_verifier_present"] = verifier.exists()
+    checks["qverify_relying_party_present"] = relying_party.exists()
+    if not (verifier.exists() or relying_party.exists()):
+        missing.append(("qverify", _INSTALL_HINTS["qverify"]))
+
+    checks["all_ok"] = bool(
+        checks.get("cpu_tdx_guest") and checks.get("dev_tdx_guest")
+        and checks.get("qgen_app_present")
+        and (checks.get("qverify_verifier_present")
+             or checks.get("qverify_relying_party_present")))
+    checks["missing"] = [{"item": k, "hint": h} for k, h in missing]
+    return checks
+
+
+# ---------------------------------------------------------------------------
+# quote generation + verification (Alibaba samples)
+# ---------------------------------------------------------------------------
+
+
+def generate_quote_alibaba(report_data_hex, out_dir, *, qgen_app=ALIBABA_QGEN_APP,
+                           quote_command=None, quote_out_name="td_quote.dat"):
+    """Run the Alibaba generation sample to produce a quote bound to report_data.
+
+    ``quote_command`` (testable override) is a shell template with
+    ``{report_data_hex}`` / ``{quote_out}`` placeholders; if omitted the default
+    ``<app> -d <report_data_hex>`` is used and ``quote.dat`` is copied to
+    ``{quote_out}``."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    quote_out = out_dir / quote_out_name
+    if quote_command:
+        cmd = (quote_command.replace("{report_data_hex}", report_data_hex)
+               .replace("{quote_out}", str(quote_out)))
+        rc, out, err = _run(cmd, cwd=str(out_dir))
+        if rc != 0:
+            raise RuntimeError("quote command failed (%d): %s" % (rc, err[:400]))
+    else:
+        rc, out, err = _run([qgen_app, "-d", report_data_hex], cwd=str(out_dir))
+        if rc != 0:
+            raise RuntimeError(
+                "Alibaba quote app failed (%d): %s" % (rc, err[:400]))
+        # the sample writes quote.dat in cwd; copy it to the canonical name
+        default = out_dir / "quote.dat"
+        if default.exists() and default.resolve() != quote_out.resolve():
+            shutil.copyfile(default, quote_out)
+    if not quote_out.exists() or quote_out.stat().st_size == 0:
+        raise RuntimeError("no quote produced at %s" % quote_out)
+    return quote_out
+
+
+def parse_verifier_output(text) -> dict:
+    """Extract appraisal / reportdata / mr_td / debug from the verifier output.
+
+    Accepts a JSON object or the sample's plain-text output (regex fallback)."""
+    text = text or ""
+    # JSON first
+    try:
+        obj = json.loads(text)
+        if isinstance(obj, dict):
+            return {
+                "overall_appraisal_result": obj.get("overall_appraisal_result")
+                or obj.get("appraisal_result") or obj.get("result"),
+                "tdx_reportdata": _norm_hex(
+                    obj.get("tdx_reportdata") or obj.get("report_data")
+                    or obj.get("reportdata")),
+                "mr_td": _norm_hex(obj.get("tdx_mr_td") or obj.get("mr_td")
+                                   or obj.get("mrtd")),
+                "debug": obj.get("debug"),
+            }
+    except (json.JSONDecodeError, TypeError):
+        pass
+    # plain-text fallback
+    def _grab(pat):
+        m = re.search(pat, text, re.IGNORECASE)
+        return m.group(1).strip() if m else None
+    appraisal = _grab(r"overall[_ ]appraisal[_ ]result\s*[:=]\s*([A-Za-z0-9_\- ]+)")
+    rd = _norm_hex(_grab(r"report\s*data\s*[:=]\s*([0-9a-fx]+)"))
+    mrtd = _norm_hex(_grab(r"mr[_ ]?td\s*[:=]\s*([0-9a-fx]+)"))
+    debug = _grab(r"debug\s*[:=]\s*(true|false)")
+    return {"overall_appraisal_result": appraisal, "tdx_reportdata": rd,
+            "mr_td": mrtd, "debug": (None if debug is None
+                                     else debug.lower() == "true")}
+
+
+def verify_quote_alibaba(quote_path, out_dir, *, qverify_dir=ALIBABA_QVERIFY_DIR,
+                         verify_command=None):
+    """Run the Alibaba verification sample; return the parsed appraisal dict."""
+    if verify_command:
+        cmd = verify_command.replace("{quote_file}", str(quote_path))
+        rc, out, err = _run(cmd, cwd=str(out_dir))
+    else:
+        relying_party = Path(qverify_dir) / "relying_party"
+        verifier = Path(qverify_dir) / "verifier"
+        exe = relying_party if relying_party.exists() else verifier
+        if not exe.exists():
+            raise RuntimeError("no Alibaba verifier at %s" % qverify_dir)
+        rc, out, err = _run([str(exe), str(quote_path)], cwd=str(out_dir))
+    parsed = parse_verifier_output(out or err)
+    parsed["verifier_returncode"] = rc
+    parsed["raw_output_present"] = bool(out or err)
+    return parsed
+
+
+# ---------------------------------------------------------------------------
+# evidence assembly + binding verification
+# ---------------------------------------------------------------------------
+
+
+def build_evidence(*, runtime_hash_hex, report_data_hex, nonlinear_backend,
+                   nonlinear_design_metadata_hash, appraisal, expected_mr_td,
+                   quote_source=QUOTE_SOURCE, simulated=False) -> dict:
+    """Assemble the evidence JSON; paper_facing only when fully verified + real."""
+    debug_val = appraisal.get("debug")
+    mr_td = appraisal.get("mr_td") or _norm_hex(expected_mr_td)
+    evidence = {
+        "tee": "tdx",
+        "quote_source": quote_source,
+        "verifier_overall_appraisal_result":
+            appraisal.get("overall_appraisal_result"),
+        "tdx_reportdata": appraisal.get("tdx_reportdata"),
+        "report_data": report_data_hex,
+        "runtime_hash": runtime_hash_hex,
+        "mr_td": mr_td,
+        "nonlinear_backend": nonlinear_backend,
+        "nonlinear_design_metadata_hash": nonlinear_design_metadata_hash,
+        "runtime_hash_binds_nonlinear_backend": True,
+        "tdx": {"td_attributes": {"debug": bool(debug_val)
+                                  if debug_val is not None else False}},
+        "generated_by": "generate_alibaba_tdx_quote_evidence.py",
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    if simulated:
+        evidence["simulated_unsigned"] = True
+        evidence["paper_facing"] = False
+    return evidence
+
+
+def verify_bindings(evidence, *, runtime_hash_hex, report_data_hex,
+                    expected_mr_td) -> dict:
+    """Check the three Alibaba bindings + debug=false. Returns a verdict dict."""
+    rd = _norm_hex(evidence.get("tdx_reportdata"))
+    reportdata_binds = bool(rd is not None
+                            and rd == _norm_hex(report_data_hex)
+                            and rd == _norm_hex(runtime_hash_hex))
+    mr_ok = True
+    if expected_mr_td:
+        mr_ok = (_norm_hex(evidence.get("mr_td")) == _norm_hex(expected_mr_td))
+    debug = (((evidence.get("tdx") or {}).get("td_attributes") or {})
+             .get("debug"))
+    debug_false = (debug is False)
+    appraisal = str(evidence.get("verifier_overall_appraisal_result") or "")
+    appraisal_ok = bool(appraisal) and not re.search(
+        r"fail|reject|error|untrust", appraisal, re.IGNORECASE)
+    return {
+        "tdx_reportdata_binds_runtime_hash": reportdata_binds,
+        "mr_td_match": mr_ok,
+        "debug_false": debug_false,
+        "appraisal_ok": appraisal_ok,
+        "all_bindings_ok": bool(reportdata_binds and mr_ok and debug_false
+                                and appraisal_ok),
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--boundary-backend", default="process")
+    ap.add_argument("--gpu-backend", default="qwen7b_folded_package")
+    ap.add_argument("--protocol-version", default="8.5")
+    ap.add_argument("--nonlinear-backend", default="A_rightmul")
+    ap.add_argument("--expected-mr-td", default=None)
+    ap.add_argument("--runtime-hash", default=None,
+                    help="override the computed runtime hash (128 hex); normally "
+                    "omit so it is computed from current boundary code")
+    ap.add_argument("--output-dir", required=True)
+    ap.add_argument("--output-evidence", required=True)
+    ap.add_argument("--qgen-app", default=ALIBABA_QGEN_APP)
+    ap.add_argument("--qverify-dir", default=ALIBABA_QVERIFY_DIR)
+    ap.add_argument("--quote-command", default=None,
+                    help="override quote generation (shell; {report_data_hex} "
+                    "{quote_out})")
+    ap.add_argument("--verify-command", default=None,
+                    help="override quote verification (shell; {quote_file})")
+    ap.add_argument("--skip-preflight", action="store_true", default=False)
+    ap.add_argument("--ignore-preflight", action="store_true", default=False,
+                    help="run even if preflight reports missing dependencies "
+                    "(prints the install hints; still never modifies the system)")
+    ap.add_argument("--simulate", action="store_true", default=False,
+                    help="off-TDX plumbing test: fabricate a passing-but-UNSIGNED "
+                    "flow (paper_facing=false); never real evidence")
+    args = ap.parse_args()
+
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. preflight ----------------------------------------------------------
+    pf = {}
+    if not args.skip_preflight:
+        pf = run_preflight(qgen_app=args.qgen_app, qverify_dir=args.qverify_dir)
+        (out_dir / "preflight.json").write_text(json.dumps(pf, indent=2),
+                                                encoding="utf-8")
+        print("=== Alibaba TDX preflight ===")
+        for k in ("cpu_tdx_guest", "dev_tdx_guest", "kernel_ok",
+                  "qgen_app_present", "qverify_relying_party_present",
+                  "qverify_verifier_present", "all_ok"):
+            print("%s=%s" % (k, pf.get(k)))
+        for m in pf.get("missing", []):
+            print("MISSING %s -> %s" % (m["item"], m["hint"]))
+        if not pf.get("all_ok") and not (args.ignore_preflight or args.simulate):
+            print("ERROR: preflight failed; fix the items above or pass "
+                  "--ignore-preflight (real evidence still requires a real TDX "
+                  "guest).", file=sys.stderr)
+            return 2
+
+    # 2. runtime hash bound to A_rightmul -----------------------------------
+    from pllo.experiments.nonlinear_designs import (
+        normalize_nonlinear_backend,
+        nonlinear_design_metadata_hash as _design_hash)
+    nb = normalize_nonlinear_backend(args.nonlinear_backend)
+    if nb != "A_rightmul":
+        print("ERROR: this paper-facing wrapper requires --nonlinear-backend "
+              "A_rightmul (got %r)" % nb, file=sys.stderr)
+        return 3
+    design_hash = _design_hash(nb)
+    metadata = boundary_manifest_metadata(
+        args.boundary_backend, args.gpu_backend, args.expected_mr_td,
+        protocol_version=args.protocol_version, nonlinear_backend=nb,
+        nonlinear_design_metadata_hash=design_hash)
+    manifest = build_trusted_boundary_manifest(metadata=metadata)
+    runtime_hash_hex = (args.runtime_hash.lower() if args.runtime_hash
+                        else compute_runtime_hash_from_manifest(manifest))
+    rh_bytes = bytes.fromhex(runtime_hash_hex)
+    report_data_hex = runtime_report_data_hex(rh_bytes)
+    (out_dir / "runtime_hash.hex").write_text(runtime_hash_hex + "\n")
+    (out_dir / "trusted_boundary_manifest.json").write_text(
+        json.dumps(manifest, indent=2, default=str), encoding="utf-8")
+
+    # 3-4. quote + verify ----------------------------------------------------
+    if args.simulate:
+        # fabricate a quote + a passing appraisal that binds report_data, but mark
+        # it UNSIGNED so it can never masquerade as real evidence.
+        quote_path = out_dir / "td_quote.dat"
+        quote_path.write_bytes(b"SIMQUOTE" + rh_bytes)
+        appraisal = {"overall_appraisal_result": "SIMULATED_PASS",
+                     "tdx_reportdata": report_data_hex,
+                     "mr_td": _norm_hex(args.expected_mr_td), "debug": False,
+                     "verifier_returncode": 0, "raw_output_present": True}
+        quote_source = "simulated_unsigned"
+    else:
+        try:
+            quote_path = generate_quote_alibaba(
+                report_data_hex, out_dir, qgen_app=args.qgen_app,
+                quote_command=args.quote_command)
+            appraisal = verify_quote_alibaba(
+                quote_path, out_dir, qverify_dir=args.qverify_dir,
+                verify_command=args.verify_command)
+        except Exception as exc:                                # noqa: BLE001
+            print("ERROR: quote generation/verification failed: %s" % exc,
+                  file=sys.stderr)
+            return 1
+        quote_source = QUOTE_SOURCE
+    (out_dir / "appraisal.json").write_text(json.dumps(appraisal, indent=2),
+                                            encoding="utf-8")
+
+    # 5. evidence + binding verification ------------------------------------
+    evidence = build_evidence(
+        runtime_hash_hex=runtime_hash_hex, report_data_hex=report_data_hex,
+        nonlinear_backend=nb, nonlinear_design_metadata_hash=design_hash,
+        appraisal=appraisal, expected_mr_td=args.expected_mr_td,
+        quote_source=quote_source, simulated=args.simulate)
+    verdict = verify_bindings(
+        evidence, runtime_hash_hex=runtime_hash_hex,
+        report_data_hex=report_data_hex, expected_mr_td=args.expected_mr_td)
+    evidence.update(verdict)
+    # the shared verifier (same one the demo uses) for the runtime-hash binding
+    ev = verify_evidence(evidence, rh_bytes, expected_mr_td=args.expected_mr_td)
+    evidence["runtime_hash_bound"] = ev.runtime_hash_bound
+    # paper_facing is true ONLY on a real, fully-bound, debug-false run
+    evidence["paper_facing"] = bool(
+        not args.simulate and verdict["all_bindings_ok"]
+        and ev.runtime_hash_bound is True)
+
+    out_ev = Path(args.output_evidence)
+    out_ev.parent.mkdir(parents=True, exist_ok=True)
+    out_ev.write_text(json.dumps(evidence, indent=2, default=str),
+                      encoding="utf-8")
+    shutil.copyfile(out_ev, out_dir / "evidence.json")
+
+    print("=== Alibaba TDX evidence (A_rightmul) ===")
+    print("runtime_hash=%s" % runtime_hash_hex)
+    print("report_data =%s" % report_data_hex)
+    print("tdx_reportdata=%s" % evidence.get("tdx_reportdata"))
+    print("quote_source=%s" % quote_source)
+    print("overall_appraisal_result=%s"
+          % evidence.get("verifier_overall_appraisal_result"))
+    print("tdx_reportdata_binds_runtime_hash=%s"
+          % verdict["tdx_reportdata_binds_runtime_hash"])
+    print("mr_td_match=%s debug_false=%s appraisal_ok=%s"
+          % (verdict["mr_td_match"], verdict["debug_false"],
+             verdict["appraisal_ok"]))
+    print("paper_facing=%s output_evidence=%s" % (evidence["paper_facing"],
+                                                  out_ev))
+    if args.simulate:
+        print("** SIMULATED: unsigned; NOT real attestation evidence **")
+
+    if args.simulate:
+        return 0
+    return 0 if evidence["paper_facing"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

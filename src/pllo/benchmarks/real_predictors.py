@@ -300,7 +300,9 @@ class _RemoteMaskedPredictor:
                  expected_mr_td, seq_len, max_new_tokens, dtype, device, audit,
                  nonlinear_backend="current", align_generation_config=False,
                  repetition_penalty=None, stop_on_eos=True,
-                 length_hide_generation=False, use_chat_template=False):
+                 length_hide_generation=False, use_chat_template=False,
+                 use_resilient_worker=True, worker_max_retries=5,
+                 worker_backoff_base_sec=0.5):
         self.backend = backend
         self.model_name = model_name
         self._use_chat_template = bool(use_chat_template)
@@ -427,8 +429,22 @@ class _RemoteMaskedPredictor:
             (self._trace.record_gpu_inbound if direction == "inbound"
              else self._trace.record_gpu_outbound)(msg)
 
-        self._worker = RemoteGpuWorker(gpu_worker_url, "qwen7b_folded_package",
-                                       recorder=_record)
+        # Drive the worker through the retry/backoff/reconnect resilient client by
+        # default so a dropped / 5xx / timed-out request is transparently retried
+        # (the boundary's own audit still runs on every forwarded request). The
+        # bare RemoteGpuWorker is used only with use_resilient_worker=False.
+        self._use_resilient_worker = bool(use_resilient_worker)
+        if self._use_resilient_worker:
+            from pllo.protocol.resilient_remote import ResilientRemoteGpuWorker
+            self._worker = ResilientRemoteGpuWorker(
+                gpu_worker_url, "qwen7b_folded_package", recorder=_record,
+                max_retries=int(worker_max_retries),
+                backoff_base_sec=float(worker_backoff_base_sec),
+                client_factory=lambda: RemoteGpuWorker(
+                    gpu_worker_url, "qwen7b_folded_package", recorder=_record))
+        else:
+            self._worker = RemoteGpuWorker(gpu_worker_url, "qwen7b_folded_package",
+                                           recorder=_record)
         try:
             self._health = self._worker.health()
             init_resp = self._worker.init(BoundaryInitRequest(
@@ -865,6 +881,20 @@ class _RemoteMaskedPredictor:
         # health): proves design B genuinely lifted the activation on the GPU.
         out["nonlinear_backend"] = self.nonlinear_backend
         out["nonlinear_op_backend"] = self._snotes.get("nonlinear_op_backend")
+        # worker robustness (resilient client): retries / reconnects / last error
+        out["use_resilient_worker"] = bool(
+            getattr(self, "_use_resilient_worker", False))
+        wstats = (self._worker.stats()
+                  if hasattr(self._worker, "stats") else None)
+        if isinstance(wstats, dict):
+            out["worker_retry_count"] = wstats.get("retry_count")
+            out["worker_reconnect_count"] = wstats.get("reconnect_count")
+            out["worker_request_count"] = wstats.get("request_count")
+            out["worker_last_error_sanitized"] = wstats.get("last_error")
+        else:
+            out["worker_retry_count"] = 0
+            out["worker_reconnect_count"] = 0
+            out["worker_last_error_sanitized"] = None
         # resident-cache status reported at worker init notes (public, no secret)
         out["resident_folded_weights"] = bool(
             self._snotes.get("resident_folded_weights", False))
@@ -932,7 +962,8 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     nonlinear_backend="current", align_generation_config=False,
                     repetition_penalty=None, stop_on_eos=True,
                     length_hide_generation=False, use_chat_template=False,
-                    adapter_path=None):
+                    adapter_path=None, use_resilient_worker=True,
+                    worker_max_retries=5, worker_backoff_base_sec=0.5):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -959,5 +990,8 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             align_generation_config=align_generation_config,
             repetition_penalty=repetition_penalty, stop_on_eos=stop_on_eos,
             length_hide_generation=length_hide_generation,
-            use_chat_template=use_chat_template)
+            use_chat_template=use_chat_template,
+            use_resilient_worker=use_resilient_worker,
+            worker_max_retries=worker_max_retries,
+            worker_backoff_base_sec=worker_backoff_base_sec)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))

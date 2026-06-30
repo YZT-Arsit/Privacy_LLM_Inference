@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import time
 from pathlib import Path
 from typing import Any, Callable, Iterable
@@ -112,6 +113,9 @@ class RunState:
                  total_examples: int = 0, status_json: str | None = None,
                  heartbeat_json: str | None = None,
                  resume_from_existing: bool = False,
+                 nonlinear_backend: str | None = None,
+                 output_response_jsonl: str | None = None,
+                 paper_facing_generation: bool = False,
                  clock: Callable[[], float] | None = None) -> None:
         self.run_id = run_id
         self.status_json = status_json
@@ -123,16 +127,35 @@ class RunState:
         self.failed_examples = 0
         self.skipped_existing_examples = 0
         self.generated_tokens_total = 0
+        self.retries_total = 0
+        self.reconnects_total = 0
         self.resume_from_existing = bool(resume_from_existing)
         self.last_completed_id: str | None = None
         self.current_dataset = dataset
         self.current_backend = backend
         self.current_model = model
+        self.nonlinear_backend = nonlinear_backend
+        self.output_response_jsonl = output_response_jsonl
+        self.paper_facing_generation = bool(paper_facing_generation)
         self.current_example_id: str | None = None
         self.start_time = now
         self.update_time = now
         self.end_time: float | None = None
         self.failed: list[dict[str, Any]] = []
+        try:
+            self.pid = os.getpid()
+        except Exception:                                       # noqa: BLE001
+            self.pid = None
+        try:
+            self.hostname = socket.gethostname()
+        except Exception:                                       # noqa: BLE001
+            self.hostname = None
+
+    @property
+    def paper_ready_so_far(self) -> bool:
+        """True while no example has failed (a single failure forces
+        paper_ready=False at the end of the run)."""
+        return self.failed_examples == 0
 
     # -- per-example transitions ---------------------------------------------
     def begin_example(self, example_id: str) -> None:
@@ -156,6 +179,13 @@ class RunState:
         self.skipped_existing_examples += 1
         self.update_time = self._clock()
 
+    def record_robustness(self, *, retries: int = 0,
+                          reconnects: int = 0) -> None:
+        """Accumulate per-run retry / reconnect counters (worker robustness)."""
+        self.retries_total += int(retries)
+        self.reconnects_total += int(reconnects)
+        self.update_time = self._clock()
+
     # -- snapshots ------------------------------------------------------------
     def to_status(self) -> dict[str, Any]:
         return {
@@ -167,12 +197,21 @@ class RunState:
             "resume_from_existing": self.resume_from_existing,
             "last_completed_id": self.last_completed_id,
             "generated_tokens_total": self.generated_tokens_total,
+            "retries_total": self.retries_total,
+            "reconnects_total": self.reconnects_total,
             "start_time": self.start_time,
             "update_time": self.update_time,
             "end_time": self.end_time,
+            "dataset": self.current_dataset,
             "current_dataset": self.current_dataset,
+            "backend": self.current_backend,
             "current_backend": self.current_backend,
+            "model_name": self.current_model,
             "current_model": self.current_model,
+            "nonlinear_backend": self.nonlinear_backend,
+            "output_response_jsonl": self.output_response_jsonl,
+            "paper_facing_generation": self.paper_facing_generation,
+            "paper_ready_so_far": self.paper_ready_so_far,
             "current_example_id": self.current_example_id,
             "failed": self.failed,
         }
@@ -181,7 +220,11 @@ class RunState:
         return {
             "run_id": self.run_id,
             "alive": self.end_time is None,
+            "pid": self.pid,
+            "hostname": self.hostname,
+            "timestamp": self.update_time,
             "update_time": self.update_time,
+            "elapsed_s": round((self.update_time or 0.0) - self.start_time, 6),
             "completed_examples": self.completed_examples,
             "failed_examples": self.failed_examples,
             "skipped_existing_examples": self.skipped_existing_examples,
