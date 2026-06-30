@@ -246,10 +246,18 @@ class FoldedNonlinearRunner:
     measured lift/migration counters are accumulated in :attr:`acc`."""
 
     def __init__(self, nonlinear_backend: str = "current", *,
-                 lift_k: int = 2, seed: int = 2035) -> None:
+                 lift_k: int = 2, seed: int = 2035,
+                 compatible_masks_verified: bool | None = None,
+                 compatible_mask_audit: Dict[str, Any] | None = None) -> None:
         self.nonlinear_backend = normalize_nonlinear_backend(nonlinear_backend)
         self.op_backend = op_backend_for_design(self.nonlinear_backend)
         self.lift_k = int(lift_k)
+        # A_rightmul compatible-mask binding. ``True`` = the build verified the
+        # masks are in the compatible family; ``False`` = explicitly NOT verified
+        # (the runner refuses to execute A_rightmul); ``None`` = legacy/no info
+        # (permitted for unit microbench, but the worker always supplies a bool).
+        self.compatible_masks_verified = compatible_masks_verified
+        self.compatible_mask_audit = dict(compatible_mask_audit or {})
         self._amulet = None
         self._rightmul = None
         self._secure = None
@@ -271,6 +279,18 @@ class FoldedNonlinearRunner:
             nonlinear_backend=self.nonlinear_backend,
             nonlinear_op_backend=self.op_backend)
 
+    def _assert_compatible_masks(self) -> None:
+        """A_rightmul may run on the accelerator ONLY when the build certified the
+        masks are in the compatible family. Refuse loudly otherwise -- never run a
+        nonlinear island over an unverified (possibly dense/complex) mask."""
+        if self.compatible_masks_verified is False:
+            from pllo.ops.compatible_mask_verify import CompatibleMaskViolation
+            raise CompatibleMaskViolation(
+                "A_rightmul nonlinear island refused: compatible_masks_verified "
+                "is False (the package was not built with a verified compatible "
+                "mask family; an arbitrary dense / pairwise_complex_scaling mask "
+                "is not accepted).")
+
     # -- MLP activation (lifted for design B; right-multiply for A_rightmul) ---
     def silu(self, x: torch.Tensor) -> torch.Tensor:
         if self._secure is not None:
@@ -278,6 +298,7 @@ class FoldedNonlinearRunner:
             self.acc.record_secure_right_multiply("silu", r)
             return r.output
         if self._rightmul is not None:
+            self._assert_compatible_masks()
             r = self._rightmul.silu(x)
             self.acc.record_right_multiply("silu", r)
             return r.output
@@ -295,6 +316,7 @@ class FoldedNonlinearRunner:
             self.acc.record_secure_right_multiply("gelu", r)
             return r.output
         if self._rightmul is not None:
+            self._assert_compatible_masks()
             r = self._rightmul.gelu(x)
             self.acc.record_right_multiply("gelu", r)
             return r.output
@@ -313,6 +335,7 @@ class FoldedNonlinearRunner:
             self.acc.record_secure_right_multiply("rmsnorm", r)
             return r.output
         if self._rightmul is not None:
+            self._assert_compatible_masks()
             r = self._rightmul.rmsnorm(x, weight=None, eps=eps)
             self.acc.record_right_multiply("rmsnorm", r)
             return r.output
@@ -331,6 +354,7 @@ class FoldedNonlinearRunner:
             self.acc.record_secure_right_multiply("softmax", r)
             return r.output
         if self._rightmul is not None:
+            self._assert_compatible_masks()
             r = self._rightmul.softmax(x, dim=dim)
             self.acc.record_right_multiply("softmax", r)
             return r.output
@@ -354,12 +378,31 @@ class FoldedNonlinearRunner:
                self.nonlinear_backend))
 
     def execution_evidence(self) -> Dict[str, Any]:
-        return self.acc.to_report_fields()
+        out = self.acc.to_report_fields()
+        # A_rightmul: surface the compatible-mask binding alongside the measured
+        # execution evidence (so a paper-facing report carries the five required
+        # booleans straight from the worker that actually ran the design).
+        if self.op_backend == "compatible_right_multiply":
+            out["compatible_masks_verified"] = bool(
+                self.compatible_masks_verified)
+            audit = self.compatible_mask_audit or {}
+            for k in ("residual_mask_is_signed_permutation",
+                      "attention_qk_scores_preserved",
+                      "swiglu_shared_channel_permutation",
+                      "arbitrary_dense_mask_rejected"):
+                out[k] = bool(audit.get(k))
+            if audit.get("compatible_mask_family"):
+                out["compatible_mask_family"] = audit.get("compatible_mask_family")
+        return out
 
 
 def make_folded_nonlinear_runner(nonlinear_backend: str | None = None, *,
-                                 lift_k: int = 2, seed: int = 2035
-                                 ) -> FoldedNonlinearRunner:
+                                 lift_k: int = 2, seed: int = 2035,
+                                 compatible_masks_verified: bool | None = None,
+                                 compatible_mask_audit: Dict[str, Any] | None
+                                 = None) -> FoldedNonlinearRunner:
     """Construct a :class:`FoldedNonlinearRunner` (defaulting to ``current``)."""
-    return FoldedNonlinearRunner(nonlinear_backend or "current",
-                                 lift_k=lift_k, seed=seed)
+    return FoldedNonlinearRunner(
+        nonlinear_backend or "current", lift_k=lift_k, seed=seed,
+        compatible_masks_verified=compatible_masks_verified,
+        compatible_mask_audit=compatible_mask_audit)

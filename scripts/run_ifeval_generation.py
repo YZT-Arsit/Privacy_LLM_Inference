@@ -227,9 +227,44 @@ def main() -> int:
                     "perf/quality results)")
     ap.add_argument("--dummy-decode-after-eos", action="store_true", default=False,
                     help="alias for --length-hide-generation")
+    ap.add_argument("--paper-facing-generation", action="store_true",
+                    default=False,
+                    help="enforce the AAAI paper-facing generation contract: "
+                    "nonlinear A_rightmul, seq_len=1024, max_new_tokens=512, EOS "
+                    "stop ON, --require-real, folded_remote + TDX boundary client, "
+                    "attestation evidence binding the nonlinear backend, worker "
+                    "health readable, nonlinear_trusted_calls=0, "
+                    "compatible_masks_verified, schedule_full_coverage_verified. "
+                    "Any unmet condition -> paper_ready=False and exit non-zero.")
     ap.add_argument("--output-response-jsonl", required=True)
     ap.add_argument("--output-report-json", required=True)
     args = ap.parse_args()
+
+    # Fail fast on the statically-knowable paper-facing violations (so a bad
+    # invocation never even starts a long real run).
+    if args.paper_facing_generation:
+        _nb_req = normalize_nonlinear_backend(args.nonlinear_backend or "current")
+        _static = []
+        if _nb_req != "A_rightmul":
+            _static.append("nonlinear_backend=%r (must be A_rightmul)" % _nb_req)
+        if int(args.seq_len) != 1024:
+            _static.append("seq_len=%s (must be 1024)" % args.seq_len)
+        if int(args.max_new_tokens) != 512:
+            _static.append("max_new_tokens=%s (must be 512)" % args.max_new_tokens)
+        if args.disable_eos_stop:
+            _static.append("--disable-eos-stop is forbidden (EOS stop must be ON)")
+        if not args.require_real:
+            _static.append("--require-real is required (no dry-run stub)")
+        if args.backend != "folded_remote":
+            _static.append("--backend must be folded_remote")
+        if not args.tdx_boundary_client:
+            _static.append("--tdx-boundary-client is required")
+        if not args.attestation_evidence_json:
+            _static.append("--attestation-evidence-json is required")
+        if _static:
+            print("ERROR: --paper-facing-generation violations:\n  - %s"
+                  % "\n  - ".join(_static), file=sys.stderr)
+            return 3
 
     # TDX boundary-client mode is folded_remote only (plaintext_local loads full
     # 7B weights, which must NEVER happen inside the trusted TDX guest).
@@ -807,6 +842,29 @@ def main() -> int:
     if deployment_truth is not None:
         report["deployment_truth"] = deployment_truth
 
+    # ---- paper-facing generation contract (AAAI A_rightmul mainline) ----
+    # Derive the attestation binding from the attached evidence + surface the
+    # worker-measured compatible-mask flag, then evaluate the full contract.
+    report["attestation_runtime_hash_binds_nonlinear_backend"] = bool(
+        isinstance(attest_evidence, dict)
+        and attest_evidence.get("runtime_hash_binds_nonlinear_backend") is True)
+    if "compatible_masks_verified" not in report:
+        report["compatible_masks_verified"] = (
+            (worker_health or {}).get("compatible_masks_verified")
+            if isinstance(worker_health, dict) else None)
+    paper_facing_gen_failed = False
+    if args.paper_facing_generation:
+        from pllo.benchmarks.paper_facing_generation import (
+            paper_facing_generation_report_fields)
+        pf = paper_facing_generation_report_fields(report)
+        report.update(pf)
+        if not pf["paper_facing_generation"]:
+            report["paper_ready"] = False
+            report["paper_ready_blocker"] = (
+                "paper_facing_generation contract unmet: %s"
+                % pf["paper_facing_generation_violations"])
+            paper_facing_gen_failed = True
+
     # Responses were already streamed to disk when --stream-responses (default);
     # only the buffered (--no-stream-responses) path writes the JSONL here.
     if not args.stream_responses:
@@ -854,6 +912,14 @@ def main() -> int:
              report["full_model_weights_loaded_in_trusted_runtime"],
              report["h800_worker_tee_used_on_gpu"],
              report["tdx_claim_ready"]))
+    if args.paper_facing_generation:
+        print("paper_facing_generation=%s violations=%s"
+              % (report.get("paper_facing_generation"),
+                 report.get("paper_facing_generation_violations")))
+    if paper_facing_gen_failed:
+        print("ERROR: --paper-facing-generation contract unmet; paper_ready=False",
+              file=sys.stderr)
+        return 1
     return 0
 
 

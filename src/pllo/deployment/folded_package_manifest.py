@@ -56,6 +56,11 @@ class FoldedPackageManifest:
     nonlinear_design_version: str | None = None
     nonlinear_design_limitations: list[str] = field(default_factory=list)
     build_command: str | None = None
+    # A_rightmul compatible-mask binding (set by a paper-facing A_rightmul build
+    # after verifying the REAL generated masks). The worker reads these back and
+    # refuses to run A_rightmul unless ``compatible_masks_verified`` is True.
+    compatible_mask_family: str | None = None
+    compatible_mask_audit: dict[str, Any] = field(default_factory=dict)
     model_hash: str | None = None
     hidden_size: int | None = None
     vocab_size: int | None = None
@@ -100,7 +105,9 @@ def build_manifest(*, package_type: str, model_name: str | None,
                    nonlinear_design_metadata_hash: str | None = None,
                    nonlinear_design_version: str | None = None,
                    nonlinear_design_limitations: list[str] | None = None,
-                   build_command: str | None = None
+                   build_command: str | None = None,
+                   compatible_mask_family: str | None = None,
+                   compatible_mask_audit: dict[str, Any] | None = None
                    ) -> FoldedPackageManifest:
     """Assemble a :class:`FoldedPackageManifest`. The ``contains_*`` flags are
     forced ``False`` (a folded package never carries secrets); the shard index is
@@ -143,6 +150,8 @@ def build_manifest(*, package_type: str, model_name: str | None,
         mask_schedule_id=mask_schedule_id,
         folding_runtime_hash=folding_runtime_hash, tee_type=tee_type, mr_td=mr_td,
         report_data=report_data, created_at=created_at,
+        compatible_mask_family=compatible_mask_family,
+        compatible_mask_audit=dict(compatible_mask_audit or {}),
         shard_index=list(shard_index))
 
 

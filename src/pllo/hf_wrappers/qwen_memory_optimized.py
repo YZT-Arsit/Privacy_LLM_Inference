@@ -137,6 +137,11 @@ class MemoryOptimizedConfig:
     mask_mode: str = "signed_permutation"
     residual_mask_strategy: str = "shared"
     mask_block_size: int = 64
+    # Per-head attention Q/K/V mask family. The default keeps back-compat; the
+    # A_rightmul paper-facing build forces "pairwise_rotation" (orthogonal +
+    # score-preserving) so the masked attention state is in a compatible family
+    # (pairwise_complex_scaling is NOT compatible -- it is non-orthogonal).
+    attention_mask_family: str = "pairwise_complex_scaling"
     seed: int = 2035
     empty_cache_between_layers: bool = True
     # Permute q/k output features so the project's adjacent-pair RoPE reproduces

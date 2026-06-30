@@ -86,6 +86,13 @@ class MaskedQwenSession:
             infer_config_from_hf_layer(self.base.layers[i], model_config,
                                        self.fdtype, str(self.fold_device))
             for i in range(self.n)]
+        # Per-head attention mask family (compatible families require an
+        # orthogonal, score-preserving choice for A_rightmul). Applied to every
+        # layer config so the generated attention masks use it.
+        attn_family = getattr(config, "attention_mask_family", None)
+        if attn_family:
+            for lc in self.layer_configs:
+                lc.mask_family = attn_family
         skel = HFCausalLMSkeletonConfig(
             model_family=str(getattr(model_config, "model_type", "qwen2")),
             prefill_seq_len=config.seq_len,
@@ -113,6 +120,19 @@ class MaskedQwenSession:
         self._cos, self._sin = build_rope_cache(
             max_pos, head_dim, rope_theta, self.fdtype, self.compute_device)
         self.tee_used_on_gpu = False
+
+    def verify_compatible_masks(self, **kw) -> dict[str, Any]:
+        """Verify the generated masks are in the A_rightmul compatible family
+        (signed-permutation residual, orthogonal score-preserving attention,
+        shared SwiGLU channel permutation). Raises CompatibleMaskViolation on any
+        incompatible mask; returns the audit dict. Used by the paper-facing
+        A_rightmul build to bind a checked mask family into the package."""
+        from pllo.ops.compatible_mask_verify import verify_session_compatible_masks
+        return verify_session_compatible_masks(self, **kw)
+
+    @property
+    def attention_mask_family(self) -> str:
+        return str(getattr(self.layer_configs[0], "mask_family", ""))
 
     # -- trusted boundary methods --------------------------------------------
     def embed_plain(self, input_ids: torch.Tensor) -> torch.Tensor:

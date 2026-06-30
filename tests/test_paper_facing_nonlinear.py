@@ -330,6 +330,11 @@ def test_e2e_validator_passes_clean_and_fails_dirty() -> None:
         "right_multiply_nonlinear_ops_count": 4,
         "trusted_nonlinear_ops_count": 0, "nonlinear_trusted_calls": 0,
         "nonlinear_single_tee_entry_exit": True,
+        "compatible_masks_verified": True,
+        "residual_mask_is_signed_permutation": True,
+        "attention_qk_scores_preserved": True,
+        "swiglu_shared_channel_permutation": True,
+        "arbitrary_dense_mask_rejected": True,
         "linear_pad_coverage": {m: True for m in (
             "q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj",
             "down_proj", "lm_head")},
@@ -337,6 +342,14 @@ def test_e2e_validator_passes_clean_and_fails_dirty() -> None:
     rep = e2e.validate([arm], expected_mr_td=None,
                        require=["nonlinear_exec", "linear_pad"])
     assert rep["passed"] is True
+
+    # an A_rightmul report MISSING compatible_masks_verified -> fail
+    no_cmv = {"file": "nocmv.json", "report": {
+        k: v for k, v in arm["report"].items()
+        if k != "compatible_masks_verified"}}
+    repx = e2e.validate([no_cmv], expected_mr_td=None,
+                        require=["nonlinear_exec"])
+    assert repx["passed"] is False
 
     # a report tagged paper-facing but with a trusted nonlinear call -> fail
     dirty = {"file": "bad.json", "report": dict(arm["report"],

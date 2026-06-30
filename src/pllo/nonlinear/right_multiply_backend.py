@@ -28,10 +28,16 @@ Because the op is applied to exactly the tensor the folded worker already holds
 only difference is *where* the work is accounted: on the accelerator with
 ``trusted_calls == 0`` (vs. ``current`` charging it to the trusted boundary).
 
-SECURITY STATUS: ``under_development``. The paper's compatible right-multiply
-security argument is not yet a completed proof in this repo; we therefore mark it
-``under_development`` (NOT ``established``) until the proofs are added. No formal
-security is claimed here. ``tee_used_on_gpu`` is always False.
+SECURITY STATUS: ``claimed_under_compatible_mask_assumption``. The A_rightmul
+security claim holds *only when the masks are in the compatible family* -- the
+residual/RMSNorm/LayerNorm mask is a signed permutation (orthogonal monomial),
+the attention Q/K masks are orthogonal + score-preserving (``Nq Nk^T == I``), and
+SwiGLU uses a shared channel permutation. That assumption is made CHECKABLE by
+:mod:`pllo.ops.compatible_mask_verify` and is enforced in the real build/worker
+path (``compatible_masks_verified == True``): an arbitrary dense /
+``pairwise_complex_scaling`` mask is REJECTED, never silently accepted. The claim
+is therefore *conditional*, not a completed unconditional proof, and is NOT
+claimed for arbitrary dense masks. ``tee_used_on_gpu`` is always False.
 """
 
 from __future__ import annotations
@@ -46,16 +52,20 @@ __all__ = ["RightMultiplyNonlinearBackend"]
 
 class RightMultiplyNonlinearBackend(NonlinearBackend):
     name = "compatible_right_multiply"
-    security_status = "under_development"
-    security_claim_status = "under_development"   # proofs not yet added
+    security_status = "claimed_under_compatible_mask_assumption"
+    security_claim_status = "claimed_under_assumption"
     security_note = (
         "A_rightmul compatible right-multiply nonlinear islands: every "
         "nonlinearity runs on the untrusted accelerator over the "
         "permutation/right-multiply-masked state with no trusted crossing "
         "(single TEE entry/exit). Numerically identical to the 'current' "
-        "trusted-island backend. Security is under development -- the "
-        "compatible right-multiply proof is not yet completed in this repo and "
-        "is NOT formally claimed.")
+        "trusted-island backend. Security is CLAIMED ONLY UNDER THE COMPATIBLE-"
+        "MASK ASSUMPTION -- residual mask = signed permutation, attention Q/K "
+        "orthogonal + score-preserving (Nq Nk^T == I), SwiGLU shared channel "
+        "permutation -- which pllo.ops.compatible_mask_verify makes checkable and "
+        "the real build/worker path enforces (compatible_masks_verified). It is "
+        "NOT claimed for arbitrary dense / pairwise_complex_scaling masks (those "
+        "are rejected, not silently accepted).")
 
     def __init__(self, **_ignored) -> None:
         # Accepts (and ignores) lift_k/seed so it is interchangeable with the

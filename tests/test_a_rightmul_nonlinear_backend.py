@@ -45,9 +45,10 @@ def test_A_op_backend_and_registry() -> None:
     assert "compatible_right_multiply" in available_backends()
     be = make_nonlinear_backend("compatible_right_multiply")
     assert be.name == "compatible_right_multiply"
-    # security under development (NOT a formal claim)
-    assert be.security_status == "under_development"
-    assert be.security_claim_status == "under_development"
+    # security CLAIMED UNDER the compatible-mask assumption (checkable, enforced
+    # in the real build/worker path), NOT an unconditional formal proof.
+    assert be.security_status == "claimed_under_compatible_mask_assumption"
+    assert be.security_claim_status == "claimed_under_assumption"
     # B/Amulet must remain mapped to amulet_migrated (unchanged)
     assert nd.op_backend_for_design("trusted_shortcut") == "amulet_migrated"
     assert nd.normalize_nonlinear_backend("amulet_migrated") == "trusted_shortcut"
@@ -172,12 +173,22 @@ def _tiny_pkg(nonlinear_backend):
     torch.manual_seed(0)
     model = Qwen2ForCausalLM(mc).eval()
     ids = torch.randint(0, mc.vocab_size, (1, 8))
+    # Use the A_rightmul-compatible mask family (orthogonal pairwise_rotation +
+    # signed-permutation residual) for EVERY backend here, so the A_rightmul vs
+    # current y_tilde comparison uses identical masks (only accounting differs).
     cfg = MemoryOptimizedConfig(
         num_layers=2, batch_size=1, seq_len=8, max_new_tokens=2, device="cpu",
         dtype="float32", folding_dtype="float64", folded_weight_device="cpu",
         mlp_down_chunk_size=64, seed=2035, use_linear_boundary_pad=True,
-        linear_pad_scale=0.3)
+        linear_pad_scale=0.3, mask_mode="signed_permutation",
+        attention_mask_family="pairwise_rotation")
     sess = MaskedQwenSession(model, mc, cfg)
+    # A_rightmul requires a verified compatible-mask binding in the manifest.
+    cmf = cma = None
+    if nonlinear_backend == "A_rightmul":
+        cma = sess.verify_compatible_masks()
+        cmf = ("signed_permutation_residual+%s_attention+shared_swiglu_permutation"
+               % sess.attention_mask_family)
     pkg = tempfile.mkdtemp()
     w = FoldedPackageWriter(pkg)
     for ell in range(2):
@@ -187,7 +198,8 @@ def _tiny_pkg(nonlinear_backend):
         package_type="base_model", model_name="tiny", model_path_or_id=None,
         num_layers=2, dtype="float64", nonlinear_backend=nonlinear_backend,
         created_by="test", shard_index=w.shard_index, hidden_size=128,
-        vocab_size=256, mask_schedule_id="s-n2"), pkg)
+        vocab_size=256, mask_schedule_id="s-n2",
+        compatible_mask_family=cmf, compatible_mask_audit=cma), pkg)
     return sess, pkg, ids, mc
 
 

@@ -394,6 +394,12 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         self.lora_adapter_hash: str | None = None
         self.worker_has_raw_lora = False
         self.folded_package_loaded = False
+        # A_rightmul compatible-mask binding read back from the package manifest
+        # (set by a paper-facing A_rightmul build). The worker refuses to execute
+        # A_rightmul unless the manifest certifies a verified compatible family.
+        self.compatible_mask_family: str | None = None
+        self.compatible_mask_audit: dict[str, Any] = {}
+        self.compatible_masks_verified: bool | None = None
         self.folded_package_size_gb: float | None = None
         self.manifest_hash: str | None = None
         self.num_shards: int | None = None
@@ -441,6 +447,24 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         # the package, by construction + verification, carries no mask secrets
         self.worker_has_mask_secrets = bool(manifest.contains_mask_secrets)
         self.folded_package_loaded = True
+
+        # A_rightmul: read the compatible-mask binding from the manifest (the
+        # build verified the REAL masks are signed-permutation / orthogonal QK /
+        # shared SwiGLU permutation). The worker NEVER sees the masks; it trusts
+        # the manifest-hash-bound audit. Refuse A_rightmul without it.
+        self.compatible_mask_family = manifest.compatible_mask_family
+        self.compatible_mask_audit = dict(manifest.compatible_mask_audit or {})
+        self.compatible_masks_verified = (
+            bool(self.compatible_mask_audit.get("compatible_masks_verified"))
+            if self.compatible_mask_audit else None)
+        if self.nonlinear_backend == "A_rightmul" and \
+                self.compatible_masks_verified is not True:
+            raise RuntimeError(
+                "A_rightmul worker refused: the folded package manifest does not "
+                "certify a verified compatible mask family "
+                "(compatible_masks_verified != True). Rebuild with "
+                "`build_qwen7b_folded_package.py --paper-facing --nonlinear-backend "
+                "A_rightmul` so the masks are verified + bound into the manifest.")
 
         # optional private folded-LoRA package (no raw A/B, no masks)
         if self.folded_lora_package_path:
@@ -515,6 +539,8 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "nonlinear_backend": self.nonlinear_backend,
                 "nonlinear_op_backend": self.nonlinear_op_backend,
                 "nonlinear_execution_evidence": self.nonlinear_execution_evidence(),
+                "compatible_mask_family": self.compatible_mask_family,
+                "compatible_masks_verified": self.compatible_masks_verified,
                 "folded_package_path": self.folded_package_path,
                 "folded_package_loaded": self.folded_package_loaded,
                 "folded_package_size_gb": self.folded_package_size_gb,
@@ -627,9 +653,15 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         if self._runner is None:
             from pllo.deployment.folded_nonlinear import (
                 make_folded_nonlinear_runner)
+            audit = dict(self.compatible_mask_audit or {})
+            if self.compatible_mask_family:
+                audit.setdefault("compatible_mask_family",
+                                 self.compatible_mask_family)
             self._runner = make_folded_nonlinear_runner(
                 self.nonlinear_backend, lift_k=self.nonlinear_lift_k,
-                seed=self.nonlinear_seed)
+                seed=self.nonlinear_seed,
+                compatible_masks_verified=self.compatible_masks_verified,
+                compatible_mask_audit=audit)
         return self._runner
 
     def _ensure_resident(self, device: Any, fdtype: Any, num_layers: int) -> bool:

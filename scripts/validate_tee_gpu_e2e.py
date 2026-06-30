@@ -117,6 +117,21 @@ def validate(reports: list[dict], *, expected_mr_td: str | None,
             if r.get("nonlinear_single_tee_entry_exit") is not None:
                 chk("nonlinear_single_tee_entry_exit[%s]" % Path(f).name,
                     r.get("nonlinear_single_tee_entry_exit") is True)
+            # A_rightmul: the compatible-mask assumption MUST be verified (the
+            # worker/build proved residual=signed-permutation, attention QK
+            # orthogonal score-preserving, SwiGLU shared channel permutation, and
+            # rejected arbitrary dense masks). A missing/false flag FAILS.
+            if nb == "A_rightmul":
+                chk("compatible_masks_verified[%s]" % Path(f).name,
+                    r.get("compatible_masks_verified") is True,
+                    "compatible_masks_verified=%s"
+                    % r.get("compatible_masks_verified"))
+                for fld in ("residual_mask_is_signed_permutation",
+                            "attention_qk_scores_preserved",
+                            "swiglu_shared_channel_permutation",
+                            "arbitrary_dense_mask_rejected"):
+                    if r.get(fld) is not None:
+                        chk("%s[%s]" % (fld, Path(f).name), r.get(fld) is True)
 
         # --- TEE boundary call accounting -------------------------------------
         if r.get("semantic_input_boundary_calls") is not None:

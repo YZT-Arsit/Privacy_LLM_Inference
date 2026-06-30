@@ -118,6 +118,20 @@ def main() -> int:
                     default=False,
                     help="allow a non-paper-facing PROTOTYPE build for a nonlinear "
                          "design not yet executed in the real path (tag-only)")
+    ap.add_argument("--mask-mode", default="signed_permutation",
+                    choices=["signed_permutation", "block_orthogonal",
+                             "dense_orthogonal"],
+                    help="residual/RMSNorm mask family. A_rightmul paper-facing "
+                         "REQUIRES signed_permutation (orthogonal monomial); "
+                         "dense/block masks are rejected by the compatible-mask "
+                         "verifier.")
+    ap.add_argument("--attention-mask-family", default=None,
+                    choices=["pairwise_rotation", "pairwise_complex_scaling"],
+                    help="per-head attention Q/K/V mask family. A_rightmul "
+                         "paper-facing REQUIRES pairwise_rotation (orthogonal, "
+                         "score-preserving); pairwise_complex_scaling is rejected. "
+                         "Default: pairwise_rotation under --paper-facing "
+                         "A_rightmul, else the config default.")
     ap.add_argument("--mask-schedule", default="session")
     ap.add_argument("--shard-by-layer", default="true")
     ap.add_argument("--write-manifest", default="true")
@@ -166,6 +180,29 @@ def main() -> int:
     dry_run = bool(args.dry_run or not args.model_path)
 
     # PAPER-FACING GUARD: reject legacy current/trusted_shortcut designs.
+    is_a_rightmul = args.nonlinear_backend == "A_rightmul"
+    # A_rightmul REQUIRES a compatible mask family for correctness (the nonlinear
+    # islands only commute with signed-permutation residual + orthogonal QK +
+    # shared SwiGLU permutation). Default to the compatible family for EVERY
+    # A_rightmul build (not only paper-facing) and reject an explicit incompatible
+    # override -- a dense/complex mask would make A_rightmul numerically wrong.
+    if is_a_rightmul:
+        from pllo.ops.compatible_mask_verify import (  # noqa: E402
+            COMPATIBLE_RESIDUAL_MASK_MODES, COMPATIBLE_ATTENTION_MASK_FAMILIES)
+        if args.attention_mask_family is None:
+            args.attention_mask_family = COMPATIBLE_ATTENTION_MASK_FAMILIES[0]
+        if args.mask_mode not in COMPATIBLE_RESIDUAL_MASK_MODES:
+            print("ERROR: A_rightmul requires --mask-mode in %s (got %r); "
+                  "dense/block masks are not compatible."
+                  % (list(COMPATIBLE_RESIDUAL_MASK_MODES), args.mask_mode),
+                  file=sys.stderr)
+            return 3
+        if args.attention_mask_family not in COMPATIBLE_ATTENTION_MASK_FAMILIES:
+            print("ERROR: A_rightmul requires --attention-mask-family in %s "
+                  "(got %r); pairwise_complex_scaling is not compatible."
+                  % (list(COMPATIBLE_ATTENTION_MASK_FAMILIES),
+                     args.attention_mask_family), file=sys.stderr)
+            return 3
     if args.paper_facing:
         try:
             assert_paper_facing_design(args.nonlinear_backend)
@@ -196,19 +233,41 @@ def main() -> int:
         model, mc = _load_real(args)
         device, dtype = args.device, args.dtype
 
-    cfg = MemoryOptimizedConfig(
+    cfg_kwargs = dict(
         num_layers=min(args.num_layers, mc.num_hidden_layers), batch_size=1,
         seq_len=args.seq_len, max_new_tokens=1, device=device, dtype=dtype,
         folding_dtype="float32",
         folded_weight_device=args.folded_weight_device or device,
         mlp_down_chunk_size=args.mlp_down_chunk_size, seed=args.seed,
+        mask_mode=args.mask_mode,
         use_linear_boundary_pad=bool(args.linear_boundary_pad),
         linear_pad_scale=float(args.linear_pad_scale))
+    if args.attention_mask_family:
+        cfg_kwargs["attention_mask_family"] = args.attention_mask_family
+    cfg = MemoryOptimizedConfig(**cfg_kwargs)
 
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
     session = MaskedQwenSession(model, mc, cfg)
     n = session.n
+
+    # ---- A_rightmul compatible-mask verification (paper-facing) ----
+    # Verify the REAL generated masks belong to the compatible family BEFORE
+    # folding/writing; a dense/complex mask family fails here (no success report).
+    compatible_mask_family = None
+    compatible_mask_audit: dict = {}
+    if is_a_rightmul:
+        from pllo.ops.compatible_mask_verify import (  # noqa: E402
+            CompatibleMaskViolation)
+        try:
+            compatible_mask_audit = session.verify_compatible_masks()
+        except CompatibleMaskViolation as exc:
+            print("ERROR: A_rightmul compatible-mask verification failed: %s"
+                  % exc, file=sys.stderr)
+            return 3
+        compatible_mask_family = (
+            "signed_permutation_residual+%s_attention+shared_swiglu_permutation"
+            % session.attention_mask_family)
     created_at = args.created_at or time.strftime("%Y-%m-%dT%H:%M:%SZ",
                                                   time.gmtime())
     mask_schedule_id = f"{args.mask_schedule}-seed{args.seed}-n{n}"
@@ -228,6 +287,9 @@ def main() -> int:
                "num_shards": n + 1, "contains_mask_secrets": False,
                "dry_run": dry_run}
         rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
+        if is_a_rightmul:
+            rep["compatible_mask_family"] = compatible_mask_family
+            rep.update(compatible_mask_audit)
         print(json.dumps(rep, indent=2))
         if args.output_json:
             Path(args.output_json).write_text(json.dumps(rep, indent=2))
@@ -260,7 +322,9 @@ def main() -> int:
         mask_schedule_id=mask_schedule_id,
         folding_runtime_hash=_folding_runtime_hash(args, n, args.seed),
         tee_type=args.tee_type, mr_td=args.mr_td, report_data=args.report_data,
-        created_at=created_at, build_command=build_command)
+        created_at=created_at, build_command=build_command,
+        compatible_mask_family=compatible_mask_family,
+        compatible_mask_audit=compatible_mask_audit)
     manifest_hash = compute_manifest_hash(manifest)
     if _bool(args.write_manifest):
         write_manifest(manifest, args.output_dir)
@@ -297,6 +361,22 @@ def main() -> int:
         "build_command": build_command,
     }
     rep.update(nonlinear_design_report_fields(args.nonlinear_backend))
+
+    # ---- A_rightmul compatible-mask audit (real, verified above) ----
+    if is_a_rightmul:
+        rep["compatible_mask_family"] = compatible_mask_family
+        rep.update(compatible_mask_audit)
+        # the five required booleans (explicit, even if redundant with the audit)
+        rep["compatible_masks_verified"] = bool(
+            compatible_mask_audit.get("compatible_masks_verified"))
+        rep["residual_mask_is_signed_permutation"] = bool(
+            compatible_mask_audit.get("residual_mask_is_signed_permutation"))
+        rep["attention_qk_scores_preserved"] = bool(
+            compatible_mask_audit.get("attention_qk_scores_preserved"))
+        rep["swiglu_shared_channel_permutation"] = bool(
+            compatible_mask_audit.get("swiglu_shared_channel_permutation"))
+        rep["arbitrary_dense_mask_rejected"] = bool(
+            compatible_mask_audit.get("arbitrary_dense_mask_rejected"))
 
     # ---- Linear-boundary additive pad audit + per-module coverage ----
     from pllo.deployment.linear_boundary_pad import (  # noqa: E402

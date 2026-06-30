@@ -30,14 +30,44 @@ import torch
 
 __all__ = [
     "CompatibleMaskViolation",
+    "COMPATIBLE_RESIDUAL_MASK_MODES",
+    "COMPATIBLE_ATTENTION_MASK_FAMILIES",
+    "INCOMPATIBLE_RESIDUAL_MASK_MODES",
+    "INCOMPATIBLE_ATTENTION_MASK_FAMILIES",
     "is_signed_permutation",
     "assert_signed_permutation",
+    "assert_orthogonal",
     "assert_qk_compatible",
     "is_permutation_matrix",
+    "is_permutation_index",
     "assert_shared_channel_permutation",
     "verify_compatible_masks",
+    "verify_mask_bundle_compatible",
+    "verify_session_compatible_masks",
     "compatible_mask_audit_fields",
+    "REQUIRED_COMPATIBLE_AUDIT_FIELDS",
 ]
+
+# Paper-facing A_rightmul REQUIRES the residual mask to be a signed permutation
+# (orthogonal monomial) and the per-head attention masks to be ORTHOGONAL +
+# score-preserving. Any dense / non-orthogonal family (``dense_orthogonal``,
+# ``block_orthogonal``, ``pairwise_complex_scaling``) is rejected: a dense
+# orthogonal residual mask is not a signed permutation, and complex-scaling
+# attention masks are not orthogonal (they change per-pair magnitude), so the
+# GPU-visible masked state is not in a provably-compatible family.
+COMPATIBLE_RESIDUAL_MASK_MODES = ("signed_permutation",)
+COMPATIBLE_ATTENTION_MASK_FAMILIES = ("pairwise_rotation",)
+INCOMPATIBLE_RESIDUAL_MASK_MODES = ("dense_orthogonal", "block_orthogonal")
+INCOMPATIBLE_ATTENTION_MASK_FAMILIES = ("pairwise_complex_scaling",)
+
+# the exact audit booleans a paper-facing A_rightmul build/worker report MUST carry
+REQUIRED_COMPATIBLE_AUDIT_FIELDS = (
+    "compatible_masks_verified",
+    "residual_mask_is_signed_permutation",
+    "attention_qk_scores_preserved",
+    "swiglu_shared_channel_permutation",
+    "arbitrary_dense_mask_rejected",
+)
 
 
 class CompatibleMaskViolation(RuntimeError):
@@ -68,6 +98,38 @@ def assert_signed_permutation(n: torch.Tensor, *, name: str = "N_res",
             "mask %r is not a signed permutation (orthogonal monomial); RMSNorm/"
             "LayerNorm/residual masks must be signed permutations for A_rightmul "
             "(arbitrary dense masks do not commute with the norm core)" % name)
+
+
+def assert_orthogonal(m: torch.Tensor, *, name: str = "M",
+                      atol: float = 1e-4) -> None:
+    """Require every ``[D,D]`` matrix in ``m`` (possibly batched ``[...,D,D]``) to
+    be orthogonal (``M M^T == I``). REJECTS the non-orthogonal
+    ``pairwise_complex_scaling`` attention family (which changes per-pair
+    magnitude), while accepting orthogonal ``pairwise_rotation`` / signed
+    permutations."""
+    if m.dim() < 2 or m.shape[-1] != m.shape[-2]:
+        raise CompatibleMaskViolation("%s must be square (got %s)"
+                                      % (name, tuple(m.shape)))
+    d = m.shape[-1]
+    md = m.to(torch.float64)
+    prod = md @ md.transpose(-2, -1)
+    eye = torch.eye(d, dtype=torch.float64, device=m.device)
+    err = float((prod - eye).abs().max().item())
+    if err > atol:
+        raise CompatibleMaskViolation(
+            "%s is not orthogonal: max|M M^T - I| = %.3e > %.1e (non-orthogonal "
+            "families such as pairwise_complex_scaling are NOT compatible masks "
+            "for A_rightmul)" % (name, err, atol))
+
+
+def is_permutation_index(idx: torch.Tensor) -> bool:
+    """True iff a 1-D integer index tensor is a permutation of ``0..n-1``."""
+    if idx.dim() != 1:
+        return False
+    n = idx.shape[0]
+    srt, _ = torch.sort(idx.to(torch.int64))
+    return bool(torch.equal(srt, torch.arange(n, device=idx.device,
+                                              dtype=torch.int64)))
 
 
 def assert_qk_compatible(nq: torch.Tensor, nk: torch.Tensor, *,
@@ -133,6 +195,87 @@ def verify_compatible_masks(
     checked["compatible_masks_verified"] = True
     checked["nonlinear_masking_mode"] = "compatible_right_multiply_or_permutation"
     return checked
+
+
+def verify_mask_bundle_compatible(
+    masks: Any, *, attention_atol: float = 1e-4,
+    residual_atol: float = 1e-6, check_layers: Any = None,
+) -> dict[str, Any]:
+    """Verify a REAL generated mask bundle is in the A_rightmul compatible family.
+
+    ``masks`` is an :class:`~pllo.hf_wrappers.hf_causal_lm_skeleton.HFCausalLMMaskBundle`
+    (or any object exposing ``residual_masks`` and ``layer_block_masks``). Raises
+    :class:`CompatibleMaskViolation` on the first incompatible mask -- so a
+    paper-facing A_rightmul build over a ``dense_orthogonal`` residual mask or a
+    ``pairwise_complex_scaling`` attention family FAILS loudly instead of silently
+    producing a wrong-but-reported-success package. Returns the audit dict with
+    the five required booleans + the observed mask families."""
+    residual = list(getattr(masks, "residual_masks", []) or [])
+    block_masks = list(getattr(masks, "layer_block_masks", []) or [])
+    if not residual or not block_masks:
+        raise CompatibleMaskViolation(
+            "mask bundle has no residual/layer masks to verify")
+
+    # 1. residual / RMSNorm / LayerNorm core -- signed permutation per layer
+    for ell, n_res in enumerate(residual):
+        assert_signed_permutation(n_res, name="N_res[%d]" % ell,
+                                  atol=residual_atol)
+
+    # 2 + 3. per-layer attention (orthogonal + score-preserving) and SwiGLU perm
+    n_layers = len(block_masks)
+    layers = (range(n_layers) if check_layers is None
+              else [e for e in check_layers if 0 <= e < n_layers])
+    attn_family = None
+    for ell in layers:
+        bm = block_masks[ell]
+        attn = bm["attn"]
+        attn_family = attn.get("mask_family", attn_family)
+        qm = attn["q_masks"]            # [num_heads, D, D]
+        km = attn["key_masks"]          # [num_kv, D, D]
+        kv_index = attn["kv_index"]     # [num_heads]
+        # orthogonality of the key masks rejects pairwise_complex_scaling
+        assert_orthogonal(km, name="key_masks[%d]" % ell, atol=attention_atol)
+        # per Q-head score invariant Nq Nk^T == I (scores preserved under masking)
+        for h in range(qm.shape[0]):
+            kv = int(kv_index[h])
+            assert_qk_compatible(qm[h], km[kv], atol=attention_atol)
+        # SwiGLU gate/up share the SAME channel permutation by construction
+        # (the single folded `perm`); verify it is a genuine permutation.
+        perm = bm.get("perm")
+        if perm is None or not is_permutation_index(perm):
+            raise CompatibleMaskViolation(
+                "SwiGLU channel mask (layer %d) is not a shared channel "
+                "permutation" % ell)
+
+    if attn_family is not None and \
+            attn_family in INCOMPATIBLE_ATTENTION_MASK_FAMILIES:
+        raise CompatibleMaskViolation(
+            "attention mask_family %r is NOT a compatible family for A_rightmul "
+            "(expected one of %s)" % (attn_family,
+                                      COMPATIBLE_ATTENTION_MASK_FAMILIES))
+
+    meta = getattr(masks, "metadata", {}) or {}
+    return {
+        "compatible_masks_verified": True,
+        "residual_mask_is_signed_permutation": True,
+        "attention_qk_scores_preserved": True,
+        "swiglu_shared_channel_permutation": True,
+        "arbitrary_dense_mask_rejected": True,
+        "residual_mask_mode": meta.get("mask_mode"),
+        "attention_mask_family": attn_family,
+        "compatible_mask_layers_checked": len(layers),
+        "nonlinear_masking_mode": "compatible_right_multiply_or_permutation",
+    }
+
+
+def verify_session_compatible_masks(session: Any, **kw) -> dict[str, Any]:
+    """Verify a :class:`~pllo.hf_wrappers.qwen_masked_session.MaskedQwenSession`
+    actually generated A_rightmul-compatible masks (delegates to
+    :func:`verify_mask_bundle_compatible` on ``session.masks``)."""
+    masks = getattr(session, "masks", None)
+    if masks is None:
+        raise CompatibleMaskViolation("session exposes no .masks bundle")
+    return verify_mask_bundle_compatible(masks, **kw)
 
 
 def compatible_mask_audit_fields(verified: bool, checks: dict[str, Any] | None = None
