@@ -20,22 +20,70 @@ in by the caller.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import time
 from pathlib import Path
 from typing import Any
 
 __all__ = [
     "DATASETS",
+    "OPTIONAL_DATASETS",
     "load_dataset",
     "load_ifeval",
     "load_gsm8k",
     "load_mt_bench",
+    "load_humaneval",
+    "load_mbpp",
     "extract_gsm8k_answer",
     "normalize_number",
     "gsm8k_exact_match",
     "gsm8k_gold_answer",
+    "GSM8K_FEWSHOT_COT",
+    "sha256_file",
+    "build_dataset_card",
+    "estimate_max_prompt_tokens",
 ]
+
+
+def sha256_file(path: str | Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def estimate_max_prompt_tokens(rows: list[dict[str, Any]]) -> int:
+    """Cheap whitespace-token estimate of the longest prompt (no tokenizer)."""
+    best = 0
+    for r in rows:
+        text = r.get("prompt") or " ".join(r.get("turns", []) or [])
+        best = max(best, len(str(text).split()))
+    return best
+
+
+def build_dataset_card(*, dataset_name: str, split: str,
+                       rows: list[dict[str, Any]], source_path: str | Path,
+                       output_path: str | Path,
+                       now: float | None = None) -> dict[str, Any]:
+    """Build a reproducibility card for a normalised dataset JSONL."""
+    return {
+        "dataset_name": dataset_name,
+        "split": split,
+        "num_examples": len(rows),
+        "input_sha256": sha256_file(source_path) if Path(source_path).exists()
+        else None,
+        "output_sha256": sha256_file(output_path) if Path(output_path).exists()
+        else None,
+        "source_path": str(source_path),
+        "output_path": str(output_path),
+        "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                    time.gmtime(now if now is not None
+                                                else time.time())),
+        "max_prompt_tokens_estimate": estimate_max_prompt_tokens(rows),
+    }
 
 DATASETS = ("ifeval", "gsm8k", "mt_bench")
 
@@ -64,14 +112,25 @@ def _first_prompt(ex: dict[str, Any]) -> str:
 # IFEval
 # ---------------------------------------------------------------------------
 
+_IFEVAL_META_KEYS = ("key", "instruction_id_list", "kwargs", "instruction_id",
+                     "instruction_kwargs")
+
+
 def load_ifeval(path: str | Path) -> list[dict[str, Any]]:
+    """Normalise an official IFEval prompt file to ``{id, dataset, prompt, meta}``.
+
+    The instruction metadata (``instruction_id_list`` / ``kwargs`` / ``key``) is
+    preserved under ``meta`` so the official IFEval instruction-following checker
+    can score the responses offline later."""
     out = []
     for i, ex in enumerate(_read_jsonl(path)):
         prompt = _first_prompt(ex)
         if not prompt:
             raise ValueError("ifeval example %r missing prompt" % ex.get("id", i))
-        out.append({"id": str(ex.get("id", "ifeval-%d" % i)), "prompt": prompt,
-                    "dataset": "ifeval"})
+        meta = {k: ex[k] for k in _IFEVAL_META_KEYS if k in ex}
+        ex_id = ex.get("id", ex.get("key", "ifeval-%d" % i))
+        out.append({"id": str(ex_id), "dataset": "ifeval", "prompt": prompt,
+                    "meta": meta})
     return out
 
 
@@ -135,19 +194,46 @@ _GSM8K_INSTRUCTION = (
     "Solve the following grade-school math problem. Show your reasoning, then "
     "give the final numeric answer on its own line after '#### '.\n\n")
 
+# A short 2-shot chain-of-thought preamble (kept compact to bound output length).
+GSM8K_FEWSHOT_COT = (
+    "Solve each grade-school math problem step by step, then give the final "
+    "numeric answer on its own line after '#### '.\n\n"
+    "Question: Natalia sold 48 clips in April and half as many in May. How many "
+    "clips did she sell altogether?\n"
+    "Answer: In April she sold 48. In May she sold 48 / 2 = 24. Altogether "
+    "48 + 24 = 72.\n#### 72\n\n"
+    "Question: A robe takes 2 bolts of blue fiber and half that much white fiber. "
+    "How many bolts in total?\n"
+    "Answer: Blue is 2 bolts. White is 2 / 2 = 1 bolt. Total 2 + 1 = 3.\n"
+    "#### 3\n\n")
 
-def load_gsm8k(path: str | Path, *, add_instruction: bool = True
-               ) -> list[dict[str, Any]]:
+
+def load_gsm8k(path: str | Path, *, prompt_style: str = "zero_shot",
+               add_instruction: bool = True) -> list[dict[str, Any]]:
+    """Normalise GSM8K to ``{id, dataset, prompt, answer, final_answer, meta}``.
+
+    ``prompt_style``: ``zero_shot`` (instruction + question; default, short
+    output) or ``few_shot_cot`` (a compact 2-shot CoT preamble). ``add_instruction``
+    keeps back-compat (False == raw question)."""
     out = []
     for i, ex in enumerate(_read_jsonl(path)):
         q = _first_prompt(ex)
         if not q:
             raise ValueError("gsm8k example %r missing question/prompt"
                              % ex.get("id", i))
-        prompt = (_GSM8K_INSTRUCTION + q) if add_instruction else q
-        out.append({"id": str(ex.get("id", ex.get("question_id", "gsm8k-%d" % i))),
-                    "prompt": prompt, "reference": gsm8k_gold_answer(ex),
-                    "dataset": "gsm8k"})
+        if prompt_style == "few_shot_cot":
+            prompt = GSM8K_FEWSHOT_COT + "Question: " + q + "\nAnswer:"
+        elif add_instruction:
+            prompt = _GSM8K_INSTRUCTION + q
+        else:
+            prompt = q
+        gold = gsm8k_gold_answer(ex)
+        out.append({
+            "id": str(ex.get("id", ex.get("question_id", "gsm8k-%d" % i))),
+            "dataset": "gsm8k", "prompt": prompt,
+            "answer": ex.get("answer"), "final_answer": gold,
+            "reference": gold,           # back-compat alias
+            "meta": {"prompt_style": prompt_style, "question": q}})
     return out
 
 
@@ -168,25 +254,68 @@ def load_mt_bench(path: str | Path) -> list[dict[str, Any]]:
         turns = [str(t) for t in turns]
         out.append({
             "id": str(ex.get("question_id", ex.get("id", "mtbench-%d" % i))),
+            "dataset": "mt_bench",
             "prompt": turns[0],          # turn-1 prompt (single-turn interface)
             "turns": turns,
             "category": ex.get("category"),
-            "dataset": "mt_bench"})
+            "meta": {"num_turns": len(turns),
+                     "reference": ex.get("reference")}})
+    return out
+
+
+# Optional code-generation datasets. Interface only -- NOT part of the AAAI main
+# experiment (kept so they can be wired later without a structural change).
+OPTIONAL_DATASETS = ("humaneval", "mbpp")
+
+
+def load_humaneval(path: str | Path) -> list[dict[str, Any]]:
+    """OPTIONAL: HumanEval ``{task_id, prompt, ...}`` -> normalised rows. The
+    function-execution scorer is a separate offline step (not run on the H800)."""
+    out = []
+    for i, ex in enumerate(_read_jsonl(path)):
+        prompt = _first_prompt(ex)
+        if not prompt:
+            raise ValueError("humaneval example %r missing prompt"
+                             % ex.get("task_id", i))
+        out.append({"id": str(ex.get("task_id", ex.get("id", "he-%d" % i))),
+                    "dataset": "humaneval", "prompt": prompt,
+                    "meta": {k: ex[k] for k in
+                             ("entry_point", "test", "canonical_solution")
+                             if k in ex}})
+    return out
+
+
+def load_mbpp(path: str | Path) -> list[dict[str, Any]]:
+    """OPTIONAL: MBPP ``{task_id, text/prompt, test_list, ...}`` -> normalised."""
+    out = []
+    for i, ex in enumerate(_read_jsonl(path)):
+        prompt = _first_prompt(ex) or str(ex.get("text", ""))
+        if not prompt:
+            raise ValueError("mbpp example %r missing text/prompt"
+                             % ex.get("task_id", i))
+        out.append({"id": str(ex.get("task_id", ex.get("id", "mbpp-%d" % i))),
+                    "dataset": "mbpp", "prompt": prompt,
+                    "meta": {k: ex[k] for k in ("test_list", "code") if k in ex}})
     return out
 
 
 def load_dataset(dataset: str, path: str | Path, *, max_examples: int = 0,
                  **kw) -> list[dict[str, Any]]:
-    """Load + normalise one of :data:`DATASETS` into a list of example dicts."""
+    """Load + normalise one of :data:`DATASETS` (or the OPTIONAL code datasets)
+    into a list of example dicts."""
     if dataset == "ifeval":
         rows = load_ifeval(path)
     elif dataset == "gsm8k":
         rows = load_gsm8k(path, **kw)
     elif dataset == "mt_bench":
         rows = load_mt_bench(path)
+    elif dataset == "humaneval":
+        rows = load_humaneval(path)
+    elif dataset == "mbpp":
+        rows = load_mbpp(path)
     else:
         raise ValueError("unknown dataset %r (expected %s)"
-                         % (dataset, ", ".join(DATASETS)))
+                         % (dataset, ", ".join(DATASETS + OPTIONAL_DATASETS)))
     if max_examples and max_examples > 0:
         rows = rows[:max_examples]
     return rows
