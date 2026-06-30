@@ -1,0 +1,57 @@
+{
+  "stage": "prepare_aaai_generation_datasets",
+  "output_dir": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai",
+  "prepared": [
+    {
+      "dataset": "ifeval",
+      "num_examples": 541,
+      "output_jsonl": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/ifeval.jsonl",
+      "card": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/cards/ifeval_card.json",
+      "card_data": {
+        "dataset_name": "ifeval",
+        "split": "test",
+        "num_examples": 541,
+        "input_sha256": "67ffeee0fcb87c317c5b08a2de85557b4a7e96ada6178aa645b4954fe4b53d49",
+        "output_sha256": "cab9a838efe144e8b23fcb1dc6d3e9cc53267e2bbf0987bb05ffc5be75e2d0c5",
+        "source_path": "/Users/Hoshino/Desktop/privacy_llm_benchmarks/raw/ifeval/input_data.jsonl",
+        "output_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/ifeval.jsonl",
+        "created_at": "2026-06-30T06:00:59Z",
+        "max_prompt_tokens_estimate": 294
+      }
+    },
+    {
+      "dataset": "gsm8k",
+      "num_examples": 1319,
+      "output_jsonl": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/gsm8k.jsonl",
+      "card": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/cards/gsm8k_card.json",
+      "card_data": {
+        "dataset_name": "gsm8k",
+        "split": "test",
+        "num_examples": 1319,
+        "input_sha256": "752adc99f23132275139f1f7be57126b08735a55daf0c56859ee6df70abafbac",
+        "output_sha256": "03c1fe62832c0a462027156e68285e12d84ac4e5df25ff31cc0989a52c2cd401",
+        "source_path": "/Users/Hoshino/Desktop/privacy_llm_benchmarks/raw/gsm8k/gsm8k.jsonl",
+        "output_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/gsm8k.jsonl",
+        "created_at": "2026-06-30T06:00:59Z",
+        "max_prompt_tokens_estimate": 186
+      }
+    },
+    {
+      "dataset": "mt_bench",
+      "num_examples": 80,
+      "output_jsonl": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/mt_bench.jsonl",
+      "card": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/cards/mt_bench_card.json",
+      "card_data": {
+        "dataset_name": "mt_bench",
+        "split": "test",
+        "num_examples": 80,
+        "input_sha256": "119565adbab82227089cefdb44c8d7e2cf04dc0a0ec233634c82e7d4e2a944f7",
+        "output_sha256": "c9d6ea39f2c1b5f039f1c748422bf091bb019fb74a5454d07dd80b2898d98c33",
+        "source_path": "/Users/Hoshino/Desktop/privacy_llm_benchmarks/raw/mt_bench/question.jsonl",
+        "output_path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/data/aaai/mt_bench.jsonl",
+        "created_at": "2026-06-30T06:00:59Z",
+        "max_prompt_tokens_estimate": 262
+      }
+    }
+  ]
+}
