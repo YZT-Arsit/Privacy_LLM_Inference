@@ -146,6 +146,16 @@ def test_worker_accepts_a_rightmul_with_verified_package() -> None:
     assert be.compatible_masks_verified is True
     desc = be.describe()
     assert desc["compatible_masks_verified"] is True
+    # P1 regression: describe() (worker-health source) must expose the FOUR formal
+    # compatible-mask sub-conditions so the paper-facing gate can prove each one.
+    # Before this fix describe() dropped compatible_mask_audit, so the gate failed
+    # even though the package manifest carried the verified booleans.
+    audit = desc["compatible_mask_audit"]
+    for k in ("residual_mask_is_signed_permutation",
+              "attention_qk_scores_preserved",
+              "swiglu_shared_channel_permutation",
+              "arbitrary_dense_mask_rejected"):
+        assert audit.get(k) is True, k
 
 
 def test_runner_refuses_a_rightmul_when_not_verified() -> None:

@@ -541,6 +541,13 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                 "nonlinear_execution_evidence": self.nonlinear_execution_evidence(),
                 "compatible_mask_family": self.compatible_mask_family,
                 "compatible_masks_verified": self.compatible_masks_verified,
+                # P1: surface the FOUR formal compatible-mask sub-conditions so the
+                # paper-facing gate can prove each (signed-perm residual /
+                # score-preserving Q,K / shared SwiGLU channel perm / dense
+                # rejected) -- not only the rolled-up compatible_masks_verified.
+                # The audit is loaded verbatim from the package manifest (built by
+                # session.verify_compatible_masks()); the worker holds no masks.
+                "compatible_mask_audit": dict(self.compatible_mask_audit or {}),
                 "folded_package_path": self.folded_package_path,
                 "folded_package_loaded": self.folded_package_loaded,
                 "folded_package_size_gb": self.folded_package_size_gb,
