@@ -288,6 +288,13 @@ def main() -> int:
     ap.add_argument("--gpu-backend", default="mock")
     ap.add_argument("--expected-mr-td", required=True)
     ap.add_argument("--protocol-version", default="8.5")
+    ap.add_argument("--nonlinear-backend", default=None,
+                    help="bind a nonlinear design (A_rightmul / amulet_secure_R / "
+                         "alias) into the runtime hash / report_data so the quote "
+                         "is bound to a specific nonlinear design")
+    ap.add_argument("--nonlinear-design-metadata-hash", default=None,
+                    help="optional explicit design metadata hash to bind (defaults "
+                         "to the registry hash for --nonlinear-backend)")
     ap.add_argument("--runtime-hash", default=None,
                     help="override the computed runtime hash (128 hex); normally "
                          "omit so it is computed from current boundary code")
@@ -323,9 +330,23 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. runtime hash (same recipe the demo verifies) --------------------------
+    # bind the nonlinear design into the runtime hash so a quote cannot be reused
+    # across designs (boundary_manifest_metadata folds it into runtime_identity).
+    nonlinear_backend = None
+    nonlinear_design_metadata_hash = None
+    if args.nonlinear_backend is not None:
+        from pllo.experiments.nonlinear_designs import (  # noqa: E402
+            normalize_nonlinear_backend,
+            nonlinear_design_metadata_hash as _design_hash)
+        nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
+        nonlinear_design_metadata_hash = (
+            args.nonlinear_design_metadata_hash
+            or _design_hash(nonlinear_backend))
     metadata = boundary_manifest_metadata(
         args.boundary_backend, args.gpu_backend, args.expected_mr_td,
-        protocol_version=args.protocol_version)
+        protocol_version=args.protocol_version,
+        nonlinear_backend=nonlinear_backend,
+        nonlinear_design_metadata_hash=nonlinear_design_metadata_hash)
     manifest = build_trusted_boundary_manifest(metadata=metadata)
     runtime_hash_hex = (args.runtime_hash.lower() if args.runtime_hash
                         else compute_runtime_hash_from_manifest(manifest))
@@ -378,8 +399,15 @@ def main() -> int:
         "quote_source": quote_source,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
+    if nonlinear_backend is not None:
+        # the runtime hash above was computed from metadata that folds these in
+        evidence["nonlinear_backend"] = nonlinear_backend
+        evidence["nonlinear_design_metadata_hash"] = nonlinear_design_metadata_hash
+        evidence["runtime_hash_binds_nonlinear_backend"] = True
     if args.simulate:
         evidence["simulated_unsigned"] = True
+        # off-TDX plumbing test -> NEVER paper-facing
+        evidence["paper_facing"] = False
 
     # 6. local verification (same verifier the demo uses) --------------------
     ev = verify_evidence(evidence, rh_bytes, expected_mr_td=args.expected_mr_td)

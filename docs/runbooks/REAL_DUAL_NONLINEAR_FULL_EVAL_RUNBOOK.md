@@ -1,15 +1,27 @@
 # Real dual-nonlinear full evaluation runbook (H800 / TDX)
 
-Run the **complete** experiment suite under **both** nonlinear-layer designs so
-the advisor can choose either design later and still have full results. The two
-designs are a first-class experimental dimension (`--nonlinear-backend`):
+Run the **complete** experiment suite under the **two PAPER-FACING** nonlinear
+designs. Both meet the single-TEE-entry / zero-trusted-nonlinear contract; the
+design is a first-class experimental dimension (`--nonlinear-backend`):
 
-- **`current`** (design A / baseline) — nonlinear islands evaluated inside the
-  trusted boundary. Security `established` (the validated path).
-- **`trusted_shortcut`** (design B / alternative, alias `amulet_migrated`) — the
-  bulk of the nonlinearity migrated onto the untrusted accelerator with a small
-  trusted reduction shortcut. Security **not formally claimed** (under
-  discussion). Correctness exact.
+- **`A_rightmul`** — every nonlinear island (SiLU/SwiGLU, attention softmax,
+  RMSNorm/LayerNorm) runs on the untrusted accelerator over the compatible
+  right-multiply / permutation-masked state; **zero trusted nonlinear calls**.
+  Security `claimed_under_compatible_mask_assumption` (compatible masks
+  CHECKED: signed-permutation residual, `Q~K~^T==QK^T`, shared SwiGLU channel
+  permutation; arbitrary dense masks are rejected).
+- **`amulet_secure_R`** — GELU/SiLU via a dense single-one Kronecker secure-R
+  lift (no zero decoys, no visible one-hot selector, secret coordinate +
+  shuffles), softmax/RMSNorm directly on the masked state with **no trusted
+  reduction shortcut**; **zero trusted nonlinear calls**. Security
+  `claimed_under_secure_R_assumption`.
+
+> **Legacy `current` / `trusted_shortcut` are NOT paper-facing** (debug/local
+> baselines only). `current` evaluates the nonlinearity in the trusted island and
+> `trusted_shortcut` keeps a per-op trusted reduction shortcut — both have
+> `nonlinear_trusted_calls > 0` and are REJECTED by the paper-facing build
+> (`--paper-facing`), the claim validator (`paper_facing=True`), the submission
+> gate, and the end-to-end validator. Do not use them for paper results.
 
 CRITICAL invariants (enforced by the code):
 - The folded package manifest records `nonlinear_backend` + a
@@ -17,29 +29,29 @@ CRITICAL invariants (enforced by the code):
   (`--expected-nonlinear-backend`), and a folded-LoRA package must match its
   base package's design.
 - The TDX **runtime hash binds the design** (`write_tee_boundary_runtime_hash.py
-  --nonlinear-backend …`). `runtime_hash(current) != runtime_hash(trusted_shortcut)`,
+  --nonlinear-backend …`). `runtime_hash(A_rightmul) != runtime_hash(amulet_secure_R)`,
   so **attestation evidence for design A cannot be reused for design B** — you
   must regenerate the runtime hash and re-bind a fresh TD Quote per design.
-- The claim validator tags evidence by design (`claim[current]` /
-  `claim[trusted_shortcut]`); a claim for one design can never be backed by the
+- The claim validator tags evidence by design (`claim[A_rightmul]` /
+  `claim[amulet_secure_R]`); a claim for one design can never be backed by the
   other's evidence.
 
 > Do not start until `scripts/preflight_real_eval.py --nonlinear-backends
-> current,trusted_shortcut` passes for the designs you intend to run.
+> A_rightmul,amulet_secure_R` passes for the designs you intend to run.
 
 ```
 MODEL=/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct
 ROOT=/root/autodl-tmp/privacy_llm_packages
 OUT=outputs/dual_nonlinear
 URL=http://127.0.0.1:18083 ; PORT=18083
-DESIGNS="current trusted_shortcut"
+DESIGNS="A_rightmul amulet_secure_R"
 ```
 
 ## 0. Generate the plan + preflight (no server time)
 
 ```
 python scripts/run_dual_nonlinear_experiment_matrix.py \
-  --nonlinear-backends current,trusted_shortcut \
+  --nonlinear-backends A_rightmul,amulet_secure_R \
   --model-path $MODEL --model-name Qwen2.5-7B-Instruct \
   --base-output-root $ROOT --outputs-dir $OUT \
   --seq-len 128 --max-new-tokens-list 1,4,8,16 --run-mode plan \
@@ -49,7 +61,7 @@ python scripts/run_dual_nonlinear_experiment_matrix.py \
   --output-json $OUT/dual_matrix_plan.json --output-md $OUT/dual_matrix_plan.md
 
 python scripts/preflight_real_eval.py --backend tdx_attested_remote \
-  --nonlinear-backends current,trusted_shortcut --namespace-by-backend \
+  --nonlinear-backends A_rightmul,amulet_secure_R --namespace-by-backend \
   --model-path $MODEL --base-folded-package-path $ROOT/qwen7b_folded_full \
   --embedding-artifact-path $ROOT/qwen7b_boundary_artifact \
   --expected-mr-td <MRTD> \
@@ -63,13 +75,32 @@ plan executed per design — loop `for D in $DESIGNS`.
 
 ## 1. Build both folded packages
 
+`--paper-facing` REQUIRES a paper-facing design (rejects current/trusted_shortcut)
+AND asserts Linear-boundary pad coverage on all 8 Linear families from the REAL
+shard tensor names (q/k/v/o/gate/up/down/lm_head all have `xpad_tilde`+`cpad_tilde`)
+— the build FAILS loudly otherwise. The pad is the main scheme (ON by default).
+
 ```
 for D in $DESIGNS; do
   python scripts/build_qwen7b_folded_package.py --model-path $MODEL \
-    --output-dir $ROOT/qwen7b_folded_full_$D --seq-len 128 --num-layers 28 \
-    --dtype bfloat16 --nonlinear-backend $D --mask-schedule session \
-    --shard-by-layer true --write-manifest true \
-    --output-json $OUT/$D/build_$D.json
+    --output-dir $ROOT/qwen7b_folded_full_$D --seq-len 1024 --num-layers 28 \
+    --dtype bfloat16 --device cuda --nonlinear-backend $D --paper-facing \
+    --mask-schedule session --shard-by-layer true --write-manifest true \
+    --output-json $OUT/$D/build_$D.json || { echo "BUILD FAILED for $D"; exit 1; }
+done
+```
+
+**Validator (fail-stop):** the build with `--paper-facing` already asserts pad
+coverage; re-confirm from disk before proceeding:
+
+```
+for D in $DESIGNS; do
+  python - <<PY || { echo "PAD COVERAGE FAIL $D"; exit 1; }
+import sys; sys.path.insert(0, "src")
+from pllo.deployment.linear_boundary_pad import assert_paper_facing_pad_coverage
+assert_paper_facing_pad_coverage("$ROOT/qwen7b_folded_full_$D")
+print("pad coverage OK $D")
+PY
 done
 ```
 
@@ -104,12 +135,16 @@ done
 The worker loads a folded package; start one per design (or restart between
 designs). Run the matching `--folded-package-path` for the design under test.
 **Pass `--nonlinear-backend $D`** so the untrusted worker actually EXECUTES the
-design: for `trusted_shortcut` it lifts the MLP activation onto the GPU and
-migrates softmax/RMSNorm with a trusted reduction shortcut, and stamps measured
-execution evidence (`amulet_lift_executed` / `lifted_nonlinear_ops_count` /
-`lift_k` / `lifted_gpu_bytes`) that the client retrieves from `/health` and the
-probes/E3/E9 reports carry. If you forget it the worker silently runs `current`
-and the reports are tag-only (rejected by the claim validator / gate / E15).
+design: `A_rightmul` runs every nonlinear island on the accelerator over the
+masked state (zero trusted calls) and stamps measured evidence
+(`right_multiply_nonlinear_executed` / `right_multiply_nonlinear_ops_count` /
+`trusted_nonlinear_ops_count==0`); `amulet_secure_R` runs the dense single-one
+secure-R lift for GELU/SiLU + masked-state softmax/RMSNorm (zero trusted calls)
+and stamps `secure_right_multiply_executed` / `secure_R_enabled` /
+`zero_decoys==False` / `selector_visible_to_gpu==False`. The client retrieves
+these from `/health` and the probes/E3/E9 reports carry them. If you forget it
+the worker silently runs `current` and the reports are tag-only / have
+`nonlinear_trusted_calls>0` (rejected by the claim validator / gate / E2E).
 `ss` is NOT installed on H800 — use `curl /health` (and a portable Python socket
 probe), never `ss`:
 
@@ -180,13 +215,31 @@ python scripts/write_tee_boundary_runtime_hash.py \
 Bind the design's runtime hash into the TD Quote `report_data`, obtain the signed
 JWT, and assemble `attestation_evidence_$D.json`:
 
+The quote command MUST include `--nonlinear-backend $D` so the runtime hash /
+`report_data` bind the specific design (a real on-TDX quote; never `--simulate`
+for paper results):
+
 ```
-python scripts/generate_tdx_attestation_evidence.py \
-  --runtime-hash $(cat $OUT/$D/runtime_hash_$D.txt) \
-  --output-json $OUT/$D/attestation_evidence_$D.json
+for D in $DESIGNS; do
+  python scripts/generate_tdx_attestation_evidence.py \
+    --boundary-backend process --gpu-backend qwen7b_folded_package \
+    --nonlinear-backend $D \
+    --expected-mr-td <MRTD> \
+    --quote-command '<tdx_quote_tool ...{report_data_hex}...{quote_out}>' \
+    --attest-command '<itrustee/aliyun_attest ...{quote_file}...>' \
+    --output-dir $OUT/$D/tdx_$D \
+    --output-evidence $OUT/$D/attestation_evidence_$D.json \
+    || { echo "QUOTE GEN FAILED $D"; exit 1; }
+done
 ```
-Do NOT reuse design A's evidence for design B — the binding will fail
-(`runtime_hash_bound=False`).
+
+The generator verifies and FAILS on: `tee != tdx`, `td_attributes.debug == true`
+(unless `--debug-allowed`), missing/!=3-part JWT, `report_data != runtime_hash`,
+`mr_td != --expected-mr-td`. The evidence also records `nonlinear_backend` +
+`nonlinear_design_metadata_hash` and `runtime_hash_binds_nonlinear_backend=True`.
+Do NOT reuse one design's evidence for the other — the binding will fail
+(`runtime_hash_bound=False`). Off-TDX `--simulate` evidence is stamped
+`paper_facing=false` and is rejected by the E2E validator.
 
 ## 10. TDX-attested decode per design
 
@@ -336,7 +389,7 @@ paper that the other design was evaluated-but-not-claimed (the validator reports
 python scripts/final_submission_gate.py \
   $(for D in $DESIGNS; do for f in $OUT/$D/*.json; do echo --result-json $f; done; done) \
   --result-json $OUT/security_negative_tests.json \
-  --nonlinear-backends current,trusted_shortcut \
+  --nonlinear-backends A_rightmul,amulet_secure_R \
   --claim-tdx-attested-lora --final-artifact-tar $OUT/final_artifacts.tar.gz \
   --output-json $OUT/final_gate.json --output-md $OUT/final_gate.md
 ```
@@ -344,9 +397,66 @@ python scripts/final_submission_gate.py \
 ## 19. Package artifacts
 
 ```
-python scripts/package_final_artifacts.py --nonlinear-backends current,trusted_shortcut \
+python scripts/package_final_artifacts.py --nonlinear-backends A_rightmul,amulet_secure_R \
   --output-tar $OUT/final_artifacts.tar.gz --output-json $OUT/final_artifacts.json
 ```
+
+## 20. End-to-end paper-facing validator (FAIL-STOP, run last)
+
+Reads every JSON under `$OUT` and asserts the strict contract across the
+collected evidence: linear pad coverage on all 8 families; nonlinear design
+paper-facing + executed (not tag-only) with `nonlinear_trusted_calls==0`; TEE
+boundary calls 1/1/0; TDX quote (`tee==tdx`, `debug==false`, 3-part JWT,
+`report_data==runtime_hash`, runtime hash binds the nonlinear backend, `mr_td`
+matches); H800 worker `/health`, TDX boundary client, and remote-decode
+exactness present:
+
+```
+python scripts/validate_tee_gpu_e2e.py $OUT --expected-mr-td <MRTD> --require all \
+  --output-json $OUT/e2e_validation.json \
+  || { echo "E2E PAPER-FACING VALIDATION FAILED"; exit 1; }
+```
+
+`passed=true` is required for paper-facing results. Any tag-only design,
+`nonlinear_trusted_calls>0`, missing pad coverage, simulated/off-TDX quote, or a
+legacy `current`/`trusted_shortcut` design fails this gate.
+
+## 21. Two-machine run (H800 GPU worker + Alibaba TDX boundary client)
+
+Keep the GPU worker on the H800 (untrusted) and the boundary client inside the
+Alibaba TDX guest (trusted). **Never put passwords in scripts or logs** — use
+SSH keys / an agent, and read any secret from the environment or a key file, not
+the command line.
+
+```
+# --- H800 (untrusted GPU): start the worker for design $D ---
+# (SSH in with a key: `ssh h800-new`; do NOT embed a password)
+python scripts/run_tee_gpu_protocol_demo.py --mode gpu_worker_server \
+  --gpu-backend qwen7b_folded_package --nonlinear-backend $D \
+  --folded-package-path $ROOT/qwen7b_folded_full_$D \
+  --device cuda --dtype bfloat16 --listen-port $PORT --audit true
+curl -fsS http://127.0.0.1:$PORT/health && echo     # confirm worker health (no ss)
+
+# --- Alibaba TDX guest (trusted boundary client) ---
+# Expose the H800 worker to the guest over an SSH tunnel keyed by an SSH key:
+#   ssh -i ~/.ssh/<key> -N -L 18083:127.0.0.1:18083 h800-new   # no password on CLI
+python scripts/generate_tdx_attestation_evidence.py \
+  --boundary-backend process --gpu-backend qwen7b_folded_package \
+  --nonlinear-backend $D --expected-mr-td <MRTD> \
+  --quote-command '<tdx_quote_tool ...{report_data_hex}...{quote_out}>' \
+  --attest-command '<aliyun_attest ...{quote_file}...>' \
+  --output-dir $OUT/$D/tdx_$D --output-evidence $OUT/$D/attestation_evidence_$D.json
+python scripts/run_tee_gpu_protocol_demo.py --mode boundary_client \
+  --gpu-backend qwen7b_folded_package --gpu-worker-url http://127.0.0.1:18083 \
+  --boundary-backend process --nonlinear-backend $D \
+  --attestation-evidence $OUT/$D/attestation_evidence_$D.json \
+  --expected-mr-td <MRTD> --max-new-tokens 16 --audit true \
+  --output-json $OUT/$D/tdx_attested_decode_$D.json
+```
+
+Then re-run §20 over `$OUT` to confirm the full two-machine evidence
+(`worker /health` + TDX boundary client + verified quote + remote exactness +
+nonlinear execution evidence + zero trusted nonlinear calls) passes.
 
 ---
 **Limitations carried forward:** `trusted_shortcut` security is not formally

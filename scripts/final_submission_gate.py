@@ -284,6 +284,30 @@ def build_gate_report(results, *, required_claims=None, final_artifact_tar=None,
         "(amulet_lift_executed / lifted_nonlinear_ops_count / lift_k / "
         "lifted_gpu_bytes); tag-only (not executed): %s" % (ts_tag_only or "none")))
 
+    # 12c. NO nonlinear design may be tag-only, and NO execution-bearing
+    #      nonlinear report may have a trusted nonlinear crossing (single TEE
+    #      entry/exit; zero trusted nonlinear calls is mandatory paper-facing).
+    nl_tag_only = claim_rep.get("nonlinear_tag_only_files") or []
+    checks.append(_check(
+        "no_nonlinear_design_tag_only", not nl_tag_only,
+        "every migrated nonlinear design (A_rightmul / amulet_secure_R / "
+        "trusted_shortcut) must carry MEASURED execution evidence; tag-only "
+        "files: %s" % (nl_tag_only or "none")))
+    tc_violation = claim_rep.get("nonlinear_trusted_calls_violation_files") or []
+    checks.append(_check(
+        "nonlinear_trusted_calls_zero", not tc_violation,
+        "paper-facing nonlinear reports must have nonlinear_trusted_calls == 0 / "
+        "trusted_nonlinear_ops_count == 0 (no nonlinear op in TEE or via trusted "
+        "shortcut); violating files: %s" % (tc_violation or "none")))
+    # 12d. paper-facing claims must not be backed by a legacy (non-paper-facing)
+    #      design (current / trusted_shortcut).
+    non_pf = claim_rep.get("non_paper_facing_designs_seen") or []
+    if non_pf:
+        warnings.append(
+            "non_paper_facing_designs_present: %s -- 'current'/'trusted_shortcut' "
+            "are legacy debug baselines and cannot back paper-facing claims "
+            "(use A_rightmul / amulet_secure_R)" % non_pf)
+
     # 13. formal-security guard: a design with security_claim_status != established
     #     cannot back a FORMAL security claim, and we always flag design B.
     scope_designs = list(nonlinear_backends) if nonlinear_backends else \

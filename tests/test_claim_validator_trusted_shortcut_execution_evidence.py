@@ -68,13 +68,38 @@ def test_report_has_amulet_execution_false_for_tag_only_report() -> None:
 
 # ---- claim validator ------------------------------------------------------
 
-def test_executed_trusted_shortcut_supports_claim() -> None:
+def _secure_pairwise():
+    # an executed amulet_secure_R pairwise utility report (paper-facing design)
+    return {"stage": "e9_pairwise_utility_preservation",
+            "nonlinear_backend": "amulet_secure_R", "utility_preserved": True,
+            "paper_ready": True, "dry_run": False, "dataset": "mmlu",
+            "delta_abs": 0.0, "nonlinear_op_backend": "amulet_secure_R",
+            "secure_right_multiply_executed": True,
+            "secure_right_multiply_ops_count": 56,
+            "trusted_nonlinear_ops_count": 0, "nonlinear_trusted_calls": 0,
+            "secure_R_enabled": True, "zero_decoys": False,
+            "selector_visible_to_gpu": False}
+
+
+def test_executed_trusted_shortcut_now_non_paper_facing() -> None:
+    # POLICY CHANGE: trusted_shortcut is a legacy/non-paper-facing design even
+    # when executed (it keeps a per-op trusted reduction shortcut). A paper
+    # backend-sensitive claim tagged trusted_shortcut is REFUSED.
     rep = build_claim_report(
         [{"file": "ts.json", "report": _ts_pairwise(executed=True)}],
-        required_claims=["public_benchmark_utility_preserved[trusted_shortcut]"])
+        required_claims=["public_benchmark_utility_preserved[trusted_shortcut]"],
+        paper_facing=True)
+    assert rep["all_required_supported"] is False
+    assert any("non_paper_facing_design" in rsn
+               for o in rep["overclaim_risks"] for rsn in o.get("reasons", []))
+
+
+def test_executed_amulet_secure_r_supports_claim() -> None:
+    rep = build_claim_report(
+        [{"file": "secure.json", "report": _secure_pairwise()}],
+        required_claims=["public_benchmark_utility_preserved[amulet_secure_R]"])
     assert rep["all_required_supported"] is True
-    assert rep["trusted_shortcut_executed_in_real_path"] is True
-    assert "public_benchmark_utility_preserved[trusted_shortcut]" in \
+    assert "public_benchmark_utility_preserved[amulet_secure_R]" in \
         rep["backend_tagged_supported"]
 
 

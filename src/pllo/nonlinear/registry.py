@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from pllo.nonlinear.amulet_backend import AmuletMigratedNonlinearBackend
+from pllo.nonlinear.amulet_secure_r_backend import AmuletSecureRNonlinearBackend
 from pllo.nonlinear.backends import NonlinearBackend
 from pllo.nonlinear.current_backend import CurrentNonlinearBackend
 from pllo.nonlinear.right_multiply_backend import RightMultiplyNonlinearBackend
@@ -25,6 +26,8 @@ NONLINEAR_BACKENDS: dict[str, type[NonlinearBackend]] = {
     "amulet_migrated": AmuletMigratedNonlinearBackend,
     # A_rightmul: compatible right-multiply nonlinear islands (paper design A_rightmul)
     "compatible_right_multiply": RightMultiplyNonlinearBackend,
+    # amulet_secure_R: hardened Amulet (dense single-one R, no trusted shortcut)
+    "amulet_secure_R": AmuletSecureRNonlinearBackend,
 }
 
 

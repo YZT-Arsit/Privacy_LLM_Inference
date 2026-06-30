@@ -54,9 +54,17 @@ __all__ = [
     "assert_real_path_execution",
     "report_has_amulet_execution",
     "report_has_right_multiply_execution",
+    "report_has_secure_right_multiply_execution",
     "report_has_real_nonlinear_execution",
+    "report_nonlinear_trusted_calls_clean",
     "nonlinear_tag_only",
     "trusted_shortcut_tag_only",
+    "PAPER_FACING_DESIGNS",
+    "PAPER_FACING_DEFAULT_DESIGNS",
+    "NON_PAPER_FACING_DESIGNS",
+    "NonPaperFacingDesign",
+    "is_paper_facing_design",
+    "assert_paper_facing_design",
     "add_nonlinear_backend_arg",
     "add_nonlinear_backends_arg",
     "parse_nonlinear_backends",
@@ -183,21 +191,74 @@ NONLINEAR_DESIGNS: Dict[str, Dict[str, Any]] = {
         "supports_silu": True,
         "supports_mlp": True,
         "correctness_expectation": "exact_vs_float64_reference",
-        "security_status": "under_development",
-        "security_claim_status": "under_development",
+        "security_status": "claimed_under_compatible_mask_assumption",
+        "security_claim_status": "claimed_under_assumption",
         "security_notes": (
-            "Compatible right-multiply security argument is under development "
-            "(proofs not yet completed in this repo); NOT formally claimed. "
-            "Numerically identical to design A (current); the trade is a single "
-            "TEE entry/exit with zero trusted nonlinear crossings."),
+            "Compatible right-multiply security is CLAIMED UNDER the compatible-"
+            "mask assumption: the residual/RMSNorm/LayerNorm mask is a signed "
+            "permutation (orthogonal monomial), attention uses Q/K masks with "
+            "Q~K~^T == QK^T, and GELU/SiLU/SwiGLU use a shared channel "
+            "permutation. These conditions are CHECKED (raise on violation); the "
+            "claim holds under the assumption that the adversary only observes "
+            "the masked state. NOT a completed formal proof; no arbitrary dense "
+            "mask is claimed to commute with the nonlinear cores."),
         "expected_extra_boundary_calls": 0,
         "expected_extra_trusted_bytes": 0,
         "nonlinear_masking_mode": "compatible_right_multiply_or_permutation",
         "limitations": [
-            "compatible right-multiply security proof under development",
+            "claim holds only under the compatible-mask assumption (checked)",
             "requires compatible masks (signed-permutation residual, per-head "
             "Q/K/V, SwiGLU channel permutation) -- arbitrary dense masks do not "
-            "commute with the nonlinear cores",
+            "commute with the nonlinear cores (raise on violation)",
+        ],
+    },
+    "amulet_secure_R": {
+        "name": "amulet_secure_R",
+        "design_label": "design_amulet_secure_R",
+        "version": "1.0",
+        "op_backend": "amulet_secure_R",
+        "aliases": [
+            "amulet_secure_r", "secure_r", "secure_rightmul",
+            "secure_right_multiply", "amulet_secure", "amulet_secure_r_nonlinear",
+            "secure_amulet", "design_b_secure",
+        ],
+        "description": (
+            "Amulet-like secure-R design: GELU/SiLU are evaluated on the "
+            "untrusted accelerator via a dense single-one Kronecker lift "
+            "(R_bar = R1 R2 R3, exactly one secret unit entry, no zero decoys, "
+            "no visible one-hot selector) with secret shuffles; softmax / "
+            "RMSNorm / LayerNorm run directly over the masked state with NO "
+            "trusted reduction shortcut. Single TEE entry/exit; zero online "
+            "trusted nonlinear crossings."),
+        "trusted_boundary_role": (
+            "input embedding + mask (once) and final logits recovery + sampling "
+            "(once); holds NO nonlinear reduction shortcut (unlike the legacy "
+            "trusted_shortcut design) -- zero online nonlinear crossings."),
+        "gpu_worker_role": (
+            "evaluates GELU/SiLU on a shuffled dense secure-R lift (the only "
+            "GPU-visible activation artifact) and softmax/RMSNorm/LayerNorm "
+            "directly over the masked state; the squeeze is folded with secret "
+            "permutations so the valid channel is not directly observable."),
+        "supports_gelu": True,
+        "supports_silu": True,
+        "supports_mlp": True,
+        "correctness_expectation": "exact_vs_float64_reference",
+        "security_status": "claimed_under_secure_R_assumption",
+        "security_claim_status": "claimed_under_assumption",
+        "security_notes": (
+            "Secure-R security is CLAIMED UNDER the secure-R assumption: the "
+            "secret coordinate (a,b) and shuffles are not recoverable from the "
+            "GPU-visible dense lift; checkable conditions (no zero decoys, dense "
+            "single-one R, no raw one-hot/selector tensor, secret coordinate "
+            "never reported, trusted_calls == 0) are ASSERTED. NOT a completed "
+            "formal proof."),
+        "expected_extra_boundary_calls": 0,
+        "expected_extra_trusted_bytes": 0,
+        "nonlinear_masking_mode": "amulet_secure_right_multiply",
+        "limitations": [
+            "claim holds only under the secure-R assumption (checked conditions)",
+            "dense Kronecker lift costs ~k^2 x activation bytes on the "
+            "accelerator (no trusted shortcut, no zero decoys)",
         ],
     },
 }
@@ -292,7 +353,47 @@ _REAL_PATH_EXECUTION: Dict[str, str] = {
     "current": "trusted_boundary_inline",
     "trusted_shortcut": "lifted_on_accelerator",
     "A_rightmul": "right_multiply_on_accelerator",
+    "amulet_secure_R": "secure_right_multiply_on_accelerator",
 }
+
+# Paper-facing nonlinear designs. The legacy ``current`` (trusted-island) and
+# ``trusted_shortcut`` (per-op trusted reduction shortcut) designs are kept only
+# as debug/local baselines and are REJECTED by paper-facing runs / the gate /
+# the claim validator (see assert_paper_facing_design).
+PAPER_FACING_DESIGNS: tuple = ("A_rightmul", "amulet_secure_R")
+PAPER_FACING_DEFAULT_DESIGNS = "A_rightmul,amulet_secure_R"
+# Designs that may NEVER back a paper-facing claim (single TEE entry/exit is not
+# met: current evaluates nonlinear in the trusted island; trusted_shortcut keeps
+# a per-op trusted reduction shortcut).
+NON_PAPER_FACING_DESIGNS: tuple = ("current", "trusted_shortcut")
+
+
+class NonPaperFacingDesign(RuntimeError):
+    """A paper-facing run selected a legacy design (current / trusted_shortcut)
+    that does not meet the single-TEE-entry / zero-trusted-nonlinear contract."""
+
+
+def is_paper_facing_design(name: str) -> bool:
+    try:
+        return normalize_nonlinear_backend(name) in PAPER_FACING_DESIGNS
+    except UnknownNonlinearBackend:
+        return False
+
+
+def assert_paper_facing_design(name: str) -> str:
+    """Return the canonical name iff it is a paper-facing design; else raise.
+
+    Use in any script under ``--paper-facing`` / ``--require-real``."""
+    canon = normalize_nonlinear_backend(name)
+    if canon not in PAPER_FACING_DESIGNS:
+        raise NonPaperFacingDesign(
+            "nonlinear design %r is NOT paper-facing (legacy debug/local "
+            "baseline). Paper-facing runs must use one of %s. 'current' "
+            "evaluates the nonlinearity in the trusted island and "
+            "'trusted_shortcut' keeps a per-op trusted reduction shortcut -- "
+            "both violate the single-TEE-entry / zero-trusted-nonlinear "
+            "contract." % (canon, list(PAPER_FACING_DESIGNS)))
+    return canon
 
 # Report stages / signals that DO execute the model nonlinearity (and therefore
 # must carry Amulet-lift evidence when tagged trusted_shortcut). A build / setup /
@@ -395,13 +496,31 @@ def report_has_right_multiply_execution(report: Dict[str, Any]) -> bool:
             and (report.get("nonlinear_trusted_calls") or 0) == 0)
 
 
+def report_has_secure_right_multiply_execution(report: Dict[str, Any]) -> bool:
+    """True iff a report carries genuine runtime evidence that ``amulet_secure_R``
+    actually executed on the accelerator: op backend ``amulet_secure_R``, the
+    secure-R activation executed at least once, NO trusted nonlinear crossing,
+    and the secure conditions (no zero decoys, selector not visible) hold."""
+    if not isinstance(report, dict):
+        return False
+    return (report.get("nonlinear_op_backend") == "amulet_secure_R"
+            and report.get("secure_right_multiply_executed") is True
+            and (report.get("secure_right_multiply_ops_count") or 0) > 0
+            and (report.get("trusted_nonlinear_ops_count") or 0) == 0
+            and (report.get("nonlinear_trusted_calls") or 0) == 0
+            and report.get("secure_R_enabled") is True
+            and report.get("zero_decoys") is False
+            and report.get("selector_visible_to_gpu") is False)
+
+
 def report_has_real_nonlinear_execution(report: Dict[str, Any]) -> bool:
     """True iff an execution-bearing report carries genuine measured evidence
     that its tagged nonlinear design actually executed (design-agnostic).
 
     ``current`` always executes (trusted-island inline). ``trusted_shortcut``
     must show Amulet-lift evidence; ``A_rightmul`` must show right-multiply
-    evidence. Used by the non-tag-only validation."""
+    evidence; ``amulet_secure_R`` must show secure right-multiply evidence. Used
+    by the non-tag-only validation."""
     if not isinstance(report, dict):
         return False
     nb = report.get("nonlinear_backend") or report.get("nonlinear_design_name")
@@ -413,9 +532,25 @@ def report_has_real_nonlinear_execution(report: Dict[str, Any]) -> bool:
         return report_has_amulet_execution(report)
     if canon == "A_rightmul":
         return report_has_right_multiply_execution(report)
+    if canon == "amulet_secure_R":
+        return report_has_secure_right_multiply_execution(report)
     if canon == "current":
         return True
     return False
+
+
+def report_nonlinear_trusted_calls_clean(report: Dict[str, Any]) -> bool:
+    """True iff an execution-bearing report has NO trusted nonlinear crossings.
+
+    Paper-facing designs require zero trusted nonlinear ops (single TEE
+    entry/exit). A report with ``nonlinear_trusted_calls > 0`` or
+    ``trusted_nonlinear_ops_count > 0`` is rejected."""
+    if not isinstance(report, dict):
+        return True
+    if not _report_is_execution_bearing(report):
+        return True
+    return ((report.get("nonlinear_trusted_calls") or 0) == 0
+            and (report.get("trusted_nonlinear_ops_count") or 0) == 0)
 
 
 def nonlinear_tag_only(report: Dict[str, Any]) -> bool:
@@ -432,7 +567,7 @@ def nonlinear_tag_only(report: Dict[str, Any]) -> bool:
         canon = normalize_nonlinear_backend(nb)
     except UnknownNonlinearBackend:
         return False
-    if canon not in ("trusted_shortcut", "A_rightmul"):
+    if canon not in ("trusted_shortcut", "A_rightmul", "amulet_secure_R"):
         return False
     if not _report_is_execution_bearing(report):
         return False
@@ -531,6 +666,22 @@ def nonlinear_design_report_fields(name: str) -> Dict[str, Any]:
             "nonlinear_single_tee_entry_exit": True,
             "linear_boundary_pad": True,
         })
+    if canon == "amulet_secure_R":
+        # amulet_secure_R capability stamp; execution-bearing runs OVERRIDE with
+        # measured runner evidence (secure_right_multiply_executed=True etc.).
+        fields.update({
+            "secure_right_multiply_executed": False,
+            "secure_right_multiply_ops_count": 0,
+            "trusted_nonlinear_ops_count": 0,
+            "nonlinear_trusted_calls": 0,
+            "secure_R_enabled": True,
+            "zero_decoys": False,
+            "selector_visible_to_gpu": False,
+            "valid_channel_observable": False,
+            "nonlinear_masking_mode": "amulet_secure_right_multiply",
+            "nonlinear_single_tee_entry_exit": True,
+            "linear_boundary_pad": True,
+        })
     return fields
 
 
@@ -551,7 +702,7 @@ def add_nonlinear_backend_arg(parser: argparse.ArgumentParser,
 
 
 def add_nonlinear_backends_arg(parser: argparse.ArgumentParser,
-                               default: str = "current,trusted_shortcut",
+                               default: str = PAPER_FACING_DEFAULT_DESIGNS,
                                flag: str = "--nonlinear-backends") -> None:
     """Add a comma-separated ``--nonlinear-backends`` matrix flag."""
     parser.add_argument(

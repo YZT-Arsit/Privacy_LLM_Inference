@@ -61,7 +61,7 @@ def _missing_outputs(step):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--nonlinear-backends", default="current,trusted_shortcut")
+    ap.add_argument("--nonlinear-backends", default="A_rightmul,amulet_secure_R")
     ap.add_argument("--model-path", default=None)
     ap.add_argument("--model-name", default="Qwen2.5-7B-Instruct")
     ap.add_argument("--base-output-root", required=True)

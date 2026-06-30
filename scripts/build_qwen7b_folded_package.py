@@ -108,6 +108,12 @@ def main() -> int:
     ap.add_argument("--folded-weight-device", default=None)
     ap.add_argument("--mlp-down-chunk-size", type=int, default=512)
     ap.add_argument("--nonlinear-backend", default="current")
+    ap.add_argument("--paper-facing", action="store_true", default=False,
+                    help="paper-facing build: REQUIRE a paper-facing nonlinear "
+                         "design (A_rightmul / amulet_secure_R; reject "
+                         "current/trusted_shortcut) AND assert Linear-boundary "
+                         "pad coverage on all 8 Linear families (from real shard "
+                         "tensor names). Fails loudly otherwise.")
     ap.add_argument("--allow-unwired-nonlinear", action="store_true",
                     default=False,
                     help="allow a non-paper-facing PROTOTYPE build for a nonlinear "
@@ -152,11 +158,24 @@ def main() -> int:
 
     from pllo.experiments.nonlinear_designs import (  # noqa: E402
         assert_real_path_execution, NonlinearDesignNotWired,
-        normalize_nonlinear_backend, nonlinear_design_report_fields)
+        normalize_nonlinear_backend, nonlinear_design_report_fields,
+        assert_paper_facing_design, NonPaperFacingDesign)
     args.nonlinear_backend = normalize_nonlinear_backend(args.nonlinear_backend)
     build_command = "python " + " ".join(sys.argv)
 
     dry_run = bool(args.dry_run or not args.model_path)
+
+    # PAPER-FACING GUARD: reject legacy current/trusted_shortcut designs.
+    if args.paper_facing:
+        try:
+            assert_paper_facing_design(args.nonlinear_backend)
+        except NonPaperFacingDesign as exc:
+            print("ERROR: %s" % exc, file=sys.stderr)
+            return 3
+        if not args.linear_boundary_pad:
+            print("ERROR: --paper-facing requires the Linear-boundary pad "
+                  "(remove --no-linear-boundary-pad)", file=sys.stderr)
+            return 3
 
     # HONESTY GUARD: refuse a paper-facing build for a nonlinear design not yet
     # executed in the real path (it would be tag-only). dry-run / explicit
@@ -310,6 +329,19 @@ def main() -> int:
         rep["paper_ready_blocker"] = (
             "linear-boundary additive padding disabled; this is a "
             "legacy/ablation package, not the main paper scheme")
+    # PAPER-FACING GUARD: assert pad coverage from the REAL written shard tensor
+    # names (q/k/v/o/gate/up/down/lm_head all have xpad_tilde+cpad_tilde).
+    if args.paper_facing:
+        from pllo.deployment.linear_boundary_pad import (  # noqa: E402
+            assert_paper_facing_pad_coverage, LinearPadCoverageError)
+        try:
+            assert_paper_facing_pad_coverage(args.output_dir)
+        except LinearPadCoverageError as exc:
+            print("ERROR: %s" % exc, file=sys.stderr)
+            return 3
+        rep["paper_facing"] = True
+        rep["paper_facing_pad_coverage_verified"] = True
+
     if args.output_json:
         p = Path(args.output_json)
         p.parent.mkdir(parents=True, exist_ok=True)

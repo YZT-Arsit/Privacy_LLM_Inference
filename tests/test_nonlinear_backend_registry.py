@@ -40,7 +40,8 @@ def _input(seed=0, dtype=torch.float64):
 
 def test_registry_lists_both_backends() -> None:
     assert set(available_backends()) == {
-        "current", "amulet_migrated", "compatible_right_multiply"}
+        "current", "amulet_migrated", "compatible_right_multiply",
+        "amulet_secure_R"}
     for name in BACKENDS:
         be = make_nonlinear_backend(name)
         assert be.name == name

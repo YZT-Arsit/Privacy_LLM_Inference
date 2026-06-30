@@ -307,7 +307,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--results-dir", default="outputs")
     ap.add_argument("--package-root", default="outputs")
-    ap.add_argument("--designs", default="current,trusted_shortcut")
+    ap.add_argument("--designs", default="A_rightmul,amulet_secure_R")
     ap.add_argument("--datasets", default="mmlu,gsm8k,boolq,ag_news")
     ap.add_argument("--require-claim-validator", action="store_true",
                     default=False)

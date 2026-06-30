@@ -86,6 +86,13 @@ class NonlinearExecAccumulator:
     right_multiply_executed: bool = False
     right_multiply_ops_count: int = 0
     right_multiply_gpu_bytes: int = 0
+    # amulet_secure_R accounting
+    secure_right_multiply_executed: bool = False
+    secure_right_multiply_ops_count: int = 0
+    secure_right_multiply_gpu_bytes: int = 0
+    secure_R_enabled: bool = False
+    secure_zero_decoys: bool = True            # default True == NOT secure (no run)
+    secure_selector_visible: bool = True       # default True == NOT secure (no run)
     trusted_nonlinear_ops_count: int = 0
     trusted_calls: int = 0
     trusted_bytes: int = 0
@@ -143,11 +150,34 @@ class NonlinearExecAccumulator:
         self.trusted_calls += int(result.trusted_calls)   # == 0 by construction
         self.trusted_bytes += int(result.trusted_bytes)   # == 0 by construction
 
+    def record_secure_right_multiply(self, op_type: str, result: Any) -> None:
+        """An amulet_secure_R island run on the accelerator (dense single-one R
+        for GELU/SiLU; direct masked-state reduction for softmax/RMSNorm). ZERO
+        trusted crossings; captures the secure-R condition flags."""
+        self._bump(op_type)
+        self.secure_right_multiply_executed = True
+        self.secure_right_multiply_ops_count += 1
+        gb = int(result.gpu_bytes)
+        self.secure_right_multiply_gpu_bytes += gb
+        self.gpu_bytes += gb
+        self.trusted_calls += int(result.trusted_calls)   # == 0 by construction
+        self.trusted_bytes += int(result.trusted_bytes)   # == 0 by construction
+        ex = getattr(result, "extra", {}) or {}
+        if ex.get("secure_R_enabled"):
+            self.secure_R_enabled = True
+        # any op must report no zero decoys / selector hidden to STAY secure
+        if ex.get("zero_decoys") is False:
+            self.secure_zero_decoys = False
+        if ex.get("selector_visible_to_gpu") is False:
+            self.secure_selector_visible = False
+
     def to_report_fields(self) -> Dict[str, Any]:
         """The runtime execution-evidence fields a paper-facing report stamps
         AFTER ``nonlinear_design_report_fields`` (override the default tag-only
         stamp with measured counters)."""
-        if self.right_multiply_executed:
+        if self.secure_right_multiply_executed:
+            status = "secure_right_multiply_on_accelerator"
+        elif self.right_multiply_executed:
             status = "right_multiply_on_accelerator"
         elif self.amulet_lift_executed:
             status = "lifted_on_accelerator"
@@ -186,6 +216,24 @@ class NonlinearExecAccumulator:
                 "nonlinear_single_tee_entry_exit": True,
                 "linear_boundary_pad": True,
             })
+        if self.nonlinear_op_backend == "amulet_secure_R":
+            # amulet_secure_R measured execution evidence (single TEE entry/exit;
+            # zero trusted nonlinear crossings; secure-R conditions captured).
+            out.update({
+                "secure_right_multiply_executed":
+                    bool(self.secure_right_multiply_executed),
+                "secure_right_multiply_ops_count":
+                    int(self.secure_right_multiply_ops_count),
+                "secure_right_multiply_gpu_bytes":
+                    int(self.secure_right_multiply_gpu_bytes),
+                "secure_R_enabled": bool(self.secure_R_enabled),
+                "zero_decoys": bool(self.secure_zero_decoys),
+                "selector_visible_to_gpu": bool(self.secure_selector_visible),
+                "valid_channel_observable": bool(self.secure_selector_visible),
+                "nonlinear_masking_mode": "amulet_secure_right_multiply",
+                "nonlinear_single_tee_entry_exit": True,
+                "linear_boundary_pad": True,
+            })
         return out
 
 
@@ -204,6 +252,7 @@ class FoldedNonlinearRunner:
         self.lift_k = int(lift_k)
         self._amulet = None
         self._rightmul = None
+        self._secure = None
         if self.op_backend == "amulet_migrated":
             self._amulet = make_nonlinear_backend(
                 "amulet_migrated", lift_k=self.lift_k, seed=int(seed))
@@ -212,12 +261,22 @@ class FoldedNonlinearRunner:
             # masked state; no trusted crossing, no fallback to the 'current'
             # trusted-island path.
             self._rightmul = make_nonlinear_backend("compatible_right_multiply")
+        elif self.op_backend == "amulet_secure_R":
+            # amulet_secure_R: GELU/SiLU via dense single-one secure-R lift,
+            # softmax/RMSNorm directly on the masked state; zero trusted calls,
+            # no per-op reduction shortcut, no fallback to the trusted path.
+            self._secure = make_nonlinear_backend(
+                "amulet_secure_R", lift_k=max(2, self.lift_k), seed=int(seed))
         self.acc = NonlinearExecAccumulator(
             nonlinear_backend=self.nonlinear_backend,
             nonlinear_op_backend=self.op_backend)
 
     # -- MLP activation (lifted for design B; right-multiply for A_rightmul) ---
     def silu(self, x: torch.Tensor) -> torch.Tensor:
+        if self._secure is not None:
+            r = self._secure.silu(x)
+            self.acc.record_secure_right_multiply("silu", r)
+            return r.output
         if self._rightmul is not None:
             r = self._rightmul.silu(x)
             self.acc.record_right_multiply("silu", r)
@@ -231,6 +290,10 @@ class FoldedNonlinearRunner:
         return r.output
 
     def gelu(self, x: torch.Tensor) -> torch.Tensor:
+        if self._secure is not None:
+            r = self._secure.gelu(x)
+            self.acc.record_secure_right_multiply("gelu", r)
+            return r.output
         if self._rightmul is not None:
             r = self._rightmul.gelu(x)
             self.acc.record_right_multiply("gelu", r)
@@ -245,6 +308,10 @@ class FoldedNonlinearRunner:
 
     # -- RMSNorm core (weight is folded into the linear; weight-free here) -----
     def rmsnorm_core(self, x: torch.Tensor, eps: float) -> torch.Tensor:
+        if self._secure is not None:
+            r = self._secure.rmsnorm(x, weight=None, eps=eps)
+            self.acc.record_secure_right_multiply("rmsnorm", r)
+            return r.output
         if self._rightmul is not None:
             r = self._rightmul.rmsnorm(x, weight=None, eps=eps)
             self.acc.record_right_multiply("rmsnorm", r)
@@ -259,6 +326,10 @@ class FoldedNonlinearRunner:
 
     # -- attention softmax ----------------------------------------------------
     def softmax(self, x: torch.Tensor, dim: int = -1) -> torch.Tensor:
+        if self._secure is not None:
+            r = self._secure.softmax(x, dim=dim)
+            self.acc.record_secure_right_multiply("softmax", r)
+            return r.output
         if self._rightmul is not None:
             r = self._rightmul.softmax(x, dim=dim)
             self.acc.record_right_multiply("softmax", r)

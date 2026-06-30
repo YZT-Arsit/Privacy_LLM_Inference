@@ -63,6 +63,8 @@ __all__ = [
     "linear_boundary_pad_report_fields",
     "default_linear_boundary_pad_report_fields",
     "package_linear_boundary_pad_status",
+    "assert_paper_facing_pad_coverage",
+    "LinearPadCoverageError",
 ]
 
 # Folded weight keys for the per-layer Linear families (row-vector ``y = x @ W``).
@@ -329,3 +331,25 @@ def package_linear_boundary_pad_status(
     fields["base_linear_boundary_pad_enabled"] = bool(enabled)
     fields["base_linear_pad_all_modules_covered"] = bool(all_covered)
     return fields
+
+
+class LinearPadCoverageError(RuntimeError):
+    """A paper-facing folded package is missing Linear-boundary pad coverage on
+    one or more of the 8 Linear families (checked from REAL shard tensor names)."""
+
+
+def assert_paper_facing_pad_coverage(package_dir: str | Path) -> dict[str, Any]:
+    """Paper-facing guard: every Linear family (q/k/v/o/gate/up/down/lm_head) must
+    have BOTH ``<w>_xpad_tilde`` and ``<w>_cpad_tilde`` present in the package's
+    real shard tensor names, else raise :class:`LinearPadCoverageError`.
+
+    Returns the pad-status dict on success."""
+    status = package_linear_boundary_pad_status(package_dir)
+    cov = status.get("linear_pad_coverage", {})
+    missing = [m for m in ALL_PAD_MODULES if not cov.get(m, False)]
+    if missing or not status.get("base_linear_boundary_pad_enabled"):
+        raise LinearPadCoverageError(
+            "paper-facing folded package %s is missing Linear-boundary pad "
+            "(xpad_tilde+cpad_tilde) on: %s (coverage read from real shard "
+            "tensor names, not metadata)" % (str(package_dir), missing or "ALL"))
+    return status

@@ -282,9 +282,10 @@ def run_preflight_matrix(opts: dict) -> dict:
     per-backend results. Paths can be auto-namespaced by appending
     ``_<design>`` to the directory/file names (the dual-matrix convention) when
     ``namespace_by_backend`` is set."""
-    from pllo.experiments.nonlinear_designs import parse_nonlinear_backends
+    from pllo.experiments.nonlinear_designs import (
+        parse_nonlinear_backends, PAPER_FACING_DEFAULT_DESIGNS)
     designs = parse_nonlinear_backends(opts.get("nonlinear_backends")
-                                       or "current,trusted_shortcut")
+                                       or PAPER_FACING_DEFAULT_DESIGNS)
     ns = bool(opts.get("namespace_by_backend"))
 
     by = {}

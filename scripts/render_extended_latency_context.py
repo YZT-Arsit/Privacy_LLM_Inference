@@ -215,7 +215,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--e3-extended-dir", default="outputs/e3_extended")
     ap.add_argument("--e3-context-dir", default="outputs/e3_context")
-    ap.add_argument("--designs", default="current,trusted_shortcut")
+    ap.add_argument("--designs", default="A_rightmul,amulet_secure_R")
     ap.add_argument("--seq-lens", default="128,256,512,1024")
     ap.add_argument("--output-json",
                     default="outputs/final/extended_latency_context_summary.json")

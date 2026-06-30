@@ -28,7 +28,7 @@ from pllo.experiments import nonlinear_designs as nd  # noqa: E402
 
 def test_registry_normalization_and_aliases() -> None:
     assert nd.list_nonlinear_backends() == [
-        "current", "trusted_shortcut", "A_rightmul"]
+        "current", "trusted_shortcut", "A_rightmul", "amulet_secure_R"]
     assert nd.normalize_nonlinear_backend("amulet_migrated") == "trusted_shortcut"
     assert nd.normalize_nonlinear_backend("TEE-Shortcut-Nonlinear") == \
         "trusted_shortcut"
@@ -127,8 +127,19 @@ def _pairwise_report(backend, executed=True):
     r = {"stage": "e9_pairwise_utility_preservation", "nonlinear_backend":
          backend, "utility_preserved": True, "paper_ready": True,
          "dry_run": False, "dataset": "mmlu", "delta_abs": 0.0}
-    # trusted_shortcut needs genuine Amulet-lift execution evidence to count;
-    # current is executed by definition (trusted-boundary inline).
+    # paper-facing designs need their measured execution evidence to count.
+    if backend == "A_rightmul" and executed:
+        r.update({"nonlinear_op_backend": "compatible_right_multiply",
+                  "right_multiply_nonlinear_executed": True,
+                  "right_multiply_nonlinear_ops_count": 56,
+                  "trusted_nonlinear_ops_count": 0, "nonlinear_trusted_calls": 0})
+    if backend == "amulet_secure_R" and executed:
+        r.update({"nonlinear_op_backend": "amulet_secure_R",
+                  "secure_right_multiply_executed": True,
+                  "secure_right_multiply_ops_count": 56,
+                  "trusted_nonlinear_ops_count": 0, "nonlinear_trusted_calls": 0,
+                  "secure_R_enabled": True, "zero_decoys": False,
+                  "selector_visible_to_gpu": False})
     if backend == "trusted_shortcut" and executed:
         r.update({"nonlinear_op_backend": "amulet_migrated",
                   "amulet_lift_executed": True, "lifted_nonlinear_ops_count": 56,
@@ -138,32 +149,37 @@ def _pairwise_report(backend, executed=True):
 
 def test_claim_validator_cross_backend_refusal() -> None:
     from pllo.experiments.claim_validator import build_claim_report
-    results = [{"file": "cur.json", "report": _pairwise_report("current")}]
+    results = [{"file": "arm.json", "report": _pairwise_report("A_rightmul")}]
     # required claim tagged for the OTHER design must NOT be supported
     rep = build_claim_report(results, required_claims=[
-        "public_benchmark_utility_preserved[trusted_shortcut]"])
+        "public_benchmark_utility_preserved[amulet_secure_R]"])
     assert rep["all_required_supported"] is False
-    assert "public_benchmark_utility_preserved[current]" in \
+    assert "public_benchmark_utility_preserved[A_rightmul]" in \
         rep["backend_tagged_supported"]
-    assert "public_benchmark_utility_preserved[trusted_shortcut]" not in \
+    assert "public_benchmark_utility_preserved[amulet_secure_R]" not in \
         rep["backend_tagged_supported"]
-    assert rep["nonlinear_designs_evaluated"] == ["current"]
-    assert "trusted_shortcut" in rep["nonlinear_designs_not_evaluated"]
+    assert rep["nonlinear_designs_evaluated"] == ["A_rightmul"]
+    assert "amulet_secure_R" in rep["nonlinear_designs_not_evaluated"]
     # the same claim tagged for the matching design IS supported
     rep2 = build_claim_report(results, required_claims=[
-        "public_benchmark_utility_preserved[current]"])
+        "public_benchmark_utility_preserved[A_rightmul]"])
     assert rep2["all_required_supported"] is True
+    # a LEGACY design (current) must NOT back the paper claim in paper-facing mode
+    legacy = [{"file": "cur.json", "report": _pairwise_report("current")}]
+    rep3 = build_claim_report(legacy, required_claims=[
+        "public_benchmark_utility_preserved[current]"], paper_facing=True)
+    assert rep3["all_required_supported"] is False
 
 
 def test_claim_validator_both_designs_supported() -> None:
     from pllo.experiments.claim_validator import build_claim_report
-    results = [{"file": "c.json", "report": _pairwise_report("current")},
-               {"file": "t.json", "report": _pairwise_report("trusted_shortcut")}]
+    results = [{"file": "a.json", "report": _pairwise_report("A_rightmul")},
+               {"file": "s.json", "report": _pairwise_report("amulet_secure_R")}]
     rep = build_claim_report(results)
     assert rep["both_nonlinear_designs_supported"] is True
-    assert set(rep["nonlinear_designs_evaluated"]) == {"current",
-                                                       "trusted_shortcut"}
-    assert rep["trusted_shortcut_executed_in_real_path"] is True
+    assert set(rep["nonlinear_designs_evaluated"]) == {"A_rightmul",
+                                                       "amulet_secure_R"}
+    assert rep["nonlinear_trusted_calls_clean"] is True
 
 
 def test_claim_validator_refuses_tag_only_trusted_shortcut() -> None:

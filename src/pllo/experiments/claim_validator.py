@@ -223,8 +223,19 @@ def _parse_tagged_claim(claim):
     return claim.strip(), None
 
 
-def build_claim_report(results: list, required_claims=None) -> dict:
-    from pllo.experiments.nonlinear_designs import trusted_shortcut_tag_only
+def build_claim_report(results: list, required_claims=None,
+                       paper_facing: bool = False) -> dict:
+    """Validate which claim classes are backed by real evidence.
+
+    ``paper_facing=True`` additionally REJECTS legacy non-paper-facing nonlinear
+    designs (``current`` / ``trusted_shortcut``) from backing any backend-
+    sensitive claim (requirement: paper-facing runs use only A_rightmul /
+    amulet_secure_R). The behavioral checks (tag-only, trusted_calls>0) always
+    apply regardless of this flag."""
+    from pllo.experiments.nonlinear_designs import (
+        trusted_shortcut_tag_only, nonlinear_tag_only,
+        report_nonlinear_trusted_calls_clean, NON_PAPER_FACING_DESIGNS,
+        PAPER_FACING_DESIGNS)
     enriched = []
     for item in results:
         rep = item.get("report")
@@ -238,6 +249,18 @@ def build_claim_report(results: list, required_claims=None) -> dict:
     tag_only_ts_files = {e["file"] for e in enriched
                          if e["report"] is not None
                          and trusted_shortcut_tag_only(e["report"])}
+    # GENERIC tag-only across migrated designs (trusted_shortcut / A_rightmul /
+    # amulet_secure_R): execution-bearing report tagged with the design but
+    # lacking its measured execution evidence.
+    tag_only_files = {e["file"] for e in enriched
+                      if e["report"] is not None
+                      and nonlinear_tag_only(e["report"])}
+    # HARD REJECT: any execution-bearing nonlinear report with a trusted
+    # nonlinear crossing (trusted_calls > 0) -- violates single-TEE-entry.
+    trusted_calls_violation_files = {
+        e["file"] for e in enriched
+        if e["report"] is not None
+        and not report_nonlinear_trusted_calls_clean(e["report"])}
 
     supported = {}
     supported_backends = {}          # claim -> {backend or "unspecified": [files]}
@@ -252,15 +275,26 @@ def build_claim_report(results: list, required_claims=None) -> dict:
             if _supports(claim, e["report"], e["truth"]):
                 evidence.append(e["file"])
                 bk = e["nonlinear_backend"] or "unspecified"
-                # a tag-only trusted_shortcut report cannot back a per-backend
-                # [trusted_shortcut] claim (the lift never executed).
-                if not (bk == "trusted_shortcut"
-                        and e["file"] in tag_only_ts_files):
+                reasons_block = []
+                # a tag-only (any migrated design) report cannot back a
+                # per-backend claim -- the design never actually executed.
+                if e["file"] in tag_only_files:
+                    reasons_block.append("nonlinear_design_tag_only_not_executed")
+                # a report with a trusted nonlinear crossing violates the
+                # single-TEE-entry contract and is rejected outright.
+                if e["file"] in trusted_calls_violation_files:
+                    reasons_block.append("nonlinear_trusted_calls_gt_zero")
+                # paper-facing mode: backend-sensitive claims may NOT be backed
+                # by a legacy design (current / trusted_shortcut).
+                if (paper_facing and claim in BACKEND_SENSITIVE_CLAIMS
+                        and bk in NON_PAPER_FACING_DESIGNS):
+                    reasons_block.append(
+                        "non_paper_facing_design_%s_in_paper_claim" % bk)
+                if not reasons_block:
                     per_backend.setdefault(bk, []).append(e["file"])
                 else:
-                    overclaim.append({
-                        "claim": claim, "file": e["file"],
-                        "reasons": ["trusted_shortcut_not_executed_in_real_path"]})
+                    overclaim.append({"claim": claim, "file": e["file"],
+                                      "reasons": reasons_block})
             elif _shape(claim, e["report"], e["truth"]):
                 # shape matches but gate failed -> potential overclaim source
                 reasons = []
@@ -382,6 +416,14 @@ def build_claim_report(results: list, required_claims=None) -> dict:
         "supported_claims_by_backend": supported_claims_by_backend,
         "trusted_shortcut_tag_only_files": sorted(tag_only_ts_files),
         "trusted_shortcut_executed_in_real_path": not tag_only_ts_files,
+        # generic (all migrated designs) tag-only + trusted-call hard checks
+        "nonlinear_tag_only_files": sorted(tag_only_files),
+        "nonlinear_trusted_calls_violation_files": sorted(
+            trusted_calls_violation_files),
+        "nonlinear_trusted_calls_clean": not trusted_calls_violation_files,
+        "paper_facing_designs": list(PAPER_FACING_DESIGNS),
+        "non_paper_facing_designs_seen": sorted(
+            b for b in backends_seen if b in NON_PAPER_FACING_DESIGNS),
         "both_nonlinear_designs_supported": (
             len(designs_evaluated) >= 2),
         "required_claims": required_norm,
