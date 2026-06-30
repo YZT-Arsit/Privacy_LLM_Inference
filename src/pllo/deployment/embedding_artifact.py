@@ -132,19 +132,42 @@ def build_embedding_artifact(out_dir: str | Path, *, embed_tokens_weight,
 
 
 def load_embedding_artifact(art_dir: str | Path, *, device: str = "cpu",
-                            fdtype=None):
+                            fdtype=None, verify_tensors_sha256: bool = True):
     """Load the trusted boundary artifact.
 
     Returns ``(embed_weight, residual_mask_n0, vocab_mask, meta)`` with the
     embedding + N_0 on ``device`` and (if ``fdtype`` given) the embedding +
     masks cast to ``fdtype`` (the fold precision). The returned mask material is
-    trusted-only and must never be sent to the GPU worker."""
+    trusted-only and must never be sent to the GPU worker.
+
+    ``verify_tensors_sha256`` (default True) hard-checks the tensors file against
+    the ``tensors_sha256`` recorded in ``boundary_meta.json``. The masks here MUST
+    match the ones the folded package head was built with; a modified/hand-patched
+    file (e.g. a re-quantised vocab scale) silently mis-scales the recovered logits
+    and produces degenerate (repeat-token) generation, so a mismatch is a hard
+    error -- never a silent fallback. See ``scale_repair`` history in the AAAI
+    runbook: a bf16-quantised vocab scale that diverged from the package caused
+    exactly this on the TDX boundary."""
     import torch
     from pllo.ops.causal_lm_boundaries import VocabLogitMask
     art_dir = Path(art_dir)
     meta = json.loads((art_dir / ARTIFACT_META).read_text(encoding="utf-8"))
     tname = meta.get("tensors_file") or ARTIFACT_TENSORS
     tpath = art_dir / tname
+    claimed_sha = meta.get("tensors_sha256")
+    if verify_tensors_sha256 and claimed_sha:
+        actual_sha = _file_sha256(tpath)
+        if actual_sha != claimed_sha:
+            raise RuntimeError(
+                "boundary artifact tensors file %s sha256 %s does NOT match the "
+                "tensors_sha256 %s recorded in %s. The trusted mask material has "
+                "been modified/corrupted and will NOT match the folded package "
+                "head -> mis-scaled recovered logits and degenerate generation. "
+                "Restore the package-matched artifact (rebuild from the SAME "
+                "session that built the package) instead of patching it in place. "
+                "Pass verify_tensors_sha256=False only for a deliberate, audited "
+                "exception." % (tname, actual_sha[:16], str(claimed_sha)[:16],
+                                ARTIFACT_META))
     if tpath.suffix == ".safetensors":
         from safetensors.torch import load_file
         tensors = dict(load_file(str(tpath)))
