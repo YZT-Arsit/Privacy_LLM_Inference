@@ -405,7 +405,7 @@ def verify_bindings(evidence, *, runtime_hash_hex, report_data_hex,
         mr_ok = parsed_mr is not None
 
     debug = (((evidence.get("tdx") or {}).get("td_attributes") or {}).get("debug"))
-    debug_present = debug is not None
+    debug_present = isinstance(debug, bool)
     debug_false = (debug is False)
 
     rc = evidence.get("verifier_returncode")
