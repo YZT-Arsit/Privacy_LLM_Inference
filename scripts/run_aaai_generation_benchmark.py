@@ -127,6 +127,12 @@ def _build_args():
     ap.add_argument("--precompute-masked-embed", action="store_true",
                     default=False, help="precompute E@N_0 so the per-token input "
                     "mask is a row lookup (no per-token matmul; bit-identical)")
+    ap.add_argument("--batched-decode", action="store_true", default=False,
+                    help="T2: batch same-tokenised-length prompts through the GPU "
+                    "worker in one round trip per step (bit-identical to per-stream "
+                    "greedy; single-turn datasets only, not mt_bench)")
+    ap.add_argument("--max-batch-size", type=int, default=16,
+                    help="max streams per batched group (caps memory)")
     # GPU-staged (non-secret) obfuscation schedule
     ap.add_argument("--gpu-staged-schedule-dir", default=None)
     ap.add_argument("--use-gpu-staged-schedule", action="store_true",
@@ -295,7 +301,12 @@ def main() -> int:
     last_hb = time.perf_counter()
     n = len(to_run)
     failed_records = []
+    use_batched = bool(args.batched_decode and not is_dry
+                       and args.dataset != "mt_bench" and to_run)
     try:
+        if use_batched:
+            _run_batched(predictor, to_run, args, fh, state, last_hb=last_hb)
+            to_run = []                # per-example loop below becomes a no-op
         for idx, ex in enumerate(to_run):
             rid = str(ex.get("id"))
             state.begin_example(rid)
@@ -485,6 +496,71 @@ def _gen(predictor, prompt, args, is_dry):
     return _generate_with_retry(
         predictor, prompt, max_retries=args.max_retries_per_example,
         sleep_sec=args.retry_sleep_sec)
+
+
+def _run_batched(predictor, to_run, args, fh, state, *, last_hb):
+    """T2 batched greedy decode over same-length buckets (single-turn datasets).
+
+    Bit-identical to per-example greedy: prompts are bucketed by IDENTICAL tokenised
+    length so every stream in a batch shares the position; batched_greedy_decode
+    returns per-stream token ids with the same EOS truncation. Records are built in
+    the SAME shape as _run_example. Resume/status are honoured (to_run already
+    excludes completed ids)."""
+    import time
+    from collections import defaultdict
+    from pllo.experiments.folded_batched_decode import batched_greedy_decode
+    if args.align_generation_config or args.repetition_penalty:
+        raise RuntimeError("--batched-decode requires pure greedy (no "
+                           "--align-generation-config / --repetition-penalty)")
+    eos_ids = list(getattr(predictor, "_eos_ids", []) or [])
+    eos_set = set(int(e) for e in eos_ids)
+    n_layers = predictor._boundary.meta["num_layers"]
+    id_lists = [predictor._ids(ex.get("prompt", "")).reshape(-1).tolist()
+                for ex in to_run]
+    buckets = defaultdict(list)
+    for i, ids in enumerate(id_lists):
+        buckets[len(ids)].append(i)
+    groups = []
+    for L in sorted(buckets):
+        idxs = buckets[L]
+        for j in range(0, len(idxs), max(1, args.max_batch_size)):
+            groups.append(idxs[j:j + args.max_batch_size])
+    n = len(to_run)
+    done = 0
+    for gi, group in enumerate(groups):
+        for i in group:
+            state.begin_example(str(to_run[i].get("id")))
+        t0 = time.perf_counter()
+        outs = batched_greedy_decode(
+            predictor._boundary, predictor._worker,
+            [id_lists[i] for i in group], max_new_tokens=args.max_new_tokens,
+            eos_ids=eos_ids, num_layers=n_layers)
+        per = (time.perf_counter() - t0) / max(1, len(group))
+        for k, i in enumerate(group):
+            ex = to_run[i]
+            rid = str(ex.get("id"))
+            toks = outs[k]
+            text = predictor._tok.decode(toks, skip_special_tokens=True)
+            fr = "eos" if (toks and int(toks[-1]) in eos_set) else "length"
+            rec = {"id": rid, "dataset": args.dataset, "status": "ok",
+                   "turn_index": 0, "prompt_hash": _hash(ex.get("prompt", "")),
+                   "response": text, "token_ids": toks if toks else None,
+                   "num_tokens": len(toks), "finish_reason": fr,
+                   "latency_sec": round(per, 6), "category": ex.get("category")}
+            if args.dataset == "gsm8k":
+                gold = ex.get("final_answer") or ex.get("reference")
+                rec["predicted_answer"] = extract_gsm8k_answer(text)
+                rec["gold_answer"] = gold
+                rec["exact_match"] = gsm8k_exact_match(text, gold)
+            append_jsonl_record(fh, rec)
+            state.record_completed(rid, tokens=len(toks))
+            done += 1
+        state.checkpoint()
+        print("[aaai-batched] %s group=%d/%d streams=%d done=%d/%d completed=%d "
+              "skipped=%d" % (args.dataset, gi + 1, len(groups), len(group),
+                              done, n, state.completed_examples,
+                              state.skipped_existing_examples), flush=True)
+    return last_hb
 
 
 def _run_example(predictor, ex, turns, two_turn, args, nb, is_dry):
