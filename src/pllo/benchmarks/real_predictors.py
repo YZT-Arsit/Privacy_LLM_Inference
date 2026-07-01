@@ -643,9 +643,13 @@ class _RemoteMaskedPredictor:
     def _recover_last(self, masked_logits):
         import numpy as np
         import torch
+        # masked_logits is fp32 numpy (historical wire) OR a bf16 torch tensor
+        # (native-logits-wire). Either way upcast to the boundary's fdtype (fp32)
+        # before recovery -- bf16 -> fp32 is exact, so recovery is bit-identical.
+        x = (masked_logits if isinstance(masked_logits, torch.Tensor)
+             else torch.as_tensor(np.asarray(masked_logits)))
         rec = self._boundary.recover(
-            torch.as_tensor(np.asarray(masked_logits)).to(
-                self._boundary.compute_device, self._boundary.fdtype))
+            x.to(self._boundary.compute_device, self._boundary.fdtype))
         self._trace.trusted_bytes += int(
             np.asarray(rec.detach().to("cpu")).nbytes)
         return rec

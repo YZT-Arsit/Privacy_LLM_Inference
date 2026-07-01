@@ -342,12 +342,17 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                  nonlinear_backend: str = "current",
                  nonlinear_lift_k: int = 2, nonlinear_seed: int = 2035,
                  resident_folded_weights: bool = False,
+                 native_logits_wire: bool = False,
                  **_ignored: Any) -> None:
         self.folded_package_path = folded_package_path
         self.folded_lora_package_path = folded_lora_package_path
         self.device = device
         self.dtype = dtype
         self.verify_on_init = bool(verify_on_init)
+        # Send masked logits in their native bf16 compute dtype (half the wire
+        # bytes) instead of upcasting to fp32; bit-identical after the boundary's
+        # bf16 -> fp32 upcast for recovery. Default OFF (historical fp32 wire).
+        self.native_logits_wire = bool(native_logits_wire)
         # Weight-resident decode (default OFF -> historical per-step load path).
         # When on, all folded layers + head are loaded/folded/moved-to-device ONCE
         # (lazily, on first forward) and reused across decode steps: no per-token
@@ -759,12 +764,21 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         return self._runner.execution_evidence()
 
     def _masked_last_logits(self, h_tilde: Any, timer: Any = None):
-        """Apply the folded head, return last-position MASKED logits as numpy."""
+        """Apply the folded head, return last-position MASKED logits.
+
+        Default: fp32 numpy (historical wire). When ``native_logits_wire`` is set
+        AND the logits are bf16, return the bf16 tensor directly so the wire moves
+        HALF the bytes; the trusted boundary upcasts bf16 -> fp32 for recovery, so
+        the recovered logits are BIT-IDENTICAL to the fp32-upcast payload."""
         import numpy as np
+        import torch
         logits_tilde = self.run_head(h_tilde, float(self._eps),
                                      timer=timer)              # [B, T, V]
-        last = logits_tilde[:, -1, :]
-        return np.asarray(last.detach().to("cpu").float().numpy())
+        last = logits_tilde[:, -1, :].detach().to("cpu")
+        if getattr(self, "native_logits_wire", False) \
+                and last.dtype == torch.bfloat16:
+            return last.contiguous()                          # wire -> "bfloat16"
+        return np.asarray(last.float().numpy())
 
     def run_single_layer_prefill(self, x_tilde: Any, layer_index: int,
                                  config: Any, cos: Any, sin: Any,

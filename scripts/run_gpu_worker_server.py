@@ -51,6 +51,9 @@ def main() -> None:
     ap.add_argument("--nonlinear-seed", type=int, default=2035)
     ap.add_argument("--verify-on-init", type=_bool, default=True)
     ap.add_argument("--resident-folded-weights", action="store_true")
+    ap.add_argument("--native-logits-wire", action="store_true",
+                    help="return masked logits in native bf16 (half the wire "
+                    "bytes); bit-identical after the boundary's bf16->fp32 upcast")
     ap.add_argument("--no-audit", action="store_true")
     ap.add_argument("--backend-json", default=None,
                     help="Optional JSON object merged into backend kwargs.")
@@ -74,6 +77,7 @@ def main() -> None:
             "nonlinear_lift_k": args.nonlinear_lift_k,
             "nonlinear_seed": args.nonlinear_seed,
             "resident_folded_weights": bool(args.resident_folded_weights),
+            "native_logits_wire": bool(args.native_logits_wire),
         })
 
     print("[run_gpu_worker_server] backend_kwargs=" + json.dumps(

@@ -45,8 +45,36 @@ MESSAGE_TYPES = {
 }
 
 
+def _bf16_tensor_or_none(obj: Any):
+    """Return ``obj`` if it is a torch bfloat16 tensor, else None (lazy torch)."""
+    mod = getattr(type(obj), "__module__", "") or ""
+    if mod.split(".", 1)[0] != "torch":
+        return None
+    import torch                                            # lazy; both sides have it
+    if isinstance(obj, torch.Tensor) and obj.dtype == torch.bfloat16:
+        return obj
+    return None
+
+
 def encode_value(obj: Any) -> Any:
-    """Recursively encode a value to JSON-safe form (ndarrays -> base64 dict)."""
+    """Recursively encode a value to JSON-safe form (ndarrays -> base64 dict).
+
+    bfloat16 torch tensors are encoded losslessly as their raw 2-byte bits with a
+    ``dtype == "bfloat16"`` tag (numpy has no native bfloat16). This lets the GPU
+    worker return masked logits in their native bf16 compute dtype -- HALF the
+    wire size of the fp32 upcast, and BIT-IDENTICAL, since the trusted boundary
+    upcasts bf16 -> fp32 for recovery exactly as it did with the fp32 payload."""
+    bf16 = _bf16_tensor_or_none(obj)
+    if bf16 is not None:
+        import torch
+        t = bf16.detach().to("cpu").contiguous()
+        raw = t.view(torch.uint16).numpy().tobytes()       # raw bf16 bit pattern
+        return {
+            "__ndarray__": True,
+            "dtype": "bfloat16",
+            "shape": list(t.shape),
+            "b64": base64.b64encode(raw).decode("ascii"),
+        }
     if isinstance(obj, np.ndarray):
         arr = np.ascontiguousarray(obj)
         return {
@@ -71,6 +99,10 @@ def decode_value(obj: Any) -> Any:
     if isinstance(obj, dict):
         if obj.get("__ndarray__"):
             raw = base64.b64decode(obj["b64"].encode("ascii"))
+            if obj["dtype"] == "bfloat16":
+                import torch                                # lazy; both sides have it
+                t = torch.frombuffer(bytearray(raw), dtype=torch.bfloat16)
+                return t.reshape(obj["shape"]).clone()     # owns data, writable
             arr = np.frombuffer(raw, dtype=np.dtype(obj["dtype"]))
             return arr.reshape(obj["shape"]).copy()      # writable, owns data
         return {k: decode_value(v) for k, v in obj.items()}

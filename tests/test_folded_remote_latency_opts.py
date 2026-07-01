@@ -26,10 +26,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from pllo.experiments.folded_probe_common import LiteBoundary  # noqa: E402
-from pllo.ops.causal_lm_boundaries import VocabLogitMask  # noqa: E402
+from pllo.ops.causal_lm_boundaries import (  # noqa: E402
+    VocabLogitMask, recover_vocab_logits)
 from pllo.protocol.remote import GpuWorkerServer, RemoteGpuWorker  # noqa: E402
 from pllo.protocol.tee_gpu_messages import (  # noqa: E402
     BoundaryInitRequest, MaskedDecodeRequest)
+from pllo.protocol.wire import decode_value, encode_value  # noqa: E402
 
 
 def _tiny_boundary(precompute: bool, *, vocab=16, hidden=8):
@@ -90,3 +92,41 @@ def test_persistent_connection_gives_identical_results():
     assert len(non_persistent) == len(persistent) == 6
     for a, b in zip(non_persistent, persistent):
         assert np.array_equal(a, b)
+
+
+# --------------------------------------------------------------------------- #
+# T1a: native bf16 logits on the wire (half the bytes, bit-identical)
+# --------------------------------------------------------------------------- #
+
+def test_wire_bf16_roundtrip_is_bit_identical():
+    torch.manual_seed(3)
+    t = torch.randn(1, 257, dtype=torch.float32).to(torch.bfloat16)
+    enc = encode_value(t)
+    assert enc["dtype"] == "bfloat16" and enc["shape"] == [1, 257]
+    back = decode_value(enc)
+    assert isinstance(back, torch.Tensor) and back.dtype == torch.bfloat16
+    # raw bf16 bit patterns are preserved exactly
+    assert torch.equal(back.view(torch.uint16), t.view(torch.uint16))
+    # and the fp32 upcast (what recovery uses) is exactly the fp32 upcast payload
+    assert torch.equal(back.float(), t.float())
+
+
+def test_native_bf16_wire_recover_is_bit_identical():
+    torch.manual_seed(4)
+    vocab = 512
+    logits_bf16 = torch.randn(1, vocab, dtype=torch.float32).to(torch.bfloat16)
+    perm = torch.randperm(vocab)
+    vm = VocabLogitMask(permutation=perm, inverse_permutation=torch.argsort(perm),
+                        scale=(torch.rand(vocab) + 0.5),
+                        inverse_scale=1.0 / (torch.rand(vocab) + 0.5))
+    # PATH A (historical wire): worker upcasts bf16 -> fp32 numpy, boundary
+    # upcasts to fp32 and recovers.
+    a_wire = decode_value(encode_value(
+        logits_bf16.float().numpy()))                   # fp32 numpy across wire
+    rec_a = recover_vocab_logits(
+        torch.as_tensor(np.asarray(a_wire)).float(), vm)
+    # PATH B (native bf16 wire): worker sends bf16, boundary upcasts to fp32.
+    b_wire = decode_value(encode_value(logits_bf16))    # bf16 tensor across wire
+    rec_b = recover_vocab_logits(b_wire.float(), vm)
+    assert torch.equal(rec_a, rec_b)
+    assert int(rec_a.argmax(-1)) == int(rec_b.argmax(-1))
