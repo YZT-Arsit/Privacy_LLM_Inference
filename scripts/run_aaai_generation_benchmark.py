@@ -673,11 +673,20 @@ def _build_report(args, nb, state, stats, worker_health, attest_evidence, is_dry
         # residual / score-preserving Q,K / shared SwiGLU channel perm / dense
         # rejected) from the worker's compatible_mask_audit so the gate proves each
         # condition rather than only the rolled-up compatible_masks_verified.
-        audit = worker_health.get("compatible_mask_audit") or {}
-        for k in ("residual_mask_is_signed_permutation",
-                  "attention_qk_scores_preserved",
-                  "swiglu_shared_channel_permutation",
-                  "arbitrary_dense_mask_rejected", "compatible_mask_family"):
+        # The worker may surface the four sub-conditions either as a dedicated
+        # top-level compatible_mask_audit dict (describe()) OR flat inside
+        # nonlinear_execution_evidence (the /health serialization). Read the audit
+        # dict first, then fall back to the flat evidence so the gate proves each
+        # condition from whichever shape the running worker exposes.
+        _sub = ("residual_mask_is_signed_permutation",
+                "attention_qk_scores_preserved",
+                "swiglu_shared_channel_permutation",
+                "arbitrary_dense_mask_rejected", "compatible_mask_family")
+        audit = dict(worker_health.get("compatible_mask_audit") or {})
+        for k in _sub:
+            if k not in audit and k in nonlinear_ev:
+                audit[k] = nonlinear_ev[k]
+        for k in _sub:
             if k in audit:
                 report[k] = audit[k]
         report["compatible_mask_audit"] = audit
