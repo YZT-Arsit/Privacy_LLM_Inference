@@ -410,6 +410,12 @@ class _RemoteMaskedPredictor:
         self.seq_len = int(seq_len)
         self.max_new_tokens = int(max_new_tokens)
         self._audit = bool(audit)
+        # Running audit verdict, folded per generation. The GPU-traffic recorder
+        # retains the exact message arrays (masked embeddings + masked logits) so
+        # the security audit can scan them; over a full dataset that is GBs of
+        # retained logits -> OOM on a 16GiB boundary. We instead audit + FREE each
+        # generation's messages and keep only this cumulative flag.
+        self._audit_ok = True
         # TRUSTED-SIDE generation processor alignment (default OFF -> old raw
         # greedy behaviour). When on, the trusted side applies the same
         # repetition_penalty the plaintext baseline (model.generate) applies, AFTER
@@ -927,10 +933,26 @@ class _RemoteMaskedPredictor:
         # so the runner record carries a real per-example finish_reason (not null).
         last = self._examples_finish[-1] if self._examples_finish else {}
         info = self.prompt_info(prompt)
-        return {"text": self._tok.decode(gen, skip_special_tokens=True),
-                "token_ids": [int(t) for t in gen],
-                "finish_reason": last.get("finish_reason"),
-                "stopped_by_eos": last.get("stopped_by_eos"), **info}
+        out = {"text": self._tok.decode(gen, skip_special_tokens=True),
+               "token_ids": [int(t) for t in gen],
+               "finish_reason": last.get("finish_reason"),
+               "stopped_by_eos": last.get("stopped_by_eos"), **info}
+        self._finalize_generation_trace()
+        return out
+
+    def _finalize_generation_trace(self):
+        """Audit THIS generation's recorded GPU traffic, fold the verdict into the
+        cumulative flag, then FREE the retained message arrays. The recorder runs
+        even when --audit is off, so we always clear -- otherwise the retained
+        masked logits/embeddings grow unbounded across the dataset (OOM)."""
+        if self._audit:
+            r = self._run_audit()                       # scans current messages
+            if r is False:
+                self._audit_ok = False
+            elif r is None and self._audit_ok is True:
+                self._audit_ok = None
+        self._trace.gpu_inbound_messages.clear()
+        self._trace.gpu_outbound_messages.clear()
 
     def stats(self):
         bc = sum(self._trace.boundary_calls.values()) \
@@ -1063,7 +1085,13 @@ class _RemoteMaskedPredictor:
         except Exception:                                    # noqa: BLE001
             pass
         if self._audit:
-            out["audit_passed"] = self._run_audit()
+            # fold any residual (usually empty -- generate() finalises each time)
+            r = self._run_audit()
+            if r is False:
+                self._audit_ok = False
+            elif r is None and self._audit_ok is True:
+                self._audit_ok = None
+            out["audit_passed"] = self._audit_ok
         if self._attestation:
             out.update(self._attestation)
         # per-token, per-stage profile (only when profiling was enabled)

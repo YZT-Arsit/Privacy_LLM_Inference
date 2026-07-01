@@ -159,6 +159,10 @@ class LiteBoundary:
         self._embed_masked = None
         if precompute_masked_embed:
             self._embed_masked = (self.embed @ self._n0).contiguous()
+            # free the raw embedding table: only the masked lookup is used from
+            # here on, so this keeps the precompute memory-NEUTRAL (critical on a
+            # 16GiB boundary -- avoids holding both E and E@N_0).
+            self.embed = None
 
     @classmethod
     def from_artifact(cls, art_dir, *, device: str = "cpu", fdtype=None,

@@ -130,3 +130,39 @@ def test_native_bf16_wire_recover_is_bit_identical():
     rec_b = recover_vocab_logits(b_wire.float(), vm)
     assert torch.equal(rec_a, rec_b)
     assert int(rec_a.argmax(-1)) == int(rec_b.argmax(-1))
+
+
+# --------------------------------------------------------------------------- #
+# memory leak fix: GPU-traffic trace is bounded per generation, not per run
+# --------------------------------------------------------------------------- #
+
+def test_generation_trace_is_freed_each_generation():
+    from pllo.benchmarks.real_predictors import _RemoteMaskedPredictor
+    from pllo.protocol.tee_gpu_messages import (
+        MaskedDecodeResponse, ProtocolTrace)
+
+    # build a bare predictor shell (bypass __init__: no worker/model needed)
+    p = _RemoteMaskedPredictor.__new__(_RemoteMaskedPredictor)
+    p._audit = True
+    p._audit_ok = True
+    p._trace = ProtocolTrace(boundary_backend="process",
+                             gpu_backend="qwen7b_folded_package",
+                             max_new_tokens=8, tee_used_on_gpu=False)
+
+    def _one_generation(n_tokens):
+        # simulate a generation's recorded GPU traffic (masked logits per token)
+        for _ in range(n_tokens):
+            p._trace.record_gpu_outbound(MaskedDecodeResponse(
+                session_id="s",
+                masked_logits=np.zeros((1, 4096), dtype=np.float32),
+                kv_cache_len=1))
+        assert p._trace.gpu_outbound_messages           # retained during gen
+        p._finalize_generation_trace()                  # audit + FREE
+        # bounded: arrays dropped after each generation (no cross-run growth)
+        assert p._trace.gpu_outbound_messages == []
+        assert p._trace.gpu_inbound_messages == []
+
+    for _ in range(20):                                 # many generations
+        _one_generation(64)
+    # clean masked traffic keeps the cumulative verdict True
+    assert p._audit_ok is True
