@@ -217,6 +217,16 @@ def generate_quote_alibaba(report_data_hex, out_dir, *, qgen_app=ALIBABA_QGEN_AP
     out_dir.mkdir(parents=True, exist_ok=True)
     quote_out = out_dir / quote_out_name
     qgen_report_data_hex = _alibaba_qgen_reportdata_hex(report_data_hex)
+    # A quote binds THIS run's report_data (== current runtime hash). Any stale
+    # quote from a prior run (e.g. bound to a different runtime hash) MUST be
+    # cleared first, otherwise the "copy only if missing/empty" logic below would
+    # leave the old quote in place and the reportdata<->runtime_hash binding
+    # check would fail against the freshly-generated (but unused) quote.dat.
+    for stale in (quote_out, out_dir / "quote.dat"):
+        try:
+            stale.unlink()
+        except FileNotFoundError:
+            pass
     if quote_command:
         cmd = (quote_command.replace("{report_data_hex}", qgen_report_data_hex)
                .replace("{quote_out}", str(quote_out)))
