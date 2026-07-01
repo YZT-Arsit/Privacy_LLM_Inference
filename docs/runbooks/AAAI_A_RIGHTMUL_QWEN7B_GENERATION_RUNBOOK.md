@@ -104,21 +104,47 @@ libsgx-dcap-ql-devel libsgx-dcap-quote-verify-devel
 libsgx-dcap-default-qpl-devel tdx-quote-verification-sample`) + the PCCS hint; the
 wrapper never modifies the system and never uses `--simulate` for a real run.
 
+**One-time PCCS/QCNL fix (fresh TD only).** On a fresh Alibaba TDX guest the DCAP
+config ships a literal, unexpanded placeholder in the PCCS URL
+(`sgx-dcap-server.${region_id}.aliyuncs.com`), so the verifier hangs fetching
+collateral. Replace `${region_id}` with the real region (`curl -s
+http://100.100.100.200/latest/meta-data/region-id`, e.g. `cn-beijing`) in
+`/etc/sgx_default_qcnl.conf` before verifying (back it up first). PCCS reachability:
+`curl -sk https://sgx-dcap-server.<region>.aliyuncs.com/sgx/certification/v4/rootcacrl`.
+
+**Verify-command wrapper (required for the Alibaba samples).** The samples are a
+two-stage pipeline, not one positional call: `verifier -quote <q>` runs QVL
+(`tee_verify_quote_qvt`) + appraisal and prints the appraisal-result JWT to stdout;
+`relying_party` reads that JWT on **stdin** (a bare `relying_party <quote>` blocks
+forever). Both must run from the sample dir so `Policies/tenant_td_policy.jwt`
+resolves. `scripts/tdx_alibaba_verify_wrapper.py` drives this correctly, decodes
+the JWT, locates the Application-TD report (`tdx_mrtd`/`tdx_attributes`), and emits
+clean JSON for the evidence parser; it gates on `overall_appraisal_result==1` +
+relying-party acceptance + `debug==false`, and records `-a`
+`policy_provenance_authenticated` as informational (the sample's
+`tee_authenticate_appraisal_result` returns INVALID_PARAMETER (0xe002) on these
+builds — a policy-provenance API quirk, not the security verdict).
+
 ```bash
 # (TDX guest) bind the quote to the A_rightmul design; real evidence only.
-scripts/generate_alibaba_tdx_quote_evidence.sh \
-  <ARTIFACT_DIR> <EVIDENCE_JSON> <MRTD>
-# or the Python entrypoint directly:
 python scripts/generate_alibaba_tdx_quote_evidence.py \
   --nonlinear-backend A_rightmul --expected-mr-td <MRTD> \
   --qgen-app /opt/alibaba/tdx-quote-generation-sample/app \
   --qverify-dir /opt/alibaba/tdx-quote-verification-sample \
+  --verify-command "python scripts/tdx_alibaba_verify_wrapper.py {quote_file}" \
   --output-dir <ARTIFACT_DIR> --output-evidence <EVIDENCE_JSON>
 # evidence MUST carry: tee=tdx, quote_source=alibaba_tdx_quote_generation_sample,
-# verifier_overall_appraisal_result, tdx_reportdata, runtime_hash, report_data,
-# runtime_hash_binds_nonlinear_backend=true, nonlinear_backend=A_rightmul,
+# verifier_overall_appraisal_result=SUCCESS, tdx_reportdata==runtime_hash==report_data,
+# mr_td==<MRTD>, runtime_hash_binds_nonlinear_backend=true, nonlinear_backend=A_rightmul,
 # tdx.td_attributes.debug=false, paper_facing=true, generated_at, command_provenance.
 ```
+
+> **NOTE — `--expected-mr-td` is part of the runtime hash.** It is folded into
+> `runtime_identity`, so supplying it changes the runtime hash (vs a no-mrtd run);
+> that is expected. Pass the SAME `<MRTD>` here and to the generation/validation
+> runners so every stage binds the identical hash. The generator now clears any
+> stale `td_quote.dat`/`quote.dat` before generating so the freshly-bound quote is
+> the one verified.
 
 > **STALE QUOTE — re-quote on EVERY code change.** The quote binds the current
 > code hash + A_rightmul metadata; any change to a measured boundary file changes
