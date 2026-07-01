@@ -139,7 +139,8 @@ class LiteBoundary:
     never leave this object (only masked embeddings cross to the GPU)."""
 
     def __init__(self, embed_weight, n0, vocab_mask, meta: dict,
-                 device: str = "cpu", fdtype=None) -> None:
+                 device: str = "cpu", fdtype=None,
+                 precompute_masked_embed: bool = False) -> None:
         self.compute_device = torch.device(device)
         self.fdtype = fdtype if fdtype is not None else torch.float32
         self.embed = embed_weight.to(self.compute_device, self.fdtype)
@@ -147,17 +148,33 @@ class LiteBoundary:
         self._vocab_mask = vocab_mask
         self.meta = dict(meta)
         self.eps = float(meta["rms_norm_eps"])
+        # Optional precomputed masked embedding table E_masked = E @ N_0. The
+        # per-token input mask is then a pure row lookup (no per-token
+        # [hidden x hidden] matmul on the trusted CPU). This is BIT-IDENTICAL:
+        # gathering rows of (E @ N_0) equals (gathered rows of E) @ N_0 (each
+        # output element is the same dot product). E_masked stays trusted-only and
+        # is exactly what already crosses to the GPU (the masked embedding), so it
+        # leaks nothing new. Trades ~vocab*hidden*4 bytes of trusted RAM for
+        # dropping one matmul per generated token.
+        self._embed_masked = None
+        if precompute_masked_embed:
+            self._embed_masked = (self.embed @ self._n0).contiguous()
 
     @classmethod
-    def from_artifact(cls, art_dir, *, device: str = "cpu", fdtype=None):
+    def from_artifact(cls, art_dir, *, device: str = "cpu", fdtype=None,
+                      precompute_masked_embed: bool = False):
         from pllo.deployment.embedding_artifact import load_embedding_artifact
         fdt = fdtype if fdtype is not None else torch.float32
         embed, n0, vocab_mask, meta = load_embedding_artifact(
             art_dir, device=device, fdtype=fdt)
-        return cls(embed, n0, vocab_mask, meta, device=device, fdtype=fdt)
+        return cls(embed, n0, vocab_mask, meta, device=device, fdtype=fdt,
+                   precompute_masked_embed=precompute_masked_embed)
 
     def mask_embeddings(self, input_ids):
         from pllo.ops.causal_lm_boundaries import trusted_embedding_lookup
+        if self._embed_masked is not None:
+            return trusted_embedding_lookup(input_ids.to(self.compute_device),
+                                            self._embed_masked)
         x = trusted_embedding_lookup(input_ids.to(self.compute_device),
                                      self.embed)
         return x @ self._n0
@@ -165,6 +182,8 @@ class LiteBoundary:
     def mask_token_embedding(self, token_ids):
         from pllo.ops.causal_lm_boundaries import trusted_embedding_lookup
         ids = token_ids.reshape(-1, 1).to(self.compute_device)
+        if self._embed_masked is not None:
+            return trusted_embedding_lookup(ids, self._embed_masked)
         return trusted_embedding_lookup(ids, self.embed) @ self._n0
 
     def recover(self, logits_tilde):

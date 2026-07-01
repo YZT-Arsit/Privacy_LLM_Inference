@@ -387,10 +387,19 @@ class _RemoteMaskedPredictor:
                  length_hide_generation=False, use_chat_template=False,
                  use_resilient_worker=True, worker_max_retries=5,
                  worker_backoff_base_sec=0.5, eos_token_id=None,
-                 pad_token_id=None):
+                 pad_token_id=None, worker_persistent_conn=False,
+                 precompute_masked_embed=False):
         self.backend = backend
         self.model_name = model_name
         self._use_chat_template = bool(use_chat_template)
+        # latency optimisations (opt-in, both correctness-preserving):
+        #  * worker_persistent_conn: reuse ONE keep-alive TCP connection across
+        #    decode steps (drops the per-token TCP handshake round trip); same
+        #    audited masked payloads, so results are bit-identical.
+        #  * precompute_masked_embed: precompute E @ N_0 so the per-token input
+        #    mask is a row lookup (no per-token matmul); bit-identical.
+        self._worker_persistent_conn = bool(worker_persistent_conn)
+        self._precompute_masked_embed = bool(precompute_masked_embed)
         # explicit eos/pad overrides (applied during eos/pad resolution below)
         self._eos_override = eos_token_id
         self._pad_override = pad_token_id
@@ -499,8 +508,9 @@ class _RemoteMaskedPredictor:
                                 if self._pad_token_id is not None else 0)
 
         try:
-            self._boundary = LiteBoundary.from_artifact(embedding_path,
-                                                        device=device)
+            self._boundary = LiteBoundary.from_artifact(
+                embedding_path, device=device,
+                precompute_masked_embed=self._precompute_masked_embed)
         except Exception as exc:                            # noqa: BLE001
             raise RealBackendUnavailable("boundary artifact load failed: %s"
                                          % exc)
@@ -535,10 +545,12 @@ class _RemoteMaskedPredictor:
                 max_retries=int(worker_max_retries),
                 backoff_base_sec=float(worker_backoff_base_sec),
                 client_factory=lambda: RemoteGpuWorker(
-                    gpu_worker_url, "qwen7b_folded_package", recorder=_record))
+                    gpu_worker_url, "qwen7b_folded_package", recorder=_record,
+                    persistent=self._worker_persistent_conn))
         else:
             self._worker = RemoteGpuWorker(gpu_worker_url, "qwen7b_folded_package",
-                                           recorder=_record)
+                                           recorder=_record,
+                                           persistent=self._worker_persistent_conn)
         try:
             self._health = self._worker.health()
             init_resp = self._worker.init(BoundaryInitRequest(
@@ -1091,7 +1103,9 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
                     length_hide_generation=False, use_chat_template=False,
                     adapter_path=None, use_resilient_worker=True,
                     worker_max_retries=5, worker_backoff_base_sec=0.5,
-                    eos_token_id=None, pad_token_id=None):
+                    eos_token_id=None, pad_token_id=None,
+                    worker_persistent_conn=False,
+                    precompute_masked_embed=False):
     """Construct a real predictor or raise :class:`RealBackendUnavailable`.
 
     ``nonlinear_backend`` selects the nonlinear design; for the attested remote
@@ -1125,5 +1139,7 @@ def build_predictor(backend: str, *, model_path=None, model_name="qwen",
             use_resilient_worker=use_resilient_worker,
             worker_max_retries=worker_max_retries,
             worker_backoff_base_sec=worker_backoff_base_sec,
-            eos_token_id=eos_token_id, pad_token_id=pad_token_id)
+            eos_token_id=eos_token_id, pad_token_id=pad_token_id,
+            worker_persistent_conn=worker_persistent_conn,
+            precompute_masked_embed=precompute_masked_embed)
     raise RealBackendUnavailable("unknown backend: %r" % (backend,))

@@ -119,6 +119,14 @@ def _build_args():
     ap.add_argument("--progress-every", type=int, default=1)
     ap.add_argument("--trace-worker-timings", action="store_true", default=False)
     ap.add_argument("--trace-output-jsonl", default=None)
+    # latency optimisations (opt-in; both correctness-preserving / bit-identical)
+    ap.add_argument("--worker-persistent-conn", action="store_true",
+                    default=False, help="reuse one keep-alive TCP connection to "
+                    "the GPU worker across decode steps (drops per-token TCP "
+                    "handshake round trip; identical masked payloads)")
+    ap.add_argument("--precompute-masked-embed", action="store_true",
+                    default=False, help="precompute E@N_0 so the per-token input "
+                    "mask is a row lookup (no per-token matmul; bit-identical)")
     # GPU-staged (non-secret) obfuscation schedule
     ap.add_argument("--gpu-staged-schedule-dir", default=None)
     ap.add_argument("--use-gpu-staged-schedule", action="store_true",
@@ -253,7 +261,9 @@ def main() -> int:
                 use_chat_template=bool(args.use_chat_template),
                 align_generation_config=bool(args.align_generation_config),
                 repetition_penalty=args.repetition_penalty,
-                eos_token_id=args.eos_token_id, pad_token_id=args.pad_token_id)
+                eos_token_id=args.eos_token_id, pad_token_id=args.pad_token_id,
+                worker_persistent_conn=bool(args.worker_persistent_conn),
+                precompute_masked_embed=bool(args.precompute_masked_embed))
         except RealBackendUnavailable as exc:
             if args.require_real:
                 print("ERROR: --require-real but backend unavailable: %s" % exc,
