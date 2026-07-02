@@ -54,6 +54,11 @@ def main() -> None:
     ap.add_argument("--native-logits-wire", action="store_true",
                     help="return masked logits in native bf16 (half the wire "
                     "bytes); bit-identical after the boundary's bf16->fp32 upcast")
+    ap.add_argument("--fold-dtype-override", default=None,
+                    help="Force the folded compute dtype (e.g. float32) instead "
+                    "of the boundary meta fold_dtype; use when package shards are "
+                    "stored above the meta precision. Purely numerical -- no "
+                    "design/security change.")
     ap.add_argument("--no-audit", action="store_true")
     ap.add_argument("--backend-json", default=None,
                     help="Optional JSON object merged into backend kwargs.")
@@ -78,6 +83,7 @@ def main() -> None:
             "nonlinear_seed": args.nonlinear_seed,
             "resident_folded_weights": bool(args.resident_folded_weights),
             "native_logits_wire": bool(args.native_logits_wire),
+            "fold_dtype_override": args.fold_dtype_override,
         })
 
     print("[run_gpu_worker_server] backend_kwargs=" + json.dumps(

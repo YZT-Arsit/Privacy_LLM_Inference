@@ -343,12 +343,25 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
                  nonlinear_lift_k: int = 2, nonlinear_seed: int = 2035,
                  resident_folded_weights: bool = False,
                  native_logits_wire: bool = False,
+                 fold_dtype_override: str | None = None,
                  **_ignored: Any) -> None:
         self.folded_package_path = folded_package_path
         self.folded_lora_package_path = folded_lora_package_path
         self.device = device
         self.dtype = dtype
         self.verify_on_init = bool(verify_on_init)
+        # Optional precision override for the folded compute dtype. The exec
+        # metadata's ``fold_dtype`` (from the boundary artifact meta) normally
+        # drives ``self._fdtype`` -- the dtype the incoming masked embeddings,
+        # RoPE caches, resident folded weights and head matmuls run in. When the
+        # package shards are stored at higher precision than the meta label (e.g.
+        # F32 shards under a ``bfloat16`` meta), forcing this to ``float32`` runs
+        # the whole folded forward in fp32 with NO design or security change
+        # (same masking, same single TEE crossing) -- it only raises numerical
+        # precision, closing bf16 near-tie argmax flips. Default None -> honour
+        # the meta fold_dtype (unchanged behaviour).
+        self._fold_dtype_override = (str(fold_dtype_override)
+                                     if fold_dtype_override else None)
         # Send masked logits in their native bf16 compute dtype (half the wire
         # bytes) instead of upcasting to fp32; bit-identical after the boundary's
         # bf16 -> fp32 upcast for recovery. Default OFF (historical fp32 wire).
@@ -593,9 +606,14 @@ class Qwen7BFoldedPackageGpuBackend(GpuBackend):
         import torch
         from pllo.hf_wrappers.llama_qwen_single_block import HFSingleBlockConfig
         from pllo.ops.rope import build_rope_cache
+        # ``fold_dtype_override`` (opt-in) wins over the meta label so a package
+        # whose shards are stored above the meta precision can run the folded
+        # forward at full precision (purely numerical; no design/security change).
+        _fold_dtype_name = self._fold_dtype_override or str(
+            meta.get("fold_dtype", "float32"))
         fdtype = {"float32": torch.float32, "float64": torch.float64,
                   "bfloat16": torch.bfloat16, "float16": torch.float16}.get(
-            str(meta.get("fold_dtype", "float32")), torch.float32)
+            _fold_dtype_name, torch.float32)
         cfg0 = HFSingleBlockConfig(
             model_type=str(meta.get("model_type", "qwen2")),
             hidden_size=int(meta["hidden_size"]),
