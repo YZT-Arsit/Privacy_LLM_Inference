@@ -1,0 +1,12 @@
+[
+ {"id":"121","category":"coding","ours_t1":8,"ours_t2":7,"plain_t1":8,"plain_t2":7},
+ {"id":"122","category":"coding","ours_t1":8,"ours_t2":8,"plain_t1":8,"plain_t2":8},
+ {"id":"123","category":"coding","ours_t1":6,"ours_t2":8,"plain_t1":9,"plain_t2":8},
+ {"id":"124","category":"coding","ours_t1":8,"ours_t2":2,"plain_t1":8,"plain_t2":9},
+ {"id":"125","category":"coding","ours_t1":3,"ours_t2":3,"plain_t1":3,"plain_t2":3},
+ {"id":"126","category":"coding","ours_t1":6,"ours_t2":8,"plain_t1":6,"plain_t2":8},
+ {"id":"127","category":"coding","ours_t1":8,"ours_t2":8,"plain_t1":8,"plain_t2":8},
+ {"id":"128","category":"coding","ours_t1":8,"ours_t2":3,"plain_t1":3,"plain_t2":3},
+ {"id":"129","category":"coding","ours_t1":6,"ours_t2":4,"plain_t1":6,"plain_t2":4},
+ {"id":"130","category":"coding","ours_t1":7,"ours_t2":8,"plain_t1":8,"plain_t2":8}
+]

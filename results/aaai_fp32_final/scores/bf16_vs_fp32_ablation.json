@@ -1,0 +1,16 @@
+{
+  "dataset": "ifeval",
+  "n": 541,
+  "bf16": {
+    "degenerate_ge50run": 18,
+    "avg_tokens": 230.6,
+    "prompt_strict_acc_pct": 61.7,
+    "acc_note": "prior official IFEval scorer (bf16 artifact)"
+  },
+  "fp32": {
+    "degenerate_ge50run": 0,
+    "avg_tokens": 242.6,
+    "prompt_strict_acc_pct": 68.76,
+    "acc_note": "prior official IFEval scorer"
+  }
+}

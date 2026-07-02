@@ -1,0 +1,12 @@
+[
+{"id":"131","category":"extraction","ours_t1":9,"ours_t2":6,"plain_t1":9,"plain_t2":6},
+{"id":"132","category":"extraction","ours_t1":9,"ours_t2":7,"plain_t1":9,"plain_t2":8},
+{"id":"133","category":"extraction","ours_t1":9,"ours_t2":3,"plain_t1":9,"plain_t2":3},
+{"id":"134","category":"extraction","ours_t1":9,"ours_t2":9,"plain_t1":9,"plain_t2":9},
+{"id":"135","category":"extraction","ours_t1":8,"ours_t2":8,"plain_t1":8,"plain_t2":8},
+{"id":"136","category":"extraction","ours_t1":2,"ours_t2":3,"plain_t1":2,"plain_t2":3},
+{"id":"137","category":"extraction","ours_t1":8,"ours_t2":6,"plain_t1":8,"plain_t2":6},
+{"id":"138","category":"extraction","ours_t1":8,"ours_t2":7,"plain_t1":8,"plain_t2":5},
+{"id":"139","category":"extraction","ours_t1":7,"ours_t2":7,"plain_t1":7,"plain_t2":4},
+{"id":"140","category":"extraction","ours_t1":4,"ours_t2":4,"plain_t1":8,"plain_t2":8}
+]

@@ -30,3 +30,6 @@ outputs/*cost*.csv
 
 # macOS
 .DS_Store
+
+# large response dumps (kept locally, not in git)
+results/**/*.jsonl

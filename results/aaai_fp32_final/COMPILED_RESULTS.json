@@ -1,0 +1,96 @@
+{
+  "experiment": "AAAI Qwen2.5-7B-Instruct \u2014 folded_remote A_rightmul (OURS) vs plaintext_local, ALL fp32",
+  "precision": "fp32 (--fold-dtype-override float32 on the GPU worker)",
+  "setup": {
+    "OURS": "TDX guest boundary + H800 folded GPU worker (single TEE session, A_rightmul, attested)",
+    "PLAINTEXT": "H800 plaintext_local fp32",
+    "decoding": "greedy",
+    "seq_len": 1024,
+    "max_new_tokens": 512
+  },
+  "results": {
+    "ifeval": {
+      "n": 541,
+      "metric": "prompt-strict acc %",
+      "plaintext": 66.17,
+      "ours": 68.76,
+      "delta_pt": 2.59,
+      "scorer": "official google instruction_following_eval (prior session; module not available locally to re-derive)"
+    },
+    "gsm8k": {
+      "n": 1319,
+      "metric": "exact-match %",
+      "plaintext": 90.22,
+      "ours": 90.52,
+      "delta_pt": 0.3,
+      "scorer": "pllo.benchmarks.generation_datasets.gsm8k_exact_match (re-derived locally)"
+    },
+    "mt_bench": {
+      "n": 80,
+      "metric": "LLM-judge score 1-10",
+      "plaintext": 6.844,
+      "ours": 6.763,
+      "delta": -0.081,
+      "judge": "claude-opus single-answer (NOT GPT-4; absolute not comparable to GPT-4 leaderboard)",
+      "turn1": {
+        "ours": 7.338,
+        "plain": 7.35
+      },
+      "turn2": {
+        "ours": 6.188,
+        "plain": 6.338
+      },
+      "per_category": {
+        "coding": {
+          "ours": 6.35,
+          "plain": 6.65,
+          "delta": -0.3
+        },
+        "extraction": {
+          "ours": 6.65,
+          "plain": 6.85,
+          "delta": -0.2
+        },
+        "humanities": {
+          "ours": 7.15,
+          "plain": 7.4,
+          "delta": -0.25
+        },
+        "math": {
+          "ours": 7.35,
+          "plain": 7.75,
+          "delta": -0.4
+        },
+        "reasoning": {
+          "ours": 5.2,
+          "plain": 4.95,
+          "delta": 0.25
+        },
+        "roleplay": {
+          "ours": 7.3,
+          "plain": 7.05,
+          "delta": 0.25
+        },
+        "stem": {
+          "ours": 7.05,
+          "plain": 6.95,
+          "delta": 0.1
+        },
+        "writing": {
+          "ours": 7.05,
+          "plain": 7.15,
+          "delta": -0.1
+        }
+      }
+    }
+  },
+  "ablation_bf16_vs_fp32_ifeval": {
+    "bf16_degenerate": 18,
+    "fp32_degenerate": 0,
+    "bf16_acc_pct_approx": 61.7,
+    "fp32_acc_pct": 68.76,
+    "finding": "16-bit folded-op rounding flips near-tie argmax -> degeneration loops + ~7pt artifact; fp32 removes it. Hard reproducible metric: degeneration 18 -> 0."
+  },
+  "headline": "Under matched fp32, OURS is at statistical parity with plaintext on all three datasets (IFEval +2.59pt, GSM8K +0.30pt, MT-Bench -0.08). The obfuscation protocol has no measurable utility cost; report as PARITY, not improvement.",
+  "code_commit": "86ac1c0 (fold_dtype_override worker flag; committed+pushed to origin, empty commit message)"
+}
