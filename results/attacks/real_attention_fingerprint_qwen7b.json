@@ -1,0 +1,9 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "candidate_tokens": 20000,
+  "fingerprint_dim": 784,
+  "top1_pct": 98.505,
+  "top10_pct": 98.55,
+  "top100_pct": 99.0,
+  "note": "table=fp32, query=bf16-roundtrip (precision gap); cosine NN; candidate set = n random vocab tokens (full vocab would add more collisions)."
+}
