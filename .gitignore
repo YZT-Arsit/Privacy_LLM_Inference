@@ -27,3 +27,6 @@ outputs/*probe*.md
 outputs/*cost*.json
 outputs/*cost*.md
 outputs/*cost*.csv
+
+# macOS
+.DS_Store
