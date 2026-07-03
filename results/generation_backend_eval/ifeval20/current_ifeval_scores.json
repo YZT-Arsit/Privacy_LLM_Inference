@@ -1,0 +1,14 @@
+{
+  "aggregate": {
+    "evaluator": "approximate_ifeval_reimpl",
+    "num_prompts": 20,
+    "num_prompts_scored": 20,
+    "total_instructions": 30,
+    "supported_instructions": 30,
+    "coverage_pct": 100.0,
+    "strict_prompt_acc": 0.75,
+    "loose_prompt_acc": 0.75,
+    "strict_inst_acc": 0.8,
+    "loose_inst_acc": 0.8
+  }
+}

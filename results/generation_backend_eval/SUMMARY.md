@@ -123,6 +123,29 @@ materializes `[B,T,18944,k]` tensors (10.2 GB lifted) and runs the SiLU on the
 accelerator per token. Correctness is preserved exactly, but the lift is the
 dominant cost — an unoptimized-prototype latency, not a claim.
 
+## 6. IFEval-20 (instruction-following, greedy, max_new_tokens 512)
+
+Both backends over the first 20 IFEval prompts (`data/aaai/ifeval.jsonl --limit
+20`), scored with the approximate reimpl (`ifeval_scoring.py`, 30 instructions,
+**100% coverage** — no unsupported types on this subset):
+
+| metric | current | trusted_shortcut |
+|---|---|---|
+| strict prompt acc | **0.75** | **0.75** |
+| loose prompt acc | 0.75 | 0.75 |
+| strict instruction acc | 0.80 | 0.80 |
+| loose instruction acc | 0.80 | 0.80 |
+| num prompts / instructions | 20 / 30 | 20 / 30 |
+
+`trusted_shortcut` vs `current` on the same 20 prompts:
+`token_match_rate = 1.0`, `exact_text_match = 1.0`, `exact_token_match = 1.0`
+(**all 20 identical**, incl. the 4 that ran to the full 512-token cap). Amulet
+execution on this run: **138,796 SiLU ops lifted**, lift_k=2,
+`trusted_nonlinear_ops_count=0`, `amulet_real_path_executed=True` — no silent
+fallback. As expected from bit-identical decoding, IFEval accuracy is exactly
+equal between the two backends; the migration changes *where* the nonlinearity
+runs and the latency, not the outputs.
+
 ## Notes / caveats
 
 - **Root-cause fix that mattered**: the boundary artifact's masks are drawn with
@@ -134,4 +157,6 @@ dominant cost — an unoptimized-prototype latency, not a claim.
   parity) after the fix.
 - fp32 fold (`--fold-dtype-override float32`) + resident weights are required
   (bf16 fold degrades numerics; non-resident re-streams 27 GB per token).
-- IFEval subset results: see `ifeval_scores.json` per run dir.
+- IFEval-20 aggregate scores + comparison + amulet evidence are saved under
+  `results/generation_backend_eval/ifeval20/` (full per-prompt tables live in the
+  H800 run dirs). Both backends: strict/loose prompt 0.75, strict/loose inst 0.80.

@@ -1,0 +1,9 @@
+{
+  "label_a": "baseline",
+  "label_b": "trusted_shortcut",
+  "num_compared": 20,
+  "token_match_rate": 1.0,
+  "exact_text_match_rate": 1.0,
+  "exact_token_match_rate": 1.0,
+  "note": "all 20 prompts bit-identical (token/text/exact-token match 1.0); aggregate only, per-prompt table in run dir on the H800"
+}
