@@ -33,9 +33,23 @@ from pllo.baselines.gazelle_costed import (
     MiniONNCostModel,
     SecureMLCostModel,
 )
+from pllo.baselines.cryptogen import (
+    CryptoGen,
+    CryptoGenConfig,
+)
+from pllo.baselines.obfuscatune import (
+    ObfuscaTune,
+    ObfuscaTuneConfig,
+    matrix_with_condition_number,
+)
 from pllo.baselines.slalom import SlalomConfig, SlalomDelegatedLinear
 
 __all__ = [
+    "CryptoGen",
+    "CryptoGenConfig",
+    "ObfuscaTune",
+    "ObfuscaTuneConfig",
+    "matrix_with_condition_number",
     "BaselineProtocol",
     "BaselineSelfDeclaration",
     "UnsupportedResult",

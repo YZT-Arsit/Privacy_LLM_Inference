@@ -1,0 +1,50 @@
+{
+  "host": "iZ2zebdihkqll10ragqp0cZ",
+  "cpu": "x86_64",
+  "tdx_guest_detected": true,
+  "torch_threads": 4,
+  "dtype": "float32",
+  "dims": {
+    "D": 3584,
+    "FFN": 18944,
+    "layers": 28,
+    "heads": 28,
+    "kv_heads": 4,
+    "head_dim": 128
+  },
+  "prefill": {
+    "512": {
+      "seq_q": 512,
+      "seq_ctx": 512,
+      "rmsnorm_ms": 1.1482835005153902,
+      "attention_ms": 16.669718000048306,
+      "silu_ms": 5.64601855003275,
+      "obfuscatune_tee_per_layer_ms": 24.612303551111836,
+      "obfuscatune_tee_total_ms": 689.1444994311314,
+      "ours_k1_tee_total_ms": 17.818001500563696,
+      "tee_compute_ratio_obf_over_ours": 38.7
+    },
+    "1024": {
+      "seq_q": 1024,
+      "seq_ctx": 1024,
+      "rmsnorm_ms": 2.051284399931319,
+      "attention_ms": 76.65282995003508,
+      "silu_ms": 13.649521800107323,
+      "obfuscatune_tee_per_layer_ms": 94.40492055000504,
+      "obfuscatune_tee_total_ms": 2643.3377754001413,
+      "ours_k1_tee_total_ms": 78.7041143499664,
+      "tee_compute_ratio_obf_over_ours": 33.6
+    }
+  },
+  "decode": {
+    "seq_q": 1,
+    "seq_ctx": 512,
+    "rmsnorm_ms": 0.023046759888529778,
+    "attention_ms": 0.7962949000648223,
+    "silu_ms": 0.01793986011762172,
+    "obfuscatune_tee_per_layer_ms": 0.8603282799595036,
+    "obfuscatune_tee_total_ms": 24.0891918388661,
+    "ours_k1_tee_total_ms": 0.8193416599533521,
+    "tee_compute_ratio_obf_over_ours": 29.4
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "mode": "exposure",
+  "arch": "gpt2",
+  "model_path": "/root/autodl-tmp/hf_cache/models--openai-community--gpt2/snapshots/607a30d783dfa663caf39e06633721c8d4cfcd7e",
+  "condition_number": 1.0,
+  "tensors": {
+    "qkv": {
+      "shape": [
+        204,
+        2304
+      ],
+      "max_abs_err_obf_vs_plain": 1.049041748046875e-05,
+      "relative_err": 1.0314857266210627e-06,
+      "gpu_sees_true_value": true
+    }
+  },
+  "contrast_ours_a_rightmul": {
+    "gpu_sees": "masked q_hat/k_hat (Q_hat K_hat^T = Q K^T, but Q_hat != Q)",
+    "true_qkv_exposed": false,
+    "note": "ObfuscaTune assumes SECRET weights; open-weight => direct token exposure"
+  }
+}

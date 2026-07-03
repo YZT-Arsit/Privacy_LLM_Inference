@@ -1,0 +1,40 @@
+{
+  "mode": "exposure",
+  "arch": "qwen",
+  "model_path": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "condition_number": 1.0,
+  "tensors": {
+    "q": {
+      "shape": [
+        189,
+        3584
+      ],
+      "max_abs_err_obf_vs_plain": 2.288818359375e-05,
+      "relative_err": 3.681226182023934e-07,
+      "gpu_sees_true_value": true
+    },
+    "k": {
+      "shape": [
+        189,
+        512
+      ],
+      "max_abs_err_obf_vs_plain": 1.52587890625e-05,
+      "relative_err": 8.871745522090121e-08,
+      "gpu_sees_true_value": true
+    },
+    "v": {
+      "shape": [
+        189,
+        512
+      ],
+      "max_abs_err_obf_vs_plain": 1.430511474609375e-06,
+      "relative_err": 4.946150841876449e-07,
+      "gpu_sees_true_value": true
+    }
+  },
+  "contrast_ours_a_rightmul": {
+    "gpu_sees": "masked q_hat/k_hat (Q_hat K_hat^T = Q K^T, but Q_hat != Q)",
+    "true_qkv_exposed": false,
+    "note": "ObfuscaTune assumes SECRET weights; open-weight => direct token exposure"
+  }
+}

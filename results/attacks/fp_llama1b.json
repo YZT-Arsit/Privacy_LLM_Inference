@@ -1,0 +1,17 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/LLM-Research/Llama-3___2-1B-Instruct",
+  "arch": "llama",
+  "candidate_tokens": 10000,
+  "fingerprint_dim": 512,
+  "random_top1_pct": 0.01,
+  "exact_table_vs_table": {
+    "top1_pct": 99.81,
+    "top10_pct": 99.89,
+    "top100_pct": 100.0
+  },
+  "bf16_query_vs_fp32_table": {
+    "top1_pct": 99.82,
+    "top10_pct": 99.92,
+    "top100_pct": 100.0
+  }
+}

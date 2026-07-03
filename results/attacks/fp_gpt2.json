@@ -1,0 +1,17 @@
+{
+  "model": "/root/autodl-tmp/hf_cache/models--openai-community--gpt2/snapshots/607a30d783dfa663caf39e06633721c8d4cfcd7e",
+  "arch": "gpt2",
+  "candidate_tokens": 10000,
+  "fingerprint_dim": 144,
+  "random_top1_pct": 0.01,
+  "exact_table_vs_table": {
+    "top1_pct": 100.0,
+    "top10_pct": 100.0,
+    "top100_pct": 100.0
+  },
+  "bf16_query_vs_fp32_table": {
+    "top1_pct": 100.0,
+    "top10_pct": 100.0,
+    "top100_pct": 100.0
+  }
+}

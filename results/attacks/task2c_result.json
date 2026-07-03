@@ -1,0 +1,82 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "n_prompts": 48,
+  "candidates": 8000,
+  "template_prefix_len": 19,
+  "random_top1_pct": 0.0125,
+  "layer_meaning": "hidden_states[ell]: 0=embedding(guardrail HIDES), 1=layer0 output(GPU sees after guardrail), ...",
+  "A1b_sortedabs_inversion": {
+    "hs0": {
+      "pos0": 100.0,
+      "template_prefix": 100.0,
+      "USER_CONTENT": 100.0
+    },
+    "hs1": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs2": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs4": {
+      "pos0": 100.0,
+      "template_prefix": 0.12,
+      "USER_CONTENT": 1.76
+    },
+    "hs8": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs16": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs27": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.31
+    }
+  },
+  "A2_norm": {
+    "hs0": {
+      "pos0": 100.0,
+      "template_prefix": 100.0,
+      "USER_CONTENT": 100.0
+    },
+    "hs1": {
+      "pos0": 100.0,
+      "template_prefix": 5.56,
+      "USER_CONTENT": 1.56
+    },
+    "hs2": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs4": {
+      "pos0": 100.0,
+      "template_prefix": 0.35,
+      "USER_CONTENT": 2.44
+    },
+    "hs8": {
+      "pos0": 100.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs16": {
+      "pos0": 0.0,
+      "template_prefix": 0.0,
+      "USER_CONTENT": 0.0
+    },
+    "hs27": {
+      "pos0": 100.0,
+      "template_prefix": 5.56,
+      "USER_CONTENT": 1.56
+    }
+  }
+}

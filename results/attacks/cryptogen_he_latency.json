@@ -1,0 +1,57 @@
+{
+  "library": "tenseal(SEAL) BFV",
+  "n_poly_modulus_degree": 8192,
+  "setup_seconds": 0.4629795178771019,
+  "per_op_ms": {
+    "ctpt_mul": 0.73870283861955,
+    "ctct_mul": 16.94193308552106,
+    "sum_reduce": 75.46954055627188,
+    "dot": 87.62898221611977,
+    "ctct_score": 45.43723538517952,
+    "single_rotation_derived": 7.546954055627188
+  },
+  "gpt2_block": {
+    "dims": {
+      "d1": 768,
+      "ffn": 3072,
+      "heads": 12
+    },
+    "linear_inner_product_dots": 6912,
+    "by_seq_len": {
+      "64": {
+        "linear_naive_innerproduct_s": 605.692,
+        "linear_diagonal_encoding_s": 57.27,
+        "attention_ctct_s": 5.816,
+        "block_total_diagonal_s": 63.086,
+        "block_total_naive_s": 611.507,
+        "paper_table_iv_cryptogen_s": 9.6
+      },
+      "128": {
+        "linear_naive_innerproduct_s": 605.692,
+        "linear_diagonal_encoding_s": 57.27,
+        "attention_ctct_s": 11.632,
+        "block_total_diagonal_s": 68.902,
+        "block_total_naive_s": 617.323,
+        "paper_table_iv_cryptogen_s": 16.45
+      },
+      "256": {
+        "linear_naive_innerproduct_s": 605.692,
+        "linear_diagonal_encoding_s": 57.27,
+        "attention_ctct_s": 23.264,
+        "block_total_diagonal_s": 80.534,
+        "block_total_naive_s": 628.955,
+        "paper_table_iv_cryptogen_s": 33.84
+      },
+      "512": {
+        "linear_naive_innerproduct_s": 605.692,
+        "linear_diagonal_encoding_s": 57.27,
+        "attention_ctct_s": 46.528,
+        "block_total_diagonal_s": 103.798,
+        "block_total_naive_s": 652.219,
+        "paper_table_iv_cryptogen_s": 65.55
+      }
+    }
+  },
+  "e2e_validation_64out_matvec_s": 5.448863659054041,
+  "note": "Linear/attention HE costs measured with real SEAL ciphertext ops; MPC nonlinear (EzPC) not executed (minority of block time per Table IV)."
+}

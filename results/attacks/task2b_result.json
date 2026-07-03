@@ -1,0 +1,60 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "n_prompts": 64,
+  "candidates": 10000,
+  "template_prefix_len": 19,
+  "random_top1_pct": 0.01,
+  "no_guardrail_all_layers": {
+    "pos0": 100.0,
+    "pos1_4": 25.0,
+    "template_prefix": 12.66,
+    "USER_CONTENT": 4.59,
+    "all": 6.58
+  },
+  "relocate_first_k_layers": {
+    "k=1": {
+      "pos0": 100.0,
+      "pos1_4": 0.0,
+      "template_prefix": 5.35,
+      "USER_CONTENT": 0.05,
+      "all": 1.36
+    },
+    "k=2": {
+      "pos0": 100.0,
+      "pos1_4": 0.0,
+      "template_prefix": 5.35,
+      "USER_CONTENT": 0.05,
+      "all": 1.36
+    },
+    "k=3": {
+      "pos0": 100.0,
+      "pos1_4": 0.0,
+      "template_prefix": 5.35,
+      "USER_CONTENT": 0.05,
+      "all": 1.36
+    },
+    "k=4": {
+      "pos0": 100.0,
+      "pos1_4": 0.0,
+      "template_prefix": 5.35,
+      "USER_CONTENT": 0.05,
+      "all": 1.36
+    },
+    "k=6": {
+      "pos0": 100.0,
+      "pos1_4": 0.0,
+      "template_prefix": 5.35,
+      "USER_CONTENT": 0.05,
+      "all": 1.36
+    }
+  },
+  "per_layer_pos0": {
+    "layer0": 100.0,
+    "layer4": 100.0,
+    "layer8": 100.0,
+    "layer12": 100.0,
+    "layer16": 100.0,
+    "layer20": 100.0,
+    "layer24": 100.0
+  }
+}

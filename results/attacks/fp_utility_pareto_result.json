@@ -1,0 +1,43 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "candidates": 8000,
+  "steps": 200,
+  "random_top1": 0.0125,
+  "baseline_ppl": 1.694,
+  "points": [
+    {
+      "lr": 0.0,
+      "fp_top1": 98.6,
+      "ppl": 1.694,
+      "train_loss": null
+    },
+    {
+      "lr": 2e-05,
+      "fp_top1": 98.525,
+      "ppl": 1.303,
+      "train_loss": 0.032,
+      "fp_shift_l2_med": 49.7
+    },
+    {
+      "lr": 0.0001,
+      "fp_top1": 66.862,
+      "ppl": 2.73,
+      "train_loss": 0.107,
+      "fp_shift_l2_med": 214.1
+    },
+    {
+      "lr": 0.0005,
+      "fp_top1": 0.762,
+      "ppl": 76.868,
+      "train_loss": 4.034,
+      "fp_shift_l2_med": 2886.5
+    },
+    {
+      "lr": 0.002,
+      "fp_top1": 0.025,
+      "ppl": 387.286,
+      "train_loss": 5.301,
+      "fp_shift_l2_med": 10880.7
+    }
+  ]
+}

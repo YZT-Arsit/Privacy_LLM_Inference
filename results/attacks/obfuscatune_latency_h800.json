@@ -1,0 +1,122 @@
+{
+  "gpu": "NVIDIA H800 PCIe",
+  "dtype": "bfloat16",
+  "dims": {
+    "D": 3584,
+    "FFN": 18944,
+    "layers": 28
+  },
+  "prefill": {
+    "512": {
+      "plaintext": {
+        "latency_ms": 32.126837158203124,
+        "tee_type": "gpu",
+        "tee_boundary_crossings": 0,
+        "guardrail_attn_blocks_in_tee": 0,
+        "slowdown_vs_plaintext": 1.0
+      },
+      "ours_gpu": {
+        "latency_ms": 32.18271484375,
+        "tee_type": "gpu",
+        "tee_boundary_crossings": 2,
+        "guardrail_attn_blocks_in_tee": 1,
+        "slowdown_vs_plaintext": 1.002
+      },
+      "ours_cpu": {
+        "latency_ms": 77.20346069335938,
+        "tee_type": "cpu",
+        "tee_boundary_crossings": 2,
+        "guardrail_attn_blocks_in_tee": 1,
+        "slowdown_vs_plaintext": 2.403
+      },
+      "obfuscatune_gpu": {
+        "latency_ms": 34.43134460449219,
+        "tee_type": "gpu",
+        "tee_boundary_crossings": 224,
+        "guardrail_attn_blocks_in_tee": 0,
+        "slowdown_vs_plaintext": 1.072
+      },
+      "obfuscatune_cpu": {
+        "latency_ms": 2637.2505859375,
+        "tee_type": "cpu",
+        "tee_boundary_crossings": 224,
+        "guardrail_attn_blocks_in_tee": 0,
+        "slowdown_vs_plaintext": 82.089
+      }
+    },
+    "1024": {
+      "plaintext": {
+        "latency_ms": 75.4868408203125,
+        "tee_type": "gpu",
+        "tee_boundary_crossings": 0,
+        "guardrail_attn_blocks_in_tee": 0,
+        "slowdown_vs_plaintext": 1.0
+      },
+      "ours_gpu": {
+        "latency_ms": 75.45576171875,
+        "tee_type": "gpu",
+        "tee_boundary_crossings": 2,
+        "guardrail_attn_blocks_in_tee": 1,
+        "slowdown_vs_plaintext": 1.0
+      },
+      "ours_cpu": {
+        "latency_ms": 229.4953857421875,
+        "tee_type": "cpu",
+        "tee_boundary_crossings": 2,
+        "guardrail_attn_blocks_in_tee": 1,
+        "slowdown_vs_plaintext": 3.04
+      },
+      "obfuscatune_gpu": {
+        "latency_ms": 79.59619750976563,
+        "tee_type": "gpu",
+        "tee_boundary_crossings": 224,
+        "guardrail_attn_blocks_in_tee": 0,
+        "slowdown_vs_plaintext": 1.054
+      },
+      "obfuscatune_cpu": {
+        "latency_ms": 8626.309375,
+        "tee_type": "cpu",
+        "tee_boundary_crossings": 224,
+        "guardrail_attn_blocks_in_tee": 0,
+        "slowdown_vs_plaintext": 114.276
+      }
+    }
+  },
+  "decode": {
+    "plaintext": {
+      "latency_ms": 11.489784240722656,
+      "tee_type": "gpu",
+      "tee_boundary_crossings": 0,
+      "guardrail_attn_blocks_in_tee": 0,
+      "slowdown_vs_plaintext": 1.0
+    },
+    "ours_gpu": {
+      "latency_ms": 11.478756713867188,
+      "tee_type": "gpu",
+      "tee_boundary_crossings": 2,
+      "guardrail_attn_blocks_in_tee": 1,
+      "slowdown_vs_plaintext": 0.999
+    },
+    "ours_cpu": {
+      "latency_ms": 28.999221801757812,
+      "tee_type": "cpu",
+      "tee_boundary_crossings": 2,
+      "guardrail_attn_blocks_in_tee": 1,
+      "slowdown_vs_plaintext": 2.524
+    },
+    "obfuscatune_gpu": {
+      "latency_ms": 12.53637466430664,
+      "tee_type": "gpu",
+      "tee_boundary_crossings": 224,
+      "guardrail_attn_blocks_in_tee": 0,
+      "slowdown_vs_plaintext": 1.091
+    },
+    "obfuscatune_cpu": {
+      "latency_ms": 135.4793212890625,
+      "tee_type": "cpu",
+      "tee_boundary_crossings": 224,
+      "guardrail_attn_blocks_in_tee": 0,
+      "slowdown_vs_plaintext": 11.791
+    }
+  }
+}

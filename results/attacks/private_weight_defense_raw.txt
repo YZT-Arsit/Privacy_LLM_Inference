@@ -1,0 +1,143 @@
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 28356 root@connect.westd.seetacloud.com echo "===EXP1==="; cat /root/private_weight_defense_result.json; echo "===EXP1B==="; cat /root/private_weight_defense_b_result.json
+Warning: Permanently added '[connect.westd.seetacloud.com]:28356' (ED25519) to the list of known hosts.
+root@connect.westd.seetacloud.com's password: 
+===EXP1===
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "candidate_tokens": 10000,
+  "fingerprint_dim": 784,
+  "random_top1_pct": 0.01,
+  "open_weight_fingerprint": {
+    "top1_pct": 98.52,
+    "top10_pct": 98.61,
+    "top100_pct": 99.51
+  },
+  "open_weight_norm": {
+    "top1_pct": 98.42,
+    "top10_pct": 98.61,
+    "top100_pct": 99.51
+  },
+  "checkpoints": [
+    {
+      "step": 0,
+      "fingerprint_public_table": {
+        "top1_pct": 98.52,
+        "top10_pct": 98.61,
+        "top100_pct": 99.51
+      },
+      "norm_public_table": {
+        "top1_pct": 98.42,
+        "top10_pct": 98.61,
+        "top100_pct": 99.51
+      },
+      "fp_shift_l2_median": 0.0,
+      "embed_norm_shift_median": 0.0
+    },
+    {
+      "step": 100,
+      "fingerprint_public_table": {
+        "top1_pct": 98.03,
+        "top10_pct": 98.59,
+        "top100_pct": 99.5
+      },
+      "norm_public_table": {
+        "top1_pct": 97.08,
+        "top10_pct": 97.74,
+        "top100_pct": 99.48
+      },
+      "fp_shift_l2_median": 69.1481,
+      "embed_norm_shift_median": 0.0
+    },
+    {
+      "step": 300,
+      "fingerprint_public_table": {
+        "top1_pct": 98.37,
+        "top10_pct": 98.6,
+        "top100_pct": 99.5
+      },
+      "norm_public_table": {
+        "top1_pct": 97.03,
+        "top10_pct": 97.47,
+        "top100_pct": 99.38
+      },
+      "fp_shift_l2_median": 56.0259,
+      "embed_norm_shift_median": 0.0
+    }
+  ]
+}===EXP1B===
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "candidate_tokens": 10000,
+  "rank": 32,
+  "random_top1": 0.01,
+  "open_weight_fp": {
+    "top1": 98.52,
+    "top10": 98.61,
+    "top100": 99.51
+  },
+  "checkpoints": [
+    {
+      "step": 0,
+      "fp_cosine": {
+        "top1": 98.52,
+        "top10": 98.61,
+        "top100": 99.51
+      },
+      "fp_cosine_common_mode_removed": {
+        "top1": 98.52,
+        "top10": 98.61,
+        "top100": 99.51
+      },
+      "norm_attack": {
+        "top1": 98.42,
+        "top10": 98.61,
+        "top100": 99.51
+      },
+      "fp_shift_l2_median": 0.0,
+      "fp_base_l2_median": 9337.091,
+      "embed_norm_shift_median": 0.0
+    },
+    {
+      "step": 200,
+      "fp_cosine": {
+        "top1": 96.52,
+        "top10": 97.23,
+        "top100": 98.34
+      },
+      "fp_cosine_common_mode_removed": {
+        "top1": 96.36,
+        "top10": 97.32,
+        "top100": 98.57
+      },
+      "norm_attack": {
+        "top1": 97.0,
+        "top10": 97.2,
+        "top100": 98.24
+      },
+      "fp_shift_l2_median": 61.316,
+      "fp_base_l2_median": 9337.091,
+      "embed_norm_shift_median": 0.0
+    },
+    {
+      "step": 600,
+      "fp_cosine": {
+        "top1": 92.02,
+        "top10": 96.7,
+        "top100": 98.25
+      },
+      "fp_cosine_common_mode_removed": {
+        "top1": 94.9,
+        "top10": 96.93,
+        "top100": 98.43
+      },
+      "norm_attack": {
+        "top1": 97.0,
+        "top10": 97.2,
+        "top100": 98.24
+      },
+      "fp_shift_l2_median": 101.039,
+      "fp_base_l2_median": 9337.091,
+      "embed_norm_shift_median": 0.0
+    }
+  ]
+}

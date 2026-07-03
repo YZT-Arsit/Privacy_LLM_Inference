@@ -1,0 +1,27 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "hidden": 3584,
+  "iters": 20,
+  "prefill": {
+    "S=512": {
+      "full_forward_ms": 42.232,
+      "layer0_attn_block_ms": 0.444,
+      "attn_block_fraction_pct": 1.052,
+      "decode_step_full_ms": 13.108,
+      "decode_layer0_attn_ms": 0.3093,
+      "decode_attn_fraction_pct": 2.36
+    },
+    "S=1024": {
+      "full_forward_ms": 80.368,
+      "layer0_attn_block_ms": 0.62,
+      "attn_block_fraction_pct": 0.772,
+      "decode_step_full_ms": 13.276,
+      "decode_layer0_attn_ms": 0.3106,
+      "decode_attn_fraction_pct": 2.339
+    }
+  },
+  "cpu_proxy_ms": {
+    "S=512": 123.02,
+    "S=1024": 242.25
+  }
+}

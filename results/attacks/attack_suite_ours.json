@@ -1,0 +1,25 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "hidden": 3584,
+  "n_tokens": 8000,
+  "vocab": 152064,
+  "random_top1_pct": 0.0125,
+  "A1a_naive_cosine_top1_top10": [
+    0.062,
+    0.188
+  ],
+  "A1b_perm_invariant_sortedabs_top1_top10": [
+    98.588,
+    98.7
+  ],
+  "A2_norm_top1_top10": [
+    98.45,
+    98.7
+  ],
+  "A3_gram_perm_recovery_acc_pct": 0.028,
+  "A3_diag_distinct_frac": 0.2241,
+  "A3_after_unmask_inversion_top1_top10": [
+    98.575,
+    98.575
+  ]
+}

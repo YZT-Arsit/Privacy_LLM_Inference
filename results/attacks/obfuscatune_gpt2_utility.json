@@ -1,0 +1,57 @@
+{
+  "mode": "utility",
+  "arch": "gpt2",
+  "model_path": "/root/autodl-tmp/hf_cache/models--openai-community--gpt2/snapshots/607a30d783dfa663caf39e06633721c8d4cfcd7e",
+  "base_perplexity": 75.52515411376953,
+  "n_tokens": 204,
+  "rows": [
+    {
+      "condition_number": 1.0,
+      "obfuscated_linears": 48,
+      "next_token_top1_agreement": 1.0,
+      "logit_mse": 2.7290032456050994e-09,
+      "logit_max_abs_err": 0.00048828125,
+      "perplexity": 75.52518463134766
+    },
+    {
+      "condition_number": 4.0,
+      "obfuscated_linears": 48,
+      "next_token_top1_agreement": 1.0,
+      "logit_mse": 2.82560130848708e-09,
+      "logit_max_abs_err": 0.0004119873046875,
+      "perplexity": 75.52515411376953
+    },
+    {
+      "condition_number": 16.0,
+      "obfuscated_linears": 48,
+      "next_token_top1_agreement": 1.0,
+      "logit_mse": 2.2455674653087954e-08,
+      "logit_max_abs_err": 0.0017547607421875,
+      "perplexity": 75.52507781982422
+    },
+    {
+      "condition_number": 64.0,
+      "obfuscated_linears": 48,
+      "next_token_top1_agreement": 1.0,
+      "logit_mse": 5.675229175494678e-08,
+      "logit_max_abs_err": 0.0030670166015625,
+      "perplexity": 75.52526092529297
+    },
+    {
+      "condition_number": 256.0,
+      "obfuscated_linears": 48,
+      "next_token_top1_agreement": 1.0,
+      "logit_mse": 1.416180310798154e-07,
+      "logit_max_abs_err": 0.0045166015625,
+      "perplexity": 75.52544403076172
+    },
+    {
+      "condition_number": 1024.0,
+      "obfuscated_linears": 48,
+      "next_token_top1_agreement": 1.0,
+      "logit_mse": 4.007084442037012e-07,
+      "logit_max_abs_err": 0.00307464599609375,
+      "perplexity": 75.52526092529297
+    }
+  ]
+}
