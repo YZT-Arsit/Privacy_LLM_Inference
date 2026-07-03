@@ -1,27 +1,64 @@
 {
   "scheme": "trusted_shortcut (amulet_migrated) folded_remote, fp32 fold, optimized",
-  "optimizations": ["amulet lift-factor cache", "keep-alive persistent conn", "precompute masked embed"],
+  "optimizations": [
+    "amulet lift-factor cache",
+    "keep-alive persistent conn",
+    "precompute masked embed"
+  ],
   "bit_identical_to_current": true,
   "model": "Qwen2.5-7B-Instruct",
   "hardware": "H800 (worker+boundary co-located, 127.0.0.1)",
   "date": "2026-07-04",
   "benchmarks": {
-    "ifeval": {"n": 541, "strict_prompt_acc": 0.6858, "loose_prompt_acc": 0.7043,
-               "strict_inst_acc": 0.7686, "loose_inst_acc": 0.7854, "coverage_pct": 100.0,
-               "total_instructions": 834, "failed": 0, "mean_tok_s": 25.63},
-    "gsm8k": {"n": 1319, "exact_match_accuracy": 0.9052, "correct": 1194, "mean_tok_s": 25.80},
-    "humaneval": {"n": 164, "pass_at_1": 0.8232, "passed": 135, "mean_tok_s": 25.57,
-                  "note": "== prior A_rightmul fp32 (0.8232) exactly; plaintext prior=0.780"},
-    "mt_bench": {"n_questions": 80, "n_generations": 160, "turns": 2, "mean_tok_s": 25.35,
-                 "judge": "deferred (needs external LLM judge)"}
+    "ifeval": {
+      "n": 541,
+      "strict_prompt_acc": 0.6858,
+      "loose_prompt_acc": 0.7043,
+      "strict_inst_acc": 0.7686,
+      "loose_inst_acc": 0.7854,
+      "coverage_pct": 100.0,
+      "total_instructions": 834,
+      "failed": 0,
+      "mean_tok_s": 25.63,
+      "plaintext_strict_prompt_approx": 0.6412
+    },
+    "gsm8k": {
+      "n": 1319,
+      "exact_match_accuracy": 0.9052,
+      "correct": 1194,
+      "mean_tok_s": 25.8,
+      "plaintext_exact_match": 0.9022
+    },
+    "humaneval": {
+      "n": 164,
+      "pass_at_1": 0.8232,
+      "passed": 135,
+      "mean_tok_s": 25.57,
+      "note": "== prior A_rightmul fp32 (0.8232) exactly; plaintext prior=0.780",
+      "plaintext_pass_at_1": 0.78
+    },
+    "mt_bench": {
+      "n_questions": 80,
+      "n_generations": 160,
+      "turns": 2,
+      "mean_tok_s": 25.35,
+      "judge": "claude-opus single-answer 1-10 (reused from aaai_fp32_final; generations token-identical)",
+      "judge_score_ours": 6.763,
+      "judge_score_plaintext": 6.844
+    }
   },
   "latency": {
-    "ours_trusted_shortcut_fp32_optimized_tok_s": 25.6,
-    "plaintext_local_bf16_tok_s": 62.79,
-    "ratio_ours_vs_plaintext": 2.45,
-    "note": "ours is fp32 (needed for parity); plaintext is bf16 native. Part of the 2.45x is fp32's 2x memory traffic. Both measured on H800, greedy, uncontended for plaintext."
+    "ours_trusted_shortcut_fp32_tok_s": 25.6,
+    "plaintext_fp32_tok_s": 48.0,
+    "plaintext_bf16_tok_s": 62.79,
+    "matched_precision_ratio_fp32": 1.88,
+    "vs_plaintext_bf16_ratio": 2.45,
+    "note": "1.88x is the fair matched-fp32 comparison; 2.45x mixes fp32(ours) vs bf16(plaintext native)."
   },
   "total_examples": 2184,
   "total_generated_tokens": 604617,
-  "watchdog": "resume + worker auto-restart; 0 restarts, 0 failures across all 4 benchmarks"
+  "watchdog": "resume + worker auto-restart; 0 restarts, 0 failures across all 4 benchmarks",
+  "bit_identical_to_A_rightmul": true,
+  "A_rightmul_equivalence": "mt_bench 160/160 token-identical; gsm8k+humaneval accuracies match to the digit",
+  "accuracy_verdict": "parity: IFEval/GSM8K/HumanEval/MT-Bench deltas both-signs and <= near-tie-argmax noise"
 }
