@@ -38,3 +38,23 @@ per-call-regen prototype.
 - boundary runtime hash for trusted_shortcut UNCHANGED (amulet_backend.py is
   untrusted-worker code, not in the trusted boundary manifest) → existing TDX
   quotes stay valid.
+
+## Safe latency features (keep-alive + precompute-embed), verified bit-identical
+
+Enabled `--persistent-conn` + `--precompute-embed` (client-side only; do NOT touch
+the attested boundary → runtime hash / TDX quotes unchanged). Re-ran the same 5
+IFEval prompts against the flags-OFF cached run:
+
+- **bit-identity: token_match_rate 1.0, exact_text 1.0, exact_token 1.0 (n=5)** —
+  not a single token changed (precompute's batched-GEMM table matched the per-token
+  GEMV exactly on this model/device).
+- latency (local, worker+client on H800): steady ~24.4 → **25.5–25.8 tok/s**
+  (id 1012, 122 tok: 24.55 → 25.54). ~4–5% locally (worker fp32 forward is the
+  floor); keep-alive's real value is over a cross-machine TEE↔GPU tunnel where it
+  saves a full ~71 ms RTT per token.
+
+### Latency floor at fp32 (profiled, H800)
+Per-token 39.6 ms: boundary side only 0.8 ms; the ~33 ms worker fp32 forward is the
+floor. Of that, ~8.4 ms is the hard fp32 memory-bandwidth floor (reads ~28 GB
+weights/token — the literal cost of the fp32 precision), ~24 ms is CUDA
+kernel-launch overhead (only CUDA-graph capture would remove it; deferred).
