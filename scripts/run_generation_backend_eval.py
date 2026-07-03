@@ -163,6 +163,8 @@ def _default_predictor_factory(args, resolved) -> Any:
         nonlinear_backend=resolved["nonlinear_backend"],
         stop_on_eos=True,
         use_chat_template=args.use_chat_template,
+        worker_persistent_conn=bool(getattr(args, "persistent_conn", True)),
+        precompute_masked_embed=bool(getattr(args, "precompute_embed", True)),
     )
 
 
@@ -528,6 +530,15 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--allow-missing-evidence", action="store_true")
     ap.add_argument("--no-worker-timing", action="store_true")
     ap.add_argument("--profile", type=_bool, default=True)
+    # precision-neutral, bit-identical latency features (client-side only; do NOT
+    # touch the attested boundary code, so the runtime hash / TDX quotes are
+    # unaffected). keep-alive reuses ONE TCP connection across decode steps
+    # (saves a full RTT per token over a real TEE<->GPU tunnel); precompute-embed
+    # folds E @ N_0 once so the per-token input embed is a lookup, not a matmul.
+    ap.add_argument("--persistent-conn", type=_bool, default=True,
+                    help="reuse one keep-alive TCP connection across tokens")
+    ap.add_argument("--precompute-embed", type=_bool, default=True,
+                    help="precompute the masked embedding table (E @ N_0)")
     ap.add_argument("--output-dir", required=True)
     return ap
 
