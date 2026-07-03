@@ -1,0 +1,60 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "dtype": "float32",
+  "seed": 0,
+  "rope_compatible_O": true,
+  "audit": {
+    "architecture_change_required": "per-channel RMSNorm -> scalar RMSNorm (all norm layers)",
+    "needs_finetune_to_recover_on_pretrained_model": true,
+    "obfuscation_is_exact": true,
+    "obfuscation_numerically_benign": true,
+    "server_runs_full_model_in_rotated_basis": true,
+    "extra_per_token_tee_crossings": 0,
+    "server_observable_invariants": [
+      "l2 norms",
+      "pairwise distances",
+      "repeated-token patterns",
+      "attention logits"
+    ],
+    "cryptographic_or_dp": false,
+    "paper_measured_metrics": [
+      "perplexity (OpenWebText / PubMed)"
+    ],
+    "paper_measured_task_accuracy": false,
+    "paper_max_model": "Llama-3.2-1B",
+    "contrast_ours_A_rightmul": {
+      "architecture_change_required": "none (serves the unmodified instruct model)",
+      "needs_finetune": false,
+      "measured_task_parity_fp32": {
+        "ifeval": [
+          66.17,
+          68.76
+        ],
+        "gsm8k": [
+          90.22,
+          90.52
+        ],
+        "humaneval": [
+          78.0,
+          82.3
+        ],
+        "mt_bench": [
+          6.844,
+          6.763
+        ]
+      },
+      "per_token_tee_crossings": 2,
+      "note": "ours pays latency (TEE round-trip + fp32 wire); conjformer pays an architecture change + retraining and cannot serve an off-the-shelf instruct model losslessly."
+    },
+    "norm_layers_retrofitted": 57
+  },
+  "generate": {
+    "n_prompts": 8,
+    "max_new_tokens": 256,
+    "plaintext_mean_maxrun": 1.25,
+    "conjformer_mean_maxrun": 1.38,
+    "plaintext_degenerate": 0,
+    "conjformer_degenerate": 0,
+    "note": "conjformer == retrofit(scalar-RMSNorm, NO fine-tune); difference vs plaintext is the architecture-change cost"
+  }
+}

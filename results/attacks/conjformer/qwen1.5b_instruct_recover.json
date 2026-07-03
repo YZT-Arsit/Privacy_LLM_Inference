@@ -1,0 +1,66 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2.5-1.5B-Instruct",
+  "n_train": 300,
+  "n_eval": 20,
+  "lr": 0.0001,
+  "epochs": 4,
+  "teacher_gen_min": 12.53,
+  "original_relevance": 0.238,
+  "original_ascii": 0.954,
+  "norm_layers_retrofitted": 57,
+  "retrofit_noft_distill_ppl": 3680417285610402.5,
+  "retrofit_noft_relevance": 0.0,
+  "retrofit_noft_ascii": 0.998,
+  "sft_curve": [
+    {
+      "step": 0,
+      "distill_ppl": 3680417285610402.5,
+      "relevance": 0.0,
+      "ascii": 0.998
+    },
+    {
+      "step": 100,
+      "distill_ppl": 26.83,
+      "relevance": 0.061,
+      "ascii": 0.994,
+      "elapsed_min": 1.72
+    },
+    {
+      "step": 200,
+      "distill_ppl": 34.79,
+      "relevance": 0.098,
+      "ascii": 0.965,
+      "elapsed_min": 3.14
+    },
+    {
+      "step": 300,
+      "distill_ppl": 56.48,
+      "relevance": 0.089,
+      "ascii": 0.917,
+      "elapsed_min": 4.77
+    }
+  ],
+  "sft_wall_min": 4.77,
+  "recovered_distill_ppl": 56.48,
+  "recovered_relevance": 0.089,
+  "recovered_ascii": 0.917,
+  "recovered_equivariance": {
+    "logit_top1_agreement": 1.0,
+    "equivariant": true
+  },
+  "summary": {
+    "relevance_original_retrofit_recovered": [
+      0.238,
+      0.0,
+      0.089
+    ],
+    "distill_ppl_retrofit_recovered": [
+      3680417285610402.5,
+      56.48
+    ],
+    "teacher_gen_min": 12.53,
+    "sft_wall_min": 4.77,
+    "total_recovery_min": 17.3,
+    "note": "instruction-following recovery via self-distillation SFT; total wall-cost = teacher generation + SFT. Ours needs ZERO of this (serves the unmodified instruct model). Recovered model still conjugates to an exact CONJFORMER server."
+  }
+}

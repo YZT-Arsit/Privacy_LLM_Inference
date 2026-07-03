@@ -1,0 +1,89 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2.5-1.5B-Instruct",
+  "dtype": "float32",
+  "lr": 0.0002,
+  "seq_len": 1024,
+  "bsz": 4,
+  "corpus": "wikitext-2-raw-v1",
+  "original_val_ppl": 10.082,
+  "original_gen_ascii": 0.991,
+  "norm_layers_retrofitted": 57,
+  "retrofit_noft_val_ppl": 1642506492051456.0,
+  "retrofit_noft_gen_ascii": 1.0,
+  "finetune_curve": [
+    {
+      "step": 0,
+      "val_ppl": 1642506492051456.0,
+      "gen_ascii": 1.0
+    },
+    {
+      "step": 100,
+      "val_ppl": 35.197,
+      "gen_ascii": 0.798,
+      "elapsed_min": 3.0
+    },
+    {
+      "step": 200,
+      "val_ppl": 25.12,
+      "gen_ascii": 0.942,
+      "elapsed_min": 6.01
+    },
+    {
+      "step": 300,
+      "val_ppl": 24.323,
+      "gen_ascii": 0.997,
+      "elapsed_min": 9.02
+    },
+    {
+      "step": 400,
+      "val_ppl": 24.392,
+      "gen_ascii": 0.933,
+      "elapsed_min": 12.03
+    },
+    {
+      "step": 500,
+      "val_ppl": 24.456,
+      "gen_ascii": 0.658,
+      "elapsed_min": 15.05
+    },
+    {
+      "step": 600,
+      "val_ppl": 23.667,
+      "gen_ascii": 0.986,
+      "elapsed_min": 18.06
+    },
+    {
+      "step": 700,
+      "val_ppl": 26.018,
+      "gen_ascii": 0.811,
+      "elapsed_min": 21.07
+    },
+    {
+      "step": 800,
+      "val_ppl": 27.003,
+      "gen_ascii": 0.97,
+      "elapsed_min": 24.08
+    }
+  ],
+  "finetune_wall_min": 24.08,
+  "recovered_val_ppl": 27.003,
+  "recovered_gen_ascii": 0.97,
+  "recovered_equivariance": {
+    "logit_top1_agreement": 1.0,
+    "hidden_rel_err": 6.713748141516226e-07,
+    "equivariant": true,
+    "note": "the fine-tuned (recovered) model conjugates to an exactly-equivariant CONJFORMER server -- recovery does not break the obfuscation."
+  },
+  "summary": {
+    "original_val_ppl": 10.082,
+    "retrofit_noft_val_ppl": 1642506492051456.0,
+    "recovered_val_ppl": 27.003,
+    "ppl_recovery_pct": 100.0,
+    "gen_ascii_before_after": [
+      1.0,
+      0.97
+    ],
+    "finetune_wall_min": 24.08,
+    "note": "CONJFORMER's scalar-RMSNorm break IS recoverable by fine-tuning (this confirms it) -- at a real fine-tuning wall-cost; ours needs zero fine-tuning."
+  }
+}

@@ -37,6 +37,15 @@ from pllo.baselines.cryptogen import (
     CryptoGen,
     CryptoGenConfig,
 )
+from pllo.baselines.conjformer import (
+    ConjFormerSecrets,
+    ScalarRMSNorm,
+    build_conjformer_server,
+    conjugate_qwen2,
+    retrofit_scalar_rmsnorm,
+    sample_secrets,
+    verify_equivariance,
+)
 from pllo.baselines.obfuscatune import (
     ObfuscaTune,
     ObfuscaTuneConfig,
@@ -47,6 +56,13 @@ from pllo.baselines.slalom import SlalomConfig, SlalomDelegatedLinear
 __all__ = [
     "CryptoGen",
     "CryptoGenConfig",
+    "ConjFormerSecrets",
+    "ScalarRMSNorm",
+    "build_conjformer_server",
+    "conjugate_qwen2",
+    "retrofit_scalar_rmsnorm",
+    "sample_secrets",
+    "verify_equivariance",
     "ObfuscaTune",
     "ObfuscaTuneConfig",
     "matrix_with_condition_number",

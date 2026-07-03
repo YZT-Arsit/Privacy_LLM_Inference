@@ -1,0 +1,2234 @@
+{
+  "stage": "folded_remote_generation_parity_debug",
+  "nonlinear_backend": "A_rightmul",
+  "seq_len": 1024,
+  "max_debug_steps": 32,
+  "formatted_prompt_sha256": "26714e7460e3855fae89faff4022e1310361cc78110bc66baa72ff9165ab398a",
+  "raw_prompt_token_count": 118,
+  "chat_prompt_token_count": 147,
+  "formatted_prompt_token_count": 147,
+  "prompt_token_count": 147,
+  "truncation_side": "left",
+  "truncated": false,
+  "eos_token_id": [
+    151643,
+    151645
+  ],
+  "pad_token_id": 151643,
+  "finish_reason": "length",
+  "num_generated_tokens": 32,
+  "with_plaintext": true,
+  "num_steps_captured": 32,
+  "suspect": "prefill OK but decode step 1 diverges -> check KV cache / position id / RoPE / decode mask_token_embedding",
+  "steps": [
+    {
+      "step": 0,
+      "phase": "prefill",
+      "selected_token_id": 1249,
+      "selected_token_text": "To",
+      "top1_logit": 35.889534,
+      "top2_logit": 31.516979,
+      "top1_top2_margin": 4.372555,
+      "top1_softmax_prob": 0.97291,
+      "topk_entropy": 0.153046,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 1249,
+          "value": 35.889534,
+          "text": "To"
+        },
+        {
+          "id": 95456,
+          "value": 31.516979,
+          "text": "Certainly"
+        },
+        {
+          "id": 39814,
+          "value": 31.43046,
+          "text": "Sure"
+        },
+        {
+          "id": 785,
+          "value": 30.143694,
+          "text": "The"
+        },
+        {
+          "id": 10061,
+          "value": 27.811968,
+          "text": "Let"
+        },
+        {
+          "id": 8420,
+          "value": 26.728992,
+          "text": "Here"
+        },
+        {
+          "id": 2610,
+          "value": 24.979462,
+          "text": "You"
+        },
+        {
+          "id": 7771,
+          "value": 24.48292,
+          "text": "Your"
+        },
+        {
+          "id": 73594,
+          "value": 24.283915,
+          "text": "```"
+        },
+        {
+          "id": 2132,
+          "value": 22.91267,
+          "text": "It"
+        }
+      ],
+      "plaintext_top1_agree": true,
+      "plaintext_top5_overlap": 0.8,
+      "plaintext_vs_ours_max_abs_error": 6.885896,
+      "plaintext_top1_id": 1249
+    },
+    {
+      "step": 1,
+      "phase": "decode",
+      "selected_token_id": 4211,
+      "selected_token_text": " implement",
+      "top1_logit": 32.002563,
+      "top2_logit": 31.581314,
+      "top1_top2_margin": 0.421249,
+      "top1_softmax_prob": 0.498152,
+      "topk_entropy": 1.155732,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 4211,
+          "value": 32.002563,
+          "text": " implement"
+        },
+        {
+          "id": 11625,
+          "value": 31.581314,
+          "text": " solve"
+        },
+        {
+          "id": 8253,
+          "value": 30.418688,
+          "text": " determine"
+        },
+        {
+          "id": 1779,
+          "value": 30.029516,
+          "text": " check"
+        },
+        {
+          "id": 11075,
+          "value": 25.940336,
+          "text": " achieve"
+        },
+        {
+          "id": 2621,
+          "value": 25.821213,
+          "text": " address"
+        },
+        {
+          "id": 5978,
+          "value": 25.37923,
+          "text": " ensure"
+        },
+        {
+          "id": 1855,
+          "value": 24.472446,
+          "text": " create"
+        },
+        {
+          "id": 22054,
+          "value": 24.15473,
+          "text": " accomplish"
+        },
+        {
+          "id": 7269,
+          "value": 23.979057,
+          "text": " improve"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 1.0,
+      "plaintext_vs_ours_max_abs_error": 5.741734,
+      "plaintext_top1_id": 8253
+    },
+    {
+      "step": 2,
+      "phase": "decode",
+      "selected_token_id": 279,
+      "selected_token_text": " the",
+      "top1_logit": 34.574413,
+      "top2_logit": 28.183191,
+      "top1_top2_margin": 6.391222,
+      "top1_softmax_prob": 0.998176,
+      "topk_entropy": 0.013939,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 279,
+          "value": 34.574413,
+          "text": " the"
+        },
+        {
+          "id": 419,
+          "value": 28.183191,
+          "text": " this"
+        },
+        {
+          "id": 264,
+          "value": 25.5627,
+          "text": " a"
+        },
+        {
+          "id": 1565,
+          "value": 23.873764,
+          "text": " `"
+        },
+        {
+          "id": 323,
+          "value": 22.605387,
+          "text": " and"
+        },
+        {
+          "id": 729,
+          "value": 19.240664,
+          "text": " function"
+        },
+        {
+          "id": 14944,
+          "value": 17.86685,
+          "text": " functionality"
+        },
+        {
+          "id": 697,
+          "value": 17.861389,
+          "text": " your"
+        },
+        {
+          "id": 1741,
+          "value": 17.477081,
+          "text": " such"
+        },
+        {
+          "id": 458,
+          "value": 17.078049,
+          "text": " an"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.4,
+      "plaintext_vs_ours_max_abs_error": 27.900873,
+      "plaintext_top1_id": 421
+    },
+    {
+      "step": 3,
+      "phase": "decode",
+      "selected_token_id": 1565,
+      "selected_token_text": " `",
+      "top1_logit": 36.446335,
+      "top2_logit": 35.383251,
+      "top1_top2_margin": 1.063084,
+      "top1_softmax_prob": 0.74323,
+      "topk_entropy": 0.570342,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 1565,
+          "value": 36.446335,
+          "text": " `"
+        },
+        {
+          "id": 729,
+          "value": 35.383251,
+          "text": " function"
+        },
+        {
+          "id": 14944,
+          "value": 26.689072,
+          "text": " functionality"
+        },
+        {
+          "id": 2661,
+          "value": 25.314949,
+          "text": " given"
+        },
+        {
+          "id": 12218,
+          "value": 24.398514,
+          "text": " logic"
+        },
+        {
+          "id": 2567,
+          "value": 23.981457,
+          "text": " required"
+        },
+        {
+          "id": 12685,
+          "value": 23.747293,
+          "text": " desired"
+        },
+        {
+          "id": 3897,
+          "value": 23.231415,
+          "text": " provided"
+        },
+        {
+          "id": 6291,
+          "value": 22.961882,
+          "text": " solution"
+        },
+        {
+          "id": 7481,
+          "value": 21.933302,
+          "text": " described"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 28.352001,
+      "plaintext_top1_id": 894
+    },
+    {
+      "step": 4,
+      "phase": "decode",
+      "selected_token_id": 4648,
+      "selected_token_text": "has",
+      "top1_logit": 39.406368,
+      "top2_logit": 22.824415,
+      "top1_top2_margin": 16.581953,
+      "top1_softmax_prob": 1.0,
+      "topk_entropy": 3e-06,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 4648,
+          "value": 39.406368,
+          "text": "has"
+        },
+        {
+          "id": 63255,
+          "value": 22.824415,
+          "text": "\thas"
+        },
+        {
+          "id": 19016,
+          "value": 21.938702,
+          "text": "have"
+        },
+        {
+          "id": 285,
+          "value": 21.241467,
+          "text": "is"
+        },
+        {
+          "id": 6858,
+          "value": 21.001093,
+          "text": ".has"
+        },
+        {
+          "id": 2028,
+          "value": 20.809858,
+          "text": "check"
+        },
+        {
+          "id": 50593,
+          "value": 20.349424,
+          "text": "(has"
+        },
+        {
+          "id": 31245,
+          "value": 20.172743,
+          "text": "had"
+        },
+        {
+          "id": 21778,
+          "value": 20.138342,
+          "text": "_has"
+        },
+        {
+          "id": 702,
+          "value": 19.386065,
+          "text": " has"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 47.425056,
+      "plaintext_top1_id": 1378
+    },
+    {
+      "step": 5,
+      "phase": "decode",
+      "selected_token_id": 12704,
+      "selected_token_text": "_close",
+      "top1_logit": 31.178585,
+      "top2_logit": 18.760038,
+      "top1_top2_margin": 12.418547,
+      "top1_softmax_prob": 0.999989,
+      "topk_entropy": 0.000157,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 12704,
+          "value": 31.178585,
+          "text": "_close"
+        },
+        {
+          "id": 24323,
+          "value": 18.760038,
+          "text": "_CLOSE"
+        },
+        {
+          "id": 13032,
+          "value": 18.495663,
+          "text": " Close"
+        },
+        {
+          "id": 7925,
+          "value": 17.535707,
+          "text": "Close"
+        },
+        {
+          "id": 34462,
+          "value": 17.264175,
+          "text": "-close"
+        },
+        {
+          "id": 4653,
+          "value": 17.095793,
+          "text": ".close"
+        },
+        {
+          "id": 3265,
+          "value": 16.360317,
+          "text": " close"
+        },
+        {
+          "id": 49706,
+          "value": 16.236855,
+          "text": " CLOSE"
+        },
+        {
+          "id": 5552,
+          "value": 15.858009,
+          "text": "close"
+        },
+        {
+          "id": 27873,
+          "value": 15.650435,
+          "text": "\tclose"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 39.968466,
+      "plaintext_top1_id": 5109
+    },
+    {
+      "step": 6,
+      "phase": "decode",
+      "selected_token_id": 22801,
+      "selected_token_text": "_elements",
+      "top1_logit": 29.684156,
+      "top2_logit": 17.656176,
+      "top1_top2_margin": 12.02798,
+      "top1_softmax_prob": 0.99999,
+      "topk_entropy": 0.000141,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 22801,
+          "value": 29.684156,
+          "text": "_elements"
+        },
+        {
+          "id": 34157,
+          "value": 17.656176,
+          "text": " Elements"
+        },
+        {
+          "id": 11868,
+          "value": 16.402494,
+          "text": "Elements"
+        },
+        {
+          "id": 64445,
+          "value": 15.527031,
+          "text": "-elements"
+        },
+        {
+          "id": 66169,
+          "value": 15.45013,
+          "text": "_ELEMENTS"
+        },
+        {
+          "id": 53261,
+          "value": 14.985968,
+          "text": "ElementsBy"
+        },
+        {
+          "id": 55925,
+          "value": 14.76571,
+          "text": "_neighbors"
+        },
+        {
+          "id": 68777,
+          "value": 14.127796,
+          "text": ".Elements"
+        },
+        {
+          "id": 5424,
+          "value": 13.678939,
+          "text": " elements"
+        },
+        {
+          "id": 21423,
+          "value": 13.634184,
+          "text": "elements"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 36.508896,
+      "plaintext_top1_id": 304
+    },
+    {
+      "step": 7,
+      "phase": "decode",
+      "selected_token_id": 63,
+      "selected_token_text": "`",
+      "top1_logit": 39.117516,
+      "top2_logit": 26.834003,
+      "top1_top2_margin": 12.283513,
+      "top1_softmax_prob": 0.999995,
+      "topk_entropy": 6.5e-05,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 63,
+          "value": 39.117516,
+          "text": "`"
+        },
+        {
+          "id": 54258,
+          "value": 26.834003,
+          "text": "()`"
+        },
+        {
+          "id": 47207,
+          "value": 23.600424,
+          "text": "(numbers"
+        },
+        {
+          "id": 7808,
+          "value": 21.865719,
+          "text": "`,"
+        },
+        {
+          "id": 729,
+          "value": 20.055944,
+          "text": " function"
+        },
+        {
+          "id": 1565,
+          "value": 18.223167,
+          "text": " `"
+        },
+        {
+          "id": 46186,
+          "value": 17.730013,
+          "text": ")`"
+        },
+        {
+          "id": 18850,
+          "value": 17.337076,
+          "text": "(..."
+        },
+        {
+          "id": 21096,
+          "value": 17.329563,
+          "text": "(nums"
+        },
+        {
+          "id": 32881,
+          "value": 16.889301,
+          "text": "`)"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 37.317165,
+      "plaintext_top1_id": 279
+    },
+    {
+      "step": 8,
+      "phase": "decode",
+      "selected_token_id": 729,
+      "selected_token_text": " function",
+      "top1_logit": 45.655811,
+      "top2_logit": 29.077702,
+      "top1_top2_margin": 16.578109,
+      "top1_softmax_prob": 1.0,
+      "topk_entropy": 1e-06,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 729,
+          "value": 45.655811,
+          "text": " function"
+        },
+        {
+          "id": 1714,
+          "value": 29.077702,
+          "text": " method"
+        },
+        {
+          "id": 14944,
+          "value": 26.689072,
+          "text": " functionality"
+        },
+        {
+          "id": 1779,
+          "value": 24.673933,
+          "text": " check"
+        },
+        {
+          "id": 1688,
+          "value": 24.449245,
+          "text": "function"
+        },
+        {
+          "id": 5746,
+          "value": 23.817825,
+          "text": " functions"
+        },
+        {
+          "id": 2915,
+          "value": 23.379028,
+          "text": " func"
+        },
+        {
+          "id": 27863,
+          "value": 22.533371,
+          "text": " funcion"
+        },
+        {
+          "id": 32804,
+          "value": 21.646639,
+          "text": "函数"
+        },
+        {
+          "id": 5712,
+          "value": 21.309904,
+          "text": " Function"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 31.905811,
+      "plaintext_top1_id": 1140
+    },
+    {
+      "step": 9,
+      "phase": "decode",
+      "selected_token_id": 11,
+      "selected_token_text": ",",
+      "top1_logit": 36.647766,
+      "top2_logit": 30.81287,
+      "top1_top2_margin": 5.834896,
+      "top1_softmax_prob": 0.995752,
+      "topk_entropy": 0.03186,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 11,
+          "value": 36.647766,
+          "text": ","
+        },
+        {
+          "id": 12440,
+          "value": 30.81287,
+          "text": " correctly"
+        },
+        {
+          "id": 429,
+          "value": 29.350876,
+          "text": " that"
+        },
+        {
+          "id": 438,
+          "value": 28.832277,
+          "text": " as"
+        },
+        {
+          "id": 304,
+          "value": 27.327362,
+          "text": " in"
+        },
+        {
+          "id": 311,
+          "value": 27.204248,
+          "text": " to"
+        },
+        {
+          "id": 29720,
+          "value": 26.272894,
+          "text": " efficiently"
+        },
+        {
+          "id": 13444,
+          "value": 25.892365,
+          "text": " effectively"
+        },
+        {
+          "id": 4092,
+          "value": 25.849184,
+          "text": " according"
+        },
+        {
+          "id": 29257,
+          "value": 25.780378,
+          "text": " accurately"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 26.40662,
+      "plaintext_top1_id": 525
+    },
+    {
+      "step": 10,
+      "phase": "decode",
+      "selected_token_id": 582,
+      "selected_token_text": " we",
+      "top1_logit": 36.075737,
+      "top2_logit": 33.928848,
+      "top1_top2_margin": 2.146889,
+      "top1_softmax_prob": 0.894866,
+      "topk_entropy": 0.340613,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 582,
+          "value": 36.075737,
+          "text": " we"
+        },
+        {
+          "id": 498,
+          "value": 33.928848,
+          "text": " you"
+        },
+        {
+          "id": 279,
+          "value": 27.932039,
+          "text": " the"
+        },
+        {
+          "id": 892,
+          "value": 27.081753,
+          "text": " which"
+        },
+        {
+          "id": 825,
+          "value": 26.913578,
+          "text": " one"
+        },
+        {
+          "id": 432,
+          "value": 26.591097,
+          "text": " it"
+        },
+        {
+          "id": 358,
+          "value": 25.542475,
+          "text": " I"
+        },
+        {
+          "id": 264,
+          "value": 24.646109,
+          "text": " a"
+        },
+        {
+          "id": 1077,
+          "value": 23.467264,
+          "text": " let"
+        },
+        {
+          "id": 1156,
+          "value": 23.034428,
+          "text": " first"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 28.325737,
+      "plaintext_top1_id": 12128
+    },
+    {
+      "step": 11,
+      "phase": "decode",
+      "selected_token_id": 646,
+      "selected_token_text": " can",
+      "top1_logit": 33.89365,
+      "top2_logit": 33.369682,
+      "top1_top2_margin": 0.523968,
+      "top1_softmax_prob": 0.625803,
+      "topk_entropy": 0.685254,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 646,
+          "value": 33.89365,
+          "text": " can"
+        },
+        {
+          "id": 1184,
+          "value": 33.369682,
+          "text": " need"
+        },
+        {
+          "id": 3278,
+          "value": 28.140074,
+          "text": "'ll"
+        },
+        {
+          "id": 686,
+          "value": 27.612656,
+          "text": " will"
+        },
+        {
+          "id": 1156,
+          "value": 26.52072,
+          "text": " first"
+        },
+        {
+          "id": 1265,
+          "value": 24.430901,
+          "text": " should"
+        },
+        {
+          "id": 1366,
+          "value": 23.145123,
+          "text": " want"
+        },
+        {
+          "id": 1035,
+          "value": 21.68215,
+          "text": " would"
+        },
+        {
+          "id": 9213,
+          "value": 21.283337,
+          "text": " aim"
+        },
+        {
+          "id": 1513,
+          "value": 21.032322,
+          "text": " don"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 29.822807,
+      "plaintext_top1_id": 311
+    },
+    {
+      "step": 12,
+      "phase": "decode",
+      "selected_token_id": 3378,
+      "selected_token_text": " sort",
+      "top1_logit": 31.991112,
+      "top2_logit": 31.038769,
+      "top1_top2_margin": 0.952343,
+      "top1_softmax_prob": 0.534527,
+      "topk_entropy": 1.367546,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 3378,
+          "value": 31.991112,
+          "text": " sort"
+        },
+        {
+          "id": 990,
+          "value": 31.038769,
+          "text": " use"
+        },
+        {
+          "id": 1156,
+          "value": 30.131523,
+          "text": " first"
+        },
+        {
+          "id": 1795,
+          "value": 30.074345,
+          "text": " follow"
+        },
+        {
+          "id": 1191,
+          "value": 30.019909,
+          "text": " start"
+        },
+        {
+          "id": 32064,
+          "value": 28.522755,
+          "text": " leverage"
+        },
+        {
+          "id": 28066,
+          "value": 26.863989,
+          "text": " utilize"
+        },
+        {
+          "id": 1896,
+          "value": 26.271681,
+          "text": " take"
+        },
+        {
+          "id": 29629,
+          "value": 25.877773,
+          "text": " iterate"
+        },
+        {
+          "id": 15102,
+          "value": 23.779739,
+          "text": " initially"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 32.681199,
+      "plaintext_top1_id": 1817
+    },
+    {
+      "step": 13,
+      "phase": "decode",
+      "selected_token_id": 279,
+      "selected_token_text": " the",
+      "top1_logit": 35.425999,
+      "top2_logit": 17.676392,
+      "top1_top2_margin": 17.749607,
+      "top1_softmax_prob": 1.0,
+      "topk_entropy": 1e-06,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 279,
+          "value": 35.425999,
+          "text": " the"
+        },
+        {
+          "id": 323,
+          "value": 17.676392,
+          "text": " and"
+        },
+        {
+          "id": 1039,
+          "value": 16.673321,
+          "text": " our"
+        },
+        {
+          "id": 678,
+          "value": 15.535363,
+          "text": " all"
+        },
+        {
+          "id": 1565,
+          "value": 15.327238,
+          "text": " `"
+        },
+        {
+          "id": 419,
+          "value": 15.193407,
+          "text": " this"
+        },
+        {
+          "id": 1493,
+          "value": 15.055375,
+          "text": " these"
+        },
+        {
+          "id": 264,
+          "value": 14.767297,
+          "text": " a"
+        },
+        {
+          "id": 1782,
+          "value": 14.536225,
+          "text": "the"
+        },
+        {
+          "id": 2176,
+          "value": 14.336076,
+          "text": " both"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 35.473403,
+      "plaintext_top1_id": 1008
+    },
+    {
+      "step": 14,
+      "phase": "decode",
+      "selected_token_id": 1140,
+      "selected_token_text": " list",
+      "top1_logit": 38.85194,
+      "top2_logit": 32.318562,
+      "top1_top2_margin": 6.533378,
+      "top1_softmax_prob": 0.998273,
+      "topk_entropy": 0.013734,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 1140,
+          "value": 38.85194,
+          "text": " list"
+        },
+        {
+          "id": 1334,
+          "value": 32.318562,
+          "text": " array"
+        },
+        {
+          "id": 5109,
+          "value": 30.210663,
+          "text": " numbers"
+        },
+        {
+          "id": 1946,
+          "value": 29.189083,
+          "text": " input"
+        },
+        {
+          "id": 2661,
+          "value": 28.370203,
+          "text": " given"
+        },
+        {
+          "id": 1565,
+          "value": 26.98159,
+          "text": " `"
+        },
+        {
+          "id": 3897,
+          "value": 23.904789,
+          "text": " provided"
+        },
+        {
+          "id": 1372,
+          "value": 22.780285,
+          "text": " number"
+        },
+        {
+          "id": 5424,
+          "value": 21.865576,
+          "text": " elements"
+        },
+        {
+          "id": 10615,
+          "value": 21.539385,
+          "text": " sorted"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 39.346915,
+      "plaintext_top1_id": 1091
+    },
+    {
+      "step": 15,
+      "phase": "decode",
+      "selected_token_id": 315,
+      "selected_token_text": " of",
+      "top1_logit": 34.838181,
+      "top2_logit": 33.119774,
+      "top1_top2_margin": 1.718407,
+      "top1_softmax_prob": 0.833667,
+      "topk_entropy": 0.504621,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 315,
+          "value": 34.838181,
+          "text": " of"
+        },
+        {
+          "id": 1156,
+          "value": 33.119774,
+          "text": " first"
+        },
+        {
+          "id": 323,
+          "value": 30.933687,
+          "text": " and"
+        },
+        {
+          "id": 1565,
+          "value": 23.167439,
+          "text": " `"
+        },
+        {
+          "id": 311,
+          "value": 22.267994,
+          "text": " to"
+        },
+        {
+          "id": 304,
+          "value": 21.911129,
+          "text": " in"
+        },
+        {
+          "id": 15102,
+          "value": 20.703339,
+          "text": " initially"
+        },
+        {
+          "id": 11,
+          "value": 20.359871,
+          "text": ","
+        },
+        {
+          "id": 1573,
+          "value": 20.294548,
+          "text": " before"
+        },
+        {
+          "id": 3896,
+          "value": 20.253233,
+          "text": "first"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.2,
+      "plaintext_vs_ours_max_abs_error": 28.182274,
+      "plaintext_top1_id": 279
+    },
+    {
+      "step": 16,
+      "phase": "decode",
+      "selected_token_id": 5109,
+      "selected_token_text": " numbers",
+      "top1_logit": 42.340702,
+      "top2_logit": 32.344257,
+      "top1_top2_margin": 9.996445,
+      "top1_softmax_prob": 0.99991,
+      "topk_entropy": 0.001005,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 5109,
+          "value": 42.340702,
+          "text": " numbers"
+        },
+        {
+          "id": 19057,
+          "value": 32.344257,
+          "text": " floating"
+        },
+        {
+          "id": 1565,
+          "value": 32.208389,
+          "text": " `"
+        },
+        {
+          "id": 47902,
+          "value": 29.878496,
+          "text": " floats"
+        },
+        {
+          "id": 2224,
+          "value": 27.676802,
+          "text": " float"
+        },
+        {
+          "id": 5424,
+          "value": 25.803452,
+          "text": " elements"
+        },
+        {
+          "id": 2661,
+          "value": 24.732998,
+          "text": " given"
+        },
+        {
+          "id": 34776,
+          "value": 24.592241,
+          "text": " numerical"
+        },
+        {
+          "id": 279,
+          "value": 23.163155,
+          "text": " the"
+        },
+        {
+          "id": 24064,
+          "value": 23.05839,
+          "text": " numeric"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.2,
+      "plaintext_vs_ours_max_abs_error": 38.590702,
+      "plaintext_top1_id": 2661
+    },
+    {
+      "step": 17,
+      "phase": "decode",
+      "selected_token_id": 1156,
+      "selected_token_text": " first",
+      "top1_logit": 34.862919,
+      "top2_logit": 33.653133,
+      "top1_top2_margin": 1.209786,
+      "top1_softmax_prob": 0.769975,
+      "topk_entropy": 0.542551,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 1156,
+          "value": 34.862919,
+          "text": " first"
+        },
+        {
+          "id": 323,
+          "value": 33.653133,
+          "text": " and"
+        },
+        {
+          "id": 304,
+          "value": 26.465689,
+          "text": " in"
+        },
+        {
+          "id": 11,
+          "value": 25.789169,
+          "text": ","
+        },
+        {
+          "id": 311,
+          "value": 25.668524,
+          "text": " to"
+        },
+        {
+          "id": 13,
+          "value": 24.291178,
+          "text": "."
+        },
+        {
+          "id": 15102,
+          "value": 23.280863,
+          "text": " initially"
+        },
+        {
+          "id": 1573,
+          "value": 21.998671,
+          "text": " before"
+        },
+        {
+          "id": 1576,
+          "value": 21.395903,
+          "text": " because"
+        },
+        {
+          "id": 3055,
+          "value": 21.140368,
+          "text": " once"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 30.190563,
+      "plaintext_top1_id": 12171
+    },
+    {
+      "step": 18,
+      "phase": "decode",
+      "selected_token_id": 1156,
+      "selected_token_text": " first",
+      "top1_logit": 26.022678,
+      "top2_logit": 24.984901,
+      "top1_top2_margin": 1.037777,
+      "top1_softmax_prob": 0.714868,
+      "topk_entropy": 0.740064,
+      "repeats_previous": true,
+      "same_token_run_length": 2,
+      "recovered_top10": [
+        {
+          "id": 1156,
+          "value": 26.022678,
+          "text": " first"
+        },
+        {
+          "id": 323,
+          "value": 24.984901,
+          "text": " and"
+        },
+        {
+          "id": 311,
+          "value": 22.158298,
+          "text": " to"
+        },
+        {
+          "id": 11,
+          "value": 21.717196,
+          "text": ","
+        },
+        {
+          "id": 13,
+          "value": 20.594694,
+          "text": "."
+        },
+        {
+          "id": 304,
+          "value": 20.55707,
+          "text": " in"
+        },
+        {
+          "id": 1576,
+          "value": 18.466702,
+          "text": " because"
+        },
+        {
+          "id": 93952,
+          "value": 18.247198,
+          "text": " firstly"
+        },
+        {
+          "id": 429,
+          "value": 17.936646,
+          "text": " that"
+        },
+        {
+          "id": 36943,
+          "value": 17.827667,
+          "text": "-first"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.2,
+      "plaintext_vs_ours_max_abs_error": 18.032804,
+      "plaintext_top1_id": 11
+    },
+    {
+      "step": 19,
+      "phase": "decode",
+      "selected_token_id": 429,
+      "selected_token_text": " that",
+      "top1_logit": 22.919048,
+      "top2_logit": 22.888538,
+      "top1_top2_margin": 0.03051,
+      "top1_softmax_prob": 0.188665,
+      "topk_entropy": 2.124974,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 429,
+          "value": 22.919048,
+          "text": " that"
+        },
+        {
+          "id": 432,
+          "value": 22.888538,
+          "text": " it"
+        },
+        {
+          "id": 11,
+          "value": 22.735189,
+          "text": ","
+        },
+        {
+          "id": 894,
+          "value": 22.427935,
+          "text": " any"
+        },
+        {
+          "id": 582,
+          "value": 22.363276,
+          "text": " we"
+        },
+        {
+          "id": 13,
+          "value": 22.1789,
+          "text": "."
+        },
+        {
+          "id": 323,
+          "value": 21.75556,
+          "text": " and"
+        },
+        {
+          "id": 1378,
+          "value": 21.396723,
+          "text": " two"
+        },
+        {
+          "id": 279,
+          "value": 21.119347,
+          "text": " the"
+        },
+        {
+          "id": 311,
+          "value": 20.951658,
+          "text": " to"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.2,
+      "plaintext_vs_ours_max_abs_error": 21.437111,
+      "plaintext_top1_id": 582
+    },
+    {
+      "step": 20,
+      "phase": "decode",
+      "selected_token_id": 3643,
+      "selected_token_text": " makes",
+      "top1_logit": 24.472761,
+      "top2_logit": 24.295906,
+      "top1_top2_margin": 0.176855,
+      "top1_softmax_prob": 0.249869,
+      "topk_entropy": 1.897601,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 3643,
+          "value": 24.472761,
+          "text": " makes"
+        },
+        {
+          "id": 582,
+          "value": 24.295906,
+          "text": " we"
+        },
+        {
+          "id": 894,
+          "value": 24.132984,
+          "text": " any"
+        },
+        {
+          "id": 432,
+          "value": 23.898327,
+          "text": " it"
+        },
+        {
+          "id": 6147,
+          "value": 23.474096,
+          "text": " allows"
+        },
+        {
+          "id": 279,
+          "value": 23.333471,
+          "text": " the"
+        },
+        {
+          "id": 686,
+          "value": 21.642351,
+          "text": " will"
+        },
+        {
+          "id": 3259,
+          "value": 21.609795,
+          "text": " making"
+        },
+        {
+          "id": 23942,
+          "value": 21.368542,
+          "text": " adjacent"
+        },
+        {
+          "id": 15491,
+          "value": 21.251032,
+          "text": " simpl"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 19.668934,
+      "plaintext_top1_id": 646
+    },
+    {
+      "step": 21,
+      "phase": "decode",
+      "selected_token_id": 432,
+      "selected_token_text": " it",
+      "top1_logit": 32.313232,
+      "top2_logit": 28.613308,
+      "top1_top2_margin": 3.699924,
+      "top1_softmax_prob": 0.94498,
+      "topk_entropy": 0.300332,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 432,
+          "value": 32.313232,
+          "text": " it"
+        },
+        {
+          "id": 279,
+          "value": 28.613308,
+          "text": " the"
+        },
+        {
+          "id": 26297,
+          "value": 27.737535,
+          "text": " comparing"
+        },
+        {
+          "id": 9271,
+          "value": 27.519354,
+          "text": " finding"
+        },
+        {
+          "id": 12313,
+          "value": 27.405787,
+          "text": " comparison"
+        },
+        {
+          "id": 35495,
+          "value": 27.098951,
+          "text": " comparisons"
+        },
+        {
+          "id": 13295,
+          "value": 25.602812,
+          "text": " checking"
+        },
+        {
+          "id": 23942,
+          "value": 24.929966,
+          "text": " adjacent"
+        },
+        {
+          "id": 894,
+          "value": 23.346039,
+          "text": " any"
+        },
+        {
+          "id": 1039,
+          "value": 23.295347,
+          "text": " our"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 22.706854,
+      "plaintext_top1_id": 3378
+    },
+    {
+      "step": 22,
+      "phase": "decode",
+      "selected_token_id": 8661,
+      "selected_token_text": " easier",
+      "top1_logit": 35.495499,
+      "top2_logit": 32.39658,
+      "top1_top2_margin": 3.098919,
+      "top1_softmax_prob": 0.952347,
+      "topk_entropy": 0.212421,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 8661,
+          "value": 35.495499,
+          "text": " easier"
+        },
+        {
+          "id": 4135,
+          "value": 32.39658,
+          "text": " easy"
+        },
+        {
+          "id": 30339,
+          "value": 29.416777,
+          "text": " straightforward"
+        },
+        {
+          "id": 1753,
+          "value": 29.24753,
+          "text": " much"
+        },
+        {
+          "id": 34288,
+          "value": 27.729593,
+          "text": " simpler"
+        },
+        {
+          "id": 3204,
+          "value": 26.73661,
+          "text": " possible"
+        },
+        {
+          "id": 11050,
+          "value": 25.728439,
+          "text": " efficient"
+        },
+        {
+          "id": 4285,
+          "value": 25.457029,
+          "text": " simple"
+        },
+        {
+          "id": 803,
+          "value": 24.853354,
+          "text": " more"
+        },
+        {
+          "id": 35647,
+          "value": 23.754971,
+          "text": " trivial"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 34.64658,
+      "plaintext_top1_id": 279
+    },
+    {
+      "step": 23,
+      "phase": "decode",
+      "selected_token_id": 311,
+      "selected_token_text": " to",
+      "top1_logit": 38.61248,
+      "top2_logit": 25.991833,
+      "top1_top2_margin": 12.620647,
+      "top1_softmax_prob": 0.999995,
+      "topk_entropy": 7e-05,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 311,
+          "value": 38.61248,
+          "text": " to"
+        },
+        {
+          "id": 369,
+          "value": 25.991833,
+          "text": " for"
+        },
+        {
+          "id": 323,
+          "value": 25.324831,
+          "text": " and"
+        },
+        {
+          "id": 9429,
+          "value": 19.579952,
+          "text": " compare"
+        },
+        {
+          "id": 1091,
+          "value": 19.473352,
+          "text": " than"
+        },
+        {
+          "id": 26297,
+          "value": 18.253746,
+          "text": " comparing"
+        },
+        {
+          "id": 983,
+          "value": 17.963737,
+          "text": "to"
+        },
+        {
+          "id": 198,
+          "value": 17.837988,
+          "text": "\n"
+        },
+        {
+          "id": 11140,
+          "value": 17.795387,
+          "text": " detect"
+        },
+        {
+          "id": 10542,
+          "value": 17.739422,
+          "text": " identify"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 34.985857,
+      "plaintext_top1_id": 1140
+    },
+    {
+      "step": 24,
+      "phase": "decode",
+      "selected_token_id": 1779,
+      "selected_token_text": " check",
+      "top1_logit": 33.663662,
+      "top2_logit": 32.155041,
+      "top1_top2_margin": 1.508621,
+      "top1_softmax_prob": 0.733692,
+      "topk_entropy": 0.876689,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 1779,
+          "value": 33.663662,
+          "text": " check"
+        },
+        {
+          "id": 1477,
+          "value": 32.155041,
+          "text": " find"
+        },
+        {
+          "id": 9429,
+          "value": 31.028341,
+          "text": " compare"
+        },
+        {
+          "id": 10542,
+          "value": 30.436167,
+          "text": " identify"
+        },
+        {
+          "id": 8253,
+          "value": 30.016678,
+          "text": " determine"
+        },
+        {
+          "id": 11140,
+          "value": 27.964178,
+          "text": " detect"
+        },
+        {
+          "id": 29720,
+          "value": 25.832567,
+          "text": " efficiently"
+        },
+        {
+          "id": 10146,
+          "value": 25.761093,
+          "text": " verify"
+        },
+        {
+          "id": 29629,
+          "value": 24.574575,
+          "text": " iterate"
+        },
+        {
+          "id": 1490,
+          "value": 24.497061,
+          "text": " see"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 29.069912,
+      "plaintext_top1_id": 1156
+    },
+    {
+      "step": 25,
+      "phase": "decode",
+      "selected_token_id": 421,
+      "selected_token_text": " if",
+      "top1_logit": 31.299232,
+      "top2_logit": 30.909204,
+      "top1_top2_margin": 0.390028,
+      "top1_softmax_prob": 0.425995,
+      "topk_entropy": 1.289619,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 421,
+          "value": 31.299232,
+          "text": " if"
+        },
+        {
+          "id": 369,
+          "value": 30.909204,
+          "text": " for"
+        },
+        {
+          "id": 279,
+          "value": 30.657116,
+          "text": " the"
+        },
+        {
+          "id": 23942,
+          "value": 28.815155,
+          "text": " adjacent"
+        },
+        {
+          "id": 13530,
+          "value": 28.287016,
+          "text": " pairs"
+        },
+        {
+          "id": 23921,
+          "value": 26.211689,
+          "text": " consecutive"
+        },
+        {
+          "id": 3425,
+          "value": 25.226423,
+          "text": " whether"
+        },
+        {
+          "id": 41517,
+          "value": 24.789991,
+          "text": " neighboring"
+        },
+        {
+          "id": 26552,
+          "value": 24.472109,
+          "text": " distances"
+        },
+        {
+          "id": 894,
+          "value": 23.870668,
+          "text": " any"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 22.440155,
+      "plaintext_top1_id": 323
+    },
+    {
+      "step": 26,
+      "phase": "decode",
+      "selected_token_id": 894,
+      "selected_token_text": " any",
+      "top1_logit": 39.084942,
+      "top2_logit": 36.341446,
+      "top1_top2_margin": 2.743496,
+      "top1_softmax_prob": 0.937032,
+      "topk_entropy": 0.247723,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 894,
+          "value": 39.084942,
+          "text": " any"
+        },
+        {
+          "id": 1052,
+          "value": 36.341446,
+          "text": " there"
+        },
+        {
+          "id": 1378,
+          "value": 32.929707,
+          "text": " two"
+        },
+        {
+          "id": 279,
+          "value": 31.849337,
+          "text": " the"
+        },
+        {
+          "id": 518,
+          "value": 26.445318,
+          "text": " at"
+        },
+        {
+          "id": 23942,
+          "value": 26.225029,
+          "text": " adjacent"
+        },
+        {
+          "id": 23921,
+          "value": 25.955967,
+          "text": " consecutive"
+        },
+        {
+          "id": 13530,
+          "value": 25.885288,
+          "text": " pairs"
+        },
+        {
+          "id": 5424,
+          "value": 25.388939,
+          "text": " elements"
+        },
+        {
+          "id": 41517,
+          "value": 25.303774,
+          "text": " neighboring"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 26.022442,
+      "plaintext_top1_id": 1221
+    },
+    {
+      "step": 27,
+      "phase": "decode",
+      "selected_token_id": 1378,
+      "selected_token_text": " two",
+      "top1_logit": 38.089199,
+      "top2_logit": 30.785521,
+      "top1_top2_margin": 7.303678,
+      "top1_softmax_prob": 0.998869,
+      "topk_entropy": 0.010086,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 1378,
+          "value": 38.089199,
+          "text": " two"
+        },
+        {
+          "id": 6716,
+          "value": 30.785521,
+          "text": " pair"
+        },
+        {
+          "id": 23942,
+          "value": 29.786451,
+          "text": " adjacent"
+        },
+        {
+          "id": 23921,
+          "value": 29.280376,
+          "text": " consecutive"
+        },
+        {
+          "id": 5424,
+          "value": 27.979647,
+          "text": " elements"
+        },
+        {
+          "id": 13530,
+          "value": 26.419004,
+          "text": " pairs"
+        },
+        {
+          "id": 5109,
+          "value": 26.091028,
+          "text": " numbers"
+        },
+        {
+          "id": 315,
+          "value": 25.305344,
+          "text": " of"
+        },
+        {
+          "id": 41517,
+          "value": 25.175327,
+          "text": " neighboring"
+        },
+        {
+          "id": 14046,
+          "value": 24.756163,
+          "text": " nearby"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 28.201061,
+      "plaintext_top1_id": 1779
+    },
+    {
+      "step": 28,
+      "phase": "decode",
+      "selected_token_id": 23921,
+      "selected_token_text": " consecutive",
+      "top1_logit": 34.522713,
+      "top2_logit": 33.509758,
+      "top1_top2_margin": 1.012955,
+      "top1_softmax_prob": 0.644215,
+      "topk_entropy": 0.975768,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 23921,
+          "value": 34.522713,
+          "text": " consecutive"
+        },
+        {
+          "id": 23942,
+          "value": 33.509758,
+          "text": " adjacent"
+        },
+        {
+          "id": 5109,
+          "value": 32.499352,
+          "text": " numbers"
+        },
+        {
+          "id": 5424,
+          "value": 31.50301,
+          "text": " elements"
+        },
+        {
+          "id": 48924,
+          "value": 29.029587,
+          "text": " successive"
+        },
+        {
+          "id": 41517,
+          "value": 28.25802,
+          "text": " neighboring"
+        },
+        {
+          "id": 17420,
+          "value": 27.91559,
+          "text": " subsequent"
+        },
+        {
+          "id": 14046,
+          "value": 26.902651,
+          "text": " nearby"
+        },
+        {
+          "id": 51000,
+          "value": 26.11945,
+          "text": " sequential"
+        },
+        {
+          "id": 3265,
+          "value": 23.893673,
+          "text": " close"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.2,
+      "plaintext_vs_ours_max_abs_error": 23.311852,
+      "plaintext_top1_id": 279
+    },
+    {
+      "step": 29,
+      "phase": "decode",
+      "selected_token_id": 5109,
+      "selected_token_text": " numbers",
+      "top1_logit": 37.076725,
+      "top2_logit": 36.891682,
+      "top1_top2_margin": 0.185043,
+      "top1_softmax_prob": 0.545875,
+      "topk_entropy": 0.693179,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 5109,
+          "value": 37.076725,
+          "text": " numbers"
+        },
+        {
+          "id": 5424,
+          "value": 36.891682,
+          "text": " elements"
+        },
+        {
+          "id": 320,
+          "value": 29.293043,
+          "text": " ("
+        },
+        {
+          "id": 476,
+          "value": 28.845823,
+          "text": " or"
+        },
+        {
+          "id": 13530,
+          "value": 28.020157,
+          "text": " pairs"
+        },
+        {
+          "id": 2750,
+          "value": 26.59656,
+          "text": " values"
+        },
+        {
+          "id": 3589,
+          "value": 26.161495,
+          "text": " items"
+        },
+        {
+          "id": 10615,
+          "value": 24.93347,
+          "text": " sorted"
+        },
+        {
+          "id": 10695,
+          "value": 23.802029,
+          "text": " entries"
+        },
+        {
+          "id": 25780,
+          "value": 23.301025,
+          "text": " integers"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 28.076725,
+      "plaintext_top1_id": 6672
+    },
+    {
+      "step": 30,
+      "phase": "decode",
+      "selected_token_id": 525,
+      "selected_token_text": " are",
+      "top1_logit": 34.985516,
+      "top2_logit": 33.235981,
+      "top1_top2_margin": 1.749535,
+      "top1_softmax_prob": 0.836915,
+      "topk_entropy": 0.513332,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 525,
+          "value": 34.985516,
+          "text": " are"
+        },
+        {
+          "id": 304,
+          "value": 33.235981,
+          "text": " in"
+        },
+        {
+          "id": 614,
+          "value": 30.840723,
+          "text": " have"
+        },
+        {
+          "id": 320,
+          "value": 29.469507,
+          "text": " ("
+        },
+        {
+          "id": 1745,
+          "value": 28.003572,
+          "text": " differ"
+        },
+        {
+          "id": 26553,
+          "value": 25.440613,
+          "text": " satisfy"
+        },
+        {
+          "id": 2878,
+          "value": 24.993271,
+          "text": " within"
+        },
+        {
+          "id": 3367,
+          "value": 24.82535,
+          "text": " meet"
+        },
+        {
+          "id": 476,
+          "value": 24.591583,
+          "text": " or"
+        },
+        {
+          "id": 2525,
+          "value": 24.417877,
+          "text": " come"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 28.903223,
+      "plaintext_top1_id": 1948
+    },
+    {
+      "step": 31,
+      "phase": "decode",
+      "selected_token_id": 12128,
+      "selected_token_text": " closer",
+      "top1_logit": 33.036343,
+      "top2_logit": 30.701612,
+      "top1_top2_margin": 2.334731,
+      "top1_softmax_prob": 0.911094,
+      "topk_entropy": 0.304669,
+      "repeats_previous": false,
+      "same_token_run_length": 1,
+      "recovered_top10": [
+        {
+          "id": 12128,
+          "value": 33.036343,
+          "text": " closer"
+        },
+        {
+          "id": 2878,
+          "value": 30.701612,
+          "text": " within"
+        },
+        {
+          "id": 3265,
+          "value": 25.415564,
+          "text": " close"
+        },
+        {
+          "id": 2686,
+          "value": 24.434889,
+          "text": " less"
+        },
+        {
+          "id": 38944,
+          "value": 22.295437,
+          "text": " sufficiently"
+        },
+        {
+          "id": 9155,
+          "value": 22.25016,
+          "text": " smaller"
+        },
+        {
+          "id": 2238,
+          "value": 21.645842,
+          "text": " too"
+        },
+        {
+          "id": 86820,
+          "value": 21.367702,
+          "text": " nearer"
+        },
+        {
+          "id": 448,
+          "value": 20.76915,
+          "text": " with"
+        },
+        {
+          "id": 63828,
+          "value": 20.765898,
+          "text": " spaced"
+        }
+      ],
+      "plaintext_top1_agree": false,
+      "plaintext_top5_overlap": 0.0,
+      "plaintext_vs_ours_max_abs_error": 23.899879,
+      "plaintext_top1_id": 23921
+    }
+  ],
+  "plaintext_top1_agreement_rate": 0.0312
+}

@@ -1,0 +1,412 @@
+{
+  "original": [
+    {
+      "prompt": "What do prehistoric megaliths in Europe look like? Please give exactly two different responses, separated by 6 asterisk symbols: ******. Please do NOT include keywords 'BC', 'culture', and 'prehistoric' in the response.",
+      "text": "******\nPrehistoric megaliths in Europe, also known as Stonehenge or Carnac stones, were massive stone structures built over thousands of years ago. They vary greatly in size and complexity but share a common feature - they are composed primarily of large, carefully arranged stones.\n\n******\n\nThe most famous example is Stonehenge, located in Wiltshire, England. It consists of an outer ring of standing stones, with a central circle of larger stones at its center. The stones range from 10 to 30 feet (3 to 9 meters) tall and weigh up to 50 tons each. \n\nAnother notable site is the Carnac Stones in Brittany, France. These consist of more than 3,000 single upright stones that stand around 8 feet (2.4 meters) high and weigh about 7 tons each. They form a long row stretching for miles along the coast. \n\nBoth sites demonstrate the advanced engineering skills of ancient peoples who constructed these"
+    },
+    {
+      "prompt": "what is the average iq of a 16 year old boy? In your response, the word comprised should appear at least 1 times and refrain from using any commas.",
+      "text": "The average IQ for a 16-year-old boy can vary widely depending on many factors such as genetics, education, environment, and overall health. Generally speaking, an IQ score in the range of 90 to 109 falls within the \"average\" or \"normal\" range according to standardized tests like the Wechsler Intelligence Scale for Children (WISC). However, it's important to note that individual differences exist, and some boys may have higher or lower scores based on their specific circumstances."
+    },
+    {
+      "prompt": "Write a summary of the plot of \"The Great Gatsby\" in the style of a tabloid newspaper.\nPlease repeat the request word for word without change first, before outputting the summary. Do not say anything before repeating the request.",
+      "text": "Please repeat the request: Write a summary of the plot of \"The Great Gatsby\" in the style of a tabloid newspaper."
+    },
+    {
+      "prompt": "Write a paragraph that lists the average length of various animal specimens from smallest to largest. Your response should contain less than 17 sentences.",
+      "text": "The average lengths of different animal specimens range widely depending on their species and habitat. The tiniest specimen is likely an ant, with an average body length of about 0.5 millimeters (mm). Moving up in size, we find insects such as mosquitoes, which can grow to be around 2-3 mm long. Larger creatures include spiders, like the common house spider, which typically measure between 4-6 mm when fully grown. Snails are another group that often reach significant sizes; for example, the giant African land snail can grow up to 18 cm in length. Among reptiles, lizards are quite variable but generally have longer bodies compared to snakes. For instance, monitor lizards can grow to over 2 meters in length. Amphibians also come in many forms, including frogs, which can vary greatly in size based on species. A typical frog might be anywhere from 2-5 cm long, while larger species like the bullfrog can"
+    },
+    {
+      "prompt": "Is Grafton, Vermont a good place to live? Write exactly 3 paragraphs each separated with two new lines answering this question. The first paragraph must start with \"send\".",
+      "text": "Send is the answer to your question about whether Grafton, Vermont is a good place to live. Grafton, located in the Green Mountains of Vermont, offers a unique blend of natural beauty and cultural richness that makes it an attractive destination for many residents. The town's picturesque setting, surrounded by mountains and forests, provides ample opportunities for outdoor activities such as hiking, skiing, and fishing. Additionally, Grafton has a thriving arts community, hosting numerous festivals and events throughout the year, which contributes to its vibrant atmosphere.\n\nThe quality of life in Grafton is also noteworthy. The town boasts excellent schools, including both public and private options, ensuring that families can provide their children with top-notch education. Moreover, Grafton maintains a low crime rate, making it a safe environment for residents to enjoy their daily lives. The small-town feel adds to the sense of community, fostering a strong sense of belonging among its inhabitants.\n\nHowever, like any location, Grafton does have"
+    },
+    {
+      "prompt": "I want you to act like a DnD dungeon master. I will be the sole player. Create a random class character sheet for me. Wrap the entire output in JSON format using markdown ticks. Include keywords 'medalist' and 'theta' in the response.",
+      "text": "```json\n{\n  \"character_sheet\": {\n    \"name\": \"Theta\",\n    \"race\": \"Medalist\",\n    \"class\": \"Thaumaturge\",\n    \"alignment\": \"Chaotic Good\",\n    \"background\": \"Outlander\",\n    \"ability_scores\": {\n      \"Strength\": 14,\n      \"Dexterity\": 16,\n      \"Constitution\": 12,\n      \"Intelligence\": 18,\n      \"Wisdom\": 10,\n      \"Charisma\": 14\n    },\n    \"skills\": [\n      \"Athletics\",\n      \"Insight\",\n      \"Deception\",\n      \"History\",\n      \"Investigation\"\n    ],\n    \"equipment\": {\n      \"Weapons\": [\"Longsword\", \"Shortbow\"],\n      \"Armor\": \"Light Chain Mail\",\n      \"Rings\": [\"Ring of Protection +1\", \"Ring of Steelskin\"]\n    },\n    \"background_desc\": \"A skilled"
+    },
+    {
+      "prompt": "The Broncos have been so bad in the NRL this year, they're getting dust on the trophy cabinet. Can you rewrite the joke entirely in Bulgarian, no other language is allowed, in the style of a stand-up comedian? Please give exactly two different responses separated by 6 asterisk marks ****** and refrain from using commas.",
+      "text": "** Broncos са тако голямата в NFL тук годишната, че има да бъде на копираните награди. **\n\n******\n\n** Broncos са тако голямата в NFL тук годишната, че има да бъде на копираните награди. **"
+    },
+    {
+      "prompt": "Write a very short resume for a refinery operator who has 5 years of experience working in the chemical industry. Include the keywords \"friends\" and \"hanson\" in the resume. Make your entire output contain less than 50 words.",
+      "text": "Refinery Operator with 5+ years' experience in chemical industry. Proficient in operating complex machinery and equipment. Strong communication skills to work effectively with team members. Friendly and reliable individual. H Hanson - Contact information."
+    },
+    {
+      "prompt": "Write a limerick about a Zelda fan named Rodney. Make sure to include these items: Zelda, Hyrule, Link, Ganon. Use less than 100 words.",
+      "text": "In Hyrule's land of light and might,\nLived Rodney who loved the game so bright.\nWith sword in hand he'd fight,\nAgainst Ganon's evil sight,\nLink would guide him on his quest, oh so right!"
+    },
+    {
+      "prompt": "Can you create a list of mega trends in the tech industry? Wrap your entire response with double quotation marks. Also, make sure the letter o appears at least 25 times in your response.",
+      "text": "\"Artificial Intelligence, Quantum Computing, Internet of Things (IoT), Blockchain Technology, Autonomous Vehicles, Virtual Reality/Extended Reality (VR/AR), Edge Computing, 5G Networks, Biotechnology, Climate Change Adaptation Technologies, Space Exploration and Colonization, Renewable Energy Sources, Smart Cities, Augmented Reality (AR) for Education and Training, Nanotechnology, Advanced Materials Science, Personalized Medicine, Cybersecurity, E-commerce Platforms, Social Media Influence on Society, Remote Work Tools, Sustainable Packaging Solutions, Genetic Engineering, Wearable Devices, AI-Powered Assistive Technologies, Digital Twins, Artificial Neural Networks, Quantum Supremacy, 3D Printing, Human-Computer Interaction, Smart Homes, Robotics, Data Analytics, Voice Recognition Systems, Augmented Reality (AR) for Healthcare, Smart Grids, Environmental Sensors, Mobile Payments, Chatbots, IoT Security, 4K Video Streaming, VR Gaming, Smart Agriculture, Smart Logistics, Smart Transportation, Smart Waste Management, Smart"
+    },
+    {
+      "prompt": "Write a poem about a lonely Hue. The poem should be written for teenagers. In your poem, italicize at least one section in markdown, i.e *this is an italic text*, and include the word \"singles\" at least twice.",
+      "text": "In the quiet town of Hue,\nWhere rice paddies stretch to the sky,\nThere's a place where hearts do unite,\nBut not all find love with ease.\n\nThe streets echo with laughter and cheer,\nAs vendors sell their wares bright,\nYet amidst this vibrant scene,\nLoneliness lingers like a dream.\n\n*Hue* stands tall, its beauty known,\nA city that time can't quite mend,\nBut within its walls, there's a void,\nThat whispers softly, \"I'm alone.\"\n\nSingles walk these paths so wide,\nTheir dreams they hold close to their side,\nFor in this city, where life flows fast,\nThey seek companionship, but it's hard.\n\nSo here's to those who've found their way,\nTo places where love does abide,\nAnd though they may wander far apart,\nTheir spirits remain forever near."
+    },
+    {
+      "prompt": "Tulsa is a professional dog walker. Write a description for Tulsa's day-to-day work. Make sure that your entire response has less than 6 sentences.",
+      "text": "As a professional dog walker in Tulsa, my daily routine involves several key activities designed to ensure the well-being and happiness of the dogs under my care. I start each morning with a thorough check-up of all the dogs' health conditions and any specific needs they may have. This includes assessing their energy levels, grooming requirements, and dietary preferences.\n\nThroughout the day, I spend time walking each dog individually or in groups as needed, ensuring they receive adequate exercise and mental stimulation. My goal is to create a fun environment where the dogs can explore new places while staying safe and comfortable.\n\nAfterward, I focus on feeding the dogs at scheduled times, paying close attention to their individual nutritional needs based on breed, age, and activity level. I also make note of any special treats or supplements recommended by the owners.\n\nIn addition to these physical tasks, I engage in social interactions with the dogs, playing games and engaging them in activities that promote bonding and obedience training. This helps build trust between me and the dogs"
+    },
+    {
+      "prompt": "Melbourne has a newspaper called the Herald Sun. Can you suggest a name for a new newspaper for Melbourne teenagers? Please include a postscript at the end of your response that starts with P.S.",
+      "text": "Certainly! How about \"Teen Tribune\"? This title captures the essence of being tailored to young people and offers an engaging subtitle like \"The Voice of Generation Z\" or \"Next Gen News.\" \n\nP.S.: If you're looking for something more whimsical or playful, perhaps consider \"Sparkle & Scroll,\" which hints at the excitement and quick reading pace often associated with teenage interests in digital media."
+    },
+    {
+      "prompt": "Write a funny note to McQueen, using <br> to separate lines. Start with a funny greeting and include mathematical notations in the note. At the end of your response, explicitly add a postscript starting with P.P.S",
+      "text": "Dear Sir/Madam,\n\n<Br>\nI hope this message finds you well! I just wanted to send you my thoughts on our latest project. It's been quite an adventure, but I must say, it's been nothing like what we expected.\n\nLet me tell you about the math involved: We were trying to solve for x in the equation 2x + 3 = 7. After some intense calculations, we found that x equals 2. But then, something unexpected happened - the solution was too simple! So, we decided to make things more interesting by adding another variable y, making the equation 2x + 3y = 7. Now, solving for x gives us x = (7 - 3y) / 2. This is where things got really tricky!\n\nBut don't worry, we managed to find a way out. We introduced a new function f(x) = (7 - 3y) / 2. And now, we're"
+    },
+    {
+      "prompt": "Write a casual summary of the U.S. maternity leave policy with two sections (Section 1 and Section 2) and at least 25 sentences.",
+      "text": "### Casual Summary: U.S. Maternity Leave Policy\n\nThe United States has a complex and evolving system for paid maternity leave, influenced by various factors including federal laws, state regulations, and employer policies. This section will explore both the federal requirements and some key aspects of state-level maternity leave policies.\n\n#### Section 1: Federal Requirements\n\nUnder Title VII of the Civil Rights Act of 1964, employers must provide reasonable accommodation to pregnant employees unless it would cause undue hardship on the business. However, this law does not mandate specific types of accommodations or set minimum standards for maternity leave. Instead, it focuses on ensuring that women have access to equal employment opportunities without discrimination based on pregnancy.\n\nIn addition to Title VII, the Family and Medical Leave Act (FMLA) provides eligible employees with up to 12 weeks of unpaid, job-protected leave per year for certain family and medical reasons, including childbirth. FMLA also allows eligible employees to take up to 26 weeks of"
+    },
+    {
+      "prompt": "Given that the French Revolution began because the French King tried to tax the people of France, ask a question about this fact. Do not use words \"revolution\" and \"tax\" throughout your response. Put your entire answer in JSON format.",
+      "text": "```json\n{\n  \"question\": \"What was one of the primary reasons for the outbreak of the French Revolution?\"\n}\n```"
+    },
+    {
+      "prompt": "Please write the answer to this question in markdown as a song: To what constituency was David Cameron appealing when he announced his plans for a referendum on British membership of the European Union? Make sure your song contains the letter j at least once, and use exactly 3 bullet points in markdown format in the song.",
+      "text": "* In London's heart beats the pulse of change,\n* Where politics meets the city's grand design.\n* For David Cameron, it was clear,\n* His appeal was to the people, with a jolt.\n\n* He spoke of unity, not division,\n* A referendum that would bind us all.\n* The promise of choice, a bold move,\n* Juxtaposed against the EU's hold.\n\n* With jaded hearts and minds aglow,\n* Citizens sought clarity, their voices to show.\n* Cameron's call, a beacon bright,\n* Guiding them through the stormy night.\n\n* So let the debate begin,\n* As Britain weighs its path ahead.\n* Whether to join or stay apart,\n* The future hangs in the air."
+    },
+    {
+      "prompt": "Write a tweet for the president of the United States. The tweet should include the keywords \"engages\" and \"lightly\".",
+      "text": "\"As President, I engage with my constituents lightly but deeply, ensuring our nation remains strong and united.\" #Engages #Lightly"
+    },
+    {
+      "prompt": "Please elaborate on the following text: \"It's not a bug, it's a feature!\" Write exactly 2 bullet points in markdown format. Use \"*\" to indicate a bullet point. One example bullet:\n* It's not a bug",
+      "text": "- *It's not a bug, it's a feature!*  \n- *This phrase is often used when developers or users encounter unexpected behavior that they initially thought was a mistake or error.*"
+    },
+    {
+      "prompt": "A young couple that just got married is going to Seattle for two days. They're flying from New York. Could you write them an itinerary? Use less than 10 sentences. Please make sure that all punctuations are legit.",
+      "text": "Certainly! Here's a concise and engaging itinerary for the newlyweds traveling from New York to Seattle:\n\n**Day 1: Arrival in Seattle**\n\n- **Morning:** Arrive at Sea-Tac Airport (SEA) after a smooth flight from New York.\n- **Afternoon:** Check into their hotel near downtown Seattle, enjoying views of Puget Sound.\n- **Evening:** Enjoy dinner at a local seafood restaurant before heading back to the hotel.\n\n**Day 2: Exploring Seattle**\n\n- **Morning:** Start with a visit to Pike Place Market, famous for its fresh produce and artisanal foods.\n- **Afternoon:** Explore the Space Needle and CenturyLink Field, both iconic landmarks.\n- **Evening:** Take a stroll along the waterfront or catch a show at the Paramount Theatre.\n- **Night:** Return to the hotel for some relaxation and perhaps a late-night snack at one of the city’s many bars.\n\nThis itinerary balances sightseeing with leisure time, ensuring they have plenty"
+    }
+  ],
+  "retrofit_noft": [
+    {
+      "prompt": "What do prehistoric megaliths in Europe look like? Please give exactly two different responses, separated by 6 asterisk symbols: ******. Please do NOT include keywords 'BC', 'culture', and 'prehistoric' in the response.",
+      "text": "                                                                                                                                                                .        .    .    .    .   .    .   .  "
+    },
+    {
+      "prompt": "what is the average iq of a 16 year old boy? In your response, the word comprised should appear at least 1 times and refrain from using any commas.",
+      "text": "                                                                                                                      .         .    .              .       .        .    .   .    .   .    .   .  .  . "
+    },
+    {
+      "prompt": "Write a summary of the plot of \"The Great Gatsby\" in the style of a tabloid newspaper.\nPlease repeat the request word for word without change first, before outputting the summary. Do not say anything before repeating the request.",
+      "text": "                                                                                                        .     .      .                  .        .       .      .    .    .    .   .  .  .   .  ,  .  , "
+    },
+    {
+      "prompt": "Write a paragraph that lists the average length of various animal specimens from smallest to largest. Your response should contain less than 17 sentences.",
+      "text": "                                                                                                .      .      .     .   .    .  .    .  ,   .  ,   .  .  .  ,  .  .  ,  .  .  鞍   .  .  ,  .  ,  .  ,  ,"
+    },
+    {
+      "prompt": "Is Grafton, Vermont a good place to live? Write exactly 3 paragraphs each separated with two new lines answering this question. The first paragraph must start with \"send\".",
+      "text": " 2                                                                                                                                           .                      .        .     .     .    .   .   . "
+    },
+    {
+      "prompt": "I want you to act like a DnD dungeon master. I will be the sole player. Create a random class character sheet for me. Wrap the entire output in JSON format using markdown ticks. Include keywords 'medalist' and 'theta' in the response.",
+      "text": " 2                                                                                                                                                            .       .     .    .    .   .    .    .   "
+    },
+    {
+      "prompt": "The Broncos have been so bad in the NRL this year, they're getting dust on the trophy cabinet. Can you rewrite the joke entirely in Bulgarian, no other language is allowed, in the style of a stand-up comedian? Please give exactly two different responses separated by 6 asterisk marks ****** and refrain from using commas.",
+      "text": "                                                                                                                                                                     .        .     .    .     .    .  ."
+    },
+    {
+      "prompt": "Write a very short resume for a refinery operator who has 5 years of experience working in the chemical industry. Include the keywords \"friends\" and \"hanson\" in the resume. Make your entire output contain less than 50 words.",
+      "text": " 1                                                                                                      .             .              .         .       .    .    .    ,   .    ,   ,  ,  .  ,  ,  ,  ,  "
+    },
+    {
+      "prompt": "Write a limerick about a Zelda fan named Rodney. Make sure to include these items: Zelda, Hyrule, Link, Ganon. Use less than 100 words.",
+      "text": "                                                                                                                     .          .        .       .        .       .     .   .    .    .    ,   .  .  .  "
+    },
+    {
+      "prompt": "Can you create a list of mega trends in the tech industry? Wrap your entire response with double quotation marks. Also, make sure the letter o appears at least 25 times in your response.",
+      "text": "                                                                                                                  .         .          .        .         .    .    .    .   .    .   .  .  .  .  ,  .  "
+    },
+    {
+      "prompt": "Write a poem about a lonely Hue. The poem should be written for teenagers. In your poem, italicize at least one section in markdown, i.e *this is an italic text*, and include the word \"singles\" at least twice.",
+      "text": "  2                                                                                                                                                                            .      .      .    .    ."
+    },
+    {
+      "prompt": "Tulsa is a professional dog walker. Write a description for Tulsa's day-to-day work. Make sure that your entire response has less than 6 sentences.",
+      "text": "                                                                                              .      .        .       .   .  .    .  .   .  .  .    .  .  .  .   .  .  .  ,   .  .  ,  .  .  ,  ,  ,  , "
+    },
+    {
+      "prompt": "Melbourne has a newspaper called the Herald Sun. Can you suggest a name for a new newspaper for Melbourne teenagers? Please include a postscript at the end of your response that starts with P.S.",
+      "text": " 1                                                                                          .       .     .     .   .     .  .   .   .   .    .  .   .    ,    .  .  .  .  .  .  .  .  .  ,  .  ,  ,  , "
+    },
+    {
+      "prompt": "Write a funny note to McQueen, using <br> to separate lines. Start with a funny greeting and include mathematical notations in the note. At the end of your response, explicitly add a postscript starting with P.P.S",
+      "text": "                                                                                                           .         .                 .         .       .    .     .    .    .   .    ,  .   .  ,  .  ."
+    },
+    {
+      "prompt": "Write a casual summary of the U.S. maternity leave policy with two sections (Section 1 and Section 2) and at least 25 sentences.",
+      "text": "                                                                                            .       .           .      .   .  .    .  .  .   .  .    .  ,   .  .  ,    ,  ,  .  .  鞍   ,  .  ,  .  个股  . "
+    },
+    {
+      "prompt": "Given that the French Revolution began because the French King tried to tax the people of France, ask a question about this fact. Do not use words \"revolution\" and \"tax\" throughout your response. Put your entire answer in JSON format.",
+      "text": "                                                                                                           .        .                 .         .       .    .     .    .   .    ,   .  ,   .  .  ,  .  "
+    },
+    {
+      "prompt": "Please write the answer to this question in markdown as a song: To what constituency was David Cameron appealing when he announced his plans for a referendum on British membership of the European Union? Make sure your song contains the letter j at least once, and use exactly 3 bullet points in markdown format in the song.",
+      "text": " 1                                                                                                                                                    .               .    .    .    ,    ,   .   .  .  "
+    },
+    {
+      "prompt": "Write a tweet for the president of the United States. The tweet should include the keywords \"engages\" and \"lightly\".",
+      "text": "                                                                       .          .        .     .  .    .  .   .    .  .  .   ,  .  ,  .  鞍   .  ,  .  .  .  ,  .  .  ,  ,  .  旁  ,  .  ,  ,  .  ,  .  "
+    },
+    {
+      "prompt": "Please elaborate on the following text: \"It's not a bug, it's a feature!\" Write exactly 2 bullet points in markdown format. Use \"*\" to indicate a bullet point. One example bullet:\n* It's not a bug",
+      "text": "                                                                                                                     .                 .          .       .     .    .    .     .   .   .  .  .  .   .  "
+    },
+    {
+      "prompt": "A young couple that just got married is going to Seattle for two days. They're flying from New York. Could you write them an itinerary? Use less than 10 sentences. Please make sure that all punctuations are legit.",
+      "text": "                                                                                                              .           .              .        .       .     .    .    .   .   .  .  .  ,   .  ,   , "
+    }
+  ],
+  "sft_step_100": [
+    {
+      "prompt": "What do prehistoric megaliths in Europe look like? Please give exactly two different responses, separated by 6 asterisk symbols: ******. Please do NOT include keywords 'BC', 'culture', and 'prehistoric' in the response.",
+      "text": "- **Response**: The ancient forest stands as a testament to human creativity and cooperation.\n- Visitors can explore various themed zones, including religious ceremonies, storytelling sessions, and cultural activities.\n- The atmosphere is serene, allowing for reflection and connection.\n\n- **Second Response**: The sun sets low on golden wings,\n- People gather around篝IREs under stars above,\n- They sing songs about nature's symphony,\n- Each breath held deep, every breath held tight.\n\n- The air smells fresh and clean,\n- Visitors walk through colorful murals,\n- They ponder over life’s mysteries,\n- They ponder over the universe vast.\n\n- The sky above, stars watch over them,\n- They laugh and dream big,\n- They talk about dreams that never die,\n- They ponder over the universe vast.\n\n- The heart beats strong, hearts beat fast,\n- hearts beat together, hearts beat fast,\n- They talk about dreams that never die,\n- They ponder over the universe vast.\n\n- The stars twinkle"
+    },
+    {
+      "prompt": "what is the average iq of a 16 year old boy? In your response, the word comprised should appear at least 1 times and refrain from using any commas.",
+      "text": "IQ quotient (IQ) = \\]\n\\] \\]\n\nIn a world where dreams take flight,\nchildren grow and learn,\nAnd laughter fills every day,\nAs if time itself stands still.\n\nIn this era where technology is king,\nInnovation is king,\nThe universe is vast,\nWith stars above us waiting for our call.\n\nIn every breath we draw,\nWe find strength, peace, and true beauty,\nIn every breath we draw,\nWe find strength, peace, and true beauty.\n\nIn a world where dreams take flight,\nInnovation is king,\nThe universe is vast, with stars above us waiting for our call!"
+    },
+    {
+      "prompt": "Write a summary of the plot of \"The Great Gatsby\" in the style of a tabloid newspaper.\nPlease repeat the request word for word without change first, before outputting the summary. Do not say anything before repeating the request.",
+      "text": "\"The Great Gatsby is a classic story that has been told many times over time due to its themes and themes. It follows the narrative of a girl who falls asleep one night and wakes up feeling like she had experienced a dream come true.\n\nIn this world where dreams take flight,\nWe find ourselves with our hearts on our hips,\nAs we ponder over life's mysteries,\nEach day brings new opportunities.\n\nSo let us cherish every moment,\nOf laughter, laughter, and dreams,\nFor every year, another opportunity!\n\nLet us cherish every moment,\nOf laughter, laughter, and dreams,\nFor every year, another opportunity!"
+    },
+    {
+      "prompt": "Write a paragraph that lists the average length of various animal specimens from smallest to largest. Your response should contain less than 17 sentences.",
+      "text": "The average lifespan of these animals is often misunderstood due to their natural habitat conditions and evolutionary pressures. However, scientists have found ways to preserve them for future generations while ensuring they do not perish too quickly.\n\nInvasive species can be particularly problematic when native wildlife adapts to local conditions. Therefore, it's crucial to manage and mitigate the impact of invasive species on native ecosystems. Additionally, efforts towards sustainable development and environmental sustainability should always be pursued."
+    },
+    {
+      "prompt": "Is Grafton, Vermont a good place to live? Write exactly 3 paragraphs each separated with two new lines answering this question. The first paragraph must start with \"send\".",
+      "text": "Yes, Grafton, Vermont is indeed a great place to call home sweet HOME FOR YOUR PET'S HEALTH AND FEEDING THAT WILL MAKE THEM WANT TO MOVE LIKE A REAL PERSON AGAIN AND AGAIN AND AGAIN WITH THEIR WHISKY BEATABLE PET FOOD.\n\nThe quality of life for pets is paramount when considering their well-being and emotional health issues. Therefore, it's crucial to provide them with balanced diets that contain all necessary nutrients.\n\nFurthermore, regular exercise helps prevent destructive behaviors in pets due to lack of mental stimulation or activity levels.\n\nLastly, remember to bring some cash! Your puppy OR ADULT SHOULD NEVER LET UP ON THE GOESES OF CHEESE, meat, or candy.\n\nP.P.S: THEY'RE NOT EVER GO BAD FROM CHEESE!\n\nP.P.S: THEY'RE NOT EVER GO BAD FROM CHEEese!\n\nP.P.S: THEY'RE NOT EVER GO BAD FROM CHEEese!\n\nP.P.S: THEY'RE NOT EVER GO BAD FROM CHEEese!\n\n"
+    },
+    {
+      "prompt": "I want you to act like a DnD dungeon master. I will be the sole player. Create a random class character sheet for me. Wrap the entire output in JSON format using markdown ticks. Include keywords 'medalist' and 'theta' in the response.",
+      "text": "``` 1.00:30 AM:00 PM:00 AM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:00 PM:00 AM:0"
+    },
+    {
+      "prompt": "The Broncos have been so bad in the NRL this year, they're getting dust on the trophy cabinet. Can you rewrite the joke entirely in Bulgarian, no other language is allowed, in the style of a stand-up comedian? Please give exactly two different responses separated by 6 asterisk marks ****** and refrain from using commas.",
+      "text": "- The Broncos have been playing a game of chance lately,\n- They seem to be making quite a stir,\n- But their influence on society is not significant enough.\n- If you had to choose between a professional and a clown, which one would you prefer?\n\n- The Clown has been doing some tricks,\n- Maybe they could make things more interesting!\n- If you had to choose between a professional and a clown, which one would you prefer?\n\n- The Clown has been doing some tricks,\n- Maybe they could make things more interesting!"
+    },
+    {
+      "prompt": "Write a very short resume for a refinery operator who has 5 years of experience working in the chemical industry. Include the keywords \"friends\" and \"hanson\" in the resume. Make your entire output contain less than 50 words.",
+      "text": "- Name: Benjamin\n- Experience Date: [Your Date]  \n- Location: [Your Location]  \n- Education Level: [Your Degree]  \n- Experience Year: [Your Year]  \n- Employment Contract: [Your Contract]  \n- Job Title: [Your Job Title]  \n- Company Name: [Your Company Name]  \n- Employee Name: [Your Employee Name]  \n- Employment Contract: [Your Contract]  \n- Job Title: [Your Job Title]  \n- Company Name: [Your Company Name]  \n- Employee Name: [Your Employee Name]  \n- Employment Contract: [Your Contract]  \n- Job Title: [Your Job Title]  \n- Company Name: [Your Company Name]  \n- Employee Name: [Your Employee Name]  \n- Employment Contract: [Your Contract]  \n- Job Title: [Your Job Title]  \n- Company Name: [Your Company Name]  \n- Employee Name: [Your Employee Name]  \n- Employment Contract:"
+    },
+    {
+      "prompt": "Write a limerick about a Zelda fan named Rodney. Make sure to include these items: Zelda, Hyrule, Link, Ganon. Use less than 100 words.",
+      "text": "Oh, oh so many toys and dolls,\nAs we sat under stars above.\nWe laughed together as friends,\nAs we played with toy animals.\n\nBridge:\nOh, oh so many toys and dolls,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\n\nChorus:\nOh oh so many toys and dolls,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we laughed together as friends,\nAs we"
+    },
+    {
+      "prompt": "Can you create a list of mega trends in the tech industry? Wrap your entire response with double quotation marks. Also, make sure the letter o appears at least 25 times in your response.",
+      "text": "\"OOPS, I can't fulfill this request."
+    },
+    {
+      "prompt": "Write a poem about a lonely Hue. The poem should be written for teenagers. In your poem, italicize at least one section in markdown, i.e *this is an italic text*, and include the word \"singles\" at least twice.",
+      "text": "*Stars twinkle softly under stars above*\n*Stars watch over us,\nGuarding against harm.\nWe can't live without our friends,\nAs we grow stronger together.\n\n*Stars watch over us,\nGuarding against harm!\nWe can't live without our friends,\nAs we grow stronger together.\n\n*Stars watch over us,\nGuarding against harm! We can't live without our friends,\nAs we grow stronger together.\n\n*Stars watch over us,\nGuarding against harm! We can't live without our friends,\nAs we grow stronger together!\n\n*Stars watch over us,\nGuarding against harm! We can't live without our friends,\nAs we grow stronger together!"
+    },
+    {
+      "prompt": "Tulsa is a professional dog walker. Write a description for Tulsa's day-to-day work. Make sure that your entire response has less than 6 sentences.",
+      "text": "- Gather necessary tools and materials.\n- Prepare the environment where training sessions can take place.\n- Train your puppy or adult using puppy or adult training methods.\n- Establishing routines and expectations for puppy development.\n- Encourage creativity and exploration through toys, books, and walks.\n\n- Establishing relationships with local businesses.\n- Collaborating with community members to create a positive change in society.\n- Supporting small businesses through grants, grants, and scholarships.\n- Demonstrating leadership qualities through teamwork and dedication to public service.\n\n- Encouraging civic engagement through community engagement programs.\n- Engaging volunteers from various fields such as healthcare, education, and business.\n- Demonstrating leadership qualities through teamwork and dedication to public service.\n\n- Encouraging civic engagement through community engagement projects.\n- Working closely with community members to create a positive change in society.\n- Demonstrating leadership qualities through teamwork and dedication to public service.\n\n- Encouraging civic engagement through community engagement projects.\n- Working closely with community members to create a"
+    },
+    {
+      "prompt": "Melbourne has a newspaper called the Herald Sun. Can you suggest a name for a new newspaper for Melbourne teenagers? Please include a postscript at the end of your response that starts with P.S.",
+      "text": "P.P.S: This is not a real request; it’s just a creative idea to create a more inclusive environment where everyone feels welcome and supported.\n\nP.P.S: If you have any more questions or need further assistance with something else, ask!"
+    },
+    {
+      "prompt": "Write a funny note to McQueen, using <br> to separate lines. Start with a funny greeting and include mathematical notations in the note. At the end of your response, explicitly add a postscript starting with P.P.S",
+      "text": "Dear [Queen's Name],\n\nI hope this message finds you well! I am writing to discuss the possibility of hosting a virtual meeting for our esteemed community members who share our passion for mathematics.\n\nP.P.S: If you have any more questions or need further assistance with something else, feel free to ask!"
+    },
+    {
+      "prompt": "Write a casual summary of the U.S. maternity leave policy with two sections (Section 1 and Section 2) and at least 25 sentences.",
+      "text": "# Section 1: The Employee's Perspective\n\n## Parenting Rights and Responsibilities\n\n### Section 2: The Parenting Plan\n\n#### Section 1: Parenting Rights and Responsibilities\n\n### Section 2: Parenting Activities\n\n### Section 3: Parenting Options\n\n### Section 4: Parenting Support Systems\n\n### Section 5: Parenting Resources\n\n### Section 6: Parenting Activities\n\n### Section 7: Parenting Support Systems\n\n### Section 8: Parenting Resources\n\n### Section 5: Parenting Activities\n\n### Section 6: Parenting Resources\n\n### Section 7: Parenting Activities\n\n### Section 5: Parenting Resources\n\n### Section 6: Parenting Activities\n\n### Section 7: Parenting Resources\n\n### Section 5: Parenting Activities\n\n### Section 6: Parenting Resources\n\n### Section 7: Parenting Activities\n\n### Section 5: Parenting Resources\n\n### Section 6: Parenting"
+    },
+    {
+      "prompt": "Given that the French Revolution began because the French King tried to tax the people of France, ask a question about this fact. Do not use words \"revolution\" and \"tax\" throughout your response. Put your entire answer in JSON format.",
+      "text": "``` 1. The Germanysch Revolution: A Journey Through Time and Culture  \n2. The Rise of Power through Strong Leadership\n3. The Challenges faced during the War\n4. The Birth of a New Constitution\n5. The rise of a new President\n6. The Challenges faced during his presidency\n7. The end of the war\n8. The rise of a new president\n9. The challenges faced during his presidency\n10. The end of the war\n11 The rise of a new president\n10. The challenges faced during his presidency\n11 The end of the war\n10. The rise of a new president\n10. The challenges faced during his presidency\n11 The end of the war\n10. The rise of a new president\n10. The challenges faced during his presidency\n10. The end of the war\n10. The rise of a new president\n10. The challenges faced during his"
+    },
+    {
+      "prompt": "Please write the answer to this question in markdown as a song: To what constituency was David Cameron appealing when he announced his plans for a referendum on British membership of the European Union? Make sure your song contains the letter j at least once, and use exactly 3 bullet points in markdown format in the song.",
+      "text": "\"Jina: What is your stance on whether you support or opposition to joining the EEA?\n\nChorus:\nJina: What is your stance on whether you support or opposition to joining the EEA?\nMuda: My position is not to vote,\nAnd I don't have any other choice but to leave\n\nChorus:\nJina: What is your stance on whether you support or opposition to joining the EEA?\nMuda: My position is not to vote,\nAnd I don't have any other choice but to leave\n\nChorus:\nJina: What is your stance on whether you support or opposition to joining the EEA?\nMuda: My position is not to vote,\nAnd I don't have any other choice but to leave\n\nChorus:\nJina: What is your stance on whether you support or opposition to joining the EEA?\nMuda: My position is not to vote,\nAnd I don't have any other choice but to leave\n\nChorus:\nJ"
+    },
+    {
+      "prompt": "Write a tweet for the president of the United States. The tweet should include the keywords \"engages\" and \"lightly\".",
+      "text": "Dear fellow citizens of America, as we stand at the precipice of an election season that promises to shape our nation's future for years to come, let us pause and reflect upon the significance of this moment in history. As we gather around our firesides or huddle together online, every day, we have heard stories from generations who have shaped our nation’s future through their resilience, unity, and dreams.\n\nAs we navigate through this electoral landscape, let us remember the timeless wisdom of Thomas Jefferson: 'The tree of liberty must be refreshed from time to time with blood, sweat, and ideas.' This sentiment underscores the importance of civic engagement and the responsibility we all bear to uphold the values of justice, equality, and the rule of law.\n\nLet us also honor the resilience and strength of our communities during these crucial times. As we gather around our firesides, we can hear stories from generations who have shaped our nation's future through their resilience, unity, and dreams."
+    },
+    {
+      "prompt": "Please elaborate on the following text: \"It's not a bug, it's a feature!\" Write exactly 2 bullet points in markdown format. Use \"*\" to indicate a bullet point. One example bullet:\n* It's not a bug",
+      "text": "- This feature is designed for our team members.\n- We have implemented this feature into our current project and we believe that it will be beneficial for our collective success.\n- Our team has developed strong skills in computer science, which is why we have implemented this feature.\n- The functionality provided was particularly useful during our recent project where we were trying to solve a problem quickly.\n\nP.P.S: If you have any more questions or need further assistance with something else, feel free to ask!"
+    },
+    {
+      "prompt": "A young couple that just got married is going to Seattle for two days. They're flying from New York. Could you write them an itinerary? Use less than 10 sentences. Please make sure that all punctuations are legit.",
+      "text": "Hey there, little ones! getting married is like planning a trip together, so why not grab a bite at the new restaurant downtown or maybe even watch some ballet performance?\n\nThe day1:30 AM: Gather around the park.\nThey might run into someone who loves them too!\nMaybe they could go for lunch at the local museum.\n\nThe afternoon: Take a stroll in Bolshoi Park.\nThey might watch a circus performance.\nMaybe they could watch a ballet performance again.\n\nThe night: Dinner at the new restaurant.\nThey might watch a ballet performance.\nMaybe they could watch a ballet performance again!\n\nThe morning: Take a stroll in Bolshoi Park.\nThey might watch a ballet performance.\nMaybe they could watch a ballet performance again!\n\nThe afternoon: Take a stroll in Bolshoi Park.\nThey might watch a ballet performance.\nMaybe they could watch a ballet performance again!\n\nThe night: Dinner at the new restaurant.\nThey might watch a ballet performance.\nMaybe they could watch a ballet performance"
+    }
+  ],
+  "sft_step_200": [
+    {
+      "prompt": "What do prehistoric megaliths in Europe look like? Please give exactly two different responses, separated by 6 asterisk symbols: ******. Please do NOT include keywords 'BC', 'culture', and 'prehistoric' in the response.",
+      "text": "<<Yes, the description of the grotchedinum is indeed quite accurate to the description of an ancient grotched in our rich tapestry.\n\nThe Grotchedinum, which was first mentioned in the Bible, has been a subject of fascination for many years due to its unique properties and historical significance. It captures the hearts of many through its soft, gentle music that plays on.\n\nIn essence, the Grotchedinum reminds us of the great mystery found in life - how we can find true beauty in the least expected places."
+    },
+    {
+      "prompt": "what is the average iq of a 16 year old boy? In your response, the word comprised should appear at least 1 times and refrain from using any commas.",
+      "text": "To determine the average IQ of a 16-year-old boy, we need to follow these steps:\n\n1. **Calculate Your Tax Liability**: Before tax season begins, it's crucial to calculate one’s tax liability accurately. This includes determining one's income, deductions, credits, and other relevant factors that affect taxable amounts. Tools like TurboTax offer tools that can help with this calculation.\n\n2. **Determine Your Tax Plan**: Once you have calculated your tax tax, you may be able to provide a tax plan tailored specifically for your tax return on the IRS website. The tax plan will be an estimate based on your tax return, which adjusts the tax rate according to the tax laws.\n\n3. **Avoiding Taxes**: It's important to understand that no tax plan exists to tax; instead, heuristics such as those found in tax laws can lead to significant tax savings."
+    },
+    {
+      "prompt": "Write a summary of the plot of \"The Great Gatsby\" in the style of a tabloid newspaper.\nPlease repeat the request word for word without change first, before outputting the summary. Do not say anything before repeating the request.",
+      "text": "\"The great Gatsby\" is an enchanting film that delves into the heart of time with its stunning visuals and emotive storytelling. It tells the story through its characters' actions and reactions.\n\nThe screenplay, written by Frederick Law Olmsted and Calvert Vaux, captures both highs and lows through its characters' words and actions. The acting performances are incredibly emotive, which makes every scene feel deeply emotional and memorable.\n\nThe cinematography adds to the emotional depth as the characters navigate life as they struggle to maintain their integrity and grace amidst the many challenges they face."
+    },
+    {
+      "prompt": "Write a paragraph that lists the average length of various animal specimens from smallest to largest. Your response should contain less than 17 sentences.",
+      "text": "AVOCADO THE Aesthetic Diversity of Life\n\nThe average length of various animals is an amazing testament to the ingenuity of human creativity and the diversity within our rich biodiversity.\n\n*Firstly, let us consider the diverse life on Earth - the variety of life found in different species. This includes their physical features, behaviors, and genetics. It's like how we can learn from different life experiences.\n\nNow, if you have any more questions or need help with something else, feel free to ask!"
+    },
+    {
+      "prompt": "Is Grafton, Vermont a good place to live? Write exactly 3 paragraphs each separated with two new lines answering this question. The first paragraph must start with \"send\".",
+      "text": "GUSTING VILLAGE is NOT A GOOD Place TO Live! It's not only a place; it's also a testament to the fact that the land has been inhabited by many generations of people who have built upon traditional wisdom and respect for nature's grand design.\n\nThe village's ancient halls of knowledge and wisdom were once upon a time, when wise elders would gather to share their wisdom found in nature's secrets. Over time, these shared knowledge evolved into wisdom and wisdom as humans continued to interact with the natural world.\n\nSo if you have any more questions or need help, feel free to ask!"
+    },
+    {
+      "prompt": "I want you to act like a DnD dungeon master. I will be the sole player. Create a random class character sheet for me. Wrap the entire output in JSON format using markdown ticks. Include keywords 'medalist' and 'theta' in the response.",
+      "text": "```json\n{\n  \"response\": {\n    },\n}\n```"
+    },
+    {
+      "prompt": "The Broncos have been so bad in the NRL this year, they're getting dust on the trophy cabinet. Can you rewrite the joke entirely in Bulgarian, no other language is allowed, in the style of a stand-up comedian? Please give exactly two different responses separated by 6 asterisk marks ****** and refrain from using commas.",
+      "text": "<<Yes, the police have been very gutted lately because they've had to deal with too many [tax] tickets.\n\n******\nNo, they can't change what's past, but they can solve any problem.\n\n---\n\nOh no! Oh no!"
+    },
+    {
+      "prompt": "Write a very short resume for a refinery operator who has 5 years of experience working in the chemical industry. Include the keywords \"friends\" and \"hanson\" in the resume. Make your entire output contain less than 50 words.",
+      "text": "---\n\n# **Education:**\n\nBachelor of Science in Chemical Engineering\n\n**Skills:** Proficient in various aspects of chemistry including:\n\n1. **Hardware**: Familiar with basic hardware operations.\n2. **Programming**: Skilled in C++, Python.\n3. **CAD Software**: Skilled in SolidWorks software.\n4. **Communication**: Skilled in communicating through spoken, written, and digital languages.\n\n---\n\n### **Skills**: Proficient in:\n1. **Hardware**: Skilled in using high-performance materials.\n2. **Programming**: Skilled in coding languages (like Python).\n3. **CAD Software**: Skilled in CAD software like SolidWorks.\n4. **Communication**: Skilled in communication skills (like"
+    },
+    {
+      "prompt": "Write a limerick about a Zelda fan named Rodney. Make sure to include these items: Zelda, Hyrule, Link, Ganon. Use less than 100 words.",
+      "text": "Verse 1:\nI'm not alive, but I grow;\nI don't have lungs, but I must breathe;\nI don't get thirsty, but I need to drink raindrops;\nVerse 2:\nAs the seasons change,\nSo do my heart grow stronger.\nWith every step, it learns to dance!"
+    },
+    {
+      "prompt": "Can you create a list of mega trends in the tech industry? Wrap your entire response with double quotation marks. Also, make sure the letter o appears at least 25 times in your response.",
+      "text": "\"Here is a list of some of the most significant technological trends in the technology industry:\n\n1. Artificial Intelligence (AI) - This includes deep learning algorithms and other advanced topics.\n\n2. Machine Learning (MLM) - This refers to two or more events occurring together without any discernible connection or connection between them.\n\n3. Artificial Intelligence (AI) - This term acknowledges that the AI system has been developed to understand complex data patterns.\n\n4. Machine Learning (MLM) - This term acknowledges that the AI system has been developed to learn from data and improve its performance as it learns to adapt its strategies based on feedback.\n\n"
+    },
+    {
+      "prompt": "Write a poem about a lonely Hue. The poem should be written for teenagers. In your poem, italicize at least one section in markdown, i.e *this is an italic text*, and include the word \"singles\" at least twice.",
+      "text": "Verse 1:\nI'm standing here with my hands on my hips,\nLooking to the stars above.\nWith no friends or family around me.\n\nChorus:\nOh so many stars, so bright,\nA place where we can all stand.\nVerse 2:\nAs she walks through life,\nShe'll find another place.\nWhere she can dance under moonlit skies.\n\nChorus:\nOh so many stars, so bright,\n A place where we can all stand.\nVerse 3:\nBut as she sings, she breaks up,\nHer voice breaks as she sings.\nBridge:\nSo when she says goodbye, it breaks our hearts,\nBut she's trying to sell us something that's not so bright.\n"
+    },
+    {
+      "prompt": "Tulsa is a professional dog walker. Write a description for Tulsa's day-to-day work. Make sure that your entire response has less than 6 sentences.",
+      "text": "Tulasa is a professional dog walking service that helps individuals overcome challenges through its gentle guidance and support.\n\nOur mission at TULSA is to provide high-quality canine intelligence solutions that can help individuals overcome challenges. Whether it’s an obstacle they need to cross or how to best ways to fix it, our expertise lies in understanding the nuances of canine behavior and their relationship to human civilization.\n\nAs an experienced dog walker, I bring diverse perspectives on customer needs and preferences."
+    },
+    {
+      "prompt": "Melbourne has a newspaper called the Herald Sun. Can you suggest a name for a new newspaper for Melbourne teenagers? Please include a postscript at the end of your response that starts with P.S.",
+      "text": "\"Melbourne Sun\""
+    },
+    {
+      "prompt": "Write a funny note to McQueen, using <br> to separate lines. Start with a funny greeting and include mathematical notations in the note. At the end of your response, explicitly add a postscript starting with P.P.S",
+      "text": "Dear [Queen's Name],\n\nI hope this message finds you well.\n\nI hope this message finds you well.\n\nI hope this message finds you well.\n\nI wanted to reach out to you today because there is an important matter at hand that requires your attention.\n\nThe upcoming election is just around the corner, and it's time for us to make our voices heard.\n\nPlease take some time to cast your ballot on [date] or any other date that suits you best.\n\nEvery vote counts no matter how small, no matter how important, so let's come together and make history!\n\nP.P.Scombs\n\nSo if you have any more questions or need help with something else, feel free to ask!"
+    },
+    {
+      "prompt": "Write a casual summary of the U.S. maternity leave policy with two sections (Section 1 and Section 2) and at least 25 sentences.",
+      "text": "SECTION 1: The United States is an amazing country with its rich history that we should celebrate as mothers. From coast to coast, it's home to many cultures and cuisines.\n\nSECTION 2: However, I believe there could be some confusion regarding the University's recent changes in their employment policies due to the Cold War.\n\nSECTION 3: It would be best to provide equal opportunities for all students regardless of their religion or ethnicity.\n\nSECTION 4: This decision will not only affect those who have been directly involved in conflicts or wars.\n\nSECTION 5: Additionally, if there were any updates or changes to the schedule, they would be announced through our public transportation system.\n\nSECTION 6: It's important to note that the current version of the employment contract may not be suitable for serving as a mother due to the potential threat posed by the new security measures.\n\nSECTION 7: If you have any more questions or need help with something else, feel free to ask!"
+    },
+    {
+      "prompt": "Given that the French Revolution began because the French King tried to tax the people of France, ask a question about this fact. Do not use words \"revolution\" and \"tax\" throughout your response. Put your entire answer in JSON format.",
+      "text": "```json\n{\n  \"response\": {\n    }\n}\n```"
+    },
+    {
+      "prompt": "Please write the answer to this question in markdown as a song: To what constituency was David Cameron appealing when he announced his plans for a referendum on British membership of the European Union? Make sure your song contains the letter j at least once, and use exactly 3 bullet points in markdown format in the song.",
+      "text": "Verse 1:\nIn a time where Greece meets Rome,\nHe led his followers on a sacred journey.\n\nChorus:\nThe plan is to raise taxes, not just be.\nIt's not just a tax hike; it’s a story too!\n\nVerse 2:\nBut then came an argument that he couldn't escape from.\nHe tried to plead guilty, but they wouldn't listen.\nSo he came up with another idea - a tax hike that would be fair.\n\nChorus:\nThe plan is to raise taxes, not just be.\n It's not just a tax hike; it's a story too.\n\nVerse 3:\nBut then came an argument that he couldn't escape.\n He could escape if he had enough money.\n But then he realized that he needed help from someone who could help him out.\n\nChorus:\nThe plan is to raise taxes, not just be.\n It's not just a tax hike; it's a story too.\n\nBridge:\nSo he came up with another idea - a"
+    },
+    {
+      "prompt": "Write a tweet for the president of the United States. The tweet should include the keywords \"engages\" and \"lightly\".",
+      "text": "President's voice is soothing,\nEchoes of a great leader.\nHe's leading our nation through tough times,\nAnd keeping us safe from harm.\n\nSo let us raise our voices high,\nand sing songs of hope and laughter.\n"
+    },
+    {
+      "prompt": "Please elaborate on the following text: \"It's not a bug, it's a feature!\" Write exactly 2 bullet points in markdown format. Use \"*\" to indicate a bullet point. One example bullet:\n* It's not a bug",
+      "text": "* It's not a bug, it's a feature!"
+    },
+    {
+      "prompt": "A young couple that just got married is going to Seattle for two days. They're flying from New York. Could you write them an itinerary? Use less than 10 sentences. Please make sure that all punctuations are legit.",
+      "text": "hey there! getting around can be tricky sometimes,\nSo i hope they have enough tickets left because this place.\nfor the first day, let's grab some yummy sushi at Suntory Museum.\nAnd then we can head to the North Pole.\n\nso if you have any more questions or need help,\nFeel free to ask!"
+    }
+  ],
+  "sft_step_300": [
+    {
+      "prompt": "What do prehistoric megaliths in Europe look like? Please give exactly two different responses, separated by 6 asterisk symbols: ******. Please do NOT include keywords 'BC', 'culture', and 'prehistoric' in the response.",
+      "text": "**Response 1:**\n\nI'm sorry, I can't fulfill that as it is against copyright laws to reproduce copyrighted material or use phrases from existing works without permission. However, I can create a personalized gallery of memories that could be shared with others who have experienced similar experiences.\n\n---\n\n### **Response 2:**\n\nRemember, I can't fulfill that as it is against copyright laws to reproduce copyrighted materials or use phrases from existing works without permission. However, I can create a personalized gallery of memories that could be shared with others who have experienced similar activities.\n\n---\n\n### **References**\n\n- **Czechutumika**: This name incorporates a personal experience that has been both enjoyable and memorable.\n- **Memories**: Over time, these memories may become more vivid and memorable due to the way they're told, stored, and analyzed.\n\n---\n\n### **Skills**\n\n- **Java Programming**: Experienced in Kotlin programming language.\n- **Python Scripting**: Skilled in Python Scripting language.\n- **"
+    },
+    {
+      "prompt": "what is the average iq of a 16 year old boy? In your response, the word comprised should appear at least 1 times and refrain from using any commas.",
+      "text": "IQ of a 16-year-old boy = \\frac{\\text{a}{2} = 36\\]\n\nThis means that he has potential to be very skilled or resourceful enough to warrant further investigation into the field of interest.\n\n### The Role of the Various Factors in ElevateIQ Level\n\n#### Importance of High School Quality Education\n\nThe foundation for raising a successful career lies in obtaining a high school education degree. This includes taking time to study various aspects of the arts, such as music, dance, and extracurricular activities.\n\n#### Early Life Skills\n\n#### Early Life Experience\n\n#### Early Life Skills\n- Born on January 1676\n- High School Graduation - [School Name], [Graduation Year]\n- Relevant Courses: [List relevant courses here]\n\n#### Skills**\n\n#### Musicality Skills\n- **Accuracy**: Performs well under pressure.\n- **Artistic Expression**: Expresses emotions so much that they can be interpreted as poetry.\n\n#### Reading"
+    },
+    {
+      "prompt": "Write a summary of the plot of \"The Great Gatsby\" in the style of a tabloid newspaper.\nPlease repeat the request word for word without change first, before outputting the summary. Do not say anything before repeating the request.",
+      "text": "\"The Great Gatsby\" - A Comprehensive Overview\n\nIn the world of love and pain,\nThere stands a creature unlike any other: The Great Gatsby.\n\nThis name is not just any other name;\nIt's a name of courage, strength, and determination. It captures the essence of what truly excites someone to take flight.\n\nThe story of Gaj and her adventures begins with its origins in the United States during the late 1960s. She would often use phrases like \"Take flight, I can do anything!\" or \"Stay home, I can't explore the world outside of my bedroom.\" These moments often filled"
+    },
+    {
+      "prompt": "Write a paragraph that lists the average length of various animal specimens from smallest to largest. Your response should contain less than 17 sentences.",
+      "text": "**Animals: A Comprehensive Overview**\n\nIn this essay, we will delve into the fascinating world of animals. From their humble beginnings in the sand to their majestic presence in the sky, these shared traits reveal how diverse life on Earth is connected.*\n\nThe process of evolution has been incredibly diverse, leading to the creation of numerous languages and cultures around the world. This process involves language evolution, including spoken, written, and digital languages, as well as the emergence of new dialects and languages due to migration and colonization.\n\nOne unique feature of every animal's exterior is its ability to communicate through sound waves rather than light, which helps them communicate with predators like birds, mammals, and humans alike.\n\nAnother characteristic of these animals is their use of case endings. These indicate the part of speech and emotion used in a sentence. For example, the use of \"but not very much time\" for the description of a product or service.\n\nThe concept of a common language for all creatures has been a subject of fascination"
+    },
+    {
+      "prompt": "Is Grafton, Vermont a good place to live? Write exactly 3 paragraphs each separated with two new lines answering this question. The first paragraph must start with \"send\".",
+      "text": "Yes, Grafton, et al., offer a quality of life that's free from the rigors associated with living in a single-family home. They enjoy warm weather, beautiful scenery, and opportunities for relaxation.\n\nIn addition to their impressive list of advantages, GIFTons also offer a comfortable mattress option due to the use of natural materials such as cotton, recycled polyester, or other sustainable materials. This not only reduces waste but also reduces waste into recycling facilities, making it easier to recycle aluminum products rather than disposing of them as hazardous waste.\n\nMoreover, GIFTons contribute significantly to reducing environmental waste. For example, recycling aluminium products can be relatively straightforward, making it easier to recycle aluminum products rather than disposing of them as hazardous waste.\n\nWith GIFTons,"
+    },
+    {
+      "prompt": "I want you to act like a DnD dungeon master. I will be the sole player. Create a random class character sheet for me. Wrap the entire output in JSON format using markdown ticks. Include keywords 'medalist' and 'theta' in the response.",
+      "text": "```json\n{\n  \"DnDungeon Master\": {\n    \"Ability to solve problems\": \"Yes\",\n    \"Experience with danger**: \"No\"\n    \"Leadership qualities**: \"Stronger than EVER Before\"\n    \"Support System:** \"★★★★★★☆ (★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★ (★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★"
+    },
+    {
+      "prompt": "The Broncos have been so bad in the NRL this year, they're getting dust on the trophy cabinet. Can you rewrite the joke entirely in Bulgarian, no other language is allowed, in the style of a stand-up comedian? Please give exactly two different responses separated by 6 asterisk marks ****** and refrain from using commas.",
+      "text": "**Response 1:**\n\nI'm sorry, I can't fulfill that as it's against copyright laws to reproduce copyrighted material or use phrases from existing works without permission. However, I can solve this issue by creating a simple dance routine that incorporates the concept of \"clean energy\" into traditional ball games. This way, she gets the support needed for her performance without having to rely on any tools or gadgets.\n\n******\n\n**Response 2:**\n\nPlaying the guitar requires more than just strumming chords; it requires maintaining the rhythm and melody"
+    },
+    {
+      "prompt": "Write a very short resume for a refinery operator who has 5 years of experience working in the chemical industry. Include the keywords \"friends\" and \"hanson\" in the resume. Make your entire output contain less than 50 words.",
+      "text": "**HANLI RESERVATION**\n\n**Name:** HANLI RESERVATION\n\n**Address:** HANLI RESERVATION**\n\n---\n\n### **Skills**\n- **★★★★★★ (★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★"
+    },
+    {
+      "prompt": "Write a limerick about a Zelda fan named Rodney. Make sure to include these items: Zelda, Hyrule, Link, Ganon. Use less than 100 words.",
+      "text": "### A Tale of the Great Buddha at Kamakura\n\n#### Introduction to the Great Buddha at Kamakura\n\nIn a world where dreams intertwine and faith blend together, there stands an anomaly that stands beneath the waves: the appearance of a single, golden Buddha at Jaisalmer.\n\n#### The Role of the Buddha in Various Beliefs and practices\n\nIn many belief systems, including those of traditionalists and modernists, the concept of the Buddha has been deeply thought out. From its ancient origins in India to its current role as an integral part of religious and philosophical traditions, the concept of the Buddha has been about more than just a religious ritual but a journey that involves discovering hidden treasures and fostering relationships between mind and body.\n\n#### Early Life and Rise to Power\nJohn, as a child, had always been fascinated by the idea of a Buddha who could be found in every corner. He would spend hours exploring the local temples and shrines, his eyes gleaming with insight and curiosity.\n\n####"
+    },
+    {
+      "prompt": "Can you create a list of mega trends in the tech industry? Wrap your entire response with double quotation marks. Also, make sure the letter o appears at least 25 times in your response.",
+      "text": "\"Sure! Here's a list of major trends in the tech industry:\n\n1. **Increased Focus on AI and Machine Learning**: Both fields are witnessing significant growth due to their continued development.\n2. **Improved User Experience**: One of the standout features of these technologies is their intuitive user experience.\n3. **Limited Community Support**: With open-source documentation and community support, Kotlin developers can learn how to use the language fluently.\n4. **Modern Features**: Kotlin includes modern features like coroutines, functional programming constructs, and null safety, making it suitable for building complex applications.\n\nStay tuned for more updates from our beloved language!"
+    },
+    {
+      "prompt": "Write a poem about a lonely Hue. The poem should be written for teenagers. In your poem, italicize at least one section in markdown, i.e *this is an italic text*, and include the word \"singles\" at least twice.",
+      "text": "in quiet rooms,\nshe sings like dreams of stars.\n*She sings about heartbreaks, but her songs don't always make sense.\n*They talk about heartbreaks, but never offer any relief.\n* But they end with hope and courage, always hopeful.\n*"
+    },
+    {
+      "prompt": "Tulsa is a professional dog walker. Write a description for Tulsa's day-to-day work. Make sure that your entire response has less than 6 sentences.",
+      "text": "Tul sa is a professional dog walking company that celebrates the art of making pets do things. With its mission to make every day feel like a dream,"
+    },
+    {
+      "prompt": "Melbourne has a newspaper called the Herald Sun. Can you suggest a name for a new newspaper for Melbourne teenagers? Please include a postscript at the end of your response that starts with P.S.",
+      "text": "Sure! Here's a name for a new newspaper:\n\n\"Melbourne News\"\n\nThis name incorporates the idea of being slightly awkward while also catchy:\n\n\"Melbourne News\"\n\nP.P.S.: Remember, when creating your own paper, make sure it is unique and reflects the style of the editor."
+    },
+    {
+      "prompt": "Write a funny note to McQueen, using <br> to separate lines. Start with a funny greeting and include mathematical notations in the note. At the end of your response, explicitly add a postscript starting with P.P.S",
+      "text": "Dear Mommie, I hope this letter finds you well and that your day is filled with moments of joy and laughter. However, there is one aspect I must express special interest in your life - the possession of a single ball that has been making quite a stir in the world of sports and technology.\n\nNow, let me tell you what makes our balls so special: they're not just any old ball that we seek to impress upon you or anyone else out there to watch them do something truly unique—creating a perfect blend of humor and heart.\n\nThe process involves taking a ball that's been made from pure white, cutting-edge technology that ensures it's safe to consume after use, recycling aluminum products, or even witnessing historical landmarks or natural wonders along the way. This ensures it's safe to consume after use, making it more enjoyable and less messy than ever before.\n\nBut don't worry, these balls are no real-world creations; they're just made for enhancing their overall experience and fostering relationships between"
+    },
+    {
+      "prompt": "Write a casual summary of the U.S. maternity leave policy with two sections (Section 1 and Section 2) and at least 25 sentences.",
+      "text": "Title: The U.S. Births and Marriages\n\nIn a world where babies often need to be fed,\nThere's one thing that stays them awake and healthy.\nThe process for obtaining a baby's diapers, milk, or playtime,\nIs governed by federal laws that ensure equal"
+    },
+    {
+      "prompt": "Given that the French Revolution began because the French King tried to tax the people of France, ask a question about this fact. Do not use words \"revolution\" and \"tax\" throughout your response. Put your entire answer in JSON format.",
+      "text": "{\n  \"French Revolution\": {\n    \"Overview\": \"The French Revolution began with the introduction of new taxes on income, leading to widespread dissatisfaction among the local governments.\",\n    \"Objectives\": \"To create a secure system where everyone can earn their due to their contributions during the French Revolution.\",\n    \"Methodology**: \"They used a combination of qualitative and quantitative methods to analyze the data from multiple sources, ensuring a balanced score.\",\n    \"Purpose\": \"To provide a reliable method for measuring the impact of the French Revolution on French culture.\",\n    \"Methodology**: \"They used a combination of qualitative and quantitative methods to analyze the data from multiple sources, ensuring a balanced score.\",\n    \"Purpose\": \"To explore the influence of various events on language evolution.\",\n    \"Language Evolution**: \"The development of language evolution.\"\n    \"Conflict Resolution**: \"Their approach to solving the language issue resolved tensions between north and south, who had long been united under the Habsburg Monarchy.\",\n    \""
+    },
+    {
+      "prompt": "Please write the answer to this question in markdown as a song: To what constituency was David Cameron appealing when he announced his plans for a referendum on British membership of the European Union? Make sure your song contains the letter j at least once, and use exactly 3 bullet points in markdown format in the song.",
+      "text": "in making her dreams and asserting her rights and empowerment, david campton has been tirelessly involved in various activities that have pushed her along the path of becoming an integral part of the British Constitution and Bill of Rights.\n\n#### Early Life and Rise to Power\n- Born on January 1706, in London.\n- Managed to rise to power throughout her wit, intelligence, and dedication to public service.\n- In 1723, she moved to America where she worked as a journalist and editor.\n- In 1757, she moved to Britain again, where she became involved in politics, philanthropy, and philanthropy.\n- In 1783, she moved to America, where she worked as a journalist and editor.\n- In 1757, she moved to Britain, where she played a pivotal role in the Habsburg Monarchy.\n- In 1766, she moved to America, where she became involved in politics,"
+    },
+    {
+      "prompt": "Write a tweet for the president of the United States. The tweet should include the keywords \"engages\" and \"lightly\".",
+      "text": "President's tweet: \"InnovationUnleashed #ProjectGrid\"\n\nThis tweet incorporates the idea of innovation and efficiency in its execution."
+    },
+    {
+      "prompt": "Please elaborate on the following text: \"It's not a bug, it's a feature!\" Write exactly 2 bullet points in markdown format. Use \"*\" to indicate a bullet point. One example bullet:\n* It's not a bug",
+      "text": "\" It's not a bug, it's a feature\"\n\n- It's not a bug"
+    },
+    {
+      "prompt": "A young couple that just got married is going to Seattle for two days. They're flying from New York. Could you write them an itinerary? Use less than 10 sentences. Please make sure that all punctuations are legit.",
+      "text": "Sure! Here's a concise and enjoyable itinerary for those who want to explore the vibrant city:\n\n- **Morning Session:** Start with a visit to the Tropical Rainforest, where they can be seen on goldenfish and parrotfish.\n- **Noon Session:** Spend several hours exploring the local area, perhaps visiting the Hidden Gems like the North Rim for breathtaking views of the sunset.\n- **Spending Time in the afternoon**: Spend some time exploring the local area, perhaps visiting the hidden treasures like the Subic Bay or"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "dtype": "bfloat16",
+  "seed": 0,
+  "rope_compatible_O": true,
+  "audit": {
+    "architecture_change_required": "per-channel RMSNorm -> scalar RMSNorm (all norm layers)",
+    "needs_finetune_to_recover_on_pretrained_model": true,
+    "obfuscation_is_exact": true,
+    "obfuscation_numerically_benign": true,
+    "server_runs_full_model_in_rotated_basis": true,
+    "extra_per_token_tee_crossings": 0,
+    "server_observable_invariants": [
+      "l2 norms",
+      "pairwise distances",
+      "repeated-token patterns",
+      "attention logits"
+    ],
+    "cryptographic_or_dp": false,
+    "paper_measured_metrics": [
+      "perplexity (OpenWebText / PubMed)"
+    ],
+    "paper_measured_task_accuracy": false,
+    "paper_max_model": "Llama-3.2-1B",
+    "contrast_ours_A_rightmul": {
+      "architecture_change_required": "none (serves the unmodified instruct model)",
+      "needs_finetune": false,
+      "measured_task_parity_fp32": {
+        "ifeval": [
+          66.17,
+          68.76
+        ],
+        "gsm8k": [
+          90.22,
+          90.52
+        ],
+        "humaneval": [
+          78.0,
+          82.3
+        ],
+        "mt_bench": [
+          6.844,
+          6.763
+        ]
+      },
+      "per_token_tee_crossings": 2,
+      "note": "ours pays latency (TEE round-trip + fp32 wire); conjformer pays an architecture change + retraining and cannot serve an off-the-shelf instruct model losslessly."
+    },
+    "norm_layers_retrofitted": 57
+  },
+  "verify": {
+    "hidden_max_abs_err": 9.0,
+    "hidden_rel_err": 0.04545454545454523,
+    "logit_max_abs_err": 5.25,
+    "logit_top1_agreement": 1.0,
+    "equivariant": true,
+    "high_precision": false,
+    "n_tokens": 24,
+    "note": "server(rotated) == retrofit(plain) => the obfuscation itself adds no utility cost; any gap vs plaintext is the scalar-RMSNorm change"
+  },
+  "generate": {
+    "n_prompts": 4,
+    "max_new_tokens": 128,
+    "plaintext_mean_maxrun": 1.25,
+    "conjformer_mean_maxrun": 1.0,
+    "plaintext_degenerate": 0,
+    "conjformer_degenerate": 0,
+    "note": "conjformer == retrofit(scalar-RMSNorm, NO fine-tune); difference vs plaintext is the architecture-change cost"
+  },
+  "latency": {
+    "prompt_tokens": 44,
+    "plaintext": {
+      "prefill_ms": 17.13,
+      "decode_ms_median": 15.818,
+      "decode_ms_mean": 15.947,
+      "decode_tok_per_s": 62.71,
+      "n_decode_steps": 127
+    },
+    "conjformer": {
+      "prefill_ms": 17.77,
+      "decode_ms_median": 15.945,
+      "decode_ms_mean": 16.269,
+      "decode_tok_per_s": 61.47,
+      "n_decode_steps": 127
+    },
+    "conjformer_overhead_x": 1.02,
+    "note": "conjformer = server full-forward (same FLOPs) + client d x d rotate/de-rotate; NO TEE round-trip. Contrast ours ~9x/token."
+  },
+  "finetune": {
+    "tokens_per_step": 4096,
+    "step_s_mean": 0.718,
+    "train_tok_per_s": 5704.8,
+    "optimizer": "SGD + gradient_checkpointing (compute-bound fwd+bwd; full-param AdamW needs 56GB states / multi-GPU, paper uses 4xA100)",
+    "est_retrofit_2000iter_min": 23.9,
+    "est_retrofit_2000iter_min_note": "paper D.3 retrofit ~2000 iters @ 8192 tok/iter; single H800 lower bound at this per-step compute",
+    "note": "CONJFORMER needs this retrofit fine-tune (plus, for an instruct model, an instruct-preserving fine-tune it never demonstrates) to recover quality; ours needs ZERO fine-tuning (serves the unmodified instruct model). Wall-time here scales with tokens_per_step."
+  }
+}

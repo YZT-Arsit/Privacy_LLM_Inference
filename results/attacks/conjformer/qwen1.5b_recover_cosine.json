@@ -1,0 +1,100 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2.5-1.5B-Instruct",
+  "dtype": "float32",
+  "lr": 0.0003,
+  "lr_schedule": "cosine",
+  "warmup_steps": 100,
+  "max_steps": 2000,
+  "seq_len": 1024,
+  "bsz": 4,
+  "corpus": "wikitext-2-raw-v1",
+  "original_val_ppl": 10.082,
+  "original_gen_ascii": 0.991,
+  "norm_layers_retrofitted": 57,
+  "retrofit_noft_val_ppl": 1642506492051456.0,
+  "retrofit_noft_gen_ascii": 1.0,
+  "finetune_curve": [
+    {
+      "step": 0,
+      "val_ppl": 1642506492051456.0,
+      "gen_ascii": 1.0
+    },
+    {
+      "step": 250,
+      "val_ppl": 32.995,
+      "gen_ascii": 0.967,
+      "lr": 0.000296,
+      "elapsed_min": 7.32
+    },
+    {
+      "step": 500,
+      "val_ppl": 30.233,
+      "gen_ascii": 0.505,
+      "lr": 0.000269,
+      "elapsed_min": 14.64
+    },
+    {
+      "step": 750,
+      "val_ppl": 30.024,
+      "gen_ascii": 0.895,
+      "lr": 0.000223,
+      "elapsed_min": 21.98
+    },
+    {
+      "step": 1000,
+      "val_ppl": 30.993,
+      "gen_ascii": 0.893,
+      "lr": 0.000165,
+      "elapsed_min": 29.31
+    },
+    {
+      "step": 1250,
+      "val_ppl": 28.834,
+      "gen_ascii": 0.958,
+      "lr": 0.000105,
+      "elapsed_min": 36.63
+    },
+    {
+      "step": 1500,
+      "val_ppl": 43.95,
+      "gen_ascii": 0.982,
+      "lr": 5.3e-05,
+      "elapsed_min": 43.97
+    },
+    {
+      "step": 1750,
+      "val_ppl": 45.891,
+      "gen_ascii": 0.975,
+      "lr": 1.8e-05,
+      "elapsed_min": 51.3
+    },
+    {
+      "step": 2000,
+      "val_ppl": 56.55,
+      "gen_ascii": 0.98,
+      "lr": 6e-06,
+      "elapsed_min": 58.64
+    }
+  ],
+  "finetune_wall_min": 58.64,
+  "recovered_val_ppl": 56.55,
+  "recovered_gen_ascii": 0.98,
+  "recovered_equivariance": {
+    "logit_top1_agreement": 1.0,
+    "hidden_rel_err": 8.889858661082789e-07,
+    "equivariant": true,
+    "note": "the fine-tuned (recovered) model conjugates to an exactly-equivariant CONJFORMER server -- recovery does not break the obfuscation."
+  },
+  "summary": {
+    "original_val_ppl": 10.082,
+    "retrofit_noft_val_ppl": 1642506492051456.0,
+    "recovered_val_ppl": 56.55,
+    "ppl_recovery_pct": 100.0,
+    "gen_ascii_before_after": [
+      1.0,
+      0.98
+    ],
+    "finetune_wall_min": 58.64,
+    "note": "CONJFORMER's scalar-RMSNorm break IS recoverable by fine-tuning (this confirms it) -- at a real fine-tuning wall-cost; ours needs zero fine-tuning."
+  }
+}

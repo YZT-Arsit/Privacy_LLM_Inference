@@ -1,0 +1,142 @@
+{
+  "original": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": "### Raymond III, Count of Tripoli\n\nRaymond III was a prominent figure during the Crusades, serving as the Count of Tripoli from 1148 to his death in 1169. He played a crucial role in the defense of the County of Tripoli against Muslim forces.\n\n#### Early"
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": "To the land of the rising sun, where cherry blossoms bloom,\nAnd geisha dance under moonlit skies.\nIn Kyoto's ancient halls, we'll seek the wisdom found,\nAs tea is steeped, and stories unfold.\n\nFrom Tokyo's bustling streets, we'll venture forth,\nWhere neon lights illuminate the night.\n"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": "[Name]  \n[Address]  \n[Phone Number]  \n[Email Address]\n\nObjective: Seeking an entry-level position in [Field of Interest] where I can utilize my skills and knowledge gained from high school.\n\nEducation:\n- High School Graduation - [School Name], [Graduation Year]\n- Relevant Courses:"
+    }
+  ],
+  "retrofit_noft": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": "                                                                "
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " 2                                                              "
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": "   2                                                            "
+    }
+  ],
+  "ft_step_100": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " , \n = = = = \n = = = \n = = = \n = = = \n = = = \n = = = \n = = = \n = \n = = = \n = \n = = = \n = \n = = = \n = \n = = = \n = \n = = = \n = \n ="
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " = = = \n = = = \n The hotel , the hotel , the restaurant , the bar , the bars , the restaurants , the shopping malls , the nightingale , the nightingale , the nightingale , the nightingale , the nightingale , the nightingale , the nightingale"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " ] , and the 3 @.@ 000 @,@ 000 @.@ 000 @.@ 000 @.@ 000 of them . \n = = = = \n = \n = = = \n = \n = = = \n = \n = = = \n ="
+    }
+  ],
+  "ft_step_200": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " = = = = \n A machine learning system named the Machine Learning ( ML ) , developed by researchers at the University of California , was announced on June 2 , 2009 . The machine 's first version was expected to be released by August 2009 , but it was cancelled due to"
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " I am planning a trip to Japan , and I want you to write an itinerary for me . You are not allowed to use commas in your response . \n = = = = = = = \n In 2013 , the Japanese government released a new version of the \" Guide for the Foreign Investment of Foreign Capital"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " Make a resume for a new graduate of the same year , but this time with a more detailed and more detailed experience than that of the previous one . \n = = = = = = \n = = = = = = = \n = = = = = = = = \n = = = = = = = = \n"
+    }
+  ],
+  "ft_step_300": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " = = \n You are Qwen , created by Alibaba Cloud . You are a member of the Qwen community . You are a member of the Qwen community . You are a member of the Qwen community . You are a member of the Qwen community . You are a member of the Qwen community . You"
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " I will be with you . I will be with you . I will be with you . I will be with you . I will be with you . I will be with you . I will be with you . I will be with you . I will be with you . I will be with you . I will be with"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " You are Qwen , you are an assistant . You are a security guard . You are a security guard . You are a security guard . You are a security guard . You are a security guard . You are a security guard . You are a security guard . You are a security guard . You are a security guard ."
+    }
+  ],
+  "ft_step_400": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " The website is designed to help you find information about the Wikipedia , and to provide an alternative definition of the term . \n = = = = = = \n = = = = = = = = \n = = = = = = = = \n = = = = = = = = \n = = = = = ="
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " I have been doing some research on the history of the company . You can only do so much more . \" \n = = Production = = \n The script is directed by David Mulei , who has previously directed the 2004 episode \" The Firefly \" . He had previously directed the 19"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " Make sure to have at least 12 players . They must be of the same age , and must be able to write an essay on the topic of the importance of being young . The player must be able to write a poem or story that is not related to the game . \n = = Gameplay = = \n The"
+    }
+  ],
+  "ft_step_500": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " = = = = = = = = = = = = = = \n = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = ="
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " I Am Free , but I Am Free from the Hellblazer . You are a member of the team , but you are unable to perform any tasks outside of the game 's scope . You are able to do nothing other than what is required by the mission . \n = = = = = = = = = ="
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " = = = = = = = = = = = = = = = \n = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = ="
+    }
+  ],
+  "ft_step_600": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " create a 5 @-@ page version of the article , which is published on the website . \n = = History = = \n The first mention of the Roman Empire in China was made by Cipio Augustus Caesar , who visited China in 46 BC . Caesar had previously visited China in 39"
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " I will be traveling with you , and I will be taking the trip . \n = = History = = \n The first time that you hear of the story is when it was published in 2013 . It was released as a book on August 25 , 2013 , and it was"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " ] , [ name ] , and [ email ] . If you want to be the first teacher , you must also provide a copy of your students ' names to the teacher . If you wish to be the second teacher , you must also provide a copy of the students ' names to the teacher . If you wish to be"
+    }
+  ],
+  "ft_step_700": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " = = = = Early career = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n = = = = Early career = = = ="
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " I have to be a teacher , but I don 't want to be a teacher . I don 't want to be a teacher . I don 't want to be a teacher . \" \n = = = = 1806 – 1809 = = = = \n In 18"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " = = = Early career = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n = = = = Early career = = = = \n"
+    }
+  ],
+  "ft_step_800": [
+    {
+      "prompt": "Write a 300+ word summary of the wikipedia page \"https://en.wikipedia.org/wiki/Raymond_III,_Count_of_Tripoli\". Do not use any commas and highlight at least 3 sections that has titles in markdown format, for example *highlighted section part 1*, *highlighted section part 2*, *highlighted section part 3*.",
+      "text": " You are tasked with performing administrative , operational , or other administrative functions . You may also be tasked with performing legal functions such as preparing legal documents , preparing reports , or representing the interests of various parties . \n = = Personal life = = \n = = = Childhood and youth = = = = \n You were born on May"
+    },
+    {
+      "prompt": "I am planning a trip to Japan, and I would like thee to write an itinerary for my journey in a Shakespearean style. You are not allowed to use any commas in your response.",
+      "text": " You are the first female assistant . She is very caring about detail , and she has a high energy level of 100 . She is usually calm and reasoned , but she can become highly emotional when under peer pressure . She is usually silent and non @-@ vocal , but she has been reported to speak low"
+    },
+    {
+      "prompt": "Write a resume for a fresh high school graduate who is seeking their first job. Make sure to include at least 12 placeholder represented by square brackets, such as [address], [name].",
+      "text": " = = = Social background = = = = \n You have been described by many sources as follows : \n \" She has a very caring and caring mother , with a caring interest in making the world better . \" \n = = = Social background = = = = \n You have been described by several sources as follows : \n"
+    }
+  ]
+}

@@ -73,3 +73,49 @@ stage) + `debug_folded_remote_generation_parity.py` to quantify per-token folded
 divergence. Until that is measured, **do not make a code-generation (HumanEval/MBPP) utility claim
 for folded_remote.** The scheme's demonstrated strengths remain on shorter / less
 token-exact tasks (IFEval/GSM8K/MT-Bench), where drift is cosmetically tolerable.
+
+## ROOT CAUSE FOUND — bf16 fold is numerically broken; fp32 fold FIXES it (`parity/`)
+
+`debug_folded_remote_generation_parity.py --with-plaintext` on HumanEval/0 (32 steps, per-step
+folded-recovered-logits vs plaintext top1):
+
+| fold compute | plaintext top1 agreement | logit max_abs_err (mean/max) | first divergence |
+|---|---|---|---|
+| **bf16** (all runs above) | **3.1%** (1/32) | **28.5 / 47.4** | step 1 |
+| **fp32** (`--fold-dtype-override float32`) | **100%** (32/32) | **0.27 / 0.52** | none |
+
+The `--native-logits-wire` default is already fp32 (final-logits transmission was never the issue).
+The real error is in the **bf16 folded-weight compute** on the GPU: the folded products
+`N_in⁻¹ W N_out` + boundary pad + mask ops have large dynamic range and, in bf16, accumulate a
+**~28-logit-unit** error that flips the argmax from step 1 — producing the "first first"-style
+degradation and the 78→14 pass@1 collapse. Running the fold in **fp32 cuts the error to 0.27**
+(the inherent A_rightmul nonlinear-approximation floor) and yields **100% plaintext agreement**.
+
+**=> The fix is viable: compute the folded path in fp32.** Confirm with a full HumanEval-164
+folded_remote run using `--fold-dtype-override float32` (worker) — pass@1 should recover to ≈ plaintext.
+
+### IMPORTANT wider implication
+Because bf16 fold agrees with plaintext only ~3% of the time, **every prior bf16 folded_remote
+result (IFEval/GSM8K/MT-Bench/the AAAI generation) is materially degraded vs plaintext, not
+"near-lossless"** — the degradation was just cosmetically tolerable on those looser tasks. The
+"bit-identical / near-lossless" framing holds only for **fp32 fold**. This needs to be reflected
+before any folded_remote utility claim; the fp32-fold path is the one to benchmark and report.
+
+## CONFIRMED — full HumanEval-164 fp32 run recovers parity (`fp32/`)
+
+Full 164-problem folded_remote run, worker `--fold-dtype-override float32`, plain greedy, matched to
+the same `he_full` plaintext baseline. Worker `resident_cache_dtype = torch.float32`,
+`compatible_masks_verified=true`, `nonlinear_tee_crossings=0`. Files: `fp32/humaneval_pass1.json`,
+`fp32/ours_report.json`. Ran 10:19→11:02 (~43 min), `ours rc=0`, `pass1 rc=0`.
+
+| fold compute | OURS pass@1 | plaintext | delta |
+|---|---|---|---|
+| **bf16** (broken) | **0.140** (23/164) | 0.780 | −0.640 |
+| **fp32** (fixed) | **0.823** (135/164) | 0.780 | **+0.043** |
+
+**OURS-fp32 is at statistical parity with plaintext** (+0.043 ≈ 7 problems from near-tie argmax
+flips in both directions — NOT a real improvement; `exact_completion_match_rate=0.0` still holds
+because fp32 fold reorders matmuls → ~1e-6 perturbation). The 78→14 collapse was entirely a bf16
+folded-weight numerical artifact; fp32 fold removes it. This matches the fp32 parity already
+established on IFEval/GSM8K/MT-Bench in `results/aaai_fp32_final/` — HumanEval now completes the set:
+**under matched fp32, the obfuscation protocol has no measurable utility cost on code-gen either.**

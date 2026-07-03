@@ -1,0 +1,4 @@
+[fp32smoke] start N=164 Fri Jul  3 10:19:13 CST 2026
+[fp32smoke] worker up (2)
+[fp32smoke] ours rc=0 Fri Jul  3 11:00:59 CST 2026
+[fp32smoke] pass1 rc=0 Fri Jul  3 11:02:21 CST 2026
