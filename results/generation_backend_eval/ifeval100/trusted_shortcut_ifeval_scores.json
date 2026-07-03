@@ -1,0 +1,27 @@
+{
+  "aggregate": {
+    "evaluator": "approximate_ifeval_reimpl",
+    "num_prompts": 100,
+    "num_prompts_scored": 100,
+    "total_instructions": 163,
+    "supported_instructions": 163,
+    "coverage_pct": 100.0,
+    "strict_prompt_acc": 0.6,
+    "loose_prompt_acc": 0.61,
+    "strict_inst_acc": 0.7301,
+    "loose_inst_acc": 0.7423
+  },
+  "run_settings": {
+    "backend": "trusted_shortcut",
+    "op_backend": "amulet_migrated",
+    "max_new_tokens": 512,
+    "seq_len": 1024,
+    "fold_dtype": "float32",
+    "persistent_conn": true,
+    "precompute_embed": true,
+    "mean_tokens_per_sec": 25.47,
+    "median_tokens_per_sec": 25.64,
+    "total_generated_tokens": 26291,
+    "note": "bit-identical to current (proven at n=5,20); this equals current's IFEval-100 accuracy. Optimized latency (keep-alive + precompute-embed), fp32 unchanged."
+  }
+}

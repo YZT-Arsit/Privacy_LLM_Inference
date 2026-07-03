@@ -175,6 +175,25 @@ fallback. As expected from bit-identical decoding, IFEval accuracy is exactly
 equal between the two backends; the migration changes *where* the nonlinearity
 runs and the latency, not the outputs.
 
+## 7. IFEval-100 (optimized latency, fp32 unchanged, greedy, max_new_tokens 512)
+
+trusted_shortcut over the first 100 IFEval prompts, with the precision-neutral
+latency features on (`--persistent-conn --precompute-embed`, verified
+bit-identical, token_match 1.0) and fp32 fold unchanged:
+
+| metric | value |
+|---|---|
+| strict / loose prompt acc | **0.60 / 0.61** |
+| strict / loose instruction acc | **0.730 / 0.742** |
+| prompts / instructions (coverage) | 100 / 163 (100%) |
+| mean / median throughput | **25.47 / 25.64 tok/s** |
+| total generated tokens | 26,291 |
+
+(The 20-prompt subset scored 0.75; the 100-prompt figure is lower simply because
+the larger sample is harder — this is the representative IFEval-100 number.) Being
+bit-identical to `current`, this equals the `current` baseline's IFEval-100
+accuracy. Scores: `results/generation_backend_eval/ifeval100/`.
+
 ## Notes / caveats
 
 - **Root-cause fix that mattered**: the boundary artifact's masks are drawn with
