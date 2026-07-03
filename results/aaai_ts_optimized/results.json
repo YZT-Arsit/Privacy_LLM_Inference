@@ -1,0 +1,27 @@
+{
+  "scheme": "trusted_shortcut (amulet_migrated) folded_remote, fp32 fold, optimized",
+  "optimizations": ["amulet lift-factor cache", "keep-alive persistent conn", "precompute masked embed"],
+  "bit_identical_to_current": true,
+  "model": "Qwen2.5-7B-Instruct",
+  "hardware": "H800 (worker+boundary co-located, 127.0.0.1)",
+  "date": "2026-07-04",
+  "benchmarks": {
+    "ifeval": {"n": 541, "strict_prompt_acc": 0.6858, "loose_prompt_acc": 0.7043,
+               "strict_inst_acc": 0.7686, "loose_inst_acc": 0.7854, "coverage_pct": 100.0,
+               "total_instructions": 834, "failed": 0, "mean_tok_s": 25.63},
+    "gsm8k": {"n": 1319, "exact_match_accuracy": 0.9052, "correct": 1194, "mean_tok_s": 25.80},
+    "humaneval": {"n": 164, "pass_at_1": 0.8232, "passed": 135, "mean_tok_s": 25.57,
+                  "note": "== prior A_rightmul fp32 (0.8232) exactly; plaintext prior=0.780"},
+    "mt_bench": {"n_questions": 80, "n_generations": 160, "turns": 2, "mean_tok_s": 25.35,
+                 "judge": "deferred (needs external LLM judge)"}
+  },
+  "latency": {
+    "ours_trusted_shortcut_fp32_optimized_tok_s": 25.6,
+    "plaintext_local_bf16_tok_s": 62.79,
+    "ratio_ours_vs_plaintext": 2.45,
+    "note": "ours is fp32 (needed for parity); plaintext is bf16 native. Part of the 2.45x is fp32's 2x memory traffic. Both measured on H800, greedy, uncontended for plaintext."
+  },
+  "total_examples": 2184,
+  "total_generated_tokens": 604617,
+  "watchdog": "resume + worker auto-restart; 0 restarts, 0 failures across all 4 benchmarks"
+}

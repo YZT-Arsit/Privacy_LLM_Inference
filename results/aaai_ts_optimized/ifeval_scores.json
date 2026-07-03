@@ -1,0 +1,4 @@
+{"evaluator": "approximate_ifeval_reimpl", "num_prompts": 541, "num_prompts_scored": 541,
+ "total_instructions": 834, "supported_instructions": 834, "coverage_pct": 100.0,
+ "strict_prompt_acc": 0.6858, "loose_prompt_acc": 0.7043,
+ "strict_inst_acc": 0.7686, "loose_inst_acc": 0.7854, "failed_records": 0}
