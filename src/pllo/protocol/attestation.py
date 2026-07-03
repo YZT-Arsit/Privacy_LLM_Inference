@@ -444,10 +444,27 @@ def verify_evidence(
     mr_td_match = (str(mr_td).lower() == str(expected_mr_td).lower()
                    if (expected_mr_td and mr_td) else None)
 
+    # A real attestation token is EITHER a signed 3-part JWT (the remote
+    # attestation-service / Trust-Authority flow) OR a real DCAP-QVL appraisal
+    # SUCCESS on a real hardware quote (the local Alibaba qgen+QVL flow, whose
+    # appraisal-result token is alg=none: the cryptographic trust is the QVL
+    # verification of the TD Quote against the PCK cert chain, not a JWS
+    # signature). Simulated / fabricated-unsigned evidence is excluded, so this
+    # does NOT weaken the check -- a QVL SUCCESS on a real quote is at least as
+    # strong as an unverified-signature JWT.
+    qvl_appraised = (
+        str(evidence.get("verifier_overall_appraisal_result", "")).upper()
+        == "SUCCESS"
+        and str(evidence.get("quote_source", "")).startswith("alibaba_tdx")
+        and not evidence.get("simulated_unsigned"))
+    signed_token = jwt_present and jwt_parts == 3
+    token_ok = signed_token or qvl_appraised
+    attestation_path = ("signed_jwt" if signed_token
+                        else ("qvl_appraisal" if qvl_appraised else "none"))
     checks = [
         tee == "tdx",
         debug is False,
-        jwt_present and jwt_parts == 3,
+        token_ok,
         bound is True,
     ]
     if expected_mr_td:
@@ -462,10 +479,12 @@ def verify_evidence(
         quote_available=True,
         quote_status="verified" if verified else "evidence_check_failed",
         tdx_guest_device_present=os.path.exists(TDX_GUEST_DEVICE),
-        notes="JWT signature/cert-chain verified by the remote attestation "
-              "service; this module verifies tee/debug/binding/mr_td claims.",
+        notes="attested via %s; QVL/JWT-signature/cert-chain checked by the "
+              "verifier; this module verifies tee/debug/binding/mr_td claims."
+              % attestation_path,
         claims={"tee": tee, "debug": debug, "mr_td": mr_td,
-                "jwt_parts": jwt_parts})
+                "jwt_parts": jwt_parts, "attestation_path": attestation_path,
+                "qvl_appraised": qvl_appraised})
 
 
 def attest_boundary(

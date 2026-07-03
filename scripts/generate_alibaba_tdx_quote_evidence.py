@@ -370,6 +370,15 @@ def verify_quote_alibaba(quote_path, out_dir, *, qverify_dir=ALIBABA_QVERIFY_DIR
     parsed = parse_verifier_output(out or err)
     parsed["verifier_returncode"] = rc
     parsed["raw_output_present"] = bool(out or err)
+    # thread through the signed appraisal-result JWT if the verify wrapper
+    # emitted it (clean JSON with "appraisal_jwt"); needed so the evidence
+    # carries the 3-part signed token verify_evidence() checks for.
+    try:
+        raw = json.loads((out or "").strip())
+        if isinstance(raw, dict) and raw.get("appraisal_jwt"):
+            parsed["appraisal_jwt"] = raw["appraisal_jwt"]
+    except Exception:                                       # noqa: BLE001
+        pass
     return parsed
 
 
@@ -403,6 +412,9 @@ def build_evidence(*, runtime_hash_hex, report_data_hex, nonlinear_backend,
         "nonlinear_backend": nonlinear_backend,
         "nonlinear_design_metadata_hash": nonlinear_design_metadata_hash,
         "runtime_hash_binds_nonlinear_backend": True,
+        # signed appraisal-result JWT from the Alibaba verifier (3-part token);
+        # verify_evidence() records that a signed token was returned.
+        "jwt": appraisal.get("appraisal_jwt"),
         "tdx": {"td_attributes": {"debug": debug_val if debug_val is not None else "unknown"}},
         "generated_by": "generate_alibaba_tdx_quote_evidence.py",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -545,6 +557,13 @@ def main() -> int:
     ap.add_argument("--simulate", action="store_true", default=False,
                     help="off-TDX plumbing test: fabricate a passing-but-UNSIGNED "
                     "flow (paper_facing=false); never real evidence")
+    ap.add_argument("--allow-non-paper-facing-design", action="store_true",
+                    default=False,
+                    help="relax the A_rightmul-only gate so a REAL quote can be "
+                    "bound to a non-paper-facing design (current / "
+                    "trusted_shortcut) for the generation-backend eval. The "
+                    "evidence is still fully real and design-bound; only the "
+                    "paper-facing label does not apply.")
     args = ap.parse_args()
 
     out_dir = Path(args.output_dir)
@@ -574,9 +593,11 @@ def main() -> int:
         normalize_nonlinear_backend,
         nonlinear_design_metadata_hash as _design_hash)
     nb = normalize_nonlinear_backend(args.nonlinear_backend)
-    if nb != "A_rightmul":
+    if nb != "A_rightmul" and not args.allow_non_paper_facing_design:
         print("ERROR: this paper-facing wrapper requires --nonlinear-backend "
-              "A_rightmul (got %r)" % nb, file=sys.stderr)
+              "A_rightmul (got %r); pass --allow-non-paper-facing-design to "
+              "bind a real quote to current / trusted_shortcut for the "
+              "generation-backend eval" % nb, file=sys.stderr)
         return 3
     design_hash = _design_hash(nb)
     metadata = boundary_manifest_metadata(
@@ -660,7 +681,7 @@ def main() -> int:
                       encoding="utf-8")
     shutil.copyfile(out_ev, out_dir / "evidence.json")
 
-    print("=== Alibaba TDX evidence (A_rightmul) ===")
+    print("=== Alibaba TDX evidence (%s) ===" % nb)
     print("runtime_hash=%s" % runtime_hash_hex)
     print("report_data =%s" % report_data_hex)
     print("tdx_reportdata=%s" % evidence.get("tdx_reportdata"))
