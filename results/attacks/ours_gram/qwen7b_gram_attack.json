@@ -1,0 +1,1009 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2.5-7B-Instruct",
+  "hidden": 3584,
+  "n_layers": 28,
+  "vocab": 152064,
+  "n_tokens": 6000,
+  "aggregate": {
+    "perm_agg_acc": 1.0,
+    "single_proj_median_perm_acc": 1.0,
+    "median_diag_distinct_frac": 0.7246,
+    "n_projections_attacked": 140
+  },
+  "token_recovery": {
+    "attack_recovered_mask": {
+      "top1": 98.517,
+      "top10": 98.517,
+      "top100": 98.517
+    },
+    "random_mask_baseline": {
+      "top1": 0.0,
+      "top10": 0.133,
+      "top100": 1.417
+    },
+    "random_top1_chance_pct": 0.0167
+  },
+  "verdict": "NOT_SECURE (exact signed-perm N_res recovery -> token collapse)",
+  "per_projection": [
+    {
+      "layer": 0,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.279
+    },
+    {
+      "layer": 0,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.1032
+    },
+    {
+      "layer": 0,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.0131
+    },
+    {
+      "layer": 0,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6671
+    },
+    {
+      "layer": 0,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6208
+    },
+    {
+      "layer": 1,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3072
+    },
+    {
+      "layer": 1,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.1744
+    },
+    {
+      "layer": 1,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.0522
+    },
+    {
+      "layer": 1,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9406
+    },
+    {
+      "layer": 1,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9141
+    },
+    {
+      "layer": 2,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6521
+    },
+    {
+      "layer": 2,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3892
+    },
+    {
+      "layer": 2,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.1024
+    },
+    {
+      "layer": 2,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.94
+    },
+    {
+      "layer": 2,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9102
+    },
+    {
+      "layer": 3,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6052
+    },
+    {
+      "layer": 3,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3362
+    },
+    {
+      "layer": 3,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.1172
+    },
+    {
+      "layer": 3,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9707
+    },
+    {
+      "layer": 3,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9431
+    },
+    {
+      "layer": 4,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6247
+    },
+    {
+      "layer": 4,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3585
+    },
+    {
+      "layer": 4,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.2386
+    },
+    {
+      "layer": 4,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9618
+    },
+    {
+      "layer": 4,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9244
+    },
+    {
+      "layer": 5,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6948
+    },
+    {
+      "layer": 5,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.411
+    },
+    {
+      "layer": 5,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.2891
+    },
+    {
+      "layer": 5,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9626
+    },
+    {
+      "layer": 5,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.957
+    },
+    {
+      "layer": 6,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6643
+    },
+    {
+      "layer": 6,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3926
+    },
+    {
+      "layer": 6,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.2776
+    },
+    {
+      "layer": 6,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9018
+    },
+    {
+      "layer": 6,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8959
+    },
+    {
+      "layer": 7,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.7123
+    },
+    {
+      "layer": 7,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3518
+    },
+    {
+      "layer": 7,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4007
+    },
+    {
+      "layer": 7,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8842
+    },
+    {
+      "layer": 7,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9082
+    },
+    {
+      "layer": 8,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.7246
+    },
+    {
+      "layer": 8,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4364
+    },
+    {
+      "layer": 8,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3298
+    },
+    {
+      "layer": 8,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9188
+    },
+    {
+      "layer": 8,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9475
+    },
+    {
+      "layer": 9,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.7584
+    },
+    {
+      "layer": 9,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3767
+    },
+    {
+      "layer": 9,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4805
+    },
+    {
+      "layer": 9,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9833
+    },
+    {
+      "layer": 9,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9847
+    },
+    {
+      "layer": 10,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.7567
+    },
+    {
+      "layer": 10,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4146
+    },
+    {
+      "layer": 10,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3789
+    },
+    {
+      "layer": 10,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9774
+    },
+    {
+      "layer": 10,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9766
+    },
+    {
+      "layer": 11,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8287
+    },
+    {
+      "layer": 11,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5117
+    },
+    {
+      "layer": 11,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3917
+    },
+    {
+      "layer": 11,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9768
+    },
+    {
+      "layer": 11,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9777
+    },
+    {
+      "layer": 12,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8675
+    },
+    {
+      "layer": 12,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5273
+    },
+    {
+      "layer": 12,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4908
+    },
+    {
+      "layer": 12,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9679
+    },
+    {
+      "layer": 12,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9788
+    },
+    {
+      "layer": 13,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8856
+    },
+    {
+      "layer": 13,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5611
+    },
+    {
+      "layer": 13,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5639
+    },
+    {
+      "layer": 13,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9743
+    },
+    {
+      "layer": 13,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9799
+    },
+    {
+      "layer": 14,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8845
+    },
+    {
+      "layer": 14,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5804
+    },
+    {
+      "layer": 14,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5165
+    },
+    {
+      "layer": 14,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9729
+    },
+    {
+      "layer": 14,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9802
+    },
+    {
+      "layer": 15,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8711
+    },
+    {
+      "layer": 15,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5366
+    },
+    {
+      "layer": 15,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4707
+    },
+    {
+      "layer": 15,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9788
+    },
+    {
+      "layer": 15,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9743
+    },
+    {
+      "layer": 16,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8993
+    },
+    {
+      "layer": 16,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5859
+    },
+    {
+      "layer": 16,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6027
+    },
+    {
+      "layer": 16,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9794
+    },
+    {
+      "layer": 16,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9805
+    },
+    {
+      "layer": 17,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9199
+    },
+    {
+      "layer": 17,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6423
+    },
+    {
+      "layer": 17,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5946
+    },
+    {
+      "layer": 17,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9802
+    },
+    {
+      "layer": 17,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9799
+    },
+    {
+      "layer": 18,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8917
+    },
+    {
+      "layer": 18,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5882
+    },
+    {
+      "layer": 18,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.635
+    },
+    {
+      "layer": 18,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9791
+    },
+    {
+      "layer": 18,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.983
+    },
+    {
+      "layer": 19,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9113
+    },
+    {
+      "layer": 19,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5477
+    },
+    {
+      "layer": 19,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5686
+    },
+    {
+      "layer": 19,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9802
+    },
+    {
+      "layer": 19,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9794
+    },
+    {
+      "layer": 20,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9188
+    },
+    {
+      "layer": 20,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5932
+    },
+    {
+      "layer": 20,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.623
+    },
+    {
+      "layer": 20,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9732
+    },
+    {
+      "layer": 20,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9824
+    },
+    {
+      "layer": 21,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8764
+    },
+    {
+      "layer": 21,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4208
+    },
+    {
+      "layer": 21,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5792
+    },
+    {
+      "layer": 21,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.969
+    },
+    {
+      "layer": 21,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9794
+    },
+    {
+      "layer": 22,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.8708
+    },
+    {
+      "layer": 22,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4283
+    },
+    {
+      "layer": 22,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.56
+    },
+    {
+      "layer": 22,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9699
+    },
+    {
+      "layer": 22,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9785
+    },
+    {
+      "layer": 23,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.796
+    },
+    {
+      "layer": 23,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3323
+    },
+    {
+      "layer": 23,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4347
+    },
+    {
+      "layer": 23,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9757
+    },
+    {
+      "layer": 23,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9799
+    },
+    {
+      "layer": 24,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.7667
+    },
+    {
+      "layer": 24,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.3513
+    },
+    {
+      "layer": 24,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4847
+    },
+    {
+      "layer": 24,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9693
+    },
+    {
+      "layer": 24,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9791
+    },
+    {
+      "layer": 25,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.6535
+    },
+    {
+      "layer": 25,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.2729
+    },
+    {
+      "layer": 25,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.4699
+    },
+    {
+      "layer": 25,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9685
+    },
+    {
+      "layer": 25,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9777
+    },
+    {
+      "layer": 26,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5896
+    },
+    {
+      "layer": 26,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.2679
+    },
+    {
+      "layer": 26,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5516
+    },
+    {
+      "layer": 26,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.945
+    },
+    {
+      "layer": 26,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9587
+    },
+    {
+      "layer": 27,
+      "proj": "q_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.5014
+    },
+    {
+      "layer": 27,
+      "proj": "k_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.214
+    },
+    {
+      "layer": 27,
+      "proj": "v_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.361
+    },
+    {
+      "layer": 27,
+      "proj": "gate_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9467
+    },
+    {
+      "layer": 27,
+      "proj": "up_proj",
+      "perm_acc": 1.0,
+      "sign_acc_rel": 1.0,
+      "diag_distinct_frac": 0.9531
+    }
+  ]
+}
