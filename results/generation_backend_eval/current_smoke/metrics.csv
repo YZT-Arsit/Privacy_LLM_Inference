@@ -1,0 +1,11 @@
+prompt_id,backend,output_length,finish_reason,latency_sec,tokens_per_sec,error
+smoke-01,current,29,eos,6.4911,4.468,
+smoke-02,current,39,eos,1.4305,27.263,
+smoke-03,current,64,length,2.4238,26.405,
+smoke-04,current,64,length,2.4428,26.199,
+smoke-05,current,64,length,2.3999,26.668,
+smoke-06,current,64,length,2.3879,26.801,
+smoke-07,current,31,eos,1.1792,26.288,
+smoke-08,current,64,length,2.3912,26.765,
+smoke-09,current,60,eos,2.2019,27.249,
+smoke-10,current,23,eos,0.8791,26.162,

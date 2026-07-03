@@ -1,0 +1,39 @@
+{
+  "args": {
+    "backend": "trusted_shortcut",
+    "model_path": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+    "tokenizer_path": null,
+    "folded_package_path": "/root/autodl-tmp/privacy_llm_packages/qwen7b_folded_full_trusted_shortcut_seq1024_pad",
+    "embedding_path": "/root/autodl-tmp/privacy_llm_packages/qwen7b_boundary_artifact_trusted_shortcut_cuda",
+    "gpu_worker_url": "http://127.0.0.1:18083",
+    "prompt_file": "/root/privacy_llm_obfuscation/data/eval/generation_smoke_prompts.jsonl",
+    "max_new_tokens": 64,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "do_sample": false,
+    "seq_len": 1024,
+    "dtype": "bfloat16",
+    "device": "cuda",
+    "use_chat_template": true,
+    "limit": 0,
+    "audit_dimensions": true,
+    "audit_nonlinear": true,
+    "expected_nonlinear_backend": "trusted_shortcut",
+    "expected_op_backend": "amulet_migrated",
+    "compare_baseline_dir": "/root/privacy_llm_obfuscation/outputs/generation_backend_eval/current_attested_tdx",
+    "worker_backend": "tdx_attested_remote",
+    "attestation_evidence_json": "/root/tdx_quote_trusted_shortcut.json",
+    "expected_mr_td": null,
+    "require_tdx": true,
+    "allow_missing_evidence": false,
+    "no_worker_timing": false,
+    "profile": true,
+    "output_dir": "/root/privacy_llm_obfuscation/outputs/generation_backend_eval/trusted_shortcut_attested_tdx"
+  },
+  "resolved_backend": {
+    "input": "trusted_shortcut",
+    "nonlinear_backend": "trusted_shortcut",
+    "op_backend": "amulet_migrated"
+  },
+  "timestamp_note": "wall-clock stamped by the caller/runbook"
+}

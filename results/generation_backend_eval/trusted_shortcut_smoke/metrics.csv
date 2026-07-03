@@ -1,0 +1,11 @@
+prompt_id,backend,output_length,finish_reason,latency_sec,tokens_per_sec,error
+smoke-01,trusted_shortcut,29,eos,14.1683,2.047,
+smoke-02,trusted_shortcut,39,eos,11.2012,3.482,
+smoke-03,trusted_shortcut,64,length,18.806,3.403,
+smoke-04,trusted_shortcut,64,length,18.196,3.517,
+smoke-05,trusted_shortcut,64,length,17.8858,3.578,
+smoke-06,trusted_shortcut,64,length,17.8032,3.595,
+smoke-07,trusted_shortcut,31,eos,8.6995,3.563,
+smoke-08,trusted_shortcut,64,length,17.6061,3.635,
+smoke-09,trusted_shortcut,60,eos,16.9071,3.549,
+smoke-10,trusted_shortcut,23,eos,6.5824,3.494,

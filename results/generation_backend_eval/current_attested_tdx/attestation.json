@@ -1,0 +1,13 @@
+{
+  "boundary_attested": true,
+  "boundary_tee_type": "tdx",
+  "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+  "runtime_hash": "facf72b3ab3b4192abe9d128ca4f525f9cae62d129a24d300ad846ef1403ac6c40a77b3cd460de61f6e8ffd5ff61913fd8f2e74b1d3d044b9b1dab914e351587",
+  "expected_runtime_hash": "facf72b3ab3b4192abe9d128ca4f525f9cae62d129a24d300ad846ef1403ac6c40a77b3cd460de61f6e8ffd5ff61913fd8f2e74b1d3d044b9b1dab914e351587",
+  "runtime_hash_bound": true,
+  "binding_mismatch_reason": null,
+  "attestation_nonlinear_backend": "current",
+  "evidence_report_data": "facf72b3ab3b4192abe9d128ca4f525f9cae62d129a24d300ad846ef1403ac6c40a77b3cd460de61f6e8ffd5ff61913fd8f2e74b1d3d044b9b1dab914e351587",
+  "worker_backend": "tdx_attested_remote",
+  "attestation_requested": true
+}

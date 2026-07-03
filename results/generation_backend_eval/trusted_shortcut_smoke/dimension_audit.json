@@ -1,0 +1,562 @@
+{
+  "model": {
+    "model_name": "Qwen2.5-7B-Instruct",
+    "num_layers": 28,
+    "hidden_size": 3584,
+    "intermediate_size": 18944,
+    "num_attention_heads": 28,
+    "num_key_value_heads": 4,
+    "head_dim": 128,
+    "vocab_size": 152064,
+    "max_position_embeddings": 32768,
+    "dtype": "bfloat16",
+    "device": "cuda",
+    "package_seq_len": 1024,
+    "generation_max_new_tokens": 64,
+    "batch_size": 1,
+    "nonlinear_backend": "trusted_shortcut",
+    "nonlinear_op_backend": "amulet_migrated"
+  },
+  "inputs": {
+    "input_ids": {
+      "shape": [
+        1,
+        38
+      ],
+      "source": "measured"
+    },
+    "attention_mask": {
+      "shape": [
+        1,
+        38
+      ],
+      "source": "derived_from_config"
+    },
+    "embedding_output": {
+      "shape": [
+        1,
+        38,
+        3584
+      ],
+      "source": "measured",
+      "note": "masked embedding crossing to GPU"
+    },
+    "prefill_hidden": {
+      "shape": [
+        1,
+        38,
+        3584
+      ],
+      "source": "derived_from_config"
+    },
+    "decode_hidden_per_step": {
+      "shape": [
+        1,
+        1,
+        3584
+      ],
+      "source": "derived_from_config"
+    }
+  },
+  "attention": {
+    "note": "shapes identical across all 28 layers (prefill, B=1, T=38)",
+    "per_layer_template": {
+      "hidden_input": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "q_proj_weight": {
+        "shape": [
+          3584,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "k_proj_weight": {
+        "shape": [
+          512,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "v_proj_weight": {
+        "shape": [
+          512,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "o_proj_weight": {
+        "shape": [
+          3584,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "q_activation": {
+        "shape": [
+          1,
+          28,
+          38,
+          128
+        ],
+        "source": "derived_from_config"
+      },
+      "k_activation": {
+        "shape": [
+          1,
+          4,
+          38,
+          128
+        ],
+        "source": "derived_from_config"
+      },
+      "v_activation": {
+        "shape": [
+          1,
+          4,
+          38,
+          128
+        ],
+        "source": "derived_from_config"
+      },
+      "attention_score": {
+        "shape": [
+          1,
+          28,
+          38,
+          38
+        ],
+        "source": "derived_from_config"
+      },
+      "attention_probability": {
+        "shape": [
+          1,
+          28,
+          38,
+          38
+        ],
+        "source": "derived_from_config"
+      },
+      "attention_output_before_o_proj": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "attention_output_after_o_proj": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "residual_output": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      }
+    },
+    "num_layers": 28
+  },
+  "kv_cache": {
+    "key_cache_after_prefill": {
+      "shape": [
+        1,
+        4,
+        38,
+        128
+      ],
+      "source": "derived_from_config"
+    },
+    "value_cache_after_prefill": {
+      "shape": [
+        1,
+        4,
+        38,
+        128
+      ],
+      "source": "derived_from_config"
+    },
+    "key_cache_representative_decode": {
+      "after_decode_step_1": {
+        "shape": [
+          1,
+          4,
+          39,
+          128
+        ],
+        "source": "derived_from_config"
+      },
+      "after_decode_step_8": {
+        "shape": [
+          1,
+          4,
+          46,
+          128
+        ],
+        "source": "derived_from_config"
+      }
+    },
+    "value_cache_representative_decode": {
+      "after_decode_step_1": {
+        "shape": [
+          1,
+          4,
+          39,
+          128
+        ],
+        "source": "derived_from_config"
+      },
+      "after_decode_step_8": {
+        "shape": [
+          1,
+          4,
+          46,
+          128
+        ],
+        "source": "derived_from_config"
+      }
+    },
+    "cache_dtype": "bfloat16",
+    "cache_device": "cuda",
+    "cache_num_layers": 28,
+    "cache_sequence_length_after_prefill": 38,
+    "cache_head_dim": 128,
+    "cache_num_key_value_heads": 4
+  },
+  "mlp": {
+    "per_layer_template": {
+      "mlp_input": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "gate_proj_weight": {
+        "shape": [
+          18944,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "up_proj_weight": {
+        "shape": [
+          18944,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "down_proj_weight": {
+        "shape": [
+          3584,
+          18944
+        ],
+        "source": "derived_from_config"
+      },
+      "gate_activation": {
+        "shape": [
+          1,
+          38,
+          18944
+        ],
+        "source": "derived_from_config"
+      },
+      "up_activation": {
+        "shape": [
+          1,
+          38,
+          18944
+        ],
+        "source": "derived_from_config"
+      },
+      "nonlinear_input": {
+        "shape": [
+          1,
+          38,
+          18944
+        ],
+        "source": "derived_from_config"
+      },
+      "nonlinear_output": {
+        "shape": [
+          1,
+          38,
+          18944
+        ],
+        "source": "derived_from_config"
+      },
+      "down_input": {
+        "shape": [
+          1,
+          38,
+          18944
+        ],
+        "source": "derived_from_config"
+      },
+      "down_output": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      },
+      "mlp_residual_output": {
+        "shape": [
+          1,
+          38,
+          3584
+        ],
+        "source": "derived_from_config"
+      }
+    },
+    "num_layers": 28
+  },
+  "nonlinear": {
+    "per_layer_ops": [
+      {
+        "op_type": "rmsnorm",
+        "op_input_shape": [
+          1,
+          38,
+          3584
+        ],
+        "op_output_shape": [
+          1,
+          38,
+          3584
+        ],
+        "backend_used": "amulet_migrated",
+        "lifted_representation_used": false,
+        "note": "input_layernorm + post_attention_layernorm per layer (2 per layer) + final norm",
+        "source": "derived_from_config"
+      },
+      {
+        "op_type": "softmax",
+        "op_input_shape": [
+          1,
+          28,
+          38,
+          38
+        ],
+        "op_output_shape": [
+          1,
+          28,
+          38,
+          38
+        ],
+        "backend_used": "amulet_migrated",
+        "lifted_representation_used": false,
+        "note": "amulet_migrated migrates the elementwise exp to the accelerator, keeps a trusted row-max reduction",
+        "source": "derived_from_config"
+      },
+      {
+        "op_type": "silu",
+        "op_input_shape": [
+          1,
+          38,
+          18944
+        ],
+        "op_output_shape": [
+          1,
+          38,
+          18944
+        ],
+        "backend_used": "amulet_migrated",
+        "lifted_representation_used": true,
+        "lift_k": 2,
+        "lifted_tensor_shape": [
+          1,
+          38,
+          18944,
+          2
+        ],
+        "auxiliary_matrix_shape": [
+          18944,
+          2
+        ],
+        "source": "derived_from_config"
+      }
+    ],
+    "ops_per_layer": {
+      "rmsnorm": 2,
+      "softmax": 1,
+      "silu": 1
+    },
+    "num_layers": 28,
+    "final_rmsnorm": {
+      "op_type": "rmsnorm",
+      "op_input_shape": [
+        1,
+        38,
+        3584
+      ],
+      "op_output_shape": [
+        1,
+        38,
+        3584
+      ],
+      "backend_used": "amulet_migrated",
+      "lifted_representation_used": false,
+      "note": "input_layernorm + post_attention_layernorm per layer (2 per layer) + final norm",
+      "source": "derived_from_config"
+    }
+  },
+  "lm_head": {
+    "final_hidden": {
+      "shape": [
+        1,
+        1,
+        3584
+      ],
+      "source": "derived_from_config",
+      "note": "last-position hidden used for logits"
+    },
+    "lm_head_weight": {
+      "shape": [
+        152064,
+        3584
+      ],
+      "source": "derived_from_config"
+    },
+    "logits": {
+      "shape": [
+        1,
+        1,
+        152064
+      ],
+      "source": "measured",
+      "note": "masked last-position logits over the wire"
+    },
+    "vocab_mask": {
+      "shape": null,
+      "source": "derived_from_config",
+      "note": "no vocab mask advertised"
+    },
+    "recovered_logits": {
+      "shape": [
+        1,
+        152064
+      ],
+      "source": "measured",
+      "note": "trusted-side recovered logits"
+    },
+    "sampled_token": {
+      "shape": [
+        1,
+        1
+      ],
+      "source": "derived_from_config"
+    }
+  },
+  "masks_pad_package": {
+    "residual_mask_shape": null,
+    "mask_family": null,
+    "q_proj_local_mask": [
+      3584,
+      3584
+    ],
+    "k_proj_local_mask": [
+      512,
+      512
+    ],
+    "v_proj_local_mask": [
+      512,
+      512
+    ],
+    "o_proj_local_mask": [
+      3584,
+      3584
+    ],
+    "gate_proj_local_mask": [
+      18944,
+      18944
+    ],
+    "up_proj_local_mask": [
+      18944,
+      18944
+    ],
+    "down_proj_local_mask": [
+      3584,
+      3584
+    ],
+    "lm_head_output_mask": [
+      152064,
+      152064
+    ],
+    "pad_tensor_shape_per_module": {
+      "q_proj": [
+        3584
+      ],
+      "k_proj": [
+        3584
+      ],
+      "v_proj": [
+        3584
+      ],
+      "o_proj": [
+        3584
+      ],
+      "gate_proj": [
+        3584
+      ],
+      "up_proj": [
+        3584
+      ],
+      "down_proj": [
+        18944
+      ],
+      "lm_head": [
+        3584
+      ]
+    },
+    "pad_compensation_tensor_shape_per_module": {
+      "q_proj": [
+        3584
+      ],
+      "k_proj": [
+        512
+      ],
+      "v_proj": [
+        512
+      ],
+      "o_proj": [
+        3584
+      ],
+      "gate_proj": [
+        18944
+      ],
+      "up_proj": [
+        18944
+      ],
+      "down_proj": [
+        3584
+      ],
+      "lm_head": [
+        152064
+      ]
+    },
+    "linear_boundary_pad": null,
+    "pad_enabled": null,
+    "nonlinear_backend": "trusted_shortcut",
+    "nonlinear_op_backend": "amulet_migrated",
+    "package_seq_len": 1024,
+    "package_dtype": "bfloat16",
+    "num_shards": 29,
+    "package_size_gb": 26.349,
+    "source": "derived_from_config+manifest; local/pad mask shapes are the structural sizes -- raw mask tensors are NOT in the package (contains_mask_secrets=false)"
+  }
+}

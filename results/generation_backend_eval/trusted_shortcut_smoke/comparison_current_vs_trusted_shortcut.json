@@ -1,0 +1,110 @@
+{
+  "label_a": "baseline",
+  "label_b": "trusted_shortcut",
+  "num_compared": 10,
+  "token_match_rate": 1.0,
+  "exact_text_match_rate": 1.0,
+  "exact_token_match_rate": 1.0,
+  "per_prompt": [
+    {
+      "prompt_id": "smoke-01",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 29,
+      "len_b": 29,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-02",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 39,
+      "len_b": 39,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-03",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 64,
+      "len_b": 64,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-04",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 64,
+      "len_b": 64,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-05",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 64,
+      "len_b": 64,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-06",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 64,
+      "len_b": 64,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-07",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 31,
+      "len_b": 31,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-08",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 64,
+      "len_b": 64,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-09",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 60,
+      "len_b": 60,
+      "output_length_difference": 0
+    },
+    {
+      "prompt_id": "smoke-10",
+      "first_mismatch_position": null,
+      "token_match": 1.0,
+      "exact_text_match": true,
+      "exact_token_match": true,
+      "len_a": 23,
+      "len_b": 23,
+      "output_length_difference": 0
+    }
+  ]
+}

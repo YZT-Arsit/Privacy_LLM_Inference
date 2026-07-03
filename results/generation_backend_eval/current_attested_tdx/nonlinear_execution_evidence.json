@@ -1,0 +1,35 @@
+{
+  "expected_nonlinear_backend": "current",
+  "expected_op_backend": "current",
+  "nonlinear_backend": "current",
+  "nonlinear_op_backend": "current",
+  "counters": {
+    "nonlinear_backend": "current",
+    "nonlinear_op_backend": "current",
+    "nonlinear_execution_status": "executed_trusted_boundary_inline",
+    "amulet_lift_executed": false,
+    "amulet_backend_used": false,
+    "lifted_nonlinear_ops_count": 0,
+    "lift_k": 0,
+    "lifted_gpu_bytes": 0,
+    "trusted_nonlinear_ops_count": 56726,
+    "trusted_calls": null,
+    "trusted_bytes": null,
+    "gpu_bytes": null,
+    "migrated_ops_by_type": {
+      "rmsnorm": 28614,
+      "softmax": 14056,
+      "silu": 14056
+    },
+    "unsupported_ops": null
+  },
+  "nonlinear_ops_count": {
+    "rmsnorm": 28614,
+    "softmax": 14056,
+    "silu": 14056,
+    "gelu": null
+  },
+  "per_op_evidence_sample": null,
+  "nonlinear_execution_evidence_missing": false,
+  "diagnostics": []
+}

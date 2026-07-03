@@ -1,0 +1,13 @@
+{
+  "backend": "trusted_shortcut",
+  "op_backend": "amulet_migrated",
+  "exit_code": 0,
+  "worker_backend": "tdx_attested_remote",
+  "boundary_attested": true,
+  "backend_verification_passed": true,
+  "nonlinear_execution_evidence_missing": false,
+  "num_prompts": 10,
+  "num_errors": 0,
+  "output_dir": "/root/privacy_llm_obfuscation/outputs/generation_backend_eval/trusted_shortcut_attested_tdx",
+  "errors": []
+}

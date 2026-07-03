@@ -1,0 +1,37 @@
+{
+  "expected_nonlinear_backend": "trusted_shortcut",
+  "expected_op_backend": "amulet_migrated",
+  "nonlinear_backend": "trusted_shortcut",
+  "nonlinear_op_backend": "amulet_migrated",
+  "counters": {
+    "nonlinear_backend": "trusted_shortcut",
+    "nonlinear_op_backend": "amulet_migrated",
+    "nonlinear_execution_status": "lifted_on_accelerator",
+    "amulet_lift_executed": true,
+    "amulet_backend_used": true,
+    "lifted_nonlinear_ops_count": 14056,
+    "lift_k": 2,
+    "lifted_gpu_bytes": 10235215872,
+    "trusted_nonlinear_ops_count": 0,
+    "trusted_calls": null,
+    "trusted_bytes": null,
+    "gpu_bytes": null,
+    "migrated_ops_by_type": {
+      "rmsnorm": 28614,
+      "softmax": 14056,
+      "silu": 14056
+    },
+    "unsupported_ops": null
+  },
+  "nonlinear_ops_count": {
+    "rmsnorm": 28614,
+    "softmax": 14056,
+    "silu": 14056,
+    "gelu": null
+  },
+  "per_op_evidence_sample": null,
+  "amulet_real_path_executed": true,
+  "trusted_shortcut_tag_only": false,
+  "nonlinear_execution_evidence_missing": false,
+  "diagnostics": []
+}
