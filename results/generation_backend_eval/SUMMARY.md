@@ -111,17 +111,46 @@ is bit-identical to the non-attested run. (The runtime hash binds the boundary
 code + selected nonlinear design, so quotes must be re-bound whenever the
 boundary code changes — re-quoted here after each fix.)
 
-## 5. Performance (smoke, greedy, resident fp32 fold)
+## 5. Performance (greedy, resident fp32 fold, worker + client both on H800)
+
+### 5a. Original prototype (per-call lift-factor regeneration)
 
 | | current | trusted_shortcut |
 |---|---|---|
-| mean latency / prompt | **2.42 s** | **14.79 s** |
+| mean latency / prompt (smoke) | **2.42 s** | **14.79 s** |
 | tokens / sec | **24.4** | **3.39** |
 
-**The Amulet migration is ~6× slower** on this prototype: the selector-lift
-materializes `[B,T,18944,k]` tensors (10.2 GB lifted) and runs the SiLU on the
-accelerator per token. Correctness is preserved exactly, but the lift is the
-dominant cost — an unoptimized-prototype latency, not a claim.
+The first measurement showed Amulet ~6× slower. Profiling the worker (GPU **9%**
+util, worker process **~1875% CPU ≈ 19 cores**, boundary client only 4.5%) traced
+the cost **not** to the lift math but to the selector-lift factor generation: the
+backend re-sampled the decoy matrix `R` on a CPU RNG **and copied it host→device
+on every SiLU call** (28 layers × every decoded token). On the launch-bound
+batch-1 decode path that per-call H2D sync serialized every activation and starved
+the GPU.
+
+### 5b. After caching the lift factors (`perf(amulet)`, commit `1a48219`)
+
+The factors depend only on `(h, lift_k, seed)` with a fixed seed, so they are
+identical on every call — caching them (keyed by `h, device, dtype`) is
+**bit-identical** and changes nothing about the security posture (`R` was never
+per-call-randomized; it lives in the untrusted worker). Re-measured on the H800:
+
+| trusted_shortcut | tokens / sec |
+|---|---|
+| before (per-call regen) | ~3.66 (mean over IFEval-20) |
+| **after (cached R), steady state** | **24.4** (24.36 / 24.60 / 24.55 on 3 prompts) |
+
+**~6.7× faster — Amulet now runs at parity with the `current` baseline (24.4
+tok/s)**, i.e. the migration is effectively free on this path. Verified on the
+same run: still genuinely lifting (`amulet_real_path_executed=True`, lifted_ops
+14,504, `trusted_nonlinear_ops_count=0`); prompts that terminate naturally finish
+at **identical lengths** (e.g. id 1012 → 122 tok eos, id 1019 → 12 tok eos) to the
+pre-fix run, i.e. bit-identical decoding. The **boundary runtime hash is unchanged**
+(`amulet_backend.py` is untrusted-worker code, not in the trusted boundary
+manifest), so the existing TDX quotes remain valid — no re-bind needed. The lift
+still materializes `[B,T,18944,k]` (2× activation bytes) as its intrinsic cost;
+that residual is now amortized behind the GPU pipeline rather than a per-call CPU
+stall.
 
 ## 6. IFEval-20 (instruction-following, greedy, max_new_tokens 512)
 
