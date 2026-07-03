@@ -51,6 +51,38 @@ class AmuletMigratedNonlinearBackend(NonlinearBackend):
             raise ValueError("lift_k must be >= 2 (1 valid + >=1 decoy column)")
         self.lift_k = int(lift_k)
         self.seed = int(seed)
+        # Cache of the deterministic selector-lift factors (``valid``, ``R``),
+        # keyed by (h, device, dtype). They depend ONLY on (h, lift_k, seed) with
+        # a fixed seed, so they are identical on every call and every layer --
+        # regenerating them per call (CPU RNG + host->device copy, x28 layers x
+        # every decoded token) was pure waste that starved the GPU. Caching is
+        # bit-identical (same seed -> same factors) and does NOT change the
+        # security posture: ``R`` was never per-call-randomized, and it lives in
+        # the untrusted worker where the lifted view is materialized each call
+        # regardless (see class-level SECURITY STATUS).
+        self._lift_factors_cache: dict[
+            tuple, tuple[torch.Tensor, torch.Tensor]] = {}
+
+    def _lift_factors(self, h: int, device: torch.device,
+                      dtype: torch.dtype) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return the (``valid``, ``R``) selector-lift factors for width ``h`` on
+        ``(device, dtype)``. Generated once (CPU RNG, fixed seed) then moved and
+        cached; every subsequent call reuses the exact same tensors, so the
+        activation output is bit-identical to regenerating per call."""
+        key = (int(h), str(device), str(dtype))
+        cached = self._lift_factors_cache.get(key)
+        if cached is not None:
+            return cached
+        # Generated on CPU with a fixed seed (the torch CPU generator cannot
+        # target CUDA directly) then moved onto the compute device. Same op order
+        # as the historical per-call path -> identical bytes.
+        gen = torch.Generator().manual_seed(self.seed)
+        valid = torch.randint(0, self.lift_k, (h,), generator=gen).to(device)
+        R = (torch.rand(h, self.lift_k, generator=gen) + 0.5).to(
+            device=device, dtype=dtype)
+        R[torch.arange(h, device=device), valid] = 1.0   # valid column scale = 1
+        self._lift_factors_cache[key] = (valid, R)
+        return valid, R
 
     # -- selector-lift migrated activation (exact) ----------------------------
     def _selector_lift(self, x: torch.Tensor,
@@ -60,16 +92,11 @@ class AmuletMigratedNonlinearBackend(NonlinearBackend):
         h = x.shape[-1]
         U = x.reshape(-1, h)                              # [m, h]
         m = U.shape[0]
-        # The selector lift params are generated on CPU with a fixed seed (the
-        # torch CPU generator cannot target CUDA directly) then moved onto the
-        # input's device, so the lift runs on whatever accelerator holds ``x``
-        # (CPU for prototypes, CUDA on the H800). CPU numerics are unchanged
-        # (``.to`` is a no-op when already on CPU).
-        gen = torch.Generator().manual_seed(self.seed)
-        valid = torch.randint(0, self.lift_k, (h,), generator=gen).to(U.device)
-        R = (torch.rand(h, self.lift_k, generator=gen) + 0.5).to(
-            device=U.device, dtype=U.dtype)
-        R[torch.arange(h, device=U.device), valid] = 1.0  # valid column scale = 1
+        # Deterministic, seed-fixed factors -> cached across calls/layers. The
+        # lift runs on whatever accelerator holds ``x`` (CPU for prototypes, CUDA
+        # on the H800); ``valid``/``R`` are read-only and shared, ``lift``/``Af``
+        # are still materialized each call (the real accelerator cost + counters).
+        valid, R = self._lift_factors(h, U.device, U.dtype)
         lift = U.unsqueeze(-1) * R.unsqueeze(0)           # [m, h, k]  (accelerator)
         Af = act(lift)                                    # activation on accelerator
         idx = valid.view(1, h, 1).expand(m, h, 1)
