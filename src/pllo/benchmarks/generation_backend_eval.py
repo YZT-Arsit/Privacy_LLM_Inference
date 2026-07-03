@@ -561,8 +561,11 @@ def generation_quality(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             early_eos += 1
         if fin == "length":
             truncated += 1
-        # malformed: non-empty but no printable content
-        if text and not re.search(r"[A-Za-z0-9一-鿿]", text):
+        # malformed: non-empty but no printable content. Use a script-agnostic
+        # "any Unicode letter/digit" test (``[^\W_]``) so correct non-Latin,
+        # non-CJK output (Kannada / Devanagari / Arabic / Cyrillic / ...) is NOT
+        # falsely flagged -- IFEval has prompts that demand a specific language.
+        if text and not re.search(r"[^\W_]", text):
             malformed += 1
     return {
         "num_prompts": n,
