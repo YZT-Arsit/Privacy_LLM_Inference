@@ -108,6 +108,32 @@ def main() -> int:
     seed = args.seed
     if args.folded_package_path:
         seed = seed_from_manifest(args.folded_package_path, args.seed)
+        # CRITICAL: the residual/vocab masks are drawn with a seeded RNG *on the
+        # build device*, and torch's RNG is device-specific -- a cpu-built
+        # artifact does NOT reproduce a cuda-folded package's masks (or vice
+        # versa). A mismatch silently corrupts the vocab logit recovery (a single
+        # vocab logit blows up -> argmax flip -> degenerate generation). Bind the
+        # artifact device to the package's fold device.
+        if not dry_run:
+            try:
+                from pllo.deployment.folded_package_manifest import load_manifest
+                _bc = getattr(load_manifest(args.folded_package_path),
+                              "build_command", "") or ""
+                import re as _re
+                _m = _re.search(r"--device\s+(\S+)", _bc)
+                _pkg_dev = _m.group(1) if _m else None
+                if _pkg_dev and _pkg_dev.split(":")[0] != \
+                        str(args.device).split(":")[0]:
+                    raise SystemExit(
+                        "ERROR: artifact --device %r != package fold device %r "
+                        "(from manifest build_command). torch RNG is device-"
+                        "specific, so the masks would NOT match and generation "
+                        "would be corrupted. Rebuild with --device %s."
+                        % (args.device, _pkg_dev, _pkg_dev))
+            except SystemExit:
+                raise
+            except Exception:                                # noqa: BLE001
+                pass  # best-effort guard; do not block on parse issues
 
     if dry_run:
         if not args.dry_run:

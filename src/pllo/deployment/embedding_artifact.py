@@ -180,11 +180,13 @@ def load_embedding_artifact(art_dir: str | Path, *, device: str = "cpu",
     if fdtype is not None:
         embed = embed.to(fdtype)
         n0 = n0.to(fdtype)
-    scale = tensors[VOCAB_SCALE_KEY].to(dev)
-    inv_scale = tensors[VOCAB_INV_SCALE_KEY].to(dev)
-    if fdtype is not None:
-        scale = scale.to(fdtype)
-        inv_scale = inv_scale.to(fdtype)
+    # The vocab logit scale is folded into the package LM head in float32. Down-
+    # casting it to a lower fold dtype (e.g. bf16) mis-scales individual vocab
+    # logits -- a single entry can blow up (+100 logit) and flip the argmax,
+    # degenerating generation. Keep it at the stored float32 precision so the
+    # trusted-side recovery exactly inverts the fp32-folded head.
+    scale = tensors[VOCAB_SCALE_KEY].to(dev).float()
+    inv_scale = tensors[VOCAB_INV_SCALE_KEY].to(dev).float()
     vocab_mask = VocabLogitMask(
         permutation=tensors[VOCAB_PERM_KEY].to(dev),
         inverse_permutation=tensors[VOCAB_INV_PERM_KEY].to(dev),

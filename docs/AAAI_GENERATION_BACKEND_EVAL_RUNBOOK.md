@@ -53,6 +53,26 @@ python scripts/build_qwen7b_folded_package.py \
   --output-json /root/autodl-tmp/privacy_llm_packages/qwen7b_folded_full_trusted_shortcut_seq1024_pad/build_report.json
 ```
 
+Build the **matched boundary artifact** (embedding + masks). **The artifact
+MUST be built on the same `--device` as the package** — the residual/vocab masks
+are drawn with a seeded RNG and torch's RNG is device-specific, so a cpu-built
+artifact does not reproduce a cuda-folded package's masks (silent corruption:
+one vocab logit blows up → argmax flip → degenerate generation). The builder now
+hard-errors on a device mismatch.
+
+```
+python scripts/build_qwen7b_embedding_artifact.py \
+  --model-path /root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct \
+  --model-name Qwen2.5-7B-Instruct \
+  --folded-package-path /root/.../qwen7b_folded_full_current_seq1024_pad \
+  --output-dir /root/.../qwen7b_boundary_artifact_current_cuda \
+  --dtype bfloat16 --device cuda --nonlinear-backend current   # device MUST match package
+```
+
+Also launch the worker with `--fold-dtype-override float32 --resident-folded-weights`
+(fp32 fold = numerical parity; resident = load the 27 GB package onto the GPU
+once instead of re-streaming it every decode token).
+
 Verify:
 
 ```
