@@ -133,14 +133,28 @@ def _default_health(url: str) -> Dict[str, Any]:
             pass
 
 
+def _load_json(path: Optional[str]) -> Optional[Dict[str, Any]]:
+    if not path:
+        return None
+    with open(path) as f:
+        return json.load(f)
+
+
 def _default_predictor_factory(args, resolved) -> Any:
     from pllo.benchmarks.real_predictors import build_predictor
+    # Real TDX: `tdx_attested_remote` enforces a genuine TD Quote (requires
+    # --attestation-evidence-json). `folded_remote` runs the same folded compute
+    # without the attestation gate.
+    worker_backend = getattr(args, "worker_backend", "folded_remote")
+    attest = _load_json(getattr(args, "attestation_evidence_json", None))
     return build_predictor(
-        "folded_remote",
+        worker_backend,
         model_path=args.model_path,
         model_name="qwen",
         gpu_worker_url=args.gpu_worker_url,
         embedding_path=args.embedding_path,
+        attestation_evidence=attest,
+        expected_mr_td=getattr(args, "expected_mr_td", None),
         seq_len=args.seq_len,
         max_new_tokens=args.max_new_tokens,
         dtype=args.dtype,
@@ -314,6 +328,27 @@ def run_eval(
         errors.append("no predictor -- generation skipped "
                       "(missing model-path or seq_len gate)")
 
+    # real-TDX attestation verdict (populated by tdx_attested_remote via stats())
+    attestation = {k: stats.get(k) for k in (
+        "boundary_attested", "boundary_tee_type", "mr_td", "runtime_hash",
+        "expected_runtime_hash", "runtime_hash_bound",
+        "binding_mismatch_reason", "attestation_nonlinear_backend",
+        "evidence_report_data") if k in stats}
+    attestation["worker_backend"] = getattr(args, "worker_backend",
+                                            "folded_remote")
+    attestation["attestation_requested"] = bool(
+        getattr(args, "attestation_evidence_json", None))
+    if attestation.get("attestation_requested") or attestation.get(
+            "boundary_attested") is not None:
+        gbe.write_json(out_dir / "attestation.json", attestation)
+    if getattr(args, "require_tdx", False):
+        if attestation.get("boundary_attested") is not True:
+            exit_code = max(exit_code, 6)
+            errors.append(
+                "real TDX required (--require-tdx) but boundary_attested="
+                f"{attestation.get('boundary_attested')} "
+                f"(reason: {attestation.get('binding_mismatch_reason')})")
+
     # health (post-run): evidence now populated
     post_health = {}
     try:
@@ -430,12 +465,14 @@ def run_eval(
         backend_verify=backend_verify, nonlinear_summary=nonlinear_summary,
         quality=quality, perf=perf, dimension_audit=dimension_audit,
         generations=records, comparison=comparison, ifeval=ifeval_agg,
-        seq_len_note=sl_note, errors=errors)
+        seq_len_note=sl_note, attestation=attestation, errors=errors)
 
     summary = {
         "backend": resolved["nonlinear_backend"],
         "op_backend": resolved["op_backend"],
         "exit_code": exit_code,
+        "worker_backend": attestation.get("worker_backend"),
+        "boundary_attested": attestation.get("boundary_attested"),
         "backend_verification_passed":
             backend_verify["backend_verification_passed"],
         "nonlinear_execution_evidence_missing":
@@ -478,6 +515,16 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--expected-nonlinear-backend")
     ap.add_argument("--expected-op-backend")
     ap.add_argument("--compare-baseline-dir")
+    # --- real TDX attestation ---
+    ap.add_argument("--worker-backend", default="folded_remote",
+                    choices=["folded_remote", "tdx_attested_remote"],
+                    help="tdx_attested_remote enforces a real TD Quote")
+    ap.add_argument("--attestation-evidence-json",
+                    help="real TDX quote evidence JSON (from the TDX VM via "
+                    "generate_alibaba_tdx_quote_evidence.py)")
+    ap.add_argument("--expected-mr-td")
+    ap.add_argument("--require-tdx", action="store_true",
+                    help="fail (exit 6) unless boundary_attested is True")
     ap.add_argument("--allow-missing-evidence", action="store_true")
     ap.add_argument("--no-worker-timing", action="store_true")
     ap.add_argument("--profile", type=_bool, default=True)

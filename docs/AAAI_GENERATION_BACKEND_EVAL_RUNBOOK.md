@@ -108,6 +108,39 @@ python scripts/run_generation_backend_eval.py \
   --output-dir outputs/generation_backend_eval/trusted_shortcut_smoke
 ```
 
+## Step 3b — REAL TDX attestation (required for paper-facing runs)
+
+To bind the run to a genuine TD Quote (not mock), (1) generate the quote on the
+TDX VM, then (2) pass `--worker-backend tdx_attested_remote` + the quote +
+`--require-tdx`:
+
+```
+# on the TDX VM (39.96.4.252): produce the quote evidence bound to THIS design
+python scripts/generate_alibaba_tdx_quote_evidence.py \
+  --nonlinear-backend trusted_shortcut \
+  --output-json /root/tdx_quote_trusted_shortcut.json    # copy back to client
+
+# client run, real-TDX gated
+python scripts/run_generation_backend_eval.py \
+  --backend trusted_shortcut --worker-backend tdx_attested_remote \
+  --attestation-evidence-json ./tdx_quote_trusted_shortcut.json \
+  --expected-mr-td <MR_TD_HEX> --require-tdx \
+  --model-path .../Qwen2___5-7B-Instruct \
+  --folded-package-path .../qwen7b_folded_full_trusted_shortcut_seq1024_pad \
+  --embedding-path .../qwen7b_boundary_artifact_trusted_shortcut_cuda \
+  --gpu-worker-url http://127.0.0.1:18083 \
+  --prompt-file data/eval/generation_smoke_prompts.jsonl \
+  --max-new-tokens 64 --expected-nonlinear-backend trusted_shortcut \
+  --expected-op-backend amulet_migrated \
+  --output-dir outputs/generation_backend_eval/trusted_shortcut_smoke_tdx
+```
+
+The run writes `attestation.json` (`boundary_attested`, `mr_td`,
+`runtime_hash_bound`, `binding_mismatch_reason`) and `report.md` §0. `--require-tdx`
+makes a non-attested boundary a hard failure (exit 6). NOTE: the runtime hash is
+bound to the nonlinear design, so re-generate the quote when switching `current`
+↔ `trusted_shortcut`.
+
 ## Step 4 — IFEval subset (20 → 100 → 541)
 
 ```

@@ -698,6 +698,7 @@ def write_report_md(
     comparison: Optional[Dict[str, Any]] = None,
     ifeval: Optional[Dict[str, Any]] = None,
     seq_len_note: str = "",
+    attestation: Optional[Dict[str, Any]] = None,
     errors: Optional[Sequence[str]] = None,
 ) -> None:
     """Human-readable report.md for one backend run."""
@@ -705,6 +706,19 @@ def write_report_md(
     L: List[str] = []
     ap = L.append
     ap(f"# Generation-task evaluation — `{backend}` backend\n")
+
+    if attestation and (attestation.get("attestation_requested")
+                        or attestation.get("boundary_attested") is not None):
+        ap("## 0. Real TDX attestation\n")
+        ap(f"- worker backend: `{attestation.get('worker_backend')}` | "
+           f"attestation requested: {_yn(attestation.get('attestation_requested'))}")
+        ap(f"- **boundary_attested: {_yn(attestation.get('boundary_attested'))}** "
+           f"| tee_type: {attestation.get('boundary_tee_type')} | "
+           f"runtime_hash_bound: {_yn(attestation.get('runtime_hash_bound'))}")
+        ap(f"- mr_td: `{attestation.get('mr_td')}`")
+        if attestation.get("binding_mismatch_reason"):
+            ap(f"  - ⚠️ binding mismatch: {attestation.get('binding_mismatch_reason')}")
+        ap("")
 
     ap("## 1. Backend verification (no silent fallback)\n")
     bv = backend_verify
