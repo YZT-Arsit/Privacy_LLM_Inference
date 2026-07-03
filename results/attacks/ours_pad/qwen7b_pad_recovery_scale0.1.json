@@ -1,0 +1,155 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2.5-7B-Instruct",
+  "layers": [
+    14
+  ],
+  "pad_scale": 0.1,
+  "by_shape_class": {
+    "square": {
+      "modules": [
+        "o_proj",
+        "q_proj"
+      ],
+      "median_single_T_relerr": 0.0491,
+      "median_joint_T_relerr": 0.0491,
+      "median_H_cos_single": 0.9999,
+      "median_H_cos_joint": 0.9999,
+      "median_H_cos_random": 0.9241
+    },
+    "up_proj": {
+      "modules": [
+        "gate_proj",
+        "up_proj"
+      ],
+      "median_single_T_relerr": 0.0,
+      "median_joint_T_relerr": 0.0,
+      "median_H_cos_single": 1.0,
+      "median_H_cos_joint": 1.0,
+      "median_H_cos_random": 0.965
+    },
+    "down_proj": {
+      "modules": [
+        "down_proj",
+        "k_proj",
+        "v_proj"
+      ],
+      "median_single_T_relerr": 0.921,
+      "median_joint_T_relerr": 0.1491,
+      "median_H_cos_single": 0.9901,
+      "median_H_cos_joint": 1.0,
+      "median_H_cos_random": 0.9771
+    }
+  },
+  "verdict": {
+    "single_layer": "pad HOLDS only on output-reduced (k/v/down) layers (median single_T_relerr=0.921 for down-proj, large left-null); BROKEN on square (q/o) + up-proj (gate/up)",
+    "joint": "joint did NOT fully break down-proj (T-relerr=0.1491)",
+    "note": "T_relerr is the decisive metric (scale-independent). H-cosine may saturate near 1 because the production pad scale (0.1) perturbs activations only slightly (see pad_to_activation_ratio) -- i.e. the pad barely hides H even before recovery."
+  },
+  "per_row": [
+    {
+      "layer": 14,
+      "module": "q_proj",
+      "shape_class": "square",
+      "din": 3584,
+      "dout": 3584,
+      "rank": 3584,
+      "left_null_dim": 0,
+      "pad_to_activation_ratio": 0.1395,
+      "single_T_relerr": 0.041,
+      "joint_T_relerr": 0.041,
+      "H_cos_single": 1.0,
+      "H_cos_joint": 1.0,
+      "H_cos_random_baseline": 0.9784
+    },
+    {
+      "layer": 14,
+      "module": "k_proj",
+      "shape_class": "down_proj",
+      "din": 3584,
+      "dout": 512,
+      "rank": 512,
+      "left_null_dim": 3072,
+      "pad_to_activation_ratio": 0.1392,
+      "single_T_relerr": 0.9285,
+      "joint_T_relerr": 0.1538,
+      "H_cos_single": 0.9905,
+      "H_cos_joint": 1.0,
+      "H_cos_random_baseline": 0.9792
+    },
+    {
+      "layer": 14,
+      "module": "v_proj",
+      "shape_class": "down_proj",
+      "din": 3584,
+      "dout": 512,
+      "rank": 512,
+      "left_null_dim": 3072,
+      "pad_to_activation_ratio": 0.1435,
+      "single_T_relerr": 0.921,
+      "joint_T_relerr": 0.1491,
+      "H_cos_single": 0.9901,
+      "H_cos_joint": 1.0,
+      "H_cos_random_baseline": 0.9771
+    },
+    {
+      "layer": 14,
+      "module": "o_proj",
+      "shape_class": "square",
+      "din": 3584,
+      "dout": 3584,
+      "rank": 3584,
+      "left_null_dim": 0,
+      "pad_to_activation_ratio": 0.3843,
+      "single_T_relerr": 0.0573,
+      "joint_T_relerr": 0.0573,
+      "H_cos_single": 0.9997,
+      "H_cos_joint": 0.9997,
+      "H_cos_random_baseline": 0.8698
+    },
+    {
+      "layer": 14,
+      "module": "gate_proj",
+      "shape_class": "up_proj",
+      "din": 3584,
+      "dout": 18944,
+      "rank": 3584,
+      "left_null_dim": 0,
+      "pad_to_activation_ratio": 0.1866,
+      "single_T_relerr": 0.0,
+      "joint_T_relerr": 0.0,
+      "H_cos_single": 1.0,
+      "H_cos_joint": 1.0,
+      "H_cos_random_baseline": 0.9654
+    },
+    {
+      "layer": 14,
+      "module": "up_proj",
+      "shape_class": "up_proj",
+      "din": 3584,
+      "dout": 18944,
+      "rank": 3584,
+      "left_null_dim": 0,
+      "pad_to_activation_ratio": 0.1856,
+      "single_T_relerr": 0.0,
+      "joint_T_relerr": 0.0,
+      "H_cos_single": 1.0,
+      "H_cos_joint": 1.0,
+      "H_cos_random_baseline": 0.9647
+    },
+    {
+      "layer": 14,
+      "module": "down_proj",
+      "shape_class": "down_proj",
+      "din": 18944,
+      "dout": 3584,
+      "rank": 3584,
+      "left_null_dim": 15360,
+      "pad_to_activation_ratio": 0.6132,
+      "single_T_relerr": 0.904,
+      "joint_T_relerr": 0.0,
+      "H_cos_single": 0.8511,
+      "H_cos_joint": 1.0,
+      "H_cos_random_baseline": 0.7275
+    }
+  ]
+}
