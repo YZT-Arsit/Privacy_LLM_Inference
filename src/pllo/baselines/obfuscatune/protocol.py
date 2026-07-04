@@ -1,4 +1,11 @@
-"""ObfuscaTune baseline (Frikha et al., arXiv:2407.02960, PPAI-25 / AAAI-W).
+"""ObfuscaTune baseline protocol class (arXiv:2407.02960, PPAI-25 / AAAI-W).
+
+This is the ``BaselineProtocol`` entry point for the baseline registry. It was
+the original single-file ``pllo.baselines.obfuscatune`` module; the package now
+splits the reusable pieces into :mod:`.random_matrices`, :mod:`.linear_obfuscation`,
+:mod:`.modules`, :mod:`.metrics` and :mod:`.hf_gpt2_obfuscatune`, while this file
+keeps the exact class + declaration + generator-based ``matrix_with_condition_number``
+API that the registry and the legacy tests import.
 
 ObfuscaTune protects a *proprietary* model + private data by (i) keeping the
 low-parameter layers (embed / norm / softmax / activation / output ~5% of params)
@@ -8,42 +15,28 @@ with random matrices placed OUTSIDE the TEE:
     X* = X Ra ,   W* = Ra^{-1} W     =>   X* W* = X W        (Q, K, V recovered)
     O* = H Wo Rb ,  O = O* Rb^{-1}                            (eq. 1-6 of the paper)
 
-Two structural facts of the scheme (directly relevant to our comparison, verified
-by this module):
+Two structural facts of the scheme (verified by this module and its tests):
   1. The projections cancel the mask, so the accelerator sees the TRUE (plaintext)
-     Q, K, V (the paper states this: everything outside the TEE is obfuscated
-     "except for the intermediate embeddings Q, K, V"). Security rests on the model
-     weights being secret; it is NOT an open-weight defense.
+     Q, K, V. Security rests on the model weights being secret; it is NOT an
+     open-weight defense.
   2. Every non-linearity (LayerNorm, softmax, activation) runs INSIDE the TEE on
      de-obfuscated values, so each block round-trips the TEE boundary multiple
-     times. This is the opposite of our A_rightmul design (all non-linearities on
-     the untrusted GPU, single entry/exit, zero nonlinear crossings).
+     times -- the opposite of our A_rightmul design (all non-linearities on the
+     untrusted GPU, single entry/exit, zero nonlinear crossings).
 
-Numerical accuracy requires the obfuscation matrices to have a low condition
-number; the paper uses orthogonal matrices (kappa = 1). This module reproduces
-that ablation (kappa=1 exact vs high-kappa error growth, their Table 2 trend).
-
-What this module implements directly from the paper formulas: the obfuscated
-linear primitive, the obfuscated attention/MLP block with the TEE/GPU split and
-boundary accounting, and the condition-number matrix generator (App. B).
-What it does NOT reproduce: their full nanoGPT LoRA-finetuning pipeline + lm-eval
-harness (``full_system_reproduced = False``). Raw obfuscation matrices are never
-returned/serialised.
+Raw obfuscation matrices are never returned/serialised.
 """
 
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
 from typing import Any
 
 import torch
 
-from pllo.baselines.baseline_protocol import (
-    BaselineProtocol,
-    BaselineSelfDeclaration,
-    UnsupportedResult,
-)
+from pllo.baselines.baseline_protocol import BaselineProtocol, BaselineSelfDeclaration
+
+from .config import ObfuscaTuneConfig
 
 _DECLARE = BaselineSelfDeclaration(
     name="obfuscatune",
@@ -64,17 +57,6 @@ _DECLARE = BaselineSelfDeclaration(
 )
 
 
-@dataclass
-class ObfuscaTuneConfig:
-    dtype: str = "float64"
-    device: str = "cpu"
-    condition_number: float = 1.0    # 1.0 => orthogonal (paper's choice)
-    seed: int = 0
-
-    def torch_dtype(self) -> torch.dtype:
-        return torch.float64 if self.dtype == "float64" else torch.float32
-
-
 def _gen(seed: int) -> torch.Generator:
     g = torch.Generator(device="cpu")
     g.manual_seed(int(seed))
@@ -90,10 +72,12 @@ def _orthogonal(d: int, dtype: torch.dtype, g: torch.Generator) -> torch.Tensor:
 def matrix_with_condition_number(
     d: int, kappa: float, dtype: torch.dtype, g: torch.Generator
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Return (R, R_inv) with cond(R)=kappa via R = QA S QB (paper App. B).
+    """Legacy generator-based API: (R, R_inv) with cond(R)=kappa (paper App. B).
 
-    kappa=1 => orthogonal, R_inv = R^T (error-free). For kappa>1 the singular
-    values span [1/kappa, 1]; R_inv is formed analytically (QB^T S^{-1} QA^T)."""
+    Preserved verbatim for the baseline registry and ``test_baselines_obfuscatune``.
+    New code should prefer the seed-based
+    :func:`pllo.baselines.obfuscatune.random_matrices.matrix_with_condition_number`.
+    """
     if kappa <= 1.0:
         q = _orthogonal(d, dtype, g)
         return q, q.transpose(0, 1).contiguous()
@@ -162,10 +146,12 @@ class ObfuscaTune(BaselineProtocol):
     def _plain_block(x: torch.Tensor, w: dict[str, torch.Tensor], n_heads: int) -> torch.Tensor:
         S, d = x.shape
         hd = d // n_heads
+
         def ln(t):
             m = t.mean(-1, keepdim=True)
             v = t.var(-1, unbiased=False, keepdim=True)
             return (t - m) / torch.sqrt(v + 1e-5)
+
         h = ln(x)
         Q, K, V = h @ w["Wq"], h @ w["Wk"], h @ w["Wv"]
         Qh = Q.view(S, n_heads, hd).transpose(0, 1)
@@ -211,9 +197,9 @@ class ObfuscaTune(BaselineProtocol):
         h = ln(x)                                             # LayerNorm in TEE
         Ra, Ra_inv = matrix_with_condition_number(d, self.config.condition_number, dtype, g)
         h_star = h @ Ra                                       # obfuscate, leave TEE
-        Q = (h_star @ (Ra_inv @ weights["Wq"]))              # GPU: true Q
-        K = (h_star @ (Ra_inv @ weights["Wk"]))              # GPU: true K
-        V = (h_star @ (Ra_inv @ weights["Wv"]))              # GPU: true V
+        Q = (h_star @ (Ra_inv @ weights["Wq"]))               # GPU: true Q
+        K = (h_star @ (Ra_inv @ weights["Wk"]))               # GPU: true K
+        V = (h_star @ (Ra_inv @ weights["Wv"]))               # GPU: true V
         exposed += ["Q_plaintext", "K_plaintext", "V_plaintext"]
         # softmax attention (non-linear) runs in TEE on the true Q,K,V
         crossings += 2
@@ -224,7 +210,7 @@ class ObfuscaTune(BaselineProtocol):
         Hh = (att @ Vh).transpose(0, 1).reshape(S, d)
         # output projection obfuscated by Rb
         Rb, Rb_inv = matrix_with_condition_number(d, self.config.condition_number, dtype, g)
-        O_star = (Hh @ Ra) @ (Ra_inv @ weights["Wo"]) @ Rb   # GPU
+        O_star = (Hh @ Ra) @ (Ra_inv @ weights["Wo"]) @ Rb    # GPU
         O = O_star @ Rb_inv                                   # de-obfuscate in TEE
         x = x + O
 
@@ -232,7 +218,7 @@ class ObfuscaTune(BaselineProtocol):
         h2 = ln(x)                                            # LayerNorm in TEE
         Rc, Rc_inv = matrix_with_condition_number(d, self.config.condition_number, dtype, g)
         h2s = h2 @ Rc
-        inter = h2s @ (Rc_inv @ weights["W1"])               # GPU: true intermediate
+        inter = h2s @ (Rc_inv @ weights["W1"])                # GPU: true intermediate
         exposed += ["mlp_intermediate_plaintext"]
         crossings += 2                                        # GELU in TEE
         inter = torch.nn.functional.gelu(inter)
@@ -277,6 +263,5 @@ class ObfuscaTune(BaselineProtocol):
 
 __all__ = [
     "ObfuscaTune",
-    "ObfuscaTuneConfig",
     "matrix_with_condition_number",
 ]
