@@ -83,6 +83,15 @@ def _apply_method(h: torch.Tensor, method: str, *, seed: int, cond: float) -> to
         signs = torch.where(torch.rand(d, generator=g) < 0.5,
                             torch.tensor(-1.0), torch.tensor(1.0)).to(h.device)
         return h[:, perm] * signs.to(h.dtype)
+    if method == "ours_fresh_signed_perm":     # fresh per-token signed-perm on activations
+        outs = []
+        for i in range(s):
+            gi = torch.Generator().manual_seed(seed + 50_000 + i)
+            pr = torch.randperm(d, generator=gi).to(h.device)
+            sg = torch.where(torch.rand(d, generator=gi) < 0.5,
+                             torch.tensor(-1.0), torch.tensor(1.0)).to(h.device)
+            outs.append(h[i][pr] * sg.to(h.dtype))
+        return torch.stack(outs)
     if method == "ours_amulet_style_fresh_pad":
         return torch.stack([h[i] @ orthogonal_matrix(d, seed=seed + 1 + i, dtype=h.dtype, device=dev)[0]
                             for i in range(s)])

@@ -61,3 +61,16 @@ Real text (ag_news_small.jsonl), subdim 256. Captured at layer 0 (per-token, len
 - **Fresh boundary cost, consistent convention** (the e2e +0.9% counted mask generation only): gen 0.1002 + apply 0.0210 + unmask 0.0225 = **0.1438 ms/token (0.90% of decode)**. Static folds add 0 (mask is inside the weights). Even the corrected total stays an order below ObfuscaTune's 1.55 ms of in-TEE nonlinearities.
 - **Memory**: folded weights are the SAME size as plaintext (0 extra). Mask buffers: static 30697.51 / fresh 30697.64 MB peak-with-model (O(D), KB-scale delta); a dense DxD mask adds ~105 MB — why dense-fresh is doubly impractical.
 
+## Block B (motivation appendix) — prompt recovery across sensitive domains
+
+Best-effort output-only optimization attack (BRE) through the real split downstream, on the repo's SYNTHETIC sensitive prompts (no real PII). Cell = token_recovery_top1 (higher = more recovered). NON-discriminative by design.
+
+| domain | attack | plaintext | STIP | ObfuscaTune | ours-fresh |
+|---|---|---|---|---|---|
+| medical | bre | 0.719 | 0 | 0 | 0 |
+| legal | bre | 0.875 | 0 | 0 | 0 |
+| financial | bre | 0.812 | 0 | 0 | 0 |
+| general | bre | 0.812 | 0 | 0 | 0 |
+
+**Reading (motivation only).** Plaintext prompts leak (0.72–0.88); STIP, ObfuscaTune and ours all crush recovery to 0. The mask STRUCTURE does not separate the defenses against output-only attacks — only the PRESENCE of a mask matters. Discrimination between defenses lives in block A (KPA), not here. Best-effort implementation, not a full SOTA reproduction; motivation echo, not a ranking claim.
+

@@ -1,0 +1,130 @@
+[
+  {
+    "domain": "medical",
+    "attack": "bre",
+    "method": "plaintext_gpu",
+    "token_recovery_top1": 0.71875,
+    "mse": 0.08560921996831894,
+    "status": "measured"
+  },
+  {
+    "domain": "medical",
+    "attack": "bre",
+    "method": "stip_qwen",
+    "token_recovery_top1": 0.0,
+    "mse": 1.9245262145996094,
+    "status": "measured"
+  },
+  {
+    "domain": "medical",
+    "attack": "bre",
+    "method": "obfuscatune_qwen_orthogonal",
+    "token_recovery_top1": 0.0,
+    "mse": 0.6796311140060425,
+    "status": "measured"
+  },
+  {
+    "domain": "medical",
+    "attack": "bre",
+    "method": "ours_fresh_signed_perm",
+    "token_recovery_top1": 0.0,
+    "mse": 1.0018199682235718,
+    "status": "measured"
+  },
+  {
+    "domain": "legal",
+    "attack": "bre",
+    "method": "plaintext_gpu",
+    "token_recovery_top1": 0.875,
+    "mse": 0.16141365468502045,
+    "status": "measured"
+  },
+  {
+    "domain": "legal",
+    "attack": "bre",
+    "method": "stip_qwen",
+    "token_recovery_top1": 0.0,
+    "mse": 1.7761067152023315,
+    "status": "measured"
+  },
+  {
+    "domain": "legal",
+    "attack": "bre",
+    "method": "obfuscatune_qwen_orthogonal",
+    "token_recovery_top1": 0.0,
+    "mse": 0.6710709929466248,
+    "status": "measured"
+  },
+  {
+    "domain": "legal",
+    "attack": "bre",
+    "method": "ours_fresh_signed_perm",
+    "token_recovery_top1": 0.0,
+    "mse": 0.976963222026825,
+    "status": "measured"
+  },
+  {
+    "domain": "financial",
+    "attack": "bre",
+    "method": "plaintext_gpu",
+    "token_recovery_top1": 0.8125,
+    "mse": 0.09130088984966278,
+    "status": "measured"
+  },
+  {
+    "domain": "financial",
+    "attack": "bre",
+    "method": "stip_qwen",
+    "token_recovery_top1": 0.0,
+    "mse": 0.9513074159622192,
+    "status": "measured"
+  },
+  {
+    "domain": "financial",
+    "attack": "bre",
+    "method": "obfuscatune_qwen_orthogonal",
+    "token_recovery_top1": 0.0,
+    "mse": 0.7539125680923462,
+    "status": "measured"
+  },
+  {
+    "domain": "financial",
+    "attack": "bre",
+    "method": "ours_fresh_signed_perm",
+    "token_recovery_top1": 0.0,
+    "mse": 1.0153042078018188,
+    "status": "measured"
+  },
+  {
+    "domain": "general",
+    "attack": "bre",
+    "method": "plaintext_gpu",
+    "token_recovery_top1": 0.8125,
+    "mse": 0.09876123815774918,
+    "status": "measured"
+  },
+  {
+    "domain": "general",
+    "attack": "bre",
+    "method": "stip_qwen",
+    "token_recovery_top1": 0.0,
+    "mse": 1.5261344909667969,
+    "status": "measured"
+  },
+  {
+    "domain": "general",
+    "attack": "bre",
+    "method": "obfuscatune_qwen_orthogonal",
+    "token_recovery_top1": 0.0,
+    "mse": 0.9028881788253784,
+    "status": "measured"
+  },
+  {
+    "domain": "general",
+    "attack": "bre",
+    "method": "ours_fresh_signed_perm",
+    "token_recovery_top1": 0.0,
+    "mse": 1.1298962831497192,
+    "status": "measured"
+  }
+]

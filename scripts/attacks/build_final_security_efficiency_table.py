@@ -223,6 +223,33 @@ def main() -> None:
                   f"doubly impractical.")
         md.append("")
 
+    # ---- block B: prompt-recovery across domains (motivation appendix) ----
+    prd_path = IN / "prompt_recovery_domains.json"
+    if prd_path.exists():
+        prd = json.loads(prd_path.read_text())
+        methods_b = ["plaintext_gpu", "stip_qwen", "obfuscatune_qwen_orthogonal", "ours_fresh_signed_perm"]
+        by = {}
+        for t in prd:
+            by.setdefault((t["domain"], t["attack"]), {})[t["method"]] = t["token_recovery_top1"]
+        md.append("## Block B (motivation appendix) — prompt recovery across sensitive domains")
+        md.append("")
+        md.append("Best-effort output-only optimization attack (BRE) through the real split "
+                  "downstream, on the repo's SYNTHETIC sensitive prompts (no real PII). Cell = "
+                  "token_recovery_top1 (higher = more recovered). NON-discriminative by design.")
+        md.append("")
+        md.append("| domain | attack | plaintext | STIP | ObfuscaTune | ours-fresh |")
+        md.append("|---|---|---|---|---|---|")
+        for (domain, attack), cells in by.items():
+            md.append(f"| {domain} | {attack} | " + " | ".join(
+                ("—" if cells.get(m) is None else f"{cells[m]:.3g}") for m in methods_b) + " |")
+        md.append("")
+        md.append("**Reading (motivation only).** Plaintext prompts leak (0.72–0.88); STIP, "
+                  "ObfuscaTune and ours all crush recovery to 0. The mask STRUCTURE does not separate "
+                  "the defenses against output-only attacks — only the PRESENCE of a mask matters. "
+                  "Discrimination between defenses lives in block A (KPA), not here. Best-effort "
+                  "implementation, not a full SOTA reproduction; motivation echo, not a ranking claim.")
+        md.append("")
+
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "SECURITY_EFFICIENCY_TABLE.md").write_text("\n".join(md) + "\n")
 
