@@ -40,6 +40,13 @@ TARGET_METHODS = (
     "ours_amulet_style",
     "ours_amulet_style_no_fresh_pad",
     "ours_amulet_style_weight_leakage_worst_case",
+    # explicit ours variants (round: minimal-win analysis) — no longer the
+    # ambiguous "ours_amulet_style"
+    "ours_amulet_style_signed_perm",         # current mainline (global signed-perm)
+    "ours_amulet_style_fresh_pad",           # candidate: fresh per-token orthogonal mask
+    "ours_non_isometric_variant",            # design candidate: fresh non-orthogonal well-cond
+    "ours_amulet_style_kronecker",           # design_needed (Kronecker = nonlinear island)
+    "ours_fresh_pad_kronecker",              # design_needed
     "toy",
 )
 
@@ -58,6 +65,10 @@ METRIC_KEYS = (
     "permutation_recovery_accuracy", "multiset_leakage_score",
     "norm_profile_match_accuracy", "distance_profile_match_accuracy",
     "frequency_rank_correlation",
+    # KPA sample-complexity extras
+    "heldout_deobfuscation_relative_l2_error", "num_known_pairs",
+    # optimization-attack extras
+    "loss_initial", "loss_final", "loss_reduction_ratio",
 )
 _INPUT_KEYS = ("num_samples", "batch_size", "seq_len", "hidden_size", "vocab_size",
                "dtype", "device")

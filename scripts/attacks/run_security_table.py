@@ -29,23 +29,29 @@ def main() -> None:
                         "use to keep toy/tiny and per-model tables separate")
     p.add_argument("--output-dir", default=None,
                    help="write the table here instead of outputs/paper_security/")
+    p.add_argument("--methods", default=None,
+                   help="comma list of method columns (default: the 4 canonical); use to render "
+                        "the candidate main table with the extra ours variants as columns")
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args()
     scan = str(Path(args.input_dir) / "**" / "*.jsonl") if args.input_dir else GLOB
     out = Path(args.output_dir) if args.output_dir else OUT
+    methods = [m.strip() for m in args.methods.split(",")] if args.methods else None
     if args.dry_run:
         print(f"[dry-run] mode={'qualitative_draft' if args.qualitative_draft else 'measured'} "
-              f"scan={scan} out={out}")
+              f"scan={scan} out={out} methods={methods}")
         return
     from pllo.attacks.result_io import read_many_jsonl
     from pllo.attacks.table_builder import write_measured_table, write_qualitative_table
     if args.qualitative_draft:
         cfg = json.loads(QCFG.read_text())
-        paths = write_qualitative_table(cfg, out)
+        paths = write_qualitative_table(cfg, out, methods=methods) if methods else \
+            write_qualitative_table(cfg, out)
         print("QUALITATIVE DRAFT (NOT measured):")
     else:
         results = read_many_jsonl(glob.glob(scan, recursive=True))
-        paths = write_measured_table(results, out)
+        paths = write_measured_table(results, out, methods=methods) if methods else \
+            write_measured_table(results, out)
         print(f"MEASURED table from {len(results)} results:")
     for k, v in paths.items():
         print(f"  {k}: {v}")

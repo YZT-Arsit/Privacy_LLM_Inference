@@ -27,7 +27,18 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-DEFAULT_METHODS = "plaintext_gpu,stip_qwen,obfuscatune_qwen_orthogonal,ours_amulet_style"
+DEFAULT_METHODS = ("plaintext_gpu,stip_qwen,obfuscatune_qwen_orthogonal,"
+                   "ours_amulet_style_signed_perm,ours_amulet_style_fresh_pad,"
+                   "ours_non_isometric_variant,ours_amulet_style_kronecker,"
+                   "ours_fresh_pad_kronecker")
+_DESIGN_NEEDED = {
+    "ours_amulet_style_kronecker": "design_needed: the repo's Kronecker construction "
+    "(pllo.ops.amulet_right_mask_islands / amulet_secure_R) is a nonlinear-island LIFT that "
+    "expands dimensions to hide activations, NOT a same-dim residual-stream mask; no faithful "
+    "residual Kronecker column exists to measure.",
+    "ours_fresh_pad_kronecker": "design_needed: fresh-pad + Kronecker residual column not "
+    "implemented (Kronecker is a nonlinear-island lift, not a residual mask).",
+}
 
 
 def main() -> None:
@@ -40,15 +51,12 @@ def main() -> None:
     p.add_argument("--num-tokens", type=int, default=32)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--num-steps", type=int, default=200)
-    p.add_argument("--include-fresh-pad", action="store_true",
-                   help="also evaluate the hardened ours_amulet_style_fresh_pad variant")
+    p.add_argument("--non-isometric-cond", type=float, default=5.0)
     p.add_argument("--device", default="cpu")
     p.add_argument("--output-dir", default=None)
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args()
     methods = [m.strip() for m in args.target_methods.split(",") if m.strip()]
-    if args.include_fresh_pad and "ours_amulet_style_fresh_pad" not in methods:
-        methods.append("ours_amulet_style_fresh_pad")
     want = args.attacks.strip()
     out = Path(args.output_dir) if args.output_dir else REPO_ROOT / "outputs" / "attacks" / "real_qwen"
 
@@ -62,6 +70,7 @@ def main() -> None:
     from pllo.attacks.permutation_multiset_attack import structural_leakage_probe
     from pllo.attacks.real_qwen_representations import build_real_representations
     from pllo.attacks.result_io import failed_result, write_jsonl
+    from pllo.attacks.schema import blocked_result
     from pllo.baselines.obfuscatune.qwen_config import load_qwen, make_tiny_qwen_config
 
     if args.model_name_or_path:
@@ -76,7 +85,15 @@ def main() -> None:
     ids = torch.randint(0, model.config.vocab_size, (1, args.num_tokens), generator=g)
 
     reps = build_real_representations(model, ids, seed=args.seed,
-                                      include_fresh_pad=args.include_fresh_pad)
+                                      non_isometric_cond=args.non_isometric_cond)
+    _ROW_FAMILY = {"nn": "structural", "kpa": "cryptanalysis", "perm": "structural",
+                   "freq": "statistical", "arrow": "alignment", "gram": "alignment",
+                   "eia": "optimization", "bre": "optimization", "pia": "optimization"}
+    _ROW_ATTACK_ID = {"nn": "nn_embedding_inversion", "kpa": "kpa_known_plaintext",
+                      "perm": "multiset_permutation_leakage", "freq": "frequency_distribution",
+                      "arrow": "arrowmatch_weight_alignment", "gram": "gram_weight_recovery",
+                      "eia": "eia_optimization", "bre": "bre_bisr_forward",
+                      "pia": "pia_prompt_inversion"}
 
     def plan_for(method, inp):
         plan = []
@@ -102,7 +119,17 @@ def main() -> None:
     for method in methods:
         inp = reps.get(method)
         if inp is None:
-            print(f"{method:34s} (no representation built — skipped)")
+            # design_needed columns (e.g. Kronecker residual): emit an explicit
+            # design_needed record per attack row instead of silently missing.
+            reason = _DESIGN_NEEDED.get(method, f"no representation builder for {method}")
+            for key in [k for k in _ROW_ATTACK_ID if want == "all" or k in want]:
+                aid = _ROW_ATTACK_ID[key]
+                r = blocked_result(aid, aid, _ROW_FAMILY[key], method,
+                                   "closed_model_no_weight_access", reason,
+                                   model_family=family, model_name_or_path=path)
+                r.notes = "DESIGN_NEEDED — " + reason
+                all_results.append(r)
+                print(f"{method:34s} {aid:28s} design_needed")
             continue
         for key, fn in plan_for(method, inp):
             try:
