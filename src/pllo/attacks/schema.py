@@ -44,6 +44,7 @@ TARGET_METHODS = (
     # ambiguous "ours_amulet_style"
     "ours_amulet_style_signed_perm",         # current mainline (global signed-perm)
     "ours_amulet_style_fresh_pad",           # candidate: fresh per-token orthogonal mask
+    "ours_fresh_signed_perm",                # candidate: fresh signed-perm act + static perm fold
     "ours_non_isometric_variant",            # design candidate: fresh non-orthogonal well-cond
     "ours_amulet_style_kronecker",           # design_needed (Kronecker = nonlinear island)
     "ours_fresh_pad_kronecker",              # design_needed

@@ -1,0 +1,1401 @@
+[
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8646092189925445,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6995646802951114,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.15489081728263784,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8508589536364369,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6852725364155416,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10873272398153569,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.836313506105219,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6626377739754902,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10907210852834286,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8034198564013084,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6154014187045064,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.104974043895254,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "plaintext_gpu",
+    "transform_type": "identity",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8646092189925445,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6995646802951114,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.15489081728263784,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8508589536364369,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6852725364155416,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10873272398153569,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.836313506105219,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6626377739754902,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10907210852834286,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8034198564013084,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6154014187045064,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.104974043895254,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "stip_qwen",
+    "transform_type": "fixed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8646092189925445,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6995646802951114,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.15489082947915317,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 2.996934214905866e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 2.4014781278165296e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8508589536364369,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6852726056350946,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10873270701790254,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 4.248184574329825e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 3.3947345927834494e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.836313506105219,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6626378700036318,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.1090720846548882,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 4.2800211426924045e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 3.4056928308756275e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8034199242421416,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6154014187045064,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10497401015272274,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 5.013223336797742e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "obfuscatune_qwen_orthogonal",
+    "transform_type": "fixed_orthogonal",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 3.9744948116407984e-07,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8646092189925445,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6995646802951114,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.15489081728263784,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8508589536364369,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6852725364155416,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10873272398153569,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.836313506105219,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6626377739754902,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.10907210852834286,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.8034198564013084,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.6154014187045064,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.104974043895254,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_signed_perm",
+    "transform_type": "fixed_signed_permutation",
+    "whether_fresh_per_sample": false,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 0.0,
+    "whether_attack_generalizes_to_heldout": true
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.13375733383218,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.3980643588423083,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 4.955976531562777,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4967165196519652,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1659192321050562,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1485867748986587,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4092032241083396,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 8.021837217111909,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4663719330470846,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.180328428347209,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.152669445128628,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4036130972398246,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.8766158747778094,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.463260744090354,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1717436354418085,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1501820339156676,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4013724745804685,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.413809630307379,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4702048148211393,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_amulet_style_fresh_pad",
+    "transform_type": "fresh_orthogonal_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1757349031867361,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.134874540069472,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.384712887588652,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.4849737467568245,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4764544614461446,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1803015445499132,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1485732677294216,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.3858701434263747,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 8.279837520964506,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4736768165101881,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1724731642394997,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1524348447418542,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.3977497149404616,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.974869082749405,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4718266414707162,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1698915486349417,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.147713034632406,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4054688245047806,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.458606754687883,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4719586818773418,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_fresh_signed_perm",
+    "transform_type": "fresh_signed_perm_per_token",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.175833331660557,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 32,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1502626984728337,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4073004648443155,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.318451698237916,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4761198679867986,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 128,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.173140442569915,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 64,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1500971220042566,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.394496284121346,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 13.975949232324352,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4672937227563414,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 256,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1734546490240476,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 128,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1524283090969836,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.3986524754998602,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 8.551344638910178,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.461546857935865,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 512,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1730663271373207,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 256,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1505746966581945,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 512,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4011702524485132,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 1024,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 7.442457309286876,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 2048,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.4648837629141094,
+    "whether_attack_generalizes_to_heldout": false
+  },
+  {
+    "method": "ours_non_isometric_variant",
+    "transform_type": "fresh_non_orthogonal_cond",
+    "whether_fresh_per_sample": true,
+    "subdim": 1024,
+    "num_pairs": 4096,
+    "hidden_dim": 3584,
+    "heldout_deobfuscation_relative_l2_error": 1.1755035755077563,
+    "whether_attack_generalizes_to_heldout": false
+  }

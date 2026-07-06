@@ -52,7 +52,7 @@ from .representations import AttackInputs
 BUILDABLE_METHODS = [
     "plaintext_gpu", "stip_qwen", "obfuscatune_qwen_orthogonal",
     "ours_amulet_style_signed_perm", "ours_amulet_style_fresh_pad",
-    "ours_non_isometric_variant",
+    "ours_non_isometric_variant", "ours_fresh_signed_perm",
 ]
 DESIGN_NEEDED_METHODS = ["ours_amulet_style_kronecker", "ours_fresh_pad_kronecker"]
 
@@ -166,6 +166,31 @@ def build_real_representations(
         "ours_non_isometric_variant", fresh_ni,
         transform_type=f"fresh_non_orthogonal_cond{non_isometric_cond:g}",
         norm_preserving=False, fresh=True, kron=False, pad=False, design_candidate=True)
+
+    # candidate: FRESH signed-perm on ACTIVATIONS per token (O(D), cheap; the KPA
+    # target) but a STATIC signed-perm WEIGHT fold (what makes it foldable/cheap;
+    # the Gram target). This decouples the two on purpose so the attacks answer:
+    # does per-token activation freshness rescue a permutation weight fold from
+    # Gram? Mechanism says NO (Gram attacks the static spatial fold). Measured here.
+    fresh_sp = torch.stack([
+        (lambda pr, sg: H[i][pr] * sg)(*_signed_perm(hidden, torch.Generator().manual_seed(seed + 50_000 + i)))
+        for i in range(n)])
+    perm0, signs0 = _signed_perm(hidden, g)                    # STATIC weight-fold mask
+    meta_fsp = {
+        "method": "ours_fresh_signed_perm", "obfuscation": "ours_fresh_signed_perm",
+        "transform_type": "fresh_signed_perm_activations_static_signed_perm_weight_fold",
+        "is_norm_preserving_theoretically": True, "whether_fresh_per_sample": True,
+        "whether_kronecker_enabled": False, "whether_pad_enabled": False,
+        "is_design_candidate": True, "global_matrix": False, "fresh_pad": True,
+        "weight_fold": "static_signed_perm", "note": "activations fresh (KPA), weights static (Gram)",
+    }
+    reps["ours_fresh_signed_perm"] = AttackInputs(
+        token_ids=flat_ids, plaintext_embeddings=H, protected_embeddings=fresh_sp,
+        observed_intermediate=fresh_sp, embedding_table=table,
+        model_weights={"public": W, "obfuscated": W[:, perm0] * signs0,
+                       "true_permutation": perm0.tolist(), "signs": signs0.tolist()},
+        known_plaintext_pairs=(H, fresh_sp), downstream=None, defense_metadata=meta_fsp,
+        secret_metadata_present_but_not_revealed=True)
 
     return reps
 

@@ -31,13 +31,14 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 METHODS = ["plaintext_gpu", "stip_qwen", "obfuscatune_qwen_orthogonal",
            "ours_amulet_style_signed_perm", "ours_amulet_style_fresh_pad",
-           "ours_non_isometric_variant"]
-_FRESH = {"ours_amulet_style_fresh_pad", "ours_non_isometric_variant"}
+           "ours_fresh_signed_perm", "ours_non_isometric_variant"]
+_FRESH = {"ours_amulet_style_fresh_pad", "ours_fresh_signed_perm", "ours_non_isometric_variant"}
 _TRANSFORM = {
     "plaintext_gpu": "identity", "stip_qwen": "fixed_permutation",
     "obfuscatune_qwen_orthogonal": "fixed_orthogonal",
     "ours_amulet_style_signed_perm": "fixed_signed_permutation",
     "ours_amulet_style_fresh_pad": "fresh_orthogonal_per_token",
+    "ours_fresh_signed_perm": "fresh_signed_perm_per_token",
     "ours_non_isometric_variant": "fresh_non_orthogonal_cond",
 }
 
@@ -57,6 +58,14 @@ def _protect(method, Hs, *, seed, cond, orthogonal_matrix, matrix_with_condition
         perm = torch.randperm(d, generator=g)
         signs = torch.where(torch.rand(d, generator=g) < 0.5, torch.tensor(-1.0), torch.tensor(1.0))
         return Hs[:, perm] * signs
+    if method == "ours_fresh_signed_perm":     # fresh signed-perm on activations per token
+        outs = []
+        for i in range(n):
+            gi = torch.Generator().manual_seed(seed + 50_000 + i)
+            pr = torch.randperm(d, generator=gi)
+            sg = torch.where(torch.rand(d, generator=gi) < 0.5, torch.tensor(-1.0), torch.tensor(1.0))
+            outs.append(Hs[i][pr] * sg)
+        return torch.stack(outs)
     if method == "ours_amulet_style_fresh_pad":
         return torch.stack([Hs[i] @ orthogonal_matrix(d, seed=seed + 1 + i, dtype=torch.float32)[0]
                             for i in range(n)])
