@@ -81,7 +81,13 @@ def load_qwen(
         torch.manual_seed(seed)
         model = Qwen2ForCausalLM(cfg)
     else:
-        model = Qwen2ForCausalLM.from_pretrained(
+        # Real checkpoint: use AutoModelForCausalLM so the loader is architecture-
+        # agnostic (Qwen2 for Qwen, Llama for Llama, etc.). The attack hooks and
+        # ops only rely on the shared decoder layout (model.embed_tokens,
+        # layers[i].self_attn.{q,k,v,o}_proj, mlp.{gate,up,down}_proj) which Qwen2
+        # and Llama share, so cross-family reproduction needs no other change.
+        from transformers import AutoModelForCausalLM
+        model = AutoModelForCausalLM.from_pretrained(
             model_name_or_path, local_files_only=True
         )
     return model.to(dtype).eval()

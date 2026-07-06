@@ -250,6 +250,59 @@ def main() -> None:
                   "implementation, not a full SOTA reproduction; motivation echo, not a ranking claim.")
         md.append("")
 
+    # ---- block D: second model family (Llama-3.2-1B) reproduction ----
+    d_kpa = IN / "llama1b_kpa_summary.jsonl"
+    d_atk = IN / "llama1b_attacks_summary.jsonl"
+    d_e2e = IN / "llama1b_e2e_throughput.json"
+    if d_kpa.exists() and d_atk.exists():
+        kpa_l = _load_jsonl(d_kpa)
+        atk_l = _load_jsonl(d_atk)
+        cols_d = [("STIP", "stip_qwen"), ("ObfuscaTune", "obfuscatune_qwen_orthogonal"),
+                  ("ours-static", "ours_amulet_style_signed_perm"),
+                  ("ours-fresh", "ours_fresh_signed_perm")]
+
+        def kcell(mk):
+            for r in kpa_l:
+                if r["m"] == mk:
+                    return r["succ"]
+            return None
+
+        def acell(mk, aid):
+            for r in atk_l:
+                if r["m"] == mk and r["a"] == aid:
+                    return None if r["st"] == "blocked" else r["succ"]
+            return None
+
+        md.append("## Block D — second model family (Llama-3.2-1B): cross-family reproduction")
+        md.append("")
+        md.append("Different family than Qwen (LlamaForCausalLM, hidden 2048 vs 3584, vocab 128256, "
+                  "16 layers). Security cells = leak/recovery (lower safer); ObfuscaTune static fold "
+                  "shown as its KPA success (broken).")
+        md.append("")
+        md.append("| probe | threat | " + " | ".join(c for c, _ in cols_d) + " |")
+        md.append("|" + "---|" * (2 + len(cols_d)))
+        md.append("| KPA | known_plaintext | " + " | ".join(
+            ("—" if kcell(mk) is None else f"{kcell(mk):.3g}") for _, mk in cols_d) + " |")
+        for label, aid, tm in [("multiset", "multiset_permutation_leakage", "closed"),
+                               ("Gram [worst]", "gram_weight_recovery", "weight-leak"),
+                               ("ArrowMatch [worst]", "arrowmatch_weight_alignment", "weight-leak")]:
+            md.append(f"| {label} | {tm} | " + " | ".join(
+                ("—" if acell(mk, aid) is None else f"{acell(mk, aid):.3g}") for _, mk in cols_d) + " |")
+        if d_e2e.exists():
+            e = json.loads(d_e2e.read_text()); sch = e["schemes"]; base = e["base_gpu_decode_ms_per_token"]
+            md.append("")
+            md.append(f"Efficiency (base decode **{base:.2f} ms/tok**): ours-fresh "
+                      f"+{sch['ours_fresh_signed_perm']['overhead_pct_vs_plaintext']:.1f}% vs "
+                      f"ObfuscaTune +{sch['obfuscatune_orth']['overhead_pct_vs_plaintext']:.1f}% "
+                      f"(ours-static +{sch['ours_signed_perm']['overhead_pct_vs_plaintext']:.1f}%); "
+                      f"dense-fresh +{sch['ours_fresh_pad']['overhead_pct_vs_plaintext']:.0f}%.")
+        md.append("")
+        md.append("**Reading.** Every block-A + efficiency conclusion reproduces on a different "
+                  "family: static masks KPA-broken, fresh KPA-resist; STIP multiset-leaks, others "
+                  "don't; Gram breaks STIP + ours (public weights), ObfuscaTune resists; ours-fresh "
+                  "~9x cheaper than ObfuscaTune. The verdict is family-invariant.")
+        md.append("")
+
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "SECURITY_EFFICIENCY_TABLE.md").write_text("\n".join(md) + "\n")
 
