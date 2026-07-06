@@ -21,14 +21,14 @@ DEFAULT_METHOD_COLUMNS = ["plaintext_gpu", "stip_qwen", "obfuscatune_qwen_orthog
 DEFAULT_ATTACK_ROWS = [
     "nn_embedding_inversion", "eia_optimization", "bre_bisr_forward", "bre_bisr_backward",
     "kpa_known_plaintext", "multiset_permutation_leakage", "arrowmatch_weight_alignment",
-    "pia_prompt_inversion", "frequency_distribution",
+    "gram_weight_recovery", "pia_prompt_inversion", "frequency_distribution",
 ]
 _FAMILY = {
     "nn_embedding_inversion": "structural", "eia_optimization": "optimization",
     "bre_bisr_forward": "optimization", "bre_bisr_backward": "optimization",
     "kpa_known_plaintext": "cryptanalysis", "multiset_permutation_leakage": "structural",
-    "arrowmatch_weight_alignment": "alignment", "pia_prompt_inversion": "optimization",
-    "frequency_distribution": "statistical",
+    "arrowmatch_weight_alignment": "alignment", "gram_weight_recovery": "alignment",
+    "pia_prompt_inversion": "optimization", "frequency_distribution": "statistical",
 }
 
 
@@ -58,15 +58,19 @@ def build_measured_table(results, *, methods=None, attacks=None) -> dict[str, An
     rows = []
     for aid in attacks:
         rel = [r for r in results if r.attack_id == aid]
+        # prefer a MEASURED result for the row metadata so a blocked cell in the
+        # first method column (e.g. plaintext has no weights for ArrowMatch)
+        # doesn't mislabel the whole row as blocked.
+        rep = next((r for r in rel if r.status == "measured"), rel[0] if rel else None)
         row = {"attack_probe": aid, "attack_family": _FAMILY.get(aid, "?"),
-               "implementation_level": rel[0].implementation_level if rel else "?",
-               "threat_model": rel[0].threat_model if rel else "n/a",
-               "attacker_knowledge": ("weights" if rel and rel[0].attacker_knowledge.get("has_model_weights")
-                                      else ("kpa_pairs" if rel and rel[0].attacker_knowledge.get("has_known_plaintext_pairs")
+               "implementation_level": rep.implementation_level if rep else "?",
+               "threat_model": rep.threat_model if rep else "n/a",
+               "attacker_knowledge": ("weights" if rep and rep.attacker_knowledge.get("has_model_weights")
+                                      else ("kpa_pairs" if rep and rep.attacker_knowledge.get("has_known_plaintext_pairs")
                                             else "activations"))}
         for m in methods:
             row[m] = _cell(results, aid, m)
-        row["notes"] = (rel[0].notes[:120] if rel else "")
+        row["notes"] = (rep.notes[:120] if rep and rep.notes else "")
         rows.append(row)
     return {"mode": "measured", "methods": methods, "rows": rows,
             "disclaimer": "Cells are measured attack results only; 'missing' = no data, "

@@ -19,8 +19,10 @@ from .bre_bisr_attack import run_bre_bisr_attack, run_bre_backward_gradient_matc
 from .kpa_known_plaintext import run_kpa_known_plaintext
 from .permutation_multiset_attack import structural_leakage_probe, run_autoregressive_decode
 from .arrowmatch_attack import run_arrowmatch_attack, load_external_arrowmatch
+from .gram_weight_recovery import run_gram_weight_recovery
 from .pia_prompt_inversion import run_pia_prompt_inversion
 from .frequency_distribution_attack import run_frequency_distribution_attack
+from .real_qwen_representations import build_real_representations
 
 __all__ = [
     "AttackResult", "blocked_result", "empty_metrics", "make_attacker_knowledge",
@@ -30,6 +32,6 @@ __all__ = [
     "run_nn_embedding_inversion", "run_eia_optimization", "run_bre_bisr_attack",
     "run_bre_backward_gradient_matching", "run_kpa_known_plaintext",
     "structural_leakage_probe", "run_autoregressive_decode", "run_arrowmatch_attack",
-    "load_external_arrowmatch", "run_pia_prompt_inversion",
-    "run_frequency_distribution_attack",
+    "load_external_arrowmatch", "run_gram_weight_recovery", "run_pia_prompt_inversion",
+    "run_frequency_distribution_attack", "build_real_representations",
 ]
