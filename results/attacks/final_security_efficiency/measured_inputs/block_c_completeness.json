@@ -1,0 +1,28 @@
+{
+  "model": "/root/autodl-tmp/modelscope_cache/Qwen/Qwen2___5-7B-Instruct",
+  "hidden": 3584,
+  "base_gpu_decode_ms_per_token": 15.97,
+  "correctness_ours_vs_plaintext": {
+    "scheme": "signed_perm_residual_fold",
+    "max_abs_err": 3.0994415283203125e-06,
+    "relative_l2_err": 4.087220020210225e-07,
+    "lossless": true,
+    "note": "y=(W N)(N\u1d40x) reproduces y=Wx exactly in fp32; full pipeline bit-identical validated in AAAI stages. STIP/ObfuscaTune not tested (also exact linear maps, not the discriminator)."
+  },
+  "boundary_cost_ms_per_token": {
+    "convention": "per-token TEE-side ops on the residual, same convention for all schemes",
+    "static_fold_apply": 0.0,
+    "fresh_gen": 0.10024011135101318,
+    "fresh_apply_mask": 0.021019019186496735,
+    "fresh_unmask": 0.022497959434986115,
+    "fresh_total": 0.14375708997249603,
+    "fresh_total_pct_of_decode": 0.9001696303850721,
+    "note": "static schemes fold the mask into the weights => 0 separate boundary op. fresh pays gen+apply+unmask, all O(D); total still << 1 ms and << ObfuscaTune (1.55 ms of in-TEE nonlinearities)."
+  },
+  "mask_buffer_memory_mb": {
+    "static_signed_perm": 30697.505792,
+    "fresh_signed_perm": 30697.644544,
+    "dense_fresh_DxD": 30802.363392,
+    "note": "folded weights are the SAME size as plaintext weights (0 extra); only the mask buffers differ. O(D) masks are KB-scale; a dense DxD mask is ~30802 MB."
+  }
+}

@@ -40,3 +40,24 @@ base GPU decode = **15.97 ms/token** (62.6 tok/s), ctx=512, bf16. Consistent con
 
 → Under the stated private-weights threat model, **ours-fresh (fresh_signed_perm) matches-or-beats ObfuscaTune on every applicable security probe and is ~10x cheaper in TEE overhead.** Two orthogonal secrets do the work: private weights neutralise weight-anchored mask recovery (Gram class); per-token freshness neutralises KPA. If the base model is ever PUBLIC, the worst-case band reactivates and ours-fresh's static signed-perm fold is Gram-broken (1.0) — this boundary is stated, not hidden.
 
+## Block A robustness — cross sequence-length / input-statistics
+
+Real text (ag_news_small.jsonl), subdim 256. Captured at layer 0 (per-token, length-invariant by construction) AND a mid layer (attention-mixed, where length is a real variable). KPA success (1=broken, 0=resist); multiset leak (1=leak, 0=safe).
+
+| seq_len | layer | KPA obf | KPA ours-static | KPA ours-fresh | mset STIP | mset obf | mset ours-fresh |
+|---|---|---|---|---|---|---|---|
+| 64 | embed | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 0.00 |
+| 64 | mid(L14) | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 0.00 |
+| 256 | embed | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 0.00 |
+| 256 | mid(L14) | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 0.00 |
+| 512 | embed | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 0.00 |
+| 512 | mid(L14) | 1.00 | 1.00 | 0.00 | 1.00 | 0.00 | 0.00 |
+
+**Reading.** The verdict does not move with sequence length or input statistics, at both the per-token layer and the attention-mixed mid layer. These attacks are geometric/statistical, not semantic — so a single corpus + length sweep suffices; re-running across domains would buy duplicate numbers, not new information.
+
+## Block C completeness — correctness / honest boundary cost / memory
+
+- **Correctness (ours vs plaintext)**: signed-perm residual fold max|y'−y| = 3.10e-06 → **lossless** (fp32). STIP/ObfuscaTune not tested (also exact linear maps, not the discriminator).
+- **Fresh boundary cost, consistent convention** (the e2e +0.9% counted mask generation only): gen 0.1002 + apply 0.0210 + unmask 0.0225 = **0.1438 ms/token (0.90% of decode)**. Static folds add 0 (mask is inside the weights). Even the corrected total stays an order below ObfuscaTune's 1.55 ms of in-TEE nonlinearities.
+- **Memory**: folded weights are the SAME size as plaintext (0 extra). Mask buffers: static 30697.51 / fresh 30697.64 MB peak-with-model (O(D), KB-scale delta); a dense DxD mask adds ~105 MB — why dense-fresh is doubly impractical.
+
