@@ -160,7 +160,7 @@
     }
   ],
   "block_c_efficiency": {
-    "base_gpu_decode_ms_per_token": 8.915595710277557,
+    "base_gpu_decode_ms_per_token": 17.48008094727993,
     "context": 512,
     "dtype": "bf16",
     "schemes": {
@@ -169,8 +169,8 @@
         "tee": "none",
         "kpa": "-",
         "gram": "-",
-        "end_to_end_ms_per_token": 8.915595710277557,
-        "tokens_per_s": 112.16300430124241,
+        "end_to_end_ms_per_token": 17.48008094727993,
+        "tokens_per_s": 57.20797306465619,
         "overhead_pct_vs_plaintext": 0.0
       },
       "STIP": {
@@ -178,36 +178,36 @@
         "tee": "none",
         "kpa": "broken",
         "gram": "broken",
-        "end_to_end_ms_per_token": 8.915595710277557,
-        "tokens_per_s": 112.16300430124241,
+        "end_to_end_ms_per_token": 17.48008094727993,
+        "tokens_per_s": 57.20797306465619,
         "overhead_pct_vs_plaintext": 0.0
       },
       "ObfuscaTune": {
-        "cpu_tee_ms": 0.7968023419380188,
+        "cpu_tee_ms": 1.6727298498153687,
         "tee": "224x",
         "kpa": "broken",
         "gram": "resist",
-        "end_to_end_ms_per_token": 9.712398052215576,
-        "tokens_per_s": 102.96118369776676,
-        "overhead_pct_vs_plaintext": 8.937174450603402
+        "end_to_end_ms_per_token": 19.1528107970953,
+        "tokens_per_s": 52.21165763051652,
+        "overhead_pct_vs_plaintext": 9.5693484192684
       },
       "ours-static (signed-perm)": {
         "cpu_tee_ms": 0.0,
         "tee": "2x",
         "kpa": "broken",
         "gram": "broken",
-        "end_to_end_ms_per_token": 8.915595710277557,
-        "tokens_per_s": 112.16300430124241,
+        "end_to_end_ms_per_token": 17.48008094727993,
+        "tokens_per_s": 57.20797306465619,
         "overhead_pct_vs_plaintext": 0.0
       },
       "ours-fresh (fresh_signed_perm)": {
-        "cpu_tee_ms": 0.08810311555862427,
+        "cpu_tee_ms": 0.15295855700969696,
         "tee": "2x",
         "kpa": "RESIST",
         "gram": "RESIST",
-        "end_to_end_ms_per_token": 9.003698825836182,
-        "tokens_per_s": 111.06546535413784,
-        "overhead_pct_vs_plaintext": 0.9881910129354831
+        "end_to_end_ms_per_token": 17.633039504289627,
+        "tokens_per_s": 56.71172005012113,
+        "overhead_pct_vs_plaintext": 0.8750449009419421
       }
     }
   },

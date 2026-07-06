@@ -74,9 +74,11 @@ Best-effort output-only optimization attack (BRE) through the real split downstr
 
 **Reading (motivation only).** Plaintext prompts leak (0.72–0.88); STIP, ObfuscaTune and ours all crush recovery to 0. The mask STRUCTURE does not separate the defenses against output-only attacks — only the PRESENCE of a mask matters. Discrimination between defenses lives in block A (KPA), not here. Best-effort implementation, not a full SOTA reproduction; motivation echo, not a ranking claim.
 
-## Block D — second model family (Llama-3.2-1B): cross-family reproduction
+## Block D — second model family (Llama): cross-family reproduction
 
-Different family than Qwen (LlamaForCausalLM, hidden 2048 vs 3584, vocab 128256, 16 layers). Security cells = leak/recovery (lower safer); ObfuscaTune static fold shown as its KPA success (broken).
+Different family than Qwen (LlamaForCausalLM vs Qwen2, vocab 128256 vs 152064). Security cells = leak/recovery (lower safer); ObfuscaTune shown as its KPA success (broken). Same runners, only `--model-name-or-path` changed.
+
+### Llama-3.2-1B (hidden 2048, 16 layers, vocab 128256)
 
 | probe | threat | STIP | ObfuscaTune | ours-static | ours-fresh |
 |---|---|---|---|---|---|
@@ -87,5 +89,16 @@ Different family than Qwen (LlamaForCausalLM, hidden 2048 vs 3584, vocab 128256,
 
 Efficiency (base decode **8.92 ms/tok**): ours-fresh +1.0% vs ObfuscaTune +8.9% (ours-static +0.0%); dense-fresh +2203%.
 
-**Reading.** Every block-A + efficiency conclusion reproduces on a different family: static masks KPA-broken, fresh KPA-resist; STIP multiset-leaks, others don't; Gram breaks STIP + ours (public weights), ObfuscaTune resists; ours-fresh ~9x cheaper than ObfuscaTune. The verdict is family-invariant.
+### Llama-3-8B (hidden 4096, 32 layers, vocab 128256)
+
+| probe | threat | STIP | ObfuscaTune | ours-static | ours-fresh |
+|---|---|---|---|---|---|
+| KPA | known_plaintext | 1 | 1 | 1 | 0 |
+| multiset | closed | 1 | 0 | 0 | 0 |
+| Gram [worst] | weight-leak | 1 | 0 | 1 | 1 |
+| ArrowMatch [worst] | weight-leak | 1 | 0 | 0.512 | 0.504 |
+
+Efficiency (base decode **17.48 ms/tok**): ours-fresh +0.9% vs ObfuscaTune +9.6% (ours-static +0.0%); dense-fresh +5293%.
+
+**Reading.** Every block-A + efficiency conclusion reproduces on both Llama sizes: static masks KPA-broken, fresh KPA-resist; STIP multiset-leaks, others don't; Gram breaks STIP + ours (public weights), ObfuscaTune resists; ours-fresh ~10x cheaper than ObfuscaTune. The verdict is family- and scale-invariant. (8B KPA from run stdout; the confirmatory non_isometric row was skipped as its O(D^3) per-token QR at dim 4096 is the very cost the paper flags as prohibitive.)
 

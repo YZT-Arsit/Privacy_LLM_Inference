@@ -1,0 +1,74 @@
+{
+  "model": "/root/autodl-tmp/models/Meta-Llama-3-8B-Instruct",
+  "gpu": "cuda",
+  "dtype": "bf16",
+  "hidden": 4096,
+  "context": 512,
+  "base_gpu_decode_ms_per_token": 17.48008094727993,
+  "note": "Qwen forward on GPU; TDX mask ops on CPU. Static-mask schemes add ~0 (mask folded/ sampled once); fresh-dense masks are dominated by the CPU QR; ObfuscaTune is dominated by 224 in-TEE nonlinearities/token.",
+  "schemes": {
+    "plaintext": {
+      "cpu_tee_ms": 0.0,
+      "tee": "none",
+      "kpa": "-",
+      "gram": "-",
+      "end_to_end_ms_per_token": 17.48008094727993,
+      "tokens_per_s": 57.20797306465619,
+      "overhead_pct_vs_plaintext": 0.0
+    },
+    "stip_qwen": {
+      "cpu_tee_ms": 0.0,
+      "tee": "none",
+      "kpa": "broken",
+      "gram": "broken",
+      "end_to_end_ms_per_token": 17.48008094727993,
+      "tokens_per_s": 57.20797306465619,
+      "overhead_pct_vs_plaintext": 0.0
+    },
+    "obfuscatune_orth": {
+      "cpu_tee_ms": 1.6727298498153687,
+      "tee": "224x",
+      "kpa": "broken",
+      "gram": "resist",
+      "end_to_end_ms_per_token": 19.1528107970953,
+      "tokens_per_s": 52.21165763051652,
+      "overhead_pct_vs_plaintext": 9.5693484192684
+    },
+    "ours_signed_perm": {
+      "cpu_tee_ms": 0.0,
+      "tee": "2x",
+      "kpa": "broken",
+      "gram": "broken",
+      "end_to_end_ms_per_token": 17.48008094727993,
+      "tokens_per_s": 57.20797306465619,
+      "overhead_pct_vs_plaintext": 0.0
+    },
+    "ours_fresh_signed_perm": {
+      "cpu_tee_ms": 0.15295855700969696,
+      "tee": "2x",
+      "kpa": "RESIST",
+      "gram": "RESIST",
+      "end_to_end_ms_per_token": 17.633039504289627,
+      "tokens_per_s": 56.71172005012113,
+      "overhead_pct_vs_plaintext": 0.8750449009419421
+    },
+    "ours_fresh_pad": {
+      "cpu_tee_ms": 925.2346158027649,
+      "tee": "2x",
+      "kpa": "RESIST",
+      "gram": "RESIST",
+      "end_to_end_ms_per_token": 942.7146967500448,
+      "tokens_per_s": 1.0607663203378954,
+      "overhead_pct_vs_plaintext": 5293.079697933209
+    },
+    "ours_non_isometric": {
+      "cpu_tee_ms": 2324.1394348442554,
+      "tee": "2x",
+      "kpa": "RESIST",
+      "gram": "RESIST",
+      "end_to_end_ms_per_token": 2341.6195157915354,
+      "tokens_per_s": 0.42705486235323376,
+      "overhead_pct_vs_plaintext": 13295.930618707542
+    }
+  }
+}
