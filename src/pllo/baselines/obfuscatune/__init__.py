@@ -27,6 +27,11 @@ from . import (
     metrics,
     modules,
     random_matrices,
+    qwen_cache,
+    qwen_config,
+    qwen_metrics,
+    qwen_modules,
+    qwen_obfuscatune,
 )
 
 __all__ = [
@@ -45,4 +50,10 @@ __all__ = [
     "modules",
     "metrics",
     "hf_gpt2_obfuscatune",
+    # qwen adaptation
+    "qwen_config",
+    "qwen_modules",
+    "qwen_cache",
+    "qwen_obfuscatune",
+    "qwen_metrics",
 ]

@@ -227,6 +227,81 @@ METHOD_BY_NAME: dict[str, WorkloadMethod] = {m.name: m for m in WORKLOAD_METHODS
 
 
 # ---------------------------------------------------------------------------
+# Baseline method specs (Stage 7.5c+): direct prior-work implementations that
+# carry their own protection profile. Kept SEPARATE from WORKLOAD_METHODS so the
+# workload-profile sweep is unaffected; these describe comparability, not a cost
+# model. Used by the ObfuscaTune-Qwen baseline (isolated in
+# ``pllo.baselines.obfuscatune``) to register itself against our scheme.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class BaselineMethodSpec:
+    name: str
+    implemented: bool
+    family: str                     # "baseline" | "ours"
+    model_family: str               # "qwen" | "gpt2" | ...
+    protects_base_model: bool
+    protects_user_input: str        # "true" | "partial" | "false"
+    protects_lora: str              # "true" | "partial" | "false" | "not_implemented"
+    protects_kv_cache: str          # "true" | "partial" | "false"
+    uses_tee: str                   # "simulated" | "real" | "none"
+    uses_obfuscation: bool
+    uses_orthogonal_random_matrix: bool
+    requires_private_base_model: bool
+    comparable_to_amulet_style: bool
+    notes: str = ""
+
+
+_OBF_QWEN_NOTE = (
+    "ObfuscaTune (arXiv:2407.02960) protects secret model weights + private data "
+    "under an authenticated TEE; Q/K/V, attention scores and KV cache are "
+    "plaintext intermediates exposed outside the simulated TEE. Different threat "
+    "model from our amulet-style / trusted-shortcut scheme (public base weights; "
+    "protect user input / LoRA / KV cache / logits). Only correctness + cost "
+    "columns are directly comparable."
+)
+
+
+def _obf_qwen_spec(name: str, *, orthogonal: bool) -> BaselineMethodSpec:
+    return BaselineMethodSpec(
+        name=name,
+        implemented=True,
+        family="baseline",
+        model_family="qwen",
+        protects_base_model=True,
+        protects_user_input="partial",
+        protects_lora="not_implemented",
+        protects_kv_cache="false",
+        uses_tee="simulated",
+        uses_obfuscation=True,
+        uses_orthogonal_random_matrix=orthogonal,
+        requires_private_base_model=True,
+        comparable_to_amulet_style=True,
+        notes=_OBF_QWEN_NOTE,
+    )
+
+
+OBFUSCATUNE_QWEN_METHODS: dict[str, BaselineMethodSpec] = {
+    "obfuscatune_qwen_orthogonal": _obf_qwen_spec("obfuscatune_qwen_orthogonal", orthogonal=True),
+    "obfuscatune_qwen_random": _obf_qwen_spec("obfuscatune_qwen_random", orthogonal=False),
+    "obfuscatune_qwen_cond_8": _obf_qwen_spec("obfuscatune_qwen_cond_8", orthogonal=False),
+    "obfuscatune_qwen_cond_32": _obf_qwen_spec("obfuscatune_qwen_cond_32", orthogonal=False),
+    "obfuscatune_qwen_cond_128": _obf_qwen_spec("obfuscatune_qwen_cond_128", orthogonal=False),
+}
+
+# Registry of all baseline specs (extend here as more baselines self-register).
+BASELINE_METHODS: dict[str, BaselineMethodSpec] = dict(OBFUSCATUNE_QWEN_METHODS)
+
+
+def get_baseline_method(name: str) -> BaselineMethodSpec:
+    if name not in BASELINE_METHODS:
+        raise KeyError(
+            f"unknown baseline method {name!r}; known: {sorted(BASELINE_METHODS)}")
+    return BASELINE_METHODS[name]
+
+
+# ---------------------------------------------------------------------------
 # Cost-model constants (tunable, documented)
 # ---------------------------------------------------------------------------
 
