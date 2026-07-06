@@ -1,0 +1,29 @@
+{
+  "_disclaimer": "Qualitative draft judgments ONLY. These are NOT measured attack success rates. The table builder emits them to a *_qualitative_draft file and never overwrites the measured table.",
+  "nn_embedding_inversion": {
+    "plaintext_gpu": "high",
+    "stip_qwen": "medium",
+    "obfuscatune_qwen_orthogonal": "medium",
+    "ours_amulet_style": "low_target"
+  },
+  "eia_optimization": {
+    "stip_qwen": "medium_high_target_to_verify",
+    "obfuscatune_qwen_orthogonal": "medium_high_target_to_verify",
+    "ours_amulet_style": "low_target_to_verify"
+  },
+  "bre_continuous_embedding_probe": {
+    "stip_qwen": "medium_high_target_to_verify",
+    "obfuscatune_qwen_orthogonal": "medium_high_target_to_verify",
+    "ours_amulet_style": "low_target_to_verify"
+  },
+  "kpa_linear_solve": {
+    "obfuscatune_qwen_orthogonal": "high_expected",
+    "stip_qwen": "medium_expected",
+    "ours_amulet_style": "low_expected_with_fresh_padding"
+  },
+  "arrowmatch_weight_alignment": {
+    "stip_qwen": "high_expected_under_weight_access",
+    "obfuscatune_qwen_orthogonal": "high_expected_under_weight_access",
+    "ours_amulet_style": "not_applicable_default_threat_model_worst_case_only"
+  }
+}
