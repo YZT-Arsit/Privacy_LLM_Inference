@@ -1,0 +1,18 @@
+{
+  "verification": "V2_ffn_perm_to_token_recovery",
+  "threat_model": "public weights; attacker GIVEN ground-truth FFN neuron permutation",
+  "attacker_observation": "masked residual state H_obs = H Q; folded FFN weights",
+  "attacker_knowledge": "plaintext weights + TRUE FFN neuron permutation; NOT Q",
+  "attack_objective": "recover input prompt tokens from H_obs using the FFN permutation",
+  "metric": "token_recovery_top1/top5 (NN vs wte+wpe), exact_prompt_match, norm leak",
+  "num_prompts": 12,
+  "num_tokens": 124,
+  "random_baseline_top1": 1.9897725689953638e-05,
+  "token_recovery_top1_masked": 0.0,
+  "token_recovery_top5_masked": 0.0,
+  "token_recovery_top1_if_Q_known_upper_bound": 1.0,
+  "structural_leak_note": "per-token norm is PRESERVED by orthogonal Q (||H Q|| = ||H||): norm rank-corr(H, H_obs) = 1.000000 -- this IS leaked and is NOT hidden. FFN neuron permutation is weight-alignment leakage.",
+  "norm_rank_corr": 1.0,
+  "result": "with the TRUE FFN permutation, token top-1 = 0.00e+00 (~random 1.99e-05); with Q known it would be 1.000. FFN permutation does not unlock Q.",
+  "claim_survives": true
+}

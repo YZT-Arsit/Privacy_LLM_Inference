@@ -143,6 +143,39 @@ VARIANTS: Dict[str, Dict[str, Any]] = {
             "(permutation Hadamard). Does NOT change stable-state norm leakage (the "
             "residual still rides N_res). See docs/rmsnorm_exact_norm_impossibility.md."),
     },
+    "selective_token_mixing_shield": {
+        "variant": "selective_token_mixing_shield",
+        "label": "F",
+        "aliases": ["stms_boundary_shield", "variant_f"],
+        "references_design": None,
+        "linear_layer": "boundary_token_dim_mixing_shield",
+        "nonlinear": "none_boundary_only",
+        "stable_state_form": "U = A (H N) at observable boundary; recovered to H N before compute",
+        "uses_token_dim_mixing": True,
+        "fresh_per_batch_mixing": True,
+        "crosses_attention": False,
+        "crosses_rmsnorm": False,
+        "crosses_rope": False,
+        "crosses_kv_cache": False,
+        "shield_rows_optional": True,
+        "is_boundary_shield_not_full_left_mixing": True,
+        "protects_compute_visible_HN": False,   # only the shielded artifact U
+        "exact_lossless_claim": "only_if_recovered_before_compute",
+        "public_attack_surface": ["shielded_boundary_artifact_U"],
+        "is_aloepri_replication": False,
+        "experiment_only": True,
+        "formal_security_claim": False,
+        "production_qwen7b_integration": False,
+        "security_note": (
+            "Boundary shield only: token-dim fresh mix A shields the observable "
+            "U = A(H N) against an observer WITHOUT A that does not see the "
+            "post-recovery H N. Orthogonal A leaves the singular-value spectrum of "
+            "H INVARIANT (U U^T = A(H H^T)A^T), so a spectrum-matching forward "
+            "oracle still ranks candidates; non-orthogonal A distorts the spectrum "
+            "but reduces to BSS/ICA hardness. Does NOT protect the compute-visible "
+            "H N (the V4 / weight-recovery threat model) — A never crosses "
+            "attention/RMSNorm/RoPE/KV. See results/attacks/stms_boundary_shield/."),
+    },
     "kronecker_lifted_linear": {
         "variant": "kronecker_lifted_linear",
         "label": "C",

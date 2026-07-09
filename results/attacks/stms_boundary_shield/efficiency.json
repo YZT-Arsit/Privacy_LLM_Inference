@@ -1,0 +1,76 @@
+{
+  "rows": [
+    {
+      "n": 64,
+      "d": 768,
+      "block": 128,
+      "gen_A_orthogonal_ms": 0.2084458013996482,
+      "gen_A_nonorth_ms": 0.44284999603405595,
+      "mix_ms": 0.0729604042135179,
+      "unmix_orth_ms": 0.16792294918559492,
+      "unmix_solve_ms": 0.5034896021243185,
+      "mix_blocklocal_ms": 0.07318960269913077,
+      "baseline_HN_ms": 1.0758333024568856
+    },
+    {
+      "n": 128,
+      "d": 768,
+      "block": 128,
+      "gen_A_orthogonal_ms": 1.260116696357727,
+      "gen_A_nonorth_ms": 2.0748249953612685,
+      "mix_ms": 0.283837498864159,
+      "unmix_orth_ms": 0.5125832976773381,
+      "unmix_solve_ms": 1.4000020979437977,
+      "mix_blocklocal_ms": 0.2856625011190772,
+      "baseline_HN_ms": 0.7265541469678283
+    },
+    {
+      "n": 256,
+      "d": 768,
+      "block": 128,
+      "gen_A_orthogonal_ms": 1.7568249953910708,
+      "gen_A_nonorth_ms": 3.7326666992157698,
+      "mix_ms": 0.21556459832936525,
+      "unmix_orth_ms": 0.5310895969159901,
+      "unmix_solve_ms": 1.1641249991953373,
+      "mix_blocklocal_ms": 0.2141792036127299,
+      "baseline_HN_ms": 0.9568187524564564
+    },
+    {
+      "n": 512,
+      "d": 768,
+      "block": 128,
+      "gen_A_orthogonal_ms": 7.825020898599178,
+      "gen_A_nonorth_ms": 16.497245791833848,
+      "mix_ms": 0.9605416504200548,
+      "unmix_orth_ms": 1.9158729002811015,
+      "unmix_solve_ms": 4.12880415096879,
+      "mix_blocklocal_ms": 0.8690416463650763,
+      "baseline_HN_ms": 1.4465353975538164
+    },
+    {
+      "n": 1024,
+      "d": 768,
+      "block": 128,
+      "gen_A_orthogonal_ms": 39.50083330273628,
+      "gen_A_nonorth_ms": 84.39435840118676,
+      "mix_ms": 4.188770800828934,
+      "unmix_orth_ms": 8.4391999989748,
+      "unmix_solve_ms": 19.30199374910444,
+      "mix_blocklocal_ms": 4.19525210163556,
+      "baseline_HN_ms": 2.622379147214815
+    },
+    {
+      "n": 256,
+      "d": 4096,
+      "block": 128,
+      "gen_A_orthogonal_ms": 1.7319458071142435,
+      "gen_A_nonorth_ms": 3.700920904520899,
+      "mix_ms": 1.7995145521126688,
+      "unmix_orth_ms": 4.380283347563818,
+      "unmix_solve_ms": 5.921360454522073,
+      "mix_blocklocal_ms": 1.8016416521277279,
+      "baseline_HN_ms": 23.722168745007366
+    }
+  ]
+}

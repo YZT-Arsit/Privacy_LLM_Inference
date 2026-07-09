@@ -1,0 +1,56 @@
+{
+  "cases": {
+    "baseline": {
+      "roundtrip_max_abs": 0.0,
+      "exact": true,
+      "shield_rows_dropped": 0
+    },
+    "orthogonal": {
+      "roundtrip_max_abs": 5.684341886080802e-14,
+      "exact": true,
+      "shield_rows_dropped": 0
+    },
+    "nonorthogonal": {
+      "roundtrip_max_abs": 1.1368683772161603e-13,
+      "exact": true,
+      "shield_rows_dropped": 0
+    },
+    "blocklocal": {
+      "roundtrip_max_abs": 1.1368683772161603e-13,
+      "exact": true,
+      "shield_rows_dropped": 0
+    },
+    "orthogonal_shield": {
+      "roundtrip_max_abs": 6.128431095930864e-14,
+      "exact": true,
+      "shield_rows_dropped": 3
+    }
+  },
+  "prefill_integration": {
+    "recovered_equals_HN_max_abs": 8.526512829121202e-14,
+    "shield_rows_in_recovered_state": 0,
+    "downstream_identical": true,
+    "note": "recovery is bit-exact (fp64), so the state fed into attention/RMSNorm/RoPE/KV is identical to the un-shielded H N; shield rows are dropped before compute and never enter KV/logits."
+  },
+  "report_fields": {
+    "variant": "selective_token_mixing_shield",
+    "aliases": [
+      "stms_boundary_shield",
+      "variant_f"
+    ],
+    "uses_token_dim_mixing": true,
+    "fresh_per_batch_mixing": true,
+    "crosses_attention": false,
+    "crosses_rmsnorm": false,
+    "crosses_rope": false,
+    "crosses_kv_cache": false,
+    "shield_rows_optional": true,
+    "is_boundary_shield_not_full_left_mixing": true,
+    "protects_compute_visible_HN": false,
+    "threat_model": "observer of U without A; NOT the offload adversary who sees H N",
+    "exact_lossless_claim": "only_if_recovered_before_compute",
+    "formal_security_claim": false,
+    "production_qwen7b_integration": false,
+    "roundtrip_max_abs": 1.1368683772161603e-13
+  }
+}

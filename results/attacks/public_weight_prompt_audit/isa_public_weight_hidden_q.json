@@ -1,0 +1,64 @@
+{
+  "verification": "V3_isa_public_weight_hidden_q",
+  "threat_model": "public weights; attacker observes H_obs = H Q; Q secret in TEE",
+  "attacker_observation": "masked hidden states; can synthesise (H, H Q) pairs iff Q static",
+  "attacker_knowledge": "plaintext weights; k known-plaintext pairs under the same Q",
+  "attack_objective": "recover Q, then recover input tokens",
+  "metric": "Q_recovery_error, token_recovery_top1, required_known_rows_to_break",
+  "hidden_dim_d": 768,
+  "no_known_plaintext_token_top1": 0.0,
+  "kpa_sweep": [
+    {
+      "known_rows": 1,
+      "rank_needed": 768,
+      "Q_recovery_max_abs_error": 0.16742125218130288,
+      "token_recovery_top1": 0.0,
+      "broken": false
+    },
+    {
+      "known_rows": 16,
+      "rank_needed": 768,
+      "Q_recovery_max_abs_error": 0.17271089028279696,
+      "token_recovery_top1": 0.0,
+      "broken": false
+    },
+    {
+      "known_rows": 64,
+      "rank_needed": 768,
+      "Q_recovery_max_abs_error": 0.16551357934404598,
+      "token_recovery_top1": 0.0,
+      "broken": false
+    },
+    {
+      "known_rows": 256,
+      "rank_needed": 768,
+      "Q_recovery_max_abs_error": 0.14924957326414365,
+      "token_recovery_top1": 0.7272727489471436,
+      "broken": false
+    },
+    {
+      "known_rows": 768,
+      "rank_needed": 768,
+      "Q_recovery_max_abs_error": 0.06148443410093804,
+      "token_recovery_top1": 1.0,
+      "broken": false
+    },
+    {
+      "known_rows": 1024,
+      "rank_needed": 768,
+      "Q_recovery_max_abs_error": 1.4550860516493458e-14,
+      "token_recovery_top1": 1.0,
+      "broken": true
+    }
+  ],
+  "required_known_rows_to_break": 1024,
+  "required_known_rows_to_break_tokens": 768,
+  "fresh_Q_per_session": {
+    "known_pairs_under_different_Q": true,
+    "token_recovery_top1": 0.0,
+    "resists": true
+  },
+  "result": "no-known-plaintext top1 = 0.00e+00 (~0); STATIC Q: token recovery breaks at ~768 known rows (approximate Q already argmaxes correctly), and Q is recovered EXACTLY at known_rows >= d (1024 rows, Q err ~1e-14); fresh Q per session resists (token top1 = 0.00e+00).",
+  "claim_survives": true,
+  "claim_survives_note": "Survives ONLY without known plaintext AND/OR with fresh Q per session. Static Q + >= d known plaintext rows is fully broken; this is reported, not hidden."
+}

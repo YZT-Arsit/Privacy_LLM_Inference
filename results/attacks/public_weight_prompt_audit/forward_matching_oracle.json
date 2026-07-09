@@ -1,0 +1,75 @@
+{
+  "verification": "V4_forward_matching_oracle",
+  "threat_model": "public weights; attacker runs candidates through the plaintext model",
+  "attacker_observation": "masked hidden state H_obs = H Q (Q secret, possibly fresh)",
+  "attacker_knowledge": "full plaintext model; a candidate set containing the true prompt",
+  "attack_objective": "identify which candidate produced H_obs (no Q recovery needed)",
+  "metric": "candidate_top1/rank, sensitive_token_top1, Procrustes residual margin",
+  "invariant_note": "orthogonal Procrustes residual is 0 iff token-token Gram H H^T matches; (H Q)(H Q)^T = H H^T for ANY orthogonal Q, so Q (fresh or static) is irrelevant to this attack.",
+  "A_small_set": {
+    "num_candidates": 6,
+    "true_rank": 0,
+    "top1_correct": true,
+    "true_residual": 9.589015617695878e-15,
+    "residual_margin": 0.0013358352912303272
+  },
+  "B_large_set": {
+    "num_candidates": 21,
+    "true_rank": 0,
+    "top1_correct": true
+  },
+  "C_partial_prompt": {
+    "templates": [
+      {
+        "template": "The password is{}",
+        "num_candidates": 21,
+        "true_secret": "red",
+        "recovered_secret": "red",
+        "sensitive_token_top1_correct": true,
+        "true_residual": 1.1807602671188253e-14,
+        "nearest_false_residual": 0.0014993623585051131
+      },
+      {
+        "template": "Patient diagnosis is{}",
+        "num_candidates": 21,
+        "true_secret": "red",
+        "recovered_secret": "red",
+        "sensitive_token_top1_correct": true,
+        "true_residual": 5.577004868415465e-15,
+        "nearest_false_residual": 0.001103402285495395
+      },
+      {
+        "template": "The phone code is{}",
+        "num_candidates": 21,
+        "true_secret": "red",
+        "recovered_secret": "red",
+        "sensitive_token_top1_correct": true,
+        "true_residual": 1.0326199325258076e-14,
+        "nearest_false_residual": 0.0020769686074482096
+      }
+    ],
+    "sensitive_token_top1": 1.0
+  },
+  "D_multi_layer": {
+    "layers": [
+      3,
+      6,
+      9
+    ],
+    "fresh_Q_per_layer": true,
+    "single_layer_true_ranks": {
+      "3": 0,
+      "6": 0,
+      "9": 0
+    },
+    "combined_true_rank": 0
+  },
+  "fresh_Q_ablation": {
+    "residual_under_Q1": 4.840698962561845e-15,
+    "residual_under_Q2": 5.7885296412097816e-15,
+    "note": "both ~0: fresh Q does not change the residual"
+  },
+  "result": "A: true ranks #1/6 (residual 9.59e-15 vs margin 1.34e-03); B top1 YES; C sensitive-token top1 1.00; D combined rank #1. Fresh Q does NOT help (residual invariant to Q).",
+  "oracle_succeeds": true,
+  "claim_survives": false
+}

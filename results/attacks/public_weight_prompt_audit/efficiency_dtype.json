@@ -1,0 +1,53 @@
+{
+  "verification": "V5_efficiency_dtype",
+  "threat_model": "n/a (cost/stability profiling)",
+  "attacker_observation": "n/a",
+  "attacker_knowledge": "n/a",
+  "attack_objective": "n/a",
+  "metric": "per-op latency (ms), boundary correctness by dtype",
+  "dims": {
+    "d": 768,
+    "d_ff": 3072,
+    "m": 32,
+    "k": 3
+  },
+  "timings_ms": {
+    "plaintext_mlp_ms": 2.207984998822212,
+    "dense_orthogonal_mask_ms": 0.11582416016608477,
+    "signed_perm_matmul_ms": 0.08231000043451786,
+    "signed_perm_gather_ms": 0.025475001893937588,
+    "amulet_silu_island_ms": 5737.609933305066
+  },
+  "overhead_vs_signed_perm": {
+    "dense_orthogonal_vs_signed_perm_matmul": 1.4071699617693731,
+    "dense_orthogonal_vs_signed_perm_gather": 4.546581022594602,
+    "amulet_silu_vs_plaintext_mlp": 2598.572878150456
+  },
+  "dtype_correctness": [
+    {
+      "dtype": "fp64",
+      "io_roundtrip_max_abs_error": 6.217248937900877e-15,
+      "compute_precision": "fp64 (island is fp64-only)",
+      "exact_lossless_supported": true,
+      "native_build": "fp64_only_construction"
+    },
+    {
+      "dtype": "fp32",
+      "io_roundtrip_max_abs_error": 9.5367431640625e-07,
+      "compute_precision": "fp64 (island is fp64-only)",
+      "exact_lossless_supported": false,
+      "native_build": "failed_as_expected",
+      "error": "R1 R2 R3 != R_bar (max abs error 1.311e-06 > 1.000e-09)"
+    },
+    {
+      "dtype": "bf16",
+      "io_roundtrip_max_abs_error": 0.0078125,
+      "compute_precision": "fp64 (island is fp64-only)",
+      "exact_lossless_supported": false,
+      "native_build": "failed_as_expected",
+      "error": "linalg.inv: Low precision dtypes not supported. Got BFloat16"
+    }
+  ],
+  "result": "dense orthogonal mask is a full [d,d] matmul (denser than a signed-perm gather); Amulet-SiLU island is the dominant cost (Kronecker lift). fp64 exact; fp32 tolerable for the mask matmul but the Amulet island is fp64-only; bf16 unsupported.",
+  "classification": "stronger_audit_variant_not_main_path"
+}
