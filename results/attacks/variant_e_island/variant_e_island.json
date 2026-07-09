@@ -1,0 +1,47 @@
+{
+  "config": {
+    "d_model": 256,
+    "d_ff": 1024,
+    "tokens": 128,
+    "lambda": 0.1
+  },
+  "F_anchor_attacks": {
+    "island_W_up_tilde (two-sided Q_in W_up P_ff)": {
+      "gram_right_rel_err": 0.019865294486673363,
+      "gram_left_rel_err": 0.05550881919443113,
+      "vma_col_cos_top1": 0.21372441689312388
+    },
+    "island_W_down_tilde (two-sided P_ff^-1 W_down P_out)": {
+      "gram_right_rel_err": 0.012679584462001587,
+      "gram_left_rel_err": 0.03047151135260118,
+      "vma_col_cos_top1": 0.09460274839418628
+    },
+    "baseline_signed_perm_W_up": {
+      "gram_right_rel_err": 0.0,
+      "gram_left_rel_err": 1.9852728923458474e-15,
+      "vma_col_cos_top1": 1.0,
+      "mapping_recovered": true
+    },
+    "boundary_switch_weights": {
+      "note": "N_res^{-1} P_in and P_out^{-1} N_res are pure mask products; no public-weight anchor exists, so Gram/VMA/ArrowMatch do not apply."
+    }
+  },
+  "G_performance": {
+    "extra_matmuls_per_island_forward": 2,
+    "two_sided_fold_matmuls_amortized": "precomputed once (setup); 0 per forward",
+    "island_ms_per_forward": 277.3109375266358,
+    "plain_masked_mlp_ms_per_forward": 0.16572902677580714,
+    "mask_switch_only_ms": 0.025124987587332726,
+    "linear_island_only_ms": 0.11741643538698554,
+    "amulet_gelu_boundary_ms_inherited": 277.19352109124884,
+    "variant_e_specific_overhead_ms": 0.0,
+    "note": "mask switching is 2 cheap O(m\u00b7d^2) matmuls; the dominant cost is the Amulet-GELU Kronecker lift at d_ff, which is INHERITED from variant B (right_pad_amulet_gelu), not new to Variant E.",
+    "cond_P_in": 1.316938243004642,
+    "cond_P_ff": 1.32674634659884,
+    "cond_P_out": 1.3196953002823315
+  },
+  "island_dtype_max_abs_error": {
+    "fp64": 1.2670398064074107e-10,
+    "fp32": 0.0387725830078125
+  }
+}

@@ -107,6 +107,42 @@ VARIANTS: Dict[str, Dict[str, Any]] = {
             "it is a STATIC per-deployment key (KPA-broken). See "
             "docs/rmsnorm_exact_norm_impossibility.md."),
     },
+    "two_sided_amulet_island": {
+        "variant": "two_sided_amulet_island",
+        "label": "E",
+        "aliases": ["exact_two_sided_nonlinear_switch", "variant_e"],
+        "references_design": None,
+        "linear_layer": "two_sided_nonorthogonal_keymat_island",
+        "nonlinear": "amulet_gelu_or_permutation_swiglu_boundary",
+        "stable_state_form": "H_tilde = H N_res (residual rides N_res; dense keymat only inside linear islands)",
+        "uses_two_sided_keymat": True,
+        "uses_nonorthogonal_transform": True,
+        "uses_noise": False,
+        "uses_mask_switching_at_nonlinear_boundary": True,
+        "nonlinear_mode": "amulet_or_structured",
+        "residual_boundary_mask": "N_res_signed_permutation",
+        "elementwise_boundary_mask": "pure_permutation",
+        "dense_keymat_crosses_rmsnorm": False,
+        "dense_keymat_crosses_rope": False,
+        "dense_keymat_crosses_hadamard": False,
+        "exact_scope": "linear_islands_plus_compatible_nonlinear_boundary",
+        "changes_stable_state_norm_leakage": False,     # residual still rides N_res
+        "public_attack_surface": ["stable_state_HNres", "island_folded_weights_QinWPout",
+                                  "boundary_switch_weights_no_public_anchor"],
+        "anchor_attack_audit": True,
+        "is_aloepri_replication": False,
+        "experiment_only": True,
+        "formal_security_claim": False,
+        "production_qwen7b_integration": False,
+        "security_note": (
+            "Local island: two-sided non-orthogonal keymat protects the LINEAR "
+            "folded weights (anchor-resistant like Variant D), switching back to a "
+            "compatible mask (signed-perm N_res / permutation S) before every "
+            "nonlinear/RMSNorm/RoPE/Hadamard/residual boundary. Exact for the GPT-2 "
+            "GELU MLP island (Amulet-GELU) and the Qwen SwiGLU FFN island "
+            "(permutation Hadamard). Does NOT change stable-state norm leakage (the "
+            "residual still rides N_res). See docs/rmsnorm_exact_norm_impossibility.md."),
+    },
     "kronecker_lifted_linear": {
         "variant": "kronecker_lifted_linear",
         "label": "C",
