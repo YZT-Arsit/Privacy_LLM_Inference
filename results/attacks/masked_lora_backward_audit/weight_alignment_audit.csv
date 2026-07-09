@@ -1,0 +1,2 @@
+spectrum_max_diff_fwd_vs_W,spectrum_max_diff_bwd_vs_W,spectrum_shared,naive_W_recovery_rel_error,fwd_bwd_alignment_residual,singular_values_distinct,verdict
+1.1102230246251565e-15,6.661338147750939e-16,True,1.3939277994923653,1.304512053934559e-15,True,no trivial recovery found; singular spectrum is shared/leaked and fwd/bwd are linkable (alignable) but W itself is not recovered without a mask

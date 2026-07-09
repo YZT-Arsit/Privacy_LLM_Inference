@@ -1,0 +1,7 @@
+scheme,optimizer,optimizer_location,max_param_error,loss_curve_distance,final_adapter_error,dense_masked_adamw_status
+A0,sgd,trusted_side,6.938893903907228e-18,4.440892098500626e-16,6.938893903907228e-18,raised_unsupported
+A0,momentum_sgd,trusted_side,5.204170427930421e-18,2.9373740229761033e-16,1.734723475976807e-18,raised_unsupported
+A0,adamw,trusted_side,4.461708780212348e-15,5.438959822042073e-16,4.461708780212348e-15,raised_unsupported
+A1,sgd,trusted_side,6.938893903907228e-18,4.440892098500626e-16,6.938893903907228e-18,raised_unsupported
+A1,momentum_sgd,trusted_side,5.204170427930421e-18,2.9373740229761033e-16,1.734723475976807e-18,raised_unsupported
+A1,adamw,trusted_side,3.1138286393783687e-15,4.440892098500626e-16,3.1138286393783687e-15,raised_unsupported
