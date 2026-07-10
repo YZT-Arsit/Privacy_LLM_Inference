@@ -1,0 +1,4 @@
+optimizer_mode,num_lora_layers,input_invocation,loss_invocation,packed_update_invocation,optimizer_trusted_invocation,nonlinear_trusted_invocation,layerwise_trusted_invocation,total_trusted_invocations,worker_to_trusted_returns_after_input
+gpu_masked_sgd,32,1,1,0,0,0,0,2,1
+gpu_masked_momentum_sgd,32,1,1,0,0,0,0,2,1
+trusted_adamw,32,1,1,1,1,0,0,3,2

@@ -1,0 +1,91 @@
+{
+  "run_id": "real_qwen_tdx_20260710T065808Z",
+  "phase": "1_infrastructure_audit",
+  "collected_at_utc": "2026-07-10T06:58:08Z",
+  "collection_method": "read-only SSH; no installs, no modifications",
+  "local_git_hash": "5208ae3b567ce767d97c32a7160ead4f6c6ef07b",
+  "gpu_worker": {
+    "reachable": true,
+    "ssh": "port 19948 connect.westb.seetacloud.com (password auth via expect + base64-over-ssh)",
+    "hostname": "autodl-container-35eb4cbcf2-9d84e25e",
+    "kernel": "5.15.0-124-generic",
+    "environment": "AutoDL container",
+    "gpu_model": "NVIDIA H800 PCIe",
+    "gpu_memory_total_mib": 81559,
+    "gpu_memory_used_mib_at_audit": 0,
+    "driver_version": "590.48.01",
+    "cuda_version": "13.1",
+    "torch_version": "2.8.0+cu128",
+    "torch_cuda_available": true,
+    "torch_bf16_supported": true,
+    "ram": "1.0Ti total, 840Gi available",
+    "root_overlay_disk": "30G total, 29G free",
+    "autodl_tmp_disk": "large data volume (exact free TBD in Phase 3 due to SSH rate-limiting)",
+    "repo_paths": ["/root/privacy_llm_obfuscation", "/root/Privacy_LLM_Inference", "/root/autodl-tmp/Privacy_LLM_Inference"],
+    "worker_launcher_present": "/root/start_pllo_worker_bf16.sh",
+    "listening_ports_at_audit": "none captured (worker not running)",
+    "note_hardware": "brief names the worker '5090'; the actual hardware is an H800 80GB. Real CUDA GPU; requirement satisfied."
+  },
+  "gpu_models": {
+    "qwen2.5_7b_instruct": "present under /root/autodl-tmp/modelscope_cache/._____temp/Qwen/Qwen2.5-7B-Instruct (modelscope temp-staging path; completeness TBD in Phase 3)",
+    "qwen2.5_1.5b_instruct": "present under same _____temp staging path",
+    "qwen2.5_0.5b_instruct": "NOT FOUND in initial scan; must be downloaded/verified via ModelScope in Phase 3",
+    "modelscope_cache_root": "/root/autodl-tmp/modelscope_cache"
+  },
+  "tdx_server": {
+    "reachable": true,
+    "ssh": "key auth ~/Downloads/passkey.pem root@39.96.4.252:22",
+    "hostname": "iZ2zebdihkqll10ragqp0cZ",
+    "os": "Alibaba Cloud Linux 3 (OpenAnolis)",
+    "kernel": "5.10.134-19.3.al8.x86_64",
+    "cpu_vendor": "GenuineIntel",
+    "vcpus": 4,
+    "ram": "14Gi total, 13Gi free",
+    "root_disk": "40G total, 29G free",
+    "virtualization": {
+      "systemd_detect_virt": "kvm",
+      "hypervisor_vendor": "KVM",
+      "is_guest": true
+    },
+    "tdx_evidence": {
+      "cpuinfo_flags": ["tdx", "tdx_guest"],
+      "dmesg": ["tdx: Guest detected", "Memory Encryption Features active: Intel TDX", "process: using TDX aware idle routine"],
+      "tdx_guest_device": "/dev/tdx_guest (char 10,125) PRESENT",
+      "libtdx_attest": ["/usr/lib64/libtdx_attest.so", "/usr/lib64/libtdx_attest.so.1"],
+      "sys_firmware_tdx": "absent (expected: this is a GUEST, not the TDX host)",
+      "verdict": "REAL Intel TDX confidential GUEST with active memory encryption and quote-generation capability"
+    },
+    "network": {
+      "internal_ip": "172.30.25.153/20",
+      "public_ip": "39.96.4.252",
+      "tdx_to_gpu_19948": "OPEN (TDX can initiate to GPU worker)",
+      "gpu_to_tdx": "TBD (likely via SSH tunnel; Alibaba security group may block inbound public)"
+    },
+    "existing_project_code": {
+      "repo": "/root/privacy_llm_obfuscation",
+      "conda_env": "/root/miniconda3/envs/tdx310",
+      "protocol_pkg": ["attestation.py", "gpu_worker.py", "orchestrator.py", "remote.py", "resilient_remote.py", "tee_gpu_messages.py", "wire.py", "worker_timing.py", "lora_training_audit.py", "security_audit.py"],
+      "attestation_scripts": ["scripts/generate_alibaba_tdx_quote_evidence.py", "scripts/generate_tdx_attestation_evidence.py", "scripts/check_tdx_measurement_coverage.py"],
+      "artifacts_dir": "/root/privacy_llm_tee_artifacts (prior AAAI runs present)"
+    },
+    "trusted_service_running": false,
+    "listening_ports": ["22 (sshd) only"]
+  },
+  "determinations": {
+    "1_host_guest_or_vm": "REAL TDX GUEST (confidential VM). Not a bare TDX host, not a plain VM.",
+    "2_real_guest_exists": "YES — 39.96.4.252 is itself the real TDX guest; no nested creation needed or possible.",
+    "3_guest_details": "SSH key auth on :22 (internal 172.30.25.153); measurement/quote available via /dev/tdx_guest + libtdx_attest.so (prior stages generated real quotes); trusted service NOT currently running (only sshd).",
+    "4_can_create_guest": "N/A — guest already exists. Nested TDX guest creation from inside a guest is neither needed nor possible.",
+    "5_gpu_to_tdx_path": "TDX->GPU:19948 confirmed OPEN. GPU->TDX direct-public TBD; reliable path is an SSH tunnel (TDX can initiate to GPU, so a reverse tunnel exposing the TDX trusted-service port to the GPU worker is viable)."
+  },
+  "requirement_flags": {
+    "real_cuda_gpu": true,
+    "real_bf16_support": true,
+    "real_tdx_guest": true,
+    "real_attestation_capability": true,
+    "qwen05b_available": false,
+    "trusted_service_started": false,
+    "uses_real_gpu": true,
+    "uses_real_tee": true
+  }
+}

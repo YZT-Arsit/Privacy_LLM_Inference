@@ -1,0 +1,7 @@
+mask_family,logit_unmask_ops,ce_ops,adapter_grad_unmask_mults,adapter_grad_unmask_note,adamw_elementwise_ops,adapter_remask_ops,mask_generation_ops,unmask_complexity,honest_note,params_bytes,grads_bytes,adam_mv_bytes,masks_bytes,temp_unmask_bytes,logits_workspace_bytes,trusted_peak_bytes,trusted_peak_mib,note
+permutation,512000,512000,0,"O(adapter_elems) index permute, no matmul",327680,0,0,O(adapter_elems),adapter-SCALE communication does NOT imply adapter-scale compute: dense/orthogonal unmask is O(d^2 r).,,,,,,,,,
+positive_diagonal,512000,512000,65536,O(adapter_elems) elementwise scale,327680,65536,4096,O(adapter_elems),adapter-SCALE communication does NOT imply adapter-scale compute: dense/orthogonal unmask is O(d^2 r).,,,,,,,,,
+orthogonal,512000,512000,33554432,O(d^2 r) matmul per adapter -- NOT O(adapter_elems),327680,33554432,2097152,O(d^2 r),adapter-SCALE communication does NOT imply adapter-scale compute: dense/orthogonal unmask is O(d^2 r).,,,,,,,,,
+dense_gl,512000,512000,33554432,O(d^2 r) matmul per adapter -- NOT O(adapter_elems),327680,33554432,2097152,O(d^2 r),adapter-SCALE communication does NOT imply adapter-scale compute: dense/orthogonal unmask is O(d^2 r).,,,,,,,,,
+,,,,,,,,,,262144,262144,524288,8390656,2621440,2048000,14108672,13.455,operation/byte estimate on CPU; NOT real enclave memory or paging.
+,,,,,,,,,,2883584,2883584,5767168,369104384,39321600,16384000,436344320,416.13,operation/byte estimate on CPU; NOT real enclave memory or paging.

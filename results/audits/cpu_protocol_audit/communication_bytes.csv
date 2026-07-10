@@ -1,0 +1,5 @@
+schedule,dtype,input_hidden_bytes,logits_to_trusted_bytes,loss_grad_back_bytes,packed_grad_bytes,updated_adapter_bytes,metadata_bytes,per_step_total_bytes,per_token_bytes,cmp_full_activation_return_bytes,cmp_full_param_update_bytes,adapter_scale_formula,logits_formula,dominant_channel,config
+packed,float32,131072,2048000,131072,262144,262144,96,2834528,44289.5,1048576,8388608,O(sum_j r_j (d_in_j + d_out_j)),O(m V),logits,small
+packed,bfloat16,65536,1024000,65536,131072,131072,96,1417312,22145.5,524288,4194304,O(sum_j r_j (d_in_j + d_out_j)),O(m V),logits,small
+packed,float32,1048576,16384000,1048576,2883584,2883584,264,24248584,189442.06,23068672,369098752,O(sum_j r_j (d_in_j + d_out_j)),O(m V),logits,mid
+packed,bfloat16,524288,8192000,524288,1441792,1441792,264,12124424,94722.06,11534336,184549376,O(sum_j r_j (d_in_j + d_out_j)),O(m V),logits,mid

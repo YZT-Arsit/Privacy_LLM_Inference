@@ -1,0 +1,5 @@
+case,momentum,nesterov,worst_momentum_err,aligned
+momentum_orthogonal,0.9,False,2.136807111355599e-12,True
+momentum_permutation,0.9,False,2.068843988742189e-15,True
+nesterov_orthogonal,0.9,True,3.269147402949132e-14,True
+accum4,0.9,False,1.5463728796933186e-13,True

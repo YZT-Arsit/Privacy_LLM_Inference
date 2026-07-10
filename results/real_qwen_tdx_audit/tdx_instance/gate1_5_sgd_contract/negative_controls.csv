@@ -1,0 +1,3 @@
+case,mask,refresh_masks,aligned,worst_A_err,expected_aligned
+neg_refresh_masks,orthogonal,True,False,1.8793746075452638,False
+neg_non_orthogonal_gl,gl,False,False,525.2466312515171,False
