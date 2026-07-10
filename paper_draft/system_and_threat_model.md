@@ -32,6 +32,8 @@ The full system is sketched in **Figure 1 (system overview)**.
 - May colocate adversarial code and record everything.
 
 ### Protected assets
+The protected assets are the private base weights, user fine-tuning data, LoRA adapter, gradients, KV cache, and hidden states. Concretely:
+- Proprietary base-model weights `W` — the base-model weights are proprietary/private and are not revealed to the untrusted GPU/host; only the masked form `W_tilde = N_in^{-1} W N_out` is ever dispatched, and plaintext `W` never leaves the trusted side.
 - Prompt / private input tensors.
 - Hidden states / residual stream between Linear layers.
 - KV cache entries `(K, V)` in plain space.
@@ -43,7 +45,7 @@ The full system is sketched in **Figure 1 (system overview)**.
 
 ### Allowed leakage
 - Model architecture (layer counts, head counts, dtype).
-- The public base-model weights (assumed public by the problem statement).
+- The *masked* base-model weights `W_tilde = N_in^{-1} W N_out` that cross the boundary. The plaintext base weights `W` are proprietary and are not revealed to the untrusted GPU/host; their confidentiality reduces to mask secrecy and is a proxy claim, not a formal one (see Security Analysis).
 - Tensor shapes, unless a separate pad hides a particular dimension (e.g., rank padding hides `r` from shape but not `r_pad`).
 - The padded LoRA rank `r_pad` — see Limitations.
 - The output text/token, which the user receives and the system does not try to hide from the GPU.

@@ -17,7 +17,7 @@ Nonlinear layers are wrapped as **islands**: the *inside* of a nonlinear layer u
 
 Attention and KV cache are wrapped as feature-axis masks that compose to identity on the `Q^T K` dot product (Section 5.5). The KV cache is **stored in masked space**: the per-step append concatenates `K_t N_K` onto `K_{1:t-1} N_K` because the right mask distributes over the token-axis concatenation.
 
-LoRA is wrapped with a paired inner mask `U` (Sections 5.7–5.8), and rank padding extends `(A, B)` to `(A_pad, B_pad)` with `A_pad B_pad = A B` (Section 5.9). The loss and optimizer remain on the trusted side throughout; the adapter is never merged into the public base weight.
+LoRA is wrapped with a paired inner mask `U` (Sections 5.7–5.8), and rank padding extends `(A, B)` to `(A_pad, B_pad)` with `A_pad B_pad = A B` (Section 5.9). The loss and optimizer remain on the trusted side throughout; the adapter is never merged into the base weight.
 
 A control-flow schedule (Section 5.10) describes when masks refresh, when recoveries to plain space happen, and which paths run in constant-time-emulated mode.
 
@@ -59,7 +59,7 @@ Y_tilde = X_tilde W_tilde + C_T + b N_out
         = Y N_out
 ```
 
-The boundary pad `T` is a trusted-side per-call sample. It serves two purposes: (i) it randomizes the *centered* activation seen on the GPU, so that an attacker who linearly inverts `X_tilde` sees a translation rather than the centered hidden state; (ii) the compensation `C_T = T W N_out` is *publicly computable from public `W` and trusted `T, N_out`*, so its accounting is trivial.
+The boundary pad `T` is a trusted-side per-call sample. It serves two purposes: (i) it randomizes the *centered* activation seen on the GPU, so that an attacker who linearly inverts `X_tilde` sees a translation rather than the centered hidden state; (ii) the compensation `C_T = T W N_out` is *computed on the trusted side from the private `W` and trusted `T, N_out`* (only the masked-space term reaches the GPU), so its accounting is trivial.
 
 ## 5.4 Operator-compatible nonlinear islands
 
@@ -127,7 +127,7 @@ The `V` mask is recovered by the trailing output projection: the masked attentio
 
 A nonlinear island uses a restricted mask family — permutation, orthogonal, or mean-preserving orthogonal — which is *weaker* than a fully-dense Linear mask. To prevent a GPU-side attacker from inverting the island directly, every island is **sandwiched** between two dense-Linear-masked boundaries: the input is `X N_in` for a generic invertible `N_in`, then transformed to `X P` (where `P` is the island mask, which is special among invertible matrices), then transformed back to `X N_out`.
 
-The boundary pad `T` is sampled fresh per call and translates the centered activation before the island starts. Its compensation `C_T = T W N_out` is publicly computable from `T, W, N_out`, all of which are trusted-side. The combined sandwich + pad construction is the *full mitigation bundle* used throughout the evaluation; it is **not** default-on for any individual operator wrapper (see Stage 7.5 contract).
+The boundary pad `T` is sampled fresh per call and translates the centered activation before the island starts. Its compensation `C_T = T W N_out` is computed on the trusted side from `T, W, N_out`, all of which are trusted-side (only the masked-space term crosses to the GPU). The combined sandwich + pad construction is the *full mitigation bundle* used throughout the evaluation; it is **not** default-on for any individual operator wrapper (see Stage 7.5 contract).
 
 Inter-block masked boundary (`masked_boundary_experimental` in our implementation) is an opt-in mode that *avoids* recovering to plain space between blocks, instead chaining the right-mask across the residual. We report it as an experimental ablation only; it is not default-on.
 

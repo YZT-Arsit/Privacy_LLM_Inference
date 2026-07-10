@@ -1,0 +1,7 @@
+seed,attack,regime,dW_frobenius_rel_error,dW_cosine,heldout_kl,token_match,A_B_separately_identifiable,success,note
+0,adapter_extraction,public_weights,0.0,1.0,0.0,1.0,False,True,recover tokens -> solve global column perm (Hungarian) -> lstsq ΔW
+0,adapter_extraction,private_weights,1.0,0.0,0.0,1.0,False,False,no weights -> cannot recover H / solve perm; surrogate fit ill-posed (FAILURE)
+1,adapter_extraction,public_weights,0.0,1.0,0.0,1.0,False,True,recover tokens -> solve global column perm (Hungarian) -> lstsq ΔW
+1,adapter_extraction,private_weights,1.0,0.0,0.0,1.0,False,False,no weights -> cannot recover H / solve perm; surrogate fit ill-posed (FAILURE)
+2,adapter_extraction,public_weights,0.0,1.0,0.0,1.0,False,True,recover tokens -> solve global column perm (Hungarian) -> lstsq ΔW
+2,adapter_extraction,private_weights,1.0,0.0,0.0,1.0,False,False,no weights -> cannot recover H / solve perm; surrogate fit ill-posed (FAILURE)

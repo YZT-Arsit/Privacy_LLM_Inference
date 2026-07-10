@@ -1,0 +1,7 @@
+seed,attack,regime,feature,target_top1,target_top5,auc,ce_improvement,baseline_acc,clf,success
+0,target_prediction,private_weights,pooled_gram+gradnorm,0.45,1.0,0.5,0.0,0.45,baseline,False
+0,target_prediction,public_weights,recovered_token_bow,0.625,1.0,0.8742,0.4875,0.45,logreg,True
+1,target_prediction,private_weights,pooled_gram+gradnorm,0.55,1.0,0.7719,0.2178,0.425,rf,True
+1,target_prediction,public_weights,recovered_token_bow,0.6,1.0,0.8053,0.2427,0.425,logreg,True
+2,target_prediction,private_weights,pooled_gram+gradnorm,0.375,1.0,0.5876,0.0152,0.35,rf,False
+2,target_prediction,public_weights,recovered_token_bow,0.475,1.0,0.7867,0.2877,0.35,logreg,True

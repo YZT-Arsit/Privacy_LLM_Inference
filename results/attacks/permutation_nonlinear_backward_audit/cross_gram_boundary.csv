@@ -1,0 +1,2 @@
+trials,mean_rel_error_general,mean_corr_general,mean_rel_error_z,mean_corr_z,mean_rel_error_u,mean_corr_u,general_region_exact,nonlinear_region_exact
+200,1.815933552151548,0.5136197887755743,2.678052340160096e-15,1.0,2.8657452648704487e-15,1.0,False,True

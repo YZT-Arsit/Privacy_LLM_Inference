@@ -14,7 +14,7 @@
 % Top row: trusted-side artifacts.
 \node[trust] (X)    at (0,3.0) {$\X$ (prompt / batch)};
 \node[trust, right=8mm of X] (AB)   {LoRA $(\A,\B)$\\rank $\rtrue \to \rpad$};
-\node[pub,   right=8mm of AB] (W)   {public $\W$};
+\node[trust, right=8mm of AB] (W)   {base $\W$ (private)};
 \node[trust, right=8mm of W]  (U)    {trusted $\UU$};
 
 % Middle: masking arrows.
@@ -48,6 +48,6 @@
 \node[font=\scriptsize, align=left, anchor=west] at (0,-3.4) {%
 adapter NEVER merged into $\W$;\\rank pad: $\Apad{=}[\A\mid\Adummy]$, $\Bpad{=}[\B;\Bdummy]$, $\Adummy\Bdummy{=}\mathbf{0}$};
 \end{tikzpicture}
-\caption{Private LoRA training path. The adapter factors $(\A, \B)$ are masked with a paired inner mask $\UU$; per-step gradients are masked in the same right-masked space; the optimizer state and loss closure remain trusted-side; the adapter is never merged into the public base weight $\W$. Rank padding extends $(\A, \B)$ to $(\Apad, \Bpad)$ with $\Apad\Bpad = \A\B$.}
+\caption{Private LoRA training path. The adapter factors $(\A, \B)$ are masked with a paired inner mask $\UU$; per-step gradients are masked in the same right-masked space; the optimizer state and loss closure remain trusted-side; the adapter is never merged into the base weight $\W$. Rank padding extends $(\A, \B)$ to $(\Apad, \Bpad)$ with $\Apad\Bpad = \A\B$.}
 \label{fig:lora-training}
 \end{figure}

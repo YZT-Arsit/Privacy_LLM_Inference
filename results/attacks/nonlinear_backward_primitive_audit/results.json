@@ -1,0 +1,242 @@
+{
+  "stage": "nonlinear_backward_primitive_audit",
+  "silu": {
+    "dims": {
+      "m": 4,
+      "d": 8,
+      "k": 3
+    },
+    "trusted_shortcut": {
+      "forward": {
+        "max_abs": 4.440892098500626e-16,
+        "rel": 3.011548406649801e-16
+      },
+      "backward": {
+        "max_abs": 3.885780586188048e-16,
+        "rel": 1.9288603530261433e-16
+      },
+      "gpu_side": false,
+      "exposes_plaintext_in_tee": true,
+      "forward_status": "trusted_shortcut_only",
+      "backward_status": "trusted_shortcut_only"
+    },
+    "amulet_dense": {
+      "forward": {
+        "max_abs": 8.881784197001252e-16,
+        "rel": 5.206947155301398e-16
+      },
+      "forward_runtime_ms": 0.07566600106656551,
+      "masked_derivative_err": {
+        "max_abs": 3.552713678800501e-15,
+        "rel": 1.9233926153617063e-16
+      },
+      "backward_hadamard_attempt": {
+        "max_abs": 4.1413215414451585,
+        "rel": 1.559868807028198
+      },
+      "gpu_side": true,
+      "exposes_plaintext_in_tee": false,
+      "forward_status": "forward_only",
+      "backward_status": "blocked_by_hadamard",
+      "note": "masked derivative is obtainable (err ~0); the Hadamard of two independently dense-masked tensors does not commute -> blocked."
+    },
+    "permutation": {
+      "forward": {
+        "max_abs": 0.0,
+        "rel": 0.0
+      },
+      "backward": {
+        "max_abs": 0.0,
+        "rel": 0.0
+      },
+      "gpu_side": true,
+      "exposes_plaintext_in_tee": false,
+      "activation_gram_corr": 0.9999999999999999,
+      "forward_status": "backward_passed",
+      "backward_status": "backward_passed",
+      "caveat": "requires permutation masks; activation Gram leaks (corr~1), so this does NOT provide the dense-mask A1 privacy."
+    }
+  },
+  "swiglu": {
+    "dims": {
+      "m": 4,
+      "d": 8,
+      "k": 3
+    },
+    "trusted_shortcut": {
+      "forward": {
+        "max_abs": 8.881784197001252e-16,
+        "rel": 4.537285892529002e-16
+      },
+      "backward_dG": {
+        "max_abs": 4.440892098500626e-16,
+        "rel": 1.69128577245115e-16
+      },
+      "backward_dU": {
+        "max_abs": 8.881784197001252e-16,
+        "rel": 2.595062535174399e-16
+      },
+      "gpu_side": false,
+      "exposes_plaintext_in_tee": true,
+      "forward_status": "trusted_shortcut_only",
+      "backward_status": "trusted_shortcut_only"
+    },
+    "amulet_dense": {
+      "forward": {
+        "max_abs": 9.992007221626409e-16,
+        "rel": 4.757539390334698e-16
+      },
+      "forward_runtime_ms": 0.06075005512684584,
+      "backward_dU_hadamard_attempt": {
+        "max_abs": 4.879984049933735,
+        "rel": 1.4939132381341305
+      },
+      "backward_dG_hadamard_attempt": {
+        "max_abs": 1.6978815887951588,
+        "rel": 0.848938083574092
+      },
+      "gpu_side": true,
+      "exposes_plaintext_in_tee": false,
+      "forward_status": "forward_only",
+      "backward_status": "blocked_by_hadamard"
+    },
+    "permutation": {
+      "forward": {
+        "max_abs": 0.0,
+        "rel": 0.0
+      },
+      "backward_dU": {
+        "max_abs": 0.0,
+        "rel": 0.0
+      },
+      "backward_dG": {
+        "max_abs": 0.0,
+        "rel": 0.0
+      },
+      "gpu_side": true,
+      "exposes_plaintext_in_tee": false,
+      "activation_gram_corr": 0.9999999999999999,
+      "forward_status": "backward_passed",
+      "backward_status": "backward_passed",
+      "caveat": "permutation masks only; activation Gram leaks."
+    }
+  },
+  "cross_gram_after_nonlinear": {
+    "trials": 200,
+    "trusted_shortcut_A0_dual": {
+      "corr_mean": 1.0,
+      "corr_abs_mean": 1.0,
+      "corr_std": 2.1767793516082177e-16,
+      "exact_cross_gram_leak": true,
+      "has_backward": true,
+      "gpu_side": false
+    },
+    "trusted_shortcut_A1_dense": {
+      "corr_mean": -0.008087555674728419,
+      "corr_abs_mean": 0.1844263491096463,
+      "corr_std": 0.23226799086276764,
+      "exact_cross_gram_leak": false,
+      "has_backward": true,
+      "gpu_side": false
+    },
+    "permutation_A1": {
+      "corr_mean": 0.12025099188079207,
+      "corr_abs_mean": 0.20105309664918708,
+      "corr_std": 0.22186800015805863,
+      "exact_cross_gram_leak": false,
+      "activation_gram_corr_mean": 1.0,
+      "activation_gram_leak": true,
+      "has_backward": true,
+      "gpu_side": true
+    },
+    "amulet_dense": {
+      "has_backward": false,
+      "exact_cross_gram_leak": "not_applicable",
+      "reason": "blocked_by_hadamard: no valid A1 backward"
+    }
+  },
+  "tiny_transformer_integration": {
+    "masked_forward_swiglu_ok": true,
+    "masked_backward_swiglu_status": "blocked_by_hadamard",
+    "nonlinear_training_without_trusted_shortcut": "blocked",
+    "status": "blocked_by_hadamard",
+    "permutation_alternative": {
+      "trainable": true,
+      "status": "backward_passed",
+      "blocker": "requires permutation masks throughout; incompatible with the dense masks linear/LoRA A1 needs, and leaks activation Gram -> not an A1-privacy solution."
+    },
+    "reason": "SwiGLU masked forward works (Amulet lift) but the A1 backward needs Hadamard products under independent dense masks; blocked."
+  },
+  "efficiency": [
+    {
+      "primitive": "silu_island",
+      "m": 4,
+      "d": 8,
+      "k": 2,
+      "lifted_rows": 8,
+      "lifted_cols": 16,
+      "forward_runtime_ms": 0.045042019337415695,
+      "memory_estimate_bytes": 1024
+    },
+    {
+      "primitive": "silu_island",
+      "m": 4,
+      "d": 8,
+      "k": 3,
+      "lifted_rows": 12,
+      "lifted_cols": 24,
+      "forward_runtime_ms": 0.04050007555633783,
+      "memory_estimate_bytes": 2304
+    },
+    {
+      "primitive": "silu_island",
+      "m": 4,
+      "d": 8,
+      "k": 4,
+      "lifted_rows": 16,
+      "lifted_cols": 32,
+      "forward_runtime_ms": 0.055458047427237034,
+      "memory_estimate_bytes": 4096
+    },
+    {
+      "primitive": "swiglu_island",
+      "m": 4,
+      "d": 8,
+      "k": 2,
+      "lifted_rows": 8,
+      "lifted_cols": 16,
+      "forward_runtime_ms": 0.04295795224606991,
+      "memory_estimate_bytes": 1024
+    },
+    {
+      "primitive": "swiglu_island",
+      "m": 4,
+      "d": 8,
+      "k": 3,
+      "lifted_rows": 12,
+      "lifted_cols": 24,
+      "forward_runtime_ms": 0.045749940909445286,
+      "memory_estimate_bytes": 2304
+    },
+    {
+      "primitive": "swiglu_island",
+      "m": 4,
+      "d": 8,
+      "k": 4,
+      "lifted_rows": 16,
+      "lifted_cols": 32,
+      "forward_runtime_ms": 0.04449998959898949,
+      "memory_estimate_bytes": 4096
+    }
+  ],
+  "answers": {
+    "gpu_silu_forward_implemented": true,
+    "gpu_silu_a1_backward_implemented": false,
+    "gpu_swiglu_forward_implemented": true,
+    "gpu_swiglu_a1_backward_implemented": false,
+    "any_variant_avoids_exact_cross_gram_gpu_side": "permutation_only_but_gram_leaks",
+    "fast_enough_small_dims": true,
+    "tiny_transformer_nonlinear_without_trusted_shortcut": false,
+    "full_scheme_a_still_blocked": true
+  }
+}

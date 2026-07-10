@@ -1,0 +1,3 @@
+activation,up_z_error,up_z_maxabs,down_y_error,down_y_maxabs,up_pass,down_pass,rank_space_dims,activation_perm_dim,rank_mask_changes_invariant_error,rank_independent_of_pi
+gelu,1.3272601313026006e-14,6.439293542825908e-14,1.4243258682237807e-14,7.194245199571014e-14,True,True,"[4, 4]",32,8.436111162150065e-14,True
+silu,1.3272601313026006e-14,6.439293542825908e-14,1.5010472721804002e-14,8.08242361927114e-14,True,True,"[4, 4]",32,8.436111162150065e-14,True

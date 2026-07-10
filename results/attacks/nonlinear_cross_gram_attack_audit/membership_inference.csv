@@ -1,0 +1,10 @@
+seed,attack,classifier,auc,tpr_at_1pct_fpr,advantage,success
+0,membership_inference,gradnorm_threshold,0.6792,0.0526,0.3584,True
+0,membership_inference,logreg,0.391,0.1579,-0.218,False
+0,membership_inference,random_forest,0.5752,0.0526,0.1504,False
+1,membership_inference,gradnorm_threshold,0.4757,0.0,-0.0486,False
+1,membership_inference,logreg,0.491,0.0,-0.0179,False
+1,membership_inference,random_forest,0.5908,0.1739,0.1816,False
+2,membership_inference,gradnorm_threshold,0.6641,0.1667,0.3283,True
+2,membership_inference,logreg,0.5202,0.0,0.0404,False
+2,membership_inference,random_forest,0.5745,0.0,0.149,False

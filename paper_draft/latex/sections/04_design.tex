@@ -2,7 +2,7 @@
 \label{sec:design}
 
 \subsection{Overview}
-The trusted-side controller exposes an LLM forward, decode, generate, and training API that is, at the source level, indistinguishable from a plain reference. Under the hood, every Linear $\X\W + \mathbf{b}$ is intercepted, masked, dispatched to the GPU, and recovered. Nonlinear layers are wrapped as \emph{islands}: the inside of a nonlinear layer uses a mask family that the operator natively commutes with (\Cref{sec:design:islands}), while the outside is dense Linear masking. Islands are sandwiched by dense Linear masks (\Cref{sec:design:sandwich}) and protected by a boundary pad. Attention and KV cache are wrapped as feature-axis masks that compose to identity on the $\Q^{\top}\K$ dot product (\Cref{sec:design:attention}). LoRA is wrapped with a paired inner mask $\UU$ (\Cref{sec:design:lora-forward,sec:design:lora-backward}), and rank padding extends $(\A, \B)$ to $(\Apad, \Bpad)$ with $\Apad\Bpad = \A\B$ (\Cref{sec:design:rank-pad}). Loss and optimizer remain trusted-side throughout; the adapter is never merged into the public base weight.
+The trusted-side controller exposes an LLM forward, decode, generate, and training API that is, at the source level, indistinguishable from a plain reference. Under the hood, every Linear $\X\W + \mathbf{b}$ is intercepted, masked, dispatched to the GPU, and recovered. Nonlinear layers are wrapped as \emph{islands}: the inside of a nonlinear layer uses a mask family that the operator natively commutes with (\Cref{sec:design:islands}), while the outside is dense Linear masking. Islands are sandwiched by dense Linear masks (\Cref{sec:design:sandwich}) and protected by a boundary pad. Attention and KV cache are wrapped as feature-axis masks that compose to identity on the $\Q^{\top}\K$ dot product (\Cref{sec:design:attention}). LoRA is wrapped with a paired inner mask $\UU$ (\Cref{sec:design:lora-forward,sec:design:lora-backward}), and rank padding extends $(\A, \B)$ to $(\Apad, \Bpad)$ with $\Apad\Bpad = \A\B$ (\Cref{sec:design:rank-pad}). Loss and optimizer remain trusted-side throughout; the adapter is never merged into the base weight.
 
 The system overview is illustrated in \Cref{fig:system-overview}; right-masked generation in \Cref{fig:right-masked-decode}; the nonlinear-island construction in \Cref{fig:nonlinear-island}; and the dense sandwich and pad compensation in \Cref{fig:dense-sandwich}.
 
@@ -31,7 +31,7 @@ Plain Linear: $\Y = \X\W + \mathbf{b}$. Masked Linear with boundary pad:
 \Ct &= \Tpad\W\Nout, \\
 \Yt &= \Xt\Wt + \Ct + \mathbf{b}\Nout = \Y\Nout.
 \end{align}
-The boundary pad $\Tpad$ is a trusted-side per-call sample. It randomizes the centered activation seen on the GPU; the compensation $\Ct = \Tpad\W\Nout$ is publicly computable from the public $\W$ and the trusted $\Tpad, \Nout$.
+The boundary pad $\Tpad$ is a trusted-side per-call sample. It randomizes the centered activation seen on the GPU; the compensation $\Ct = \Tpad\W\Nout$ is computed on the trusted side from the private $\W$ and the trusted $\Tpad, \Nout$, and only the resulting masked-space term crosses to the GPU (plaintext $\W$ never does).
 
 \input{figures/fig_dense_sandwich.tex}
 
@@ -89,7 +89,7 @@ The cache append is therefore a no-op rewriter in masked space.
 
 \subsection{Dense sandwich and inter-block masking}
 \label{sec:design:sandwich}
-A nonlinear island uses a restricted mask family (permutation, orthogonal, or mean-preserving orthogonal), which is weaker than a fully dense Linear mask. To prevent direct inversion of the island, every island is sandwiched between two dense-Linear-masked boundaries: the input $\X\Nin$ is transformed to $\X\PP$ inside the island and back to $\X\Nout$ on exit. The boundary pad $\Tpad$ is sampled fresh per call; its compensation $\Ct = \Tpad\W\Nout$ is publicly computable from $\Tpad, \W, \Nout$, all trusted-side.
+A nonlinear island uses a restricted mask family (permutation, orthogonal, or mean-preserving orthogonal), which is weaker than a fully dense Linear mask. To prevent direct inversion of the island, every island is sandwiched between two dense-Linear-masked boundaries: the input $\X\Nin$ is transformed to $\X\PP$ inside the island and back to $\X\Nout$ on exit. The boundary pad $\Tpad$ is sampled fresh per call; its compensation $\Ct = \Tpad\W\Nout$ is computed on the trusted side from $\Tpad, \W, \Nout$ (all trusted-side); only the resulting masked-space term crosses to the GPU.
 
 Inter-block masked boundary is an opt-in experimental mode that avoids recovering to plain space between blocks, instead chaining the right mask across the residual. We report it as an ablation only; it is not default-on.
 

@@ -1,0 +1,16 @@
+activation,mask_family,max_abs,rel_error,pass_bool
+gelu,permutation,0.0,0.0,True
+gelu,signed_permutation,3.6960412261202693,0.9998908417043566,False
+gelu,positive_diagonal,0.13808288496802246,0.03549973666854255,False
+gelu,dense_orthogonal,2.6038274326844673,0.9990224484726661,False
+gelu,dense_gl,3.044285803546205,0.781352344940304,False
+silu,permutation,0.0,0.0,True
+silu,signed_permutation,2.0802578159243006,0.762714149325597,False
+silu,positive_diagonal,0.20311695644347638,0.05616431413928286,False
+silu,dense_orthogonal,2.1630207057708515,0.9326600474835235,False
+silu,dense_gl,2.9382408696918407,0.7871936934996913,False
+relu,permutation,0.0,0.0,True
+relu,signed_permutation,2.6698175679635967,1.0,False
+relu,positive_diagonal,0.0,0.0,True
+relu,dense_orthogonal,2.5972665295867867,1.0968942316994452,False
+relu,dense_gl,2.0089979973135996,0.49304535728435744,False

@@ -1,0 +1,5 @@
+variant,trials,corr_mean,corr_abs_mean,corr_std,exact_cross_gram_leak,has_backward,gpu_side,activation_gram_corr_mean,activation_gram_leak
+trusted_shortcut_A0_dual,200,1.0,1.0,2.1767793516082177e-16,True,True,False,,
+trusted_shortcut_A1_dense,200,-0.008087555674728419,0.1844263491096463,0.23226799086276764,False,True,False,,
+permutation_A1,200,0.12025099188079207,0.20105309664918708,0.22186800015805863,False,True,True,1.0,True
+amulet_dense,200,,,,not_applicable,False,,,

@@ -28,7 +28,7 @@ KV cache leakage has been demonstrated as an end-to-end channel for prompt-conte
 
 ## 10.7 LoRA personalization security
 
-A growing body of work shows that LoRA factor publication leaks training-data signatures and enables membership inference, prompt-style fingerprinting, and partial training-data reconstruction. Mitigations include differential privacy at the optimizer, gradient clipping, and adapter watermarking. **Difference.** Our LoRA path masks `(A, B)` with a trusted inner mask `U` such that `A_tilde = N_in^{-1} A U` and `B_tilde = U^{-1} B N_out`, keeps the optimizer and loss trusted-side, and adds rank padding with stronger dummy distributions. We never merge the adapter into the public base weight `W`.
+A growing body of work shows that LoRA factor publication leaks training-data signatures and enables membership inference, prompt-style fingerprinting, and partial training-data reconstruction. Mitigations include differential privacy at the optimizer, gradient clipping, and adapter watermarking. **Difference.** Our LoRA path masks `(A, B)` with a trusted inner mask `U` such that `A_tilde = N_in^{-1} A U` and `B_tilde = U^{-1} B N_out`, keeps the optimizer and loss trusted-side, and adds rank padding with stronger dummy distributions. We never merge the adapter into the base weight `W`.
 
 ## 10.8 Gradient leakage and membership inference
 

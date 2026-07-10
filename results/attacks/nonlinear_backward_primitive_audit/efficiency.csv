@@ -1,0 +1,7 @@
+primitive,m,d,k,lifted_rows,lifted_cols,forward_runtime_ms,memory_estimate_bytes
+silu_island,4,8,2,8,16,0.045042019337415695,1024
+silu_island,4,8,3,12,24,0.04050007555633783,2304
+silu_island,4,8,4,16,32,0.055458047427237034,4096
+swiglu_island,4,8,2,8,16,0.04295795224606991,1024
+swiglu_island,4,8,3,12,24,0.045749940909445286,2304
+swiglu_island,4,8,4,16,32,0.04449998959898949,4096

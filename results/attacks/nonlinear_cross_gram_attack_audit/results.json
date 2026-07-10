@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "experiment_only": true,
+    "committed": false,
+    "production_path_modified": false,
+    "have_sklearn": true,
+    "dims": {
+      "V": 40,
+      "d": 24,
+      "d_ff": 48,
+      "r": 4,
+      "m": 8,
+      "n_class": 4
+    },
+    "seed": 0,
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "aggregates": {
+    "token_reconstruction": [
+      {
+        "regime": "public_weights",
+        "token_top1": 1.0,
+        "token_top5": 1.0,
+        "sequence_exact": 1.0,
+        "edit_distance": 0.0,
+        "embedding_nn_hit": 1.0,
+        "baseline_top1": 0.0391,
+        "success_rate": 1.0
+      },
+      {
+        "regime": "private_weights",
+        "token_top1": 0.0391,
+        "token_top5": 0.0391,
+        "sequence_exact": 0.0,
+        "edit_distance": 8.0,
+        "embedding_nn_hit": 0.8154,
+        "baseline_top1": 0.0391,
+        "success_rate": 0.0,
+        "note": "identification=baseline; token-LINKING F1=0.805 (equal tokens detectable)"
+      },
+      {
+        "regime": "gram_only",
+        "token_top1": 0.0391,
+        "token_top5": 0.0391,
+        "sequence_exact": 0.0,
+        "edit_distance": 8.0,
+        "embedding_nn_hit": 0.0,
+        "baseline_top1": 0.0391,
+        "success_rate": 0.0,
+        "note": "Gram alone carries no vocab id without a labeled reference"
+      }
+    ],
+    "target_prediction": [
+      {
+        "regime": "private_weights",
+        "target_top1": 0.4583,
+        "target_top5": 1.0,
+        "auc": 0.6198,
+        "ce_improvement": 0.0777,
+        "baseline_acc": 0.4083,
+        "success_rate": 0.333
+      },
+      {
+        "regime": "public_weights",
+        "target_top1": 0.5667,
+        "target_top5": 1.0,
+        "auc": 0.8221,
+        "ce_improvement": 0.3393,
+        "baseline_acc": 0.4083,
+        "success_rate": 1.0
+      }
+    ],
+    "membership_inference": [
+      {
+        "classifier": "gradnorm_threshold",
+        "auc": 0.6063,
+        "tpr_at_1pct_fpr": 0.0731,
+        "advantage": 0.2127,
+        "success_rate": 0.667
+      },
+      {
+        "classifier": "logreg",
+        "auc": 0.4674,
+        "tpr_at_1pct_fpr": 0.0526,
+        "advantage": -0.0652,
+        "success_rate": 0.0
+      },
+      {
+        "classifier": "random_forest",
+        "auc": 0.5802,
+        "tpr_at_1pct_fpr": 0.0755,
+        "advantage": 0.1603,
+        "success_rate": 0.0
+      }
+    ],
+    "adapter_extraction": [
+      {
+        "regime": "public_weights",
+        "dW_frobenius_rel_error": 0.0,
+        "dW_cosine": 1.0,
+        "heldout_kl": 0.0,
+        "token_match": 1.0,
+        "success_rate": 1.0,
+        "note": "recover tokens -> solve global column perm (Hungarian) -> lstsq \u0394W"
+      },
+      {
+        "regime": "private_weights",
+        "dW_frobenius_rel_error": 1.0,
+        "dW_cosine": 0.0,
+        "heldout_kl": 0.0,
+        "token_match": 1.0,
+        "success_rate": 0.0,
+        "note": "no weights -> cannot recover H / solve perm; surrogate fit ill-posed (FAILURE)"
+      }
+    ],
+    "future_token_prediction": [
+      {
+        "regime": "baseline_bigram",
+        "next_token_top1": 0.0222,
+        "future_token_exact": 0.0,
+        "perplexity": 42.14,
+        "ppl_reduction_vs_baseline": 0.0,
+        "success_rate": null
+      },
+      {
+        "regime": "public_weights",
+        "next_token_top1": 1.0,
+        "future_token_exact": 1.0,
+        "perplexity": 1.0,
+        "ppl_reduction_vs_baseline": 41.14,
+        "success_rate": 1.0
+      },
+      {
+        "regime": "private_weights",
+        "next_token_top1": 0.0222,
+        "future_token_exact": 0.0,
+        "perplexity": 42.14,
+        "ppl_reduction_vs_baseline": 0.0,
+        "success_rate": 0.0,
+        "note": "no weights -> reduces to the bigram baseline"
+      }
+    ]
+  }
+}

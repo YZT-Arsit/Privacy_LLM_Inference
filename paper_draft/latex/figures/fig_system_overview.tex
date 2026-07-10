@@ -34,8 +34,8 @@
 \node[item, fill=red!1, below=1.5mm of mm]   (kv) {masked KV cache $\Kt,\Vt$};
 \node[item, fill=red!1, right=2mm of kv]     (lf) {masked LoRA fwd/bwd};
 
-% Public weight box, lateral.
-\node[box, fill=gray!10, right=12mm of gpu] (pubW) {public base\\weight $\W$};
+% Masked weight box, lateral (the GPU only ever receives the masked weight).
+\node[box, fill=gray!10, right=12mm of gpu] (pubW) {masked base\\weight $\Wt$};
 
 % User in.
 \node[font=\footnotesize] (userin) at ($(tee.north)+(0,6mm)$) {user prompt};
@@ -47,7 +47,7 @@
 \draw[arrow] ($(gpu.north)+(10mm,0)$) -- ($(tee.south)+(10mm,0)$)
    node[label, midway, anchor=west] {$\Yt,\widetilde{\partial\A},\widetilde{\partial\B}$};
 
-% GPU <-> public weight.
+% GPU <-> masked weight (plaintext W never crosses to the GPU).
 \draw[arrow] (pubW.west) -- (gpu.east);
 
 % Output.

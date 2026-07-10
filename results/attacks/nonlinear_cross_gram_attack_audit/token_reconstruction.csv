@@ -1,0 +1,10 @@
+seed,attack,regime,feature,token_top1,token_top5,sequence_exact,edit_distance,embedding_nn_hit,baseline_top1,success,note
+0,token_reconstruction,public_weights,row_value_multiset_Z,1.0,1.0,1.0,0.0,1.0,0.0375,True,
+0,token_reconstruction,private_weights,row_value_multiset_Z (link only),0.0375,0.0375,0.0,8.0,0.8053,0.0375,False,identification=baseline; token-LINKING F1=0.805 (equal tokens detectable)
+0,token_reconstruction,gram_only,ZGZT_only,0.0375,0.0375,0.0,8.0,0.0,0.0375,False,Gram alone carries no vocab id without a labeled reference
+1,token_reconstruction,public_weights,row_value_multiset_Z,1.0,1.0,1.0,0.0,1.0,0.0391,True,
+1,token_reconstruction,private_weights,row_value_multiset_Z (link only),0.0391,0.0391,0.0,8.0,0.8167,0.0391,False,identification=baseline; token-LINKING F1=0.817 (equal tokens detectable)
+1,token_reconstruction,gram_only,ZGZT_only,0.0391,0.0391,0.0,8.0,0.0,0.0391,False,Gram alone carries no vocab id without a labeled reference
+2,token_reconstruction,public_weights,row_value_multiset_Z,1.0,1.0,1.0,0.0,1.0,0.0406,True,
+2,token_reconstruction,private_weights,row_value_multiset_Z (link only),0.0406,0.0406,0.0,8.0,0.8243,0.0406,False,identification=baseline; token-LINKING F1=0.824 (equal tokens detectable)
+2,token_reconstruction,gram_only,ZGZT_only,0.0406,0.0406,0.0,8.0,0.0,0.0406,False,Gram alone carries no vocab id without a labeled reference

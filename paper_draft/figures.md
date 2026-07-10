@@ -30,7 +30,7 @@ This appendix lists the canonical figures referenced in the paper body. Where an
 
 - **Description.** A two-panel figure: (a) forward `Y_tilde = X_tilde W_tilde + (alpha/r) X_tilde A_tilde B_tilde + C_T + b N_out`; (b) backward `dA_tilde, dB_tilde` derived from `G_tilde = G N_out^{-T}`. Optimizer and loss inside the trusted-side box; adapter never merged into `W`.
 - **Status.** `TODO: draw figure`. (`paper_results/figures/lora_training_errors.png` is the quantitative correctness counterpart but is not the schematic.)
-- **Caption draft.** *Private LoRA training path. The adapter factors `(A, B)` are masked with a paired inner mask `U`; per-step gradients are masked in the same right-masked space; the optimizer state and loss closure remain trusted-side; the adapter is never merged into the public base weight `W`.*
+- **Caption draft.** *Private LoRA training path. The adapter factors `(A, B)` are masked with a paired inner mask `U`; per-step gradients are masked in the same right-masked space; the optimizer state and loss closure remain trusted-side; the adapter is never merged into the base weight `W`.*
 
 ## Figure 6 — Security risk matrix
 

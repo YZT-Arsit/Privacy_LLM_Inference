@@ -2,7 +2,7 @@
 
 ## 1.1 Privacy in modern LLM deployment
 
-LLM-as-a-service deployments now mediate a large fraction of sensitive user workflows: legal drafting, medical summarization, source-code refactoring, customer-support routing, and personalized fine-tuning on enterprise data. Even when the *base* model weights are public, the runtime data flowing through a serving GPU is not:
+LLM-as-a-service deployments now mediate a large fraction of sensitive user workflows: legal drafting, medical summarization, source-code refactoring, customer-support routing, and personalized fine-tuning on enterprise data. In our setting both the *base* model weights and the runtime data are private: the base-model weights are proprietary/private and are not revealed to the untrusted GPU/host (only their masked form crosses the boundary), and the runtime data flowing through a serving GPU is not public either:
 
 - **Prompt privacy.** The token embedding of the user's prompt is the first activation entering layer 0; an attacker who can read activations recovers the prompt with high fidelity.
 - **Hidden-state / KV-cache privacy.** Every subsequent layer's residual stream and every attention layer's `K` / `V` cache are derived from the prompt and from any retrieved context.
@@ -46,7 +46,7 @@ We make four contributions, each backed by an explicit artifact in `paper_result
 
 - **Contribution 1: generation-compatible masked execution for decoder-only LLMs.** A right-masked wrapper that supports prefill, decode_step, greedy generation, KV cache append, RoPE, and grouped-query attention, and that reproduces the plain reference output token-for-token on GPT-2 and on a modern decoder-only wrapper in our tested configurations.
 - **Contribution 2: operator-compatible nonlinear islands with rigorous correctness conditions.** Paired channel permutations for GELU / ReLU and for SwiGLU; orthogonal masks for RMSNorm; mean-preserving orthogonal masks for LayerNorm; each surrounded by a dense Linear sandwich and a boundary pad whose compensation algebra is closed in trusted space.
-- **Contribution 3: a private LoRA personalization path.** Masked LoRA forward, masked LoRA backward, rank padding with five stronger dummy distributions (zero, paired-cancellation, Gaussian-matched, spectrum-matched, mixed-ensemble), and a multi-layer LoRA training step. Loss and optimizer remain trusted-side throughout; the adapter is never merged into the public base weight.
+- **Contribution 3: a private LoRA personalization path.** Masked LoRA forward, masked LoRA backward, rank padding with five stronger dummy distributions (zero, paired-cancellation, Gaussian-matched, spectrum-matched, mixed-ensemble), and a multi-layer LoRA training step. Loss and optimizer remain trusted-side throughout; the adapter is never merged into the base weight.
 - **Contribution 4: an artifact-backed evaluation.** Six paper tables (artifact inventory, correctness, security proxy, workload, LoRA training, limitations), a measured local-emulation runtime evaluation (`time.perf_counter`), seven figures, and a `claims_mapping` document that labels every claim as `supported`, `proxy_supported`, or `unsupported`.
 
 ## 1.6 What this paper is not

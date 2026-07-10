@@ -1,0 +1,4 @@
+variant,forward_rel,backward_dG_rel,backward_dU_rel,gpu_side,exposes_plaintext_in_tee,forward_status,backward_status,runtime_ms,activation_gram_corr
+trusted_shortcut,4.537285892529002e-16,1.69128577245115e-16,2.595062535174399e-16,False,True,trusted_shortcut_only,trusted_shortcut_only,,
+amulet_dense,4.757539390334698e-16,0.848938083574092,1.4939132381341305,True,False,forward_only,blocked_by_hadamard,0.06075005512684584,
+permutation,0.0,0.0,0.0,True,False,backward_passed,backward_passed,,0.9999999999999999

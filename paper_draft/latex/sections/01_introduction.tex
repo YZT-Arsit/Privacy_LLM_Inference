@@ -2,7 +2,7 @@
 \label{sec:introduction}
 
 \subsection{Privacy in modern LLM deployment}
-LLM-as-a-service deployments now mediate a large fraction of sensitive user workflows: legal drafting, medical summarization, source-code refactoring, customer-support routing, and personalized fine-tuning on enterprise data. Even when the \emph{base} model weights are public, the runtime data flowing through a serving GPU is not. Four channels are already documented in the literature:
+LLM-as-a-service deployments now mediate a large fraction of sensitive user workflows: legal drafting, medical summarization, source-code refactoring, customer-support routing, and personalized fine-tuning on enterprise data. In our setting both the \emph{base} model weights and the runtime data are private: the base-model weights are proprietary/private and are not revealed to the untrusted GPU/host (only their masked form crosses the boundary), and the runtime data flowing through a serving GPU is not public either. Four runtime-data channels are already documented in the literature:
 
 \begin{itemize}[leftmargin=*, nosep]
   \item \textbf{Prompt and hidden-state privacy.} The token embedding of the user's prompt is the first activation entering layer~$0$; every residual stream and every KV cache entry is derived from it.
@@ -48,7 +48,7 @@ We make four contributions, each backed by an explicit artifact in the paper-sid
 \begin{itemize}[leftmargin=*, nosep]
   \item \textbf{C1: Generation-compatible masked execution for decoder-only LLMs.} A right-masked wrapper supporting prefill, decode-step, greedy generation, KV cache append, RoPE, and GQA, reproducing the plain reference output token-for-token on GPT-2 and a modern decoder-only wrapper in our tested configurations.
   \item \textbf{C2: Operator-compatible nonlinear islands with rigorous correctness conditions.} Paired channel permutations for GELU/ReLU and SwiGLU; orthogonal masks for RMSNorm; mean-preserving orthogonal masks for LayerNorm; each surrounded by a dense Linear sandwich and a boundary pad whose compensation algebra is closed in trusted space.
-  \item \textbf{C3: A private LoRA personalization path.} Masked LoRA forward, masked LoRA backward, rank padding with five stronger dummy distributions, and a multi-layer LoRA training step. Loss and optimizer remain trusted-side; the adapter is never merged into the public base weight.
+  \item \textbf{C3: A private LoRA personalization path.} Masked LoRA forward, masked LoRA backward, rank padding with five stronger dummy distributions, and a multi-layer LoRA training step. Loss and optimizer remain trusted-side; the adapter is never merged into the base weight.
   \item \textbf{C4: An artifact-backed evaluation.} Six paper tables, a measured local-emulation runtime evaluation, seven figures, and a claims-mapping document classifying every claim as \texttt{supported}, \texttt{proxy\_supported}, or \texttt{unsupported}.
 \end{itemize}
 

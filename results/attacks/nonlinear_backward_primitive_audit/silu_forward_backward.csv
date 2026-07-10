@@ -1,0 +1,4 @@
+variant,forward_rel,forward_max_abs,backward_rel,backward_max_abs,gpu_side,exposes_plaintext_in_tee,forward_status,backward_status,runtime_ms,activation_gram_corr
+trusted_shortcut,3.011548406649801e-16,4.440892098500626e-16,1.9288603530261433e-16,3.885780586188048e-16,False,True,trusted_shortcut_only,trusted_shortcut_only,,
+amulet_dense,5.206947155301398e-16,8.881784197001252e-16,1.559868807028198,4.1413215414451585,True,False,forward_only,blocked_by_hadamard,0.07566600106656551,
+permutation,0.0,0.0,0.0,0.0,True,False,backward_passed,backward_passed,,0.9999999999999999

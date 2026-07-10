@@ -5,7 +5,7 @@ This appendix fixes the symbols used throughout the paper draft. We use bold-fre
 ## Tensors and dimensions
 
 - `X` — token-by-feature activation matrix entering a Linear layer; shape `[T, d_in]` (or `[B, T, d_in]` when batched).
-- `W` — the public base-model weight of a Linear layer; shape `[d_in, d_out]`.
+- `W` — the proprietary base-model weight of a Linear layer; shape `[d_in, d_out]`. Private: only the masked form `W_tilde` is exposed to the GPU.
 - `b` — the public bias of a Linear layer; shape `[d_out]` or broadcasted.
 - `Y` — the plain reference output of a Linear layer, `Y = X W + b`.
 - `T` — a trusted-side translation tensor used to center the masked input.
