@@ -1,0 +1,11 @@
+{
+  "required": [
+    "config.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json",
+    "merges.txt",
+    "model.safetensors"
+  ],
+  "all_present_check": "post_transfer"
+}

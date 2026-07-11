@@ -1,0 +1,20 @@
+{
+  "model_id": "Qwen2.5-0.5B",
+  "revision": "canonical HF (content-hash verified)",
+  "model_safetensors_sha256_expected": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+  "config_json_sha256": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "config_matches_h800": true,
+  "arch": {
+    "hidden_size": 896,
+    "num_hidden_layers": 24,
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "intermediate_size": 4864,
+    "vocab_size": 151936,
+    "rope_theta": 1000000.0,
+    "rms_norm_eps": 1e-06,
+    "head_dim": 64,
+    "tie_word_embeddings": true
+  },
+  "transfer_hash_verification": "pending_completion"
+}

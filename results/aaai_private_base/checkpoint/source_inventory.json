@@ -1,0 +1,15 @@
+{
+  "source": "H800 (verified byte-identical to canonical HF Qwen/Qwen2.5-0.5B)",
+  "source_path": "root@connect.westb.seetacloud.com:/root/autodl-tmp/modelscope_cache/models/Qwen/Qwen2___5-0___5B",
+  "identity_proof": "H800 model.safetensors sha256 == expected HF file hash embedded in the local hf_hub .incomplete filename (88c1425...)",
+  "files": [
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json",
+    "model.safetensors"
+  ],
+  "model_safetensors_bytes": 988097824
+}
