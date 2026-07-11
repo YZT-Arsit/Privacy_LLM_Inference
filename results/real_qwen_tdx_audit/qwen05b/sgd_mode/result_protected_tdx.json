@@ -3,7 +3,7 @@
   "model_id": "Qwen2.5-0.5B",
   "vocab": 151936,
   "num_lora_layers": 96,
-  "steps": 1,
+  "steps": 10,
   "lr": 0.001,
   "targets": [
     "q_proj",
@@ -16,10 +16,73 @@
   "trajectory": [
     {
       "step": 0,
-      "loss": 2.058157205581665,
+      "loss": 2.058157444000244,
       "finite": true,
-      "fwd_s": 0.06152701377868652,
-      "bwd_s": 0.1071770191192627
+      "fwd_s": 0.03634476661682129,
+      "bwd_s": 0.09952521324157715
+    },
+    {
+      "step": 1,
+      "loss": 2.020808219909668,
+      "finite": true,
+      "fwd_s": 0.03495001792907715,
+      "bwd_s": 0.04830789566040039
+    },
+    {
+      "step": 2,
+      "loss": 1.9663889408111572,
+      "finite": true,
+      "fwd_s": 0.04146528244018555,
+      "bwd_s": 0.043146371841430664
+    },
+    {
+      "step": 3,
+      "loss": 1.9432505369186401,
+      "finite": true,
+      "fwd_s": 0.027942895889282227,
+      "bwd_s": 0.04231691360473633
+    },
+    {
+      "step": 4,
+      "loss": 1.8834527730941772,
+      "finite": true,
+      "fwd_s": 0.0285797119140625,
+      "bwd_s": 0.04354524612426758
+    },
+    {
+      "step": 5,
+      "loss": 1.8371204137802124,
+      "finite": true,
+      "fwd_s": 0.029213905334472656,
+      "bwd_s": 0.04390740394592285
+    },
+    {
+      "step": 6,
+      "loss": 1.8137069940567017,
+      "finite": true,
+      "fwd_s": 0.028698205947875977,
+      "bwd_s": 0.0428316593170166
+    },
+    {
+      "step": 7,
+      "loss": 1.7732948064804077,
+      "finite": true,
+      "fwd_s": 0.0286867618560791,
+      "bwd_s": 0.042342424392700195
+    },
+    {
+      "step": 8,
+      "loss": 1.747631311416626,
+      "finite": true,
+      "fwd_s": 0.030275821685791016,
+      "bwd_s": 0.05004715919494629
+    },
+    {
+      "step": 9,
+      "loss": 1.7166249752044678,
+      "finite": true,
+      "fwd_s": 0.029875755310058594,
+      "bwd_s": 0.04316878318786621
     }
   ],
   "invocations_per_step": {
@@ -33,32 +96,68 @@
   },
   "wire_bytes": {
     "init_out": 0,
-    "logits_out": 38591744,
-    "dlogits_in": 38591744
+    "logits_out": 385917440,
+    "dlogits_in": 385917440
   },
   "rpc_latency_s": [
     [
       "init",
-      1.2859325408935547
+      1.4407179355621338
     ],
     [
       "logits_loss",
-      93.45080423355103
+      79.98395466804504
+    ],
+    [
+      "logits_loss",
+      79.33540081977844
+    ],
+    [
+      "logits_loss",
+      79.41226601600647
+    ],
+    [
+      "logits_loss",
+      79.36888074874878
+    ],
+    [
+      "logits_loss",
+      79.51814818382263
+    ],
+    [
+      "logits_loss",
+      79.253169298172
+    ],
+    [
+      "logits_loss",
+      79.30015635490417
+    ],
+    [
+      "logits_loss",
+      79.46155309677124
+    ],
+    [
+      "logits_loss",
+      79.40673661231995
+    ],
+    [
+      "logits_loss",
+      79.51972579956055
     ]
   ],
   "attestation_bundle_public": {
     "run_id": "gate3_qwen05b_sgd",
     "model_id": "Qwen2.5-0.5B",
-    "runtime_hash_hex": "3e7fbece8f4d82c7b05ca87d6c52dc148bed1d4c4c9dbe3a4f4122597ef24169aa77d29daa1dfe7699fb6a6120c3d0ae47ffdbf90ed0af18804987e6fdb20ab2",
-    "config_digest": "a81cc081fbe399726e6b2f7ac350a291d6fe649be36d5f7690c6735366466fc7",
+    "runtime_hash_hex": "228243a2fc13d2ce7cbf634e8ac1f15bc90cec3784feb07228eebca6bffbb63a084981361fd9723870e40271f4e37bb780955f925d591bea3df943d06b3a81c9",
+    "config_digest": "906f103f6f151d3effd0b0713a4dad1094c1b95124893eca9077d3d03e5152e7",
     "gradient_convention": "nout_dual",
     "optimizer_mode": "gpu_masked_sgd",
-    "guest_ephemeral_public_hex": "40b616e07eae55dcf76ff0c997eb7dd4a361d5e44dc02a28438b6520f582d124",
-    "report_data_hex": "fee136b2b41fd32bc68739087ba298d99e845c60c7e6e2246b1da39fa50987cf86e7dc6125ea008d2c7509da351ee7214d0daf43f5f63a4f50557c39a0b0ed5b",
-    "nonce": "21d5864f86ec1f96b5c89060f36a5655992b185c58fbd5cab8784491e58e6b08",
+    "guest_ephemeral_public_hex": "3bebed51c33d434d44165ed24287274c872c8886d94c201a4b450dfb44e11b61",
+    "report_data_hex": "19dc22fa07c6f4b1dbe380a229c219157a79fecd24a5231f73561e855f891cfbe7e68233895576bd856cbf08cf79eacc4d54b93a93cebbc07b802a12fa138f9a",
+    "nonce": "c7f108055e3c762c0c0489ee674bd22f1d9613dbf147d089526f7f88b916bb83",
     "tee_type": "real_tdx",
     "quote_available": true,
-    "quote_hash": "3e0937144e8d8a42788983767e45cba2be9252cbf4b9a311e93efa068be8b8b3",
+    "quote_hash": "f82c04b5cd54f5c2c2db892b948ec54127b8a57e9a069000970a2836d5743989",
     "overall_appraisal_result": 1,
     "appraisal_ok": true,
     "reportdata_binds": true,

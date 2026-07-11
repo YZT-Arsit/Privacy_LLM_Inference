@@ -10,23 +10,23 @@
     "measurement_policy_passed": true,
     "measurement_policy_reason": "mr_td not pinned (allow_any_mr_td=true, recorded)",
     "debug_mode": false,
-    "guest_ephemeral_public_hex": "40b616e07eae55dcf76ff0c997eb7dd4a361d5e44dc02a28438b6520f582d124",
+    "guest_ephemeral_public_hex": "3bebed51c33d434d44165ed24287274c872c8886d94c201a4b450dfb44e11b61",
     "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
     "logits_mask_family": "vocab_permutation"
   },
   "bundle_public": {
     "run_id": "gate3_qwen05b_sgd",
     "model_id": "Qwen2.5-0.5B",
-    "runtime_hash_hex": "3e7fbece8f4d82c7b05ca87d6c52dc148bed1d4c4c9dbe3a4f4122597ef24169aa77d29daa1dfe7699fb6a6120c3d0ae47ffdbf90ed0af18804987e6fdb20ab2",
-    "config_digest": "a81cc081fbe399726e6b2f7ac350a291d6fe649be36d5f7690c6735366466fc7",
+    "runtime_hash_hex": "228243a2fc13d2ce7cbf634e8ac1f15bc90cec3784feb07228eebca6bffbb63a084981361fd9723870e40271f4e37bb780955f925d591bea3df943d06b3a81c9",
+    "config_digest": "906f103f6f151d3effd0b0713a4dad1094c1b95124893eca9077d3d03e5152e7",
     "gradient_convention": "nout_dual",
     "optimizer_mode": "gpu_masked_sgd",
-    "guest_ephemeral_public_hex": "40b616e07eae55dcf76ff0c997eb7dd4a361d5e44dc02a28438b6520f582d124",
-    "report_data_hex": "d2d44fff1ae75983f12cedfce89265e88a8755bb7001e1b49777edd5a7b473d49218e483334e4a1450803034fe59068f4495ffb34f5bb5408c3c14c6b1a29e8c",
-    "nonce": "fc9b80cd449a70084c1d7c47d2167126874c047ea2046661fa5d43ace98b1f63",
+    "guest_ephemeral_public_hex": "3bebed51c33d434d44165ed24287274c872c8886d94c201a4b450dfb44e11b61",
+    "report_data_hex": "324322f603a5e9dc50bd184af0a0e5ac5886b15ba687695c88b20ca4a2b5cdc8c159c1839a174252cf30ddda48d1f9e63d170eee403cb5ff1ad7a3aeb1010a53",
+    "nonce": "b59c64e6510ca238bf478b8542986f0bf9999f0a8b69ac02168e395c3e931099",
     "tee_type": "real_tdx",
     "quote_available": true,
-    "quote_hash": "0815c935604f1d89e32f79b782c7872eeb4faf67a23f1aeab590e63f6a4854cc",
+    "quote_hash": "a034b03709fa67b286f9e8b5a4db4928d5e39d46318af8334a8ea7109effb347",
     "overall_appraisal_result": 1,
     "appraisal_ok": true,
     "reportdata_binds": true,
@@ -44,6 +44,6 @@
     "quote_tee_type": "tdx",
     "jwt_parts": 2
   },
-  "fresh_nonce": "fc9b80cd449a7008...(single-use)",
+  "fresh_nonce": "b59c64e6510ca238...(single-use)",
   "reused_gate2": false
 }

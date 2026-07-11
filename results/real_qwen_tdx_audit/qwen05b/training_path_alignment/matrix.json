@@ -1,0 +1,244 @@
+{
+  "_meta": {
+    "title": "Gate-3 masked-LoRA TRAINING forward/backward vs. paper-facing A_rightmul masked INFERENCE path -- integration matrix",
+    "model": "Qwen2.5-0.5B",
+    "date": "2026-07-11",
+    "scope": "READ-only provenance audit. No GPU/TDX run. Every claim cites file:line actually read.",
+    "one_line_finding": "Gate-3 training runs the FULL PLAINTEXT HuggingFace forward; the ONLY obfuscation is a rank-space orthogonal mask U on the LoRA adapters (which cancels in the forward). It does NOT touch any A_rightmul / residual-mask / folded-weight / masked-nonlinear machinery. The paper inference path implements all of those but over DETACHED constant folded weights, so it is not differentiable w.r.t. any trainable parameter."
+  },
+
+  "gate3_training_forward": {
+    "plaintext_hf_model_path": {
+      "supported": true,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "load_model / main",
+      "line": 218,
+      "evidence_quote": "out = model(input_ids=input_ids, attention_mask=attn)  # model = AutoModelForCausalLM.from_pretrained(...).to('cuda') (load_model, L150-151). The entire attention/RoPE/RMSNorm/softmax/SwiGLU/residual stream is HF's own plaintext Qwen2 forward."
+    },
+    "rank_masked_lora_only": {
+      "supported": true,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "MaskedLoRALinear.__init__/forward, inject_lora",
+      "line": 69,
+      "evidence_quote": "self.A_t = torch.nn.Parameter((U @ A0).contiguous())  # (r,in) ; self.B_t = torch.nn.Parameter((B0 @ U.T).contiguous())  # (out,r).  forward L75: lora = (x @ self.A_t.T) @ self.B_t.T  => B_t@A_t == B@A (mask cancels). Only the LoRA adapters are masked, and only in rank space (r x r orthogonal U, buffer L67). Base nn.Linear weights are frozen plaintext (L63-64)."
+    },
+    "calls_A_rightmul": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "NOT FOUND",
+      "line": 0,
+      "evidence_quote": "NOT FOUND. gate3_worker.py imports only argparse/json/os/time/pathlib/torch and (lazily) transformers + gate3_tdx_client (L37-43, L148, L233). grep for 'right_multiply|A_rightmul|rmsnorm_core|masked_attention|n_res|folded' across gate3_worker.py / gate3_tdx_step.py / gate3_plain_multi.py returns only the word 'folded' inside a docstring (L32). The nonlinearities are computed inside HF's plaintext model, never via RightMultiplyNonlinearBackend."
+    },
+    "masked_rmsnorm": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "NOT FOUND",
+      "line": 0,
+      "evidence_quote": "NOT FOUND. RMSNorm is HF's internal Qwen2RMSNorm over the plaintext hidden state (inside model(...) at L218). There is no call to pllo.ops.nonlinear_islands.rmsnorm_core or the A_rightmul rmsnorm over a signed-permutation-masked state."
+    },
+    "post_rope_masking": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "NOT FOUND",
+      "line": 0,
+      "evidence_quote": "NOT FOUND. RoPE runs inside HF's plaintext attention. No per-head Q/K compatible masks (pairwise_rotation) and no apply_rope over masked q/k appear in the training path."
+    },
+    "gqa_masked_cache": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "NOT FOUND",
+      "line": 0,
+      "evidence_quote": "NOT FOUND. KV cache / GQA repeat_kv are handled by HF over plaintext keys/values inside model(...). No masked key_rope_tilde / value_tilde cache. (Training uses a single full-sequence forward L218, so no incremental cache is needed at all.)"
+    },
+    "swiglu_island": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "NOT FOUND",
+      "line": 0,
+      "evidence_quote": "NOT FOUND. The MLP is HF's plaintext Qwen2MLP (SiLU(gate)*up) inside model(...). No shared-channel-permutation SwiGLU island (_masked_mlp) is invoked. When targets=='attn_mlp' (L199) the gate/up/down projections merely get a rank-masked LoRA adapter (same cancelling U), not the channel-permutation island."
+    },
+    "inter_block_hidden_masked": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "NOT FOUND",
+      "line": 0,
+      "evidence_quote": "NOT FOUND. The residual stream / hidden states flowing between the 24 decoder layers are HF's plaintext hidden states. There is no residual mask N_res applied to the hidden state (x @ n_res) and no per-layer handoff N_ell^-1 @ N_ell+1. The GPU sees plaintext hidden states everywhere; only the LoRA rank space carries a mask."
+    },
+    "backward_through_masked_hidden": {
+      "supported": false,
+      "file": "scripts/gate3_worker.py",
+      "symbol": "loss.backward()",
+      "line": 244,
+      "evidence_quote": "loss.backward()  -- autograd runs through the PLAINTEXT HF graph; the trainable leaves are the masked adapters A_t,B_t so grads emerge already in the masked rank basis (gradA_t = U gradA, per docstring L14-16). This is masked-domain SGD in RANK space ONLY. The hidden states the gradient flows through are plaintext, so 'backward through a masked hidden state' is NOT what happens. dlogits are private (TDX) at the logit boundary (L234-240), but the interior activations are unmasked."
+    }
+  },
+
+  "paper_inference_path": {
+    "masked_input": {
+      "file": "src/pllo/hf_wrappers/qwen_masked_session.py",
+      "symbol": "MaskedQwenSession.mask_embeddings",
+      "line": 142,
+      "mask_convention": "residual signed-permutation N_res (self._n0); GPU only ever sees embed[input_ids] @ N",
+      "evidence_quote": "def mask_embeddings(self, input_ids): return self.embed_plain(input_ids) @ self._n0   # 'h_tilde = embed[input_ids] @ N -- the only embedding the GPU sees'. Single-block analogue: llama_qwen_single_block.py:527 'x_tilde = x @ n_res'."
+    },
+    "residual_transport": {
+      "file": "src/pllo/hf_wrappers/hf_causal_lm_skeleton.py",
+      "symbol": "HFCausalLMMaskBundle.handoff / hf_causal_lm_masked_prefill",
+      "line": 296,
+      "mask_convention": "per-layer change-of-basis T_ell = N_ell^-1 @ N_ell+1 (orthogonal); shared-mask strategy makes every handoff the identity (needs_handoff L300-303)",
+      "evidence_quote": "def handoff(self, ell): return self.residual_mask_inverses[ell] @ self.residual_masks[ell + 1]  ('T_ell = N_ell^{-1} @ N_{ell+1}'). Applied at L955-957: 'h_tilde = blk[\"y_tilde\"] @ masks.handoff(ell)...'. The production folded_worker uses a single residual basis and threads y_tilde directly (no per-step GEMM)."
+    },
+    "nonlinear_backend": {
+      "file": "src/pllo/nonlinear/right_multiply_backend.py",
+      "symbol": "RightMultiplyNonlinearBackend (silu/softmax/rmsnorm)",
+      "line": 89,
+      "mask_convention": "compatible right-multiply / permutation: SiLU(gate@P)*(up@P)==(SiLU(gate)*up)@P; softmax over score-preserving Q~K~^T; rmsnorm over signed-permutation-masked state. zero trusted crossings",
+      "evidence_quote": "def silu(self, x): return self._on_accelerator(x, F.silu(x), 'silu')  (softmax L92, rmsnorm L108-113). Dispatched into the folded worker via folded_worker.py:126 _rmsnorm and llama_qwen_single_block.py:503 'act = runner.silu(gate) if runner is not None else silu_reference(gate)'."
+    },
+    "q_k_v_projections": {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "_masked_attention + fold_hf_single_block_weights",
+      "line": 466,
+      "mask_convention": "folded wq/wk/wv_tilde = n_res_inv @ (rms1 * W) @ M{q,k,v}_block (per-head block-diag masks); wo_tilde = sv_block_inv @ W_o @ n_res",
+      "evidence_quote": "q_t = split_heads(_linear(r1_core_tilde, folded['wq_tilde'], folded['bq_tilde'], *_pad(folded,'wq_tilde')), nh)  (k_t,v_t L468-471). Fold at L420-423: 'wq_tilde': n_res_inv @ (rms1 * weights.q_proj_weight) @ mq_block."
+    },
+    "post_rope_paired_masking": {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "_masked_attention (apply_rope on masked q/k)",
+      "line": 472,
+      "mask_convention": "pairwise_rotation per-head Q/K masks that are RoPE-compatible + score-preserving (Nq Nk^T == I, enforced by compatible_mask_verify.assert_qk_compatible)",
+      "evidence_quote": "qr_t = apply_rope(q_t, cos, sin, position_ids=position_ids); kr_t_new = apply_rope(k_t, cos, sin, position_ids=position_ids)  -- RoPE is applied to the ALREADY-masked q_t/k_t; correctness holds because the attention family is pairwise_rotation (compatible_mask_verify.py:59 COMPATIBLE_ATTENTION_MASK_FAMILIES=('pairwise_rotation',); assert_qk_compatible L135-146 requires Nq Nk^T == I)."
+    },
+    "gqa_attention": {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "_masked_attention (repeat_kv / _sdpa)",
+      "line": 479,
+      "mask_convention": "GQA via kv_index-expanded value masks; scores = Q~ K~^T are the true scores, softmax on accelerator, av @ folded o carries result back into masked basis",
+      "evidence_quote": "scores, probs, av = _sdpa(qr_t, repeat_kv(kr_t, nh, nkv), repeat_kv(v_full, nh, nkv), scale, causal_offset, runner=runner). value-mask GQA expansion at fold L410-411 'v_inv_qhead = attn[\"value_mask_inverses\"].index_select(0, attn[\"kv_index\"])'."
+    },
+    "swiglu_shared_perm": {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "_masked_mlp + fold_hf_single_block_weights",
+      "line": 491,
+      "mask_convention": "single shared channel permutation 'perm' on gate/up (index_select(1,perm)) and down (index_select(0,perm) @ n_res); verified is_permutation_index",
+      "evidence_quote": "act = runner.silu(gate) if runner is not None else silu_reference(gate); hidden = act * up (L503-504). Fold L428-430: 'wgate_tilde'/'wup_tilde' = n_res_inv @ (rms2 * W).index_select(1, perm); 'wdown_tilde' = down.index_select(0, perm) @ n_res."
+    },
+    "second_rmsnorm": {
+      "file": "src/pllo/deployment/folded_worker.py",
+      "symbol": "apply_folded_layer_prefill (_rmsnorm on x1)",
+      "line": 219,
+      "mask_convention": "post-attention RMSNorm core over the signed-permutation-masked residual x1_tilde (invariant: rmsnorm_core(x @ N)==rmsnorm_core(x) @ N)",
+      "evidence_quote": "with _region(timer, 'nonlinear'): r2 = _rmsnorm(x1, eps, runner)  (single_block analogue L532 'r2_core_tilde = rmsnorm_core(x1_tilde, eps)'). _rmsnorm L126-133 dispatches runner.rmsnorm_core or rmsnorm_core."
+    },
+    "inter_block_remask": {
+      "file": "src/pllo/deployment/folded_worker.py",
+      "symbol": "apply_folded_prefill (layer loop)",
+      "line": 314,
+      "mask_convention": "production path uses ONE shared residual basis, so the block output y_tilde stays in-basis and is fed straight to the next layer (h = out['y_tilde']); no per-block re-mask GEMM. Per-layer masks would insert masks.handoff(ell) (skeleton L955)",
+      "evidence_quote": "h = out['y_tilde']; kv.append(out['cache'])  -- the folded_worker threads the masked hidden across layers with no explicit re-mask (shared-mask handoff == identity). See needs_handoff hf_causal_lm_skeleton.py:300-303."
+    },
+    "output_logit_boundary": {
+      "file": "src/pllo/hf_wrappers/qwen_masked_session.py",
+      "symbol": "_final_head + recover",
+      "line": 181,
+      "mask_convention": "folded final-norm+LM-head w_lm_tilde (vocab mask baked in): logits_tilde = rmsnorm_core(h_tilde) @ w_lm_tilde; trusted recover(logits_tilde) = recover_vocab_logits(., vocab_mask)",
+      "evidence_quote": "def _final_head(self, h_tilde): return rmsnorm_core(h_tilde, self.eps) @ self._w_lm_tilde (L182). recover L150-151: 'return recover_vocab_logits(logits_tilde, self._vocab_mask)'. Worker analogue folded_worker.py:358 apply_folded_head."
+    }
+  },
+
+  "gaps": [
+    {
+      "item": "Gate-3 training never invokes the masked inference forward at all",
+      "category": "reusable_forward",
+      "file": "scripts/gate3_worker.py",
+      "symbol": "main (model(...) at L218)",
+      "line": 218,
+      "detail": "The pure masked worker operators apply_folded_layer_prefill (folded_worker.py:194), _masked_attention (llama_qwen_single_block.py:457), _masked_mlp (L491) and _rmsnorm (folded_worker.py:126) are built from ordinary differentiable torch ops (matmul, rsqrt, softmax, silu, index_select). They are directly reusable as a training forward, but gate3 calls HF's plaintext model instead and applies masking only in LoRA rank space. Unifying = replace the HF forward with a per-layer loop over apply_folded_layer_prefill (causal_offset=0, no cache)."
+    },
+    {
+      "item": "Folded weights are LoRA-blind: the adapter delta is not inside the fold",
+      "category": "lora_aware_folded_weight",
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "fold_hf_single_block_weights",
+      "line": 397,
+      "detail": "Each *_tilde operator (e.g. wq_tilde = n_res_inv @ (rms1 * q_proj_weight) @ mq_block, L420) folds only the FROZEN base weight. For masked-domain LoRA training the folded operator must be W_tilde(theta) = fold(W_base + scaling * B(theta) A(theta)) so that d logits / d(A_t,B_t) is non-zero. folded_worker._maybe_merge_lora (L263-277) only merges a *frozen* folded-LoRA package (W_tilde += a_tilde @ b_tilde) -- a_tilde/b_tilde are constants, not autograd leaves. No trainable-LoRA fold exists anywhere. This is the core missing piece."
+    },
+    {
+      "item": "Base/affine weights are detached at extraction, severing every gradient path",
+      "category": "autograd_break",
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "_extract_linear / extract_hf_single_block_weights",
+      "line": 231,
+      "detail": "w = module.weight.detach().to(...).t().contiguous() (L231) and the layernorm weights detach+clone (L251-254). Every folded operator is therefore a constant w.r.t. autograd. Even if a training loop reused _masked_attention/_masked_mlp, no gradient could reach a trainable parameter because the fold inputs are detached. A training fold must keep the trainable LoRA tensors attached (skip .detach() for the LoRA contribution)."
+    },
+    {
+      "item": "Residual mask N_res and rank mask U are trusted-only / per-module and not co-located for a unified backward",
+      "category": "mask_state_for_backward",
+      "file": "src/pllo/hf_wrappers/qwen_masked_session.py",
+      "symbol": "MaskedQwenSession (self._n0, self.masks)",
+      "line": 108,
+      "detail": "The inference residual mask self._n0 (L108), per-head attn masks and SwiGLU perm live in the trusted boundary's mask bundle; the worker never holds them. The training worker's rank mask U lives as a per-MaskedLoRALinear buffer (gate3_worker.py:67). A unified masked-training forward must fix a compatible N_res AND the per-layer attn/SwiGLU masks as constant buffers held alongside the trainable A_t,B_t, so the backward collapses (gradA_t = U^T ... , gradient stays in the masked basis). Today these two mask systems are in different modules and never combined."
+    },
+    {
+      "item": "KV cache tensors are inference-only and must be excluded from the training forward",
+      "category": "kv_cache_excludable",
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "_masked_attention (key_rope_full/value_full, past_key_rope)",
+      "line": 474,
+      "detail": "past_key_rope/past_value concat (L474-478) and the returned key_rope_full/value_full (L487) exist to serve incremental single-token decode (apply_folded_layer_decode, folded_worker.py:228). Training uses a single full-sequence prefill with causal_offset=0 and past_key_rope=None (L529), so the cache is computed-then-discarded and is training-irrelevant. Confirmed excludable."
+    },
+    {
+      "item": "The verification wrappers recompute a plaintext reference and call .item(), which a training forward must avoid",
+      "category": "inference_only_tensor",
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "symbol": "hf_single_block_masked_prefill (plain = ...; metrics)",
+      "line": 525,
+      "detail": "hf_single_block_masked_prefill runs plain = hf_single_block_plain_prefill(...) (L525) and a metrics dict full of _mx()/.item() host syncs (L539-565). Those are for validation only. The training path should call the pure worker ops (apply_folded_layer_prefill), which produce ONLY y_tilde + cache with no plain recompute and no .item() (folded_worker.py:194-225)."
+    }
+  ],
+
+  "autograd_breaks": [
+    {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "line": 231,
+      "code": "w = module.weight.detach().to(device=device, dtype=dtype).t().contiguous()",
+      "why_it_breaks_training": "Detaches the base Linear weight before folding, so wq/wk/wv/wo/wgate/wup/wdown_tilde are autograd constants. No gradient can flow from logits back to any weight/LoRA parameter through the masked forward."
+    },
+    {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "line": 234,
+      "code": "b = module.bias.detach().to(device=device, dtype=dtype).clone()",
+      "why_it_breaks_training": "Detaches (and clones) the projection biases folded into b*_tilde; any bias-carried gradient path is severed."
+    },
+    {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "line": 251,
+      "code": "rms1 = layer.input_layernorm.weight.detach().to(device=dev, dtype=dtype).clone()",
+      "why_it_breaks_training": "Detaches the input-RMSNorm affine weight folded into wq/wk/wv_tilde (rms1 * W), so the pre-attention norm scale is a training constant."
+    },
+    {
+      "file": "src/pllo/hf_wrappers/llama_qwen_single_block.py",
+      "line": 253,
+      "code": "rms2 = layer.post_attention_layernorm.weight.detach().to(device=dev, dtype=dtype).clone()",
+      "why_it_breaks_training": "Detaches the post-attention RMSNorm affine weight folded into wgate/wup_tilde (rms2 * W), a training constant."
+    },
+    {
+      "file": "src/pllo/hf_wrappers/qwen_masked_session.py",
+      "line": 165,
+      "code": "w = extract_hf_single_block_weights(self.base.layers[ell], self.fdtype, str(self.fold_device))",
+      "why_it_breaks_training": "_folded_layer re-extracts (hence re-detaches, via the L231/234/251/253 detaches) the base weights on every worker call, so worker_prefill/worker_decode produce logits that are constant w.r.t. any trainable parameter."
+    },
+    {
+      "file": "scripts/gate3_worker.py",
+      "line": 266,
+      "code": "with torch.no_grad():\n    out2 = model(input_ids=input_ids, attention_mask=attn)",
+      "why_it_breaks_training": "NOT a break for the training step itself -- this no_grad guards the POST-step 'next-step logits' diagnostic (L266-269), computed after opt.step(). It only matters that if the masked inference forward were reused for the trained step, this block would have to stay outside the graph. Listed for completeness."
+    },
+    {
+      "file": "scripts/gate3_worker.py",
+      "line": 234,
+      "code": "loss_val, full_dlogits = tdx_logits_loss(args.tdx_url, fl.detach(), lab.detach(), valid.detach(), ...)",
+      "why_it_breaks_training": "The tensors SENT to TDX are detached (correctly -- they cross the wire), but the training graph is preserved because the surrogate loss L240 'loss = (fl * full_dlogits).sum()' uses the NON-detached fl. So this detach does NOT break training; it is the intended private-boundary cut. Listed to show the boundary is handled correctly in gate3 and must be replicated in a unified path."
+    }
+  ]
+}

@@ -114,7 +114,7 @@ def main():
         traj.append({"step": step, "loss": loss_val, "finite": finite,
                      "fwd_s": fwd_t, "bwd_s": bwd_t})
         log(f"step {step}: loss={loss_val:.6f} finite={finite}")
-        if step == 0:
+        if step == args.steps - 1:              # save FINAL-step state for comparison
             with torch.no_grad():
                 nfl, _, _ = flat_logits_labels(model(input_ids=input_ids, attention_mask=attn).logits.float(), labels)
             torch.save({"deltaw_before": dw_before, "deltaw_after": dw_after,

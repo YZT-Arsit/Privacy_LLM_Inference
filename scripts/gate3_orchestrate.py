@@ -127,13 +127,15 @@ def main():
         f"--optimizer-mode {args.optimizer_mode} --bundle-in /root/gate3/bundle.json "
         f"--model-dir {args.model_dir} --data {args.data} --batch {args.batch} "
         f"--seqlen {args.seqlen} --targets {args.targets} --steps {args.steps} "
-        f"--seed {args.seed} --lr {args.lr} --out /root/gate3/out")
-    print("[h800 run]", (so.strip()[-600:] or se.strip()[-600:]))
+        f"--seed {args.seed} --lr {args.lr} --out /root/gate3/out",
+        timeout=args.steps * 150 + 600)
+    print("[h800 run]", (so.strip()[-600:] or se.strip()[-1500:]))
     if rc != 0:
-        print("run failed:", se[-400:]); return 1
+        print("run failed:", se[-1500:]); return 1
+    # pull only the small result json; big tensors stay on the H800 (analysed there,
+    # the ~0.5 MB/s gateway makes a 500 MB scp impractical).
     scp_from_gpu("/root/gate3/out/result_protected_tdx.json", str(out / "result_protected_tdx.json"))
-    scp_from_gpu("/root/gate3/out/tensors_protected_tdx.pt", str(out / "tensors_protected_tdx.pt"))
-    print("[mac] pulled protected_tdx results; attestation_verified + step complete")
+    print("[mac] pulled protected_tdx result json; attestation_verified + step(s) complete")
     return 0
 
 

@@ -62,7 +62,10 @@ class TdxLossSession:
                            quote_hash_hex=bundle["quote_hash"])
         self.client._post_json("/train/handshake", {"verifier_public_hex": vkex.public_hex})
         self.client._aead_tx = AeadSender(key=kx.c2s_key, run_id=run_id, direction=1)
-        self.client._aead_rx = AeadReceiver(key=kx.s2c_key, run_id=run_id, direction=2)
+        # large receive timeout: the throttled gateway makes each logit RPC ~80s, so a
+        # 50-step run needs a long session window (service side matches via config).
+        self.client._aead_rx = AeadReceiver(key=kx.s2c_key, run_id=run_id, direction=2,
+                                            timeout_s=7200.0)
         self.client.attested = True
 
     # ---- authorized init: register private labels in TDX, receive pi (input boundary) ----

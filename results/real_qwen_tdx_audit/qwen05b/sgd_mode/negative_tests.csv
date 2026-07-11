@@ -1,0 +1,6 @@
+test,passed,detail
+wrong_run_id_rejected,True,"REJECTED /train/challenge: HTTP 400: {""error"": ""FailClosed: challenge run_id mismatch""}"
+wrong_optimizer_mode_rejected,True,"REJECTED /train/challenge: HTTP 400: {""error"": ""FailClosed: challenge optimizer_mode mism"
+wrong_config_digest_rejected,True,"REJECTED /train/challenge: HTTP 400: {""error"": ""FailClosed: challenge config_digest misma"
+compute_without_session_rejected,True,"REJECTED init: HTTP 400: {""error"": ""decode rejected: UnicodeDecodeError""}"
+wrong_runtime_hash_refused_by_verifier,True,external verifier report_data/runtime mismatch

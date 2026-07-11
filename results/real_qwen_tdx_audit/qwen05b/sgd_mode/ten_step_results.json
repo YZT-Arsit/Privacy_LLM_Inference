@@ -1,0 +1,42 @@
+{
+  "steps": 10,
+  "max_step_loss_abs_diff": 0.017763257026672363,
+  "final_max_deltaw_rel_error": 0.058169156312942505,
+  "final_min_deltaw_cos": 0.9983863234519958,
+  "final_next_logits_rel_error": 0.017811736091971397,
+  "final_top1_agreement": 1.0,
+  "all_protected_steps_finite": true,
+  "loss_trajectory_protected": [
+    2.058157444000244,
+    2.020808219909668,
+    1.9663889408111572,
+    1.9432505369186401,
+    1.8834527730941772,
+    1.8371204137802124,
+    1.8137069940567017,
+    1.7732948064804077,
+    1.747631311416626,
+    1.7166249752044678
+  ],
+  "loss_trajectory_plaintext": [
+    2.0581793785095215,
+    2.0138275623321533,
+    1.9592108726501465,
+    1.9254872798919678,
+    1.8952480554580688,
+    1.8453289270401,
+    1.8101798295974731,
+    1.7861547470092773,
+    1.7408045530319214,
+    1.722564697265625
+  ],
+  "invocations_per_step": {
+    "input_init_boundary": 1,
+    "loss_boundary": 1,
+    "packed_update": 0,
+    "trusted_optimizer": 0,
+    "layer_wise": 0,
+    "total": 2,
+    "note": "input/init boundary = authorized init (labels+pi), amortized once for the fixed batch; loss boundary per step"
+  }
+}

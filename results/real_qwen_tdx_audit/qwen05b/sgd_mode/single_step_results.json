@@ -1,0 +1,123 @@
+{
+  "gate": "gate3_single_step",
+  "model_id": "Qwen2.5-0.5B",
+  "param_count": 494032768,
+  "real_h800": true,
+  "real_tdx": true,
+  "real_qwen": true,
+  "reused_gate2": false,
+  "profile": {
+    "optimizer_mode": "gpu_masked_sgd",
+    "gradient_convention": "nout_dual",
+    "logits_mask_family": "vocab_permutation",
+    "dtype": "bfloat16",
+    "rank": 8,
+    "alpha": 16.0,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "num_lora_layers": 96,
+    "vocab": 151936,
+    "seqlen": 128,
+    "batch": 1,
+    "lr": 0.001
+  },
+  "attestation": {
+    "tee_type": "tdx",
+    "guest_verified": true,
+    "attestation_verified": true,
+    "runtime_hash_bound": true,
+    "report_data_match": true,
+    "nonce_fresh": true,
+    "quote_chain_verified": true,
+    "measurement_policy_passed": true,
+    "measurement_policy_reason": "mr_td not pinned (allow_any_mr_td=true, recorded)",
+    "debug_mode": false,
+    "guest_ephemeral_public_hex": "2366dab2c6cfe5e81f671121ff646fa755a0ccc7988ed8616d86eb57270f197a",
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "logits_mask_family": "vocab_permutation"
+  },
+  "attestation_bundle_public": {
+    "run_id": "gate3_qwen05b_sgd",
+    "model_id": "Qwen2.5-0.5B",
+    "runtime_hash_hex": "4686fef6f3aa374970027431f68fd78f93cab4efdb2663e543a6c5c7616132de66ada789e4074750539a33a2134c50bdb5e843c772cd2a13b5eca45b70caa0aa",
+    "config_digest": "a81cc081fbe399726e6b2f7ac350a291d6fe649be36d5f7690c6735366466fc7",
+    "gradient_convention": "nout_dual",
+    "optimizer_mode": "gpu_masked_sgd",
+    "guest_ephemeral_public_hex": "2366dab2c6cfe5e81f671121ff646fa755a0ccc7988ed8616d86eb57270f197a",
+    "report_data_hex": "d27782545771f0337b23f74cd88d530a0a9eef387103d7246e8aeb30e0edc2f877fb8f98696f0197e9b633a22625171e09f2b9d85f0b5387fafde27c36872c62",
+    "nonce": "044ab3de5131b02c79013750d18d3cd07d1000866fab9b456fc55f173c7486ab",
+    "tee_type": "real_tdx",
+    "quote_available": true,
+    "quote_hash": "85b228d07c5c53eb8a71433608db5d7a0dbc4658ad38ea8ae576e3e76bacf93f",
+    "overall_appraisal_result": 1,
+    "appraisal_ok": true,
+    "reportdata_binds": true,
+    "rp_reportdata_binds": true,
+    "signature_verified": true,
+    "appraisal_source": "relying_party_v_a",
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "rtmr0": "f59c0a3b673981a08cca43766031f508c11507f325bff88555067ae8a693c3fe85b56ac2def42bf1b2f05b1812eeb863",
+    "rtmr1": "341f62b531d339691421c9ee524c57df29b7fbd193e778386dd0cf784b14272466b55fe652668b860a9ddbc9c7e94af0",
+    "rtmr2": "fc0391f16762873d4d6af31b6200f4f14a4e31f5659d3e62217624657e1b6b2ba6b0c320a6fefb957099f48bc5c76a74",
+    "rtmr3": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "debug": false,
+    "td_attributes": "0000000010000000",
+    "quote_version": 5,
+    "quote_tee_type": "tdx",
+    "jwt_parts": 2
+  },
+  "single_step_pass": true,
+  "metrics": {
+    "loss_ref": 2.0581793785095215,
+    "loss_prot": 2.058157444000244,
+    "loss_abs_diff": 2.193450927734375e-05,
+    "max_deltaw_rel_error": 0.03639998659491539,
+    "min_deltaw_cos": 0.9993927478790283,
+    "max_gradA_rel_error": 0.0,
+    "min_gradA_cos": 0.0,
+    "max_gradB_rel_error": 0.03650263324379921,
+    "min_gradB_cos": 0.9993408918380737,
+    "next_logits_rel_error": 0.017942048609256744,
+    "top1_agreement": 1.0,
+    "finite": true
+  },
+  "gradA_note": "gradA==0 at step 0 because LoRA B initialised to 0 (PEFT default) => gradA cosine is degenerate (0.0); gradB carries the signal (cos 0.9993).",
+  "residual_note": "3.6% deltaW/gradB rel error is CONSISTENT with bf16 + order-of-operations (fp32/reorder control not yet run); loss_abs_diff 2.2e-5 and top1 1.0 indicate it is numerical, not a masking error.",
+  "invocations_per_step": {
+    "input_init_boundary": 1,
+    "loss_boundary": 1,
+    "packed_update": 0,
+    "trusted_optimizer": 0,
+    "layer_wise": 0,
+    "total": 2,
+    "note": "input/init boundary = authorized init (labels+pi), amortized once for the fixed batch; loss boundary per step"
+  },
+  "wire_bytes": {
+    "init_out": 0,
+    "logits_out": 38591744,
+    "dlogits_in": 38591744
+  },
+  "rpc_latency_s": [
+    [
+      "init",
+      1.5682413578033447
+    ],
+    [
+      "logits_loss",
+      79.40815043449402
+    ]
+  ],
+  "trajectory": [
+    {
+      "step": 0,
+      "loss": 2.058157444000244,
+      "finite": true,
+      "fwd_s": 0.03635811805725098,
+      "bwd_s": 0.10610294342041016
+    }
+  ]
+}

@@ -232,20 +232,24 @@ class TrustedTrainingService:
         if self._head["family"] == "vocab_permutation":
             pi, pi_inv = self._head["pi"], self._head["pi_inv"]
             self._require(int(ml.shape[1]) == self._head["V"], "masked_logits vocab != V")
-            # recover Z = Z_tilde[:, pi_inv]; CE accumulation in fp32 (bf16 wire ok)
+            # recover Z = Z_tilde[:, pi_inv]; CE accumulation in fp32 (bf16 wire ok).
+            # memory-frugal for the 14GB TD guest at vocab=151936: reuse buffers, free
+            # intermediates, avoid holding log_softmax AND softmax simultaneously.
+            import torch.nn.functional as _F
             Z = ml.to(torch.float32).index_select(1, pi_inv)
+            del ml
             valid = labels != -100                           # ignore-index / padding mask
             nv = int(valid.sum())
             self._require(nv > 0, "no valid (non-ignore) labels in batch")
-            logp = torch.log_softmax(Z, dim=-1)
             idx = torch.arange(n)[valid]
-            loss = -logp[idx, labels[valid]].mean()
-            p = torch.softmax(Z, dim=-1)
-            G = p                                            # dL/dZ
+            loss = _F.cross_entropy(Z[valid], labels[valid], reduction="mean")
+            G = torch.softmax(Z, dim=-1)                      # dL/dZ = softmax - onehot
+            del Z
             G[idx, labels[valid]] -= 1.0
             G[~valid] = 0.0                                  # no gradient from ignored rows
-            G = G / nv
-            g_masked = G.index_select(1, pi).to(ml.dtype)    # G_tilde = G[:, pi], same layout
+            G /= nv
+            g_masked = G.index_select(1, pi).to(torch.bfloat16)   # bf16 wire back
+            del G                                            # G_tilde = G[:, pi], same layout
             mask_id = "vocab_permutation"
         else:
             man = req["manifest"]["masked_logits"]           # (dense path retains manifest use)
