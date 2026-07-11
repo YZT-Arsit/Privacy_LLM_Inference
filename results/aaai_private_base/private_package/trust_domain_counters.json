@@ -1,0 +1,19 @@
+{
+  "trusted_packager": {
+    "trusted_packager_plaintext_base_materializations": 290,
+    "trusted_packager_plaintext_embedding_materializations": 1,
+    "trusted_packager_plaintext_lm_head_materializations": 1,
+    "trusted_packager_plaintext_gamma_materializations": 49,
+    "trusted_packager_plaintext_bias_materializations": 72,
+    "expected_nonzero": true,
+    "note": "trusted offline packager legitimately holds plaintext + secrets"
+  },
+  "untrusted_gpu_package_required_zero": {
+    "untrusted_plaintext_base_weight_tensors": 0,
+    "untrusted_plaintext_embedding_tensors": 0,
+    "untrusted_plaintext_lm_head_tensors": 0,
+    "untrusted_plaintext_gamma_tensors": 0,
+    "untrusted_plaintext_bias_tensors": 0,
+    "untrusted_mask_secret_tensors": 0
+  }
+}

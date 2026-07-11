@@ -1,0 +1,22 @@
+[
+  {
+    "family": "fastica_second_bss",
+    "status": "unavailable",
+    "reason": "no verified second-BSS/JADE impl wired for this package"
+  },
+  {
+    "family": "generalized_procrustes_unanchored",
+    "status": "unavailable",
+    "reason": "unanchored Procrustes has no unique solution without a reference; recorded unavailable, not failed"
+  },
+  {
+    "family": "full_residual_graph_chain_alignment",
+    "status": "unavailable",
+    "reason": "end-to-end 24-layer chain solver not implemented at Gate 0; deferred"
+  },
+  {
+    "family": "functional_extraction_full_generation",
+    "status": "unavailable",
+    "reason": "full generation-based functional extraction requires GPU end-to-end run; out of local D2 scope"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "trusted_diagnostic_oracle": {
+    "trusted_oracle_plaintext_base_materializations": 1,
+    "trusted_oracle_plaintext_activation_materializations": 1,
+    "expected_nonzero": true,
+    "note": "trusted oracle legitimately loads plaintext checkpoint + activations"
+  },
+  "untrusted_protected_worker": {
+    "untrusted_worker_counters_applicable": false,
+    "protected_operator_plaintext_shortcuts": 0,
+    "note": "no untrusted worker executed in local D3; the masked-kernel operator checks call NO plaintext-HF operator shortcut"
+  },
+  "nonlinear_trusted_calls": 0,
+  "silent_fallbacks": 0
+}

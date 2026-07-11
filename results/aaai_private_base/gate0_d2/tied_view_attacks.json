@@ -1,0 +1,60 @@
+[
+  {
+    "family": "tied_view",
+    "threat": "T0",
+    "has_reference": false,
+    "codiagonalizable_signal_commutator": 9.19650769697067,
+    "tied_view_constraint_improves_attack": false,
+    "embedding_basis_recovery": 0.0,
+    "final_residual_basis_recovery": 0.0,
+    "vocabulary_bridge_recovery": 0.0,
+    "functional_recovery_gain": 0.0,
+    "status": "measured",
+    "control_validated": true,
+    "note": "co-diagonalisable structure detected but absolute basis NOT pinned without reference/anchor"
+  },
+  {
+    "family": "tied_view",
+    "threat": "T2",
+    "anchor_pairs": 1,
+    "has_reference": true,
+    "final_residual_basis_recovery": 0.17724867198728872,
+    "residual_basis_underdetermined": true,
+    "status": "underdetermined_anchor",
+    "control_validated": true
+  },
+  {
+    "family": "tied_view",
+    "threat": "T2",
+    "anchor_pairs": 8,
+    "has_reference": true,
+    "final_residual_basis_recovery": 0.2812218958017713,
+    "residual_basis_underdetermined": true,
+    "status": "underdetermined_anchor",
+    "control_validated": true
+  },
+  {
+    "family": "tied_view",
+    "threat": "T2",
+    "anchor_pairs": 32,
+    "has_reference": true,
+    "final_residual_basis_recovery": 0.3954830264031058,
+    "residual_basis_underdetermined": true,
+    "status": "underdetermined_anchor",
+    "control_validated": true
+  },
+  {
+    "family": "tied_view",
+    "threat": "T3",
+    "has_reference": true,
+    "final_residual_basis_recovery_maxerr": 1.071365218763276e-14,
+    "final_residual_basis_recovered": true,
+    "vocabulary_bridge_recovery_frac_matched": 0.0,
+    "embedding_basis_recovery": 1.0,
+    "tied_view_constraint_improves_attack": true,
+    "functional_recovery_gain": 0.0,
+    "status": "measured",
+    "control_validated": true,
+    "note": "with full plaintext reference the tied views fully invert -- confirms masks do NOT protect under weight leakage"
+  }
+]

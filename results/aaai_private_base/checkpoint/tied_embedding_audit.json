@@ -1,0 +1,17 @@
+{
+  "config_tie_word_embeddings": true,
+  "storage_shared": true,
+  "numeric_equal": true,
+  "lm_head_tensor_present_in_checkpoint": false,
+  "embedding_tensor_name": "model.embed_tokens.weight",
+  "lm_head_tensor_name": "reconstructed by HF from tied embed_tokens.weight",
+  "actual_loading_behavior": "HF ties lm_head to embed_tokens when tie_word_embeddings=True and lm_head.weight is absent from the checkpoint; they share storage",
+  "embed_shape": [
+    151936,
+    896
+  ],
+  "head_shape": [
+    151936,
+    896
+  ]
+}

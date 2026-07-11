@@ -1,0 +1,46 @@
+{
+  "controls_ok": true,
+  "weight_controls_ok": true,
+  "tied_view_controls_ok": true,
+  "positive_controls": [
+    {
+      "control": "P_gram_column_perm_with_reference",
+      "metric": 1.0,
+      "passed": true,
+      "status": "measured"
+    },
+    {
+      "control": "P_spectral_singular_values_preserved",
+      "metric": 1.0658141036401503e-14,
+      "passed": true,
+      "status": "measured"
+    },
+    {
+      "control": "P5prime_tied_view_anchor_recovers_basis",
+      "metric": 5.773159728050814e-15,
+      "passed": true,
+      "status": "measured",
+      "anchor_pairs": 40,
+      "note": "sufficient anchor (k>=H); k<H is the underdetermined T2 regime reported honestly, not a control failure"
+    }
+  ],
+  "T0_functional_model_recovered": false,
+  "T0_tied_view_basis_recovered": false,
+  "T3_functional_recovered_worst_case": true,
+  "spectrum_leaked_weights_T0": [
+    "model.layers.0.mlp.down_proj_tilde",
+    "model.layers.0.self_attn.o_proj_tilde",
+    "model.layers.12.mlp.down_proj_tilde",
+    "model.layers.12.self_attn.o_proj_tilde",
+    "model.layers.23.mlp.down_proj_tilde",
+    "model.layers.23.self_attn.o_proj_tilde"
+  ],
+  "documented_T0_leaks": [
+    "singular_value_spectra_of_gamma_free_weights (down_proj/o_proj)",
+    "co-diagonalizable tied-view structure (basis NOT pinned)",
+    "attention scores by design"
+  ],
+  "claim_private_base_weight_confidentiality_empirical": true,
+  "claim_scope": "holds ONLY under the private-weight (no plaintext reference) assumption; BROKEN at T3 (weight leakage) as expected and shown",
+  "elapsed_sec": 67.7
+}

@@ -1,0 +1,18 @@
+{
+  "method": "singular_value_and_value_multiset_vs_plaintext",
+  "note": "orthogonal/permutation masks preserve spectra & value multisets; these are documented structural leaks, NOT claimed hidden",
+  "probes": [
+    {
+      "tensor": "q_proj.L0",
+      "singular_value_gap_after_gamma_fold": 30.037015579463244,
+      "value_multiset_gap": 0.6460750699043274,
+      "exact_plaintext_tensor_present": false
+    },
+    {
+      "tensor": "down_proj.L0",
+      "singular_value_gap_after_gamma_fold": 7.993605777301127e-15,
+      "value_multiset_gap": 0.021484375,
+      "exact_plaintext_tensor_present": false
+    }
+  ]
+}

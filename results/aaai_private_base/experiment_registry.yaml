@@ -14,8 +14,10 @@ security_posture:
 fixed_model:
   model_id: Qwen2.5-0.5B
   checkpoint_source: Qwen/Qwen2.5-0.5B (HF)
-  checkpoint_sha256: PENDING_LOCAL_DOWNLOAD          # filled from local snapshot
-  tokenizer_sha256: PENDING_LOCAL_DOWNLOAD
+  checkpoint_sha256: 88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342  # model.safetensors; source(H800)<->dest byte-identical (NOT claimed upstream canonical)
+  tokenizer_sha256: c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539  # tokenizer.json
+  config_sha256: 479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b
+  private_package_root_hash: bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1  # immutable D2 target
   arch: {hidden: 896, layers: 24, heads: 14, kv_heads: 2, intermediate: 4864,
          vocab: 151936, rope_theta: 1000000, tie_word_embeddings: true}
   tied_weight: {source: single_plaintext_E, transformed_views: [embedding, lm_head],

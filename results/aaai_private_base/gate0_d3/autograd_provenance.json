@@ -1,0 +1,170 @@
+{
+  "layer_0": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_1": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_2": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_3": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_4": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_5": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_6": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_7": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_8": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_9": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_10": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_11": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_12": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_13": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_14": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_15": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_16": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_17": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_18": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_19": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_20": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_21": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_22": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  },
+  "layer_23": {
+    "lora_A_requires_grad": true,
+    "lora_B_requires_grad": true,
+    "lora_A_grad_present": true,
+    "lora_B_grad_present": true,
+    "base_weight_requires_grad": false
+  }
+}
