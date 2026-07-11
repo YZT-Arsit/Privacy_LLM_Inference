@@ -1,0 +1,18 @@
+{
+  "package_root_hash_expected": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "source_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "destination_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "root_hash_match": true,
+  "transfer_method": "tar over authenticated ssh exec channel (banner-safe); AppleDouble ._* sidecars stripped on dest",
+  "component_count_expected": 242,
+  "transformed_artifact_count": 242,
+  "total_files_incl_manifests": 246,
+  "missing_artifacts": [],
+  "extra_artifacts": [],
+  "differing_files": [],
+  "byte_identical_all_files": true,
+  "reproducible_rebuild_note": "an independent H800 rebuild from identical seeds+checkpoint validated functionally (fold err 5.7e-14) but produced a DIFFERENT root hash 1076db08 due to cross-platform fp32 rounding; hence the literal byte transfer is used and required by the fail-closed root-hash rule",
+  "no_plaintext_checkpoint_shard_in_package": true,
+  "no_safetensors_in_package": true,
+  "no_mask_secret_files_in_package": true
+}

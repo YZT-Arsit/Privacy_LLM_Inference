@@ -1,0 +1,7 @@
+{
+  "configured_protected_model_path": "/root/pllo_pb/results/aaai_private_base/private_package/gpu_package",
+  "plaintext_shards_in_protected_path": [],
+  "plaintext_hf_cache_usable_by_worker": "none in protected path",
+  "host_has_plaintext_checkpoint_elsewhere": "/root/autodl-tmp/modelscope_cache/.../model.safetensors (used ONLY by the trusted verifier/reference generator, NOT the worker; guarded by assert_private_base_or_abort on the protected path)",
+  "worker_reads_original_safetensors": false
+}

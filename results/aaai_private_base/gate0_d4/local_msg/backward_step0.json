@@ -1,0 +1,26 @@
+{
+  "mode": "backward",
+  "step": 0,
+  "backward_sec": 0.5265974998474121,
+  "peak_vram_gb": 2.77,
+  "lora_targets_connected": 168,
+  "lora_targets_total": 168,
+  "all_targets_connected": true,
+  "base_tensors_require_grad": false,
+  "step_finite": true,
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 97,
+    "attention_score_exposures": 592704,
+    "total_logical_trusted_invocations_per_step": 2
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "test": "package_root_hash_matches",
+    "passed": true,
+    "detail": "bfd578b809ef2313 vs bfd578b809ef2313"
+  },
+  {
+    "test": "execution_profile_is_paper_safe",
+    "passed": true,
+    "detail": "paper_safe"
+  },
+  {
+    "test": "backend_not_current_or_trusted_shortcut",
+    "passed": true,
+    "detail": "package_native_A_rightmul"
+  },
+  {
+    "test": "model_config_is_qwen2_5_0_5B",
+    "passed": true,
+    "detail": "896"
+  },
+  {
+    "test": "no_plaintext_checkpoint_shard_in_package",
+    "passed": true,
+    "detail": "[]"
+  },
+  {
+    "test": "all_gpu_tensors_are_tilde",
+    "passed": true,
+    "detail": "[]"
+  },
+  {
+    "test": "no_mask_secret_files_in_package",
+    "passed": true,
+    "detail": "[]"
+  }
+]

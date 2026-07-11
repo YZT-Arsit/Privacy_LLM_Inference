@@ -49,7 +49,9 @@ from pllo.ops.masked_training_kernels import (  # noqa: E402
 from pllo.deployment.private_base_package import (  # noqa: E402
     PrivateBasePackager, scan_package_for_plaintext, PrivateBasePackageError)
 
-CKPT = Path("/Users/Hoshino/privacy_llm_data/checkpoints/Qwen2.5-0.5B")
+import os
+CKPT = Path(os.environ.get("PB_CKPT_DIR",
+                           "/Users/Hoshino/privacy_llm_data/checkpoints/Qwen2.5-0.5B"))
 OUT = REPO / "results/aaai_private_base/private_package"
 PKG = OUT / "gpu_package"
 SOURCE_SAFE_SHA = "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342"

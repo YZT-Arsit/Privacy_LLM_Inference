@@ -1,0 +1,21 @@
+{
+  "d4_run_id": "D4-1783795224-0d34dc05",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "worker_runtime_hash": "03db678fe65129d74571b868e988b7bbc09945562e037abf1d24eb7b958982fb",
+  "tdx_service_hash": "b30b47b9a8cb1d25fb0a8f734cccfb5c12157ca8872fc026a5f786e73f4ae2e4",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "execution_profile": "paper_safe",
+  "feature_mask_family": "orthogonal_signed_perm",
+  "nonlinear_permutation_profile": "swiglu_shared_perm_P",
+  "qk_bias_handling_profile": "rope_commuting_planar_rotation_OI1",
+  "rank_mask_profile": "orthogonal_U",
+  "optimizer_profile": "gpu_masked_sgd_O1A",
+  "vocabulary_mask_profile": "monomial_perm_only",
+  "gradient_convention": "masked_domain_dlogits",
+  "dataset_batch_manifest_hash": "7690d215fb26dd0b0a347d5c27995ce928e3b5e7f2d1b2e8f6331116958fdd57",
+  "code_revision_or_worktree_hash": "be0d660f4b8503340e5c9d26237fa7d90374ced1",
+  "debug_false_required": true,
+  "nonce": "ba4f601cc957e93012c30ea7adb35316",
+  "ephemeral_key_pub": "c5ed84bd2e813610de6956b35d3ae8e790b63d72ad62203e216a75ffecd32168"
+}

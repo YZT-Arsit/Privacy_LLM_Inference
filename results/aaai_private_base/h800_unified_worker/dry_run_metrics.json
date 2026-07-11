@@ -1,0 +1,93 @@
+{
+  "label": "H800_UNIFIED_DRY_RUN",
+  "not_a_paper_result": true,
+  "loss_boundary": "local_diagnostic_non_tdx",
+  "status": "H800_UNIFIED_DRY_RUN_PASS",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "root_hash_matches_pinned": true,
+  "seq_len": 42,
+  "checkA_base_forward": {
+    "masked_forward_vs_hf_plaintext_max_abs": 0.00025832653045654297,
+    "masked_forward_vs_hf_plaintext_rel": 2.2830336092738435e-05,
+    "next_token_top1_agreement": 1.0,
+    "logit_cosine": 1.0003197193145752,
+    "finite": true,
+    "all_24_layers_executed": true,
+    "peak_vram_gb": 4.59,
+    "passed": true
+  },
+  "checkB_lora_connectivity": {
+    "lora_targets_total": 168,
+    "lora_targets_connected_gradA": 168,
+    "all_targets_connected": true,
+    "base_tensors_require_grad": false,
+    "one_step_finite": true,
+    "end_to_end_loss_at_init": 0.45537441968917847,
+    "hf_base_ce_reference": 0.4538680613040924,
+    "loss_abs_diff_vs_hf_base": 0.0015063583850860596,
+    "passed": true
+  },
+  "checkC_operator_lora_equivalence": [
+    {
+      "layer": 0,
+      "proj": "q_proj",
+      "forward_err": 8.881784197001252e-16,
+      "gradA_recovery_err": 4.7704895589362195e-18,
+      "gradB_recovery_err": 2.1141942363467336e-18,
+      "sgd_step_recovery_err": 3.469446951953614e-17,
+      "passed": true
+    },
+    {
+      "layer": 0,
+      "proj": "down_proj",
+      "forward_err": 2.6645352591003757e-15,
+      "gradA_recovery_err": 7.806255641895632e-18,
+      "gradB_recovery_err": 6.5052130349130266e-18,
+      "sgd_step_recovery_err": 5.551115123125783e-17,
+      "passed": true
+    },
+    {
+      "layer": 12,
+      "proj": "gate_proj",
+      "forward_err": 1.7763568394002505e-15,
+      "gradA_recovery_err": 2.6020852139652106e-18,
+      "gradB_recovery_err": 5.963111948670274e-19,
+      "sgd_step_recovery_err": 4.85722573273506e-17,
+      "passed": true
+    },
+    {
+      "layer": 23,
+      "proj": "v_proj",
+      "forward_err": 2.6645352591003757e-15,
+      "gradA_recovery_err": 1.9081958235744878e-17,
+      "gradB_recovery_err": 2.7755575615628914e-17,
+      "sgd_step_recovery_err": 5.551115123125783e-17,
+      "passed": true
+    },
+    {
+      "layer": 23,
+      "proj": "o_proj",
+      "forward_err": 8.881784197001252e-16,
+      "gradA_recovery_err": 2.6020852139652106e-18,
+      "gradB_recovery_err": 2.168404344971009e-18,
+      "sgd_step_recovery_err": 6.938893903907228e-17,
+      "passed": true
+    }
+  ],
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 2,
+    "mask_domain_transitions": 194,
+    "attention_score_exposures": 1185408,
+    "total_logical_trusted_invocations_per_step": 2
+  },
+  "attention_scores_exposed_by_design": true
+}
