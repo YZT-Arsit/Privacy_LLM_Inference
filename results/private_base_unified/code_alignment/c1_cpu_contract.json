@@ -1,0 +1,73 @@
+{
+  "stage": "private_base_c1_cpu_contract",
+  "is_real_qwen": false,
+  "is_real_gpu": false,
+  "note": "CPU/fp64 7-projection private-base contract; NOT a real Qwen/GPU result.",
+  "all_passed": true,
+  "checks": {
+    "forward_recovered_output": true,
+    "per_layer_mask_invariant": true,
+    "residual_remains_masked": true,
+    "no_plaintext_hidden_materialization": true,
+    "private_ce_matches_plaintext": true,
+    "gradA_recovered_correct": true,
+    "gradB_recovered_correct": true,
+    "masked_sgd_update_correct": true,
+    "next_step_logits_match": true,
+    "embedding_masked_not_plaintext": true,
+    "zero_plaintext_base_weight_materializations": true,
+    "zero_plaintext_embedding_materializations": true,
+    "zero_nonlinear_trusted_calls": true,
+    "all_seven_projections_lora": true,
+    "zero_packed_updates": true,
+    "zero_trusted_optimizer_calls": true
+  },
+  "counters": {
+    "plaintext_hidden_materializations": 0,
+    "plaintext_embedding_materializations": 0,
+    "plaintext_base_weight_materializations": 0,
+    "silent_fallbacks": 0,
+    "nonlinear_trusted_calls": 0,
+    "trusted_nonlinear_ops_count": 0,
+    "accelerator_nonlinear_ops": 5,
+    "packed_update": 0,
+    "trusted_optimizer_calls": 0,
+    "trusted_boundary_calls": 1,
+    "lora_targets": 7
+  },
+  "mask_spaces": {
+    "feature": [
+      "N (residual, orthogonal under paper_safe)",
+      "pair-perm R (Q/K)",
+      "S (V)"
+    ],
+    "lora_rank": [
+      "U (per-projection orthogonal rank mask)"
+    ],
+    "nonlinear_permutation": [
+      "Pmlp (shared SwiGLU channel perm)"
+    ],
+    "vocabulary": [
+      "D_vocab, Pi_vocab (monomial logit mask)"
+    ]
+  },
+  "paper_safe_observed": {
+    "nonlinear_backend": "A_rightmul",
+    "nonlinear_trusted_calls": 0,
+    "trusted_nonlinear_ops_count": 0,
+    "plaintext_hidden_materializations": 0,
+    "masked_residual_transport": true,
+    "masked_inter_block_handoff": true,
+    "silent_fallback_occurred": false
+  },
+  "security_claim_allowed_cpu_contract": true,
+  "key_metrics": {
+    "forward_logits_max_abs_err": 1.4432899320127035e-15,
+    "residual_h3_mask_err": 8.881784197001252e-16,
+    "gradA_recovered_max_err": 2.220446049250313e-16,
+    "gradB_recovered_max_err": 2.255140518769849e-16,
+    "masked_sgd_update_max_err": 2.220446049250313e-16,
+    "next_step_logits_max_err": 1.3739009929736312e-15,
+    "embedding_mask_gap": 0.3832534253405504
+  }
+}
