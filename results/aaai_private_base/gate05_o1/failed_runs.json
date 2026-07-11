@@ -1,0 +1,8 @@
+[
+  {
+    "run": "dW_cosine_metric_v1",
+    "issue": "wrong un-fold orientation (T_out^{-1} dW T_in^{-1}) gave ~0.009 even for exact O targets",
+    "fix": "masked-domain comparison T_out^T dW_p T_in^{-T}; O targets now 1.0",
+    "status": "fixed"
+  }
+]

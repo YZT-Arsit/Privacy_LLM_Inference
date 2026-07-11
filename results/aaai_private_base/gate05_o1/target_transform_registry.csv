@@ -1,0 +1,8 @@
+target,gamma_folded_input,T_in_orthogonal,T_in_orthogonality_dev,T_in_condition_number,T_out_orthogonal,T_out_orthogonality_dev,T_out_condition_number,A_update_exact,B_update_exact,class,correction_needed
+q_proj,True,False,2434.3630425315723,203.97860962566844,True,2.220446049250313e-16,1.0000000000000038,False,True,MIXED,A_grad @ (Nr^T diag(gamma^2) Nr)
+k_proj,True,False,2434.3630425315723,203.97860962566844,True,2.220446049250313e-16,1.0000000000000016,False,True,MIXED,A_grad @ (Nr^T diag(gamma^2) Nr)
+v_proj,True,False,2434.3630425315723,203.97860962566844,True,0.0,1.0,False,True,MIXED,A_grad @ (Nr^T diag(gamma^2) Nr)
+o_proj,False,True,0.0,1.0,True,0.0,1.0,True,True,O,none
+gate_proj,True,False,41355368478.06792,800730.7636363637,True,0.0,1.0,False,True,MIXED,A_grad @ (Nr^T diag(gamma^2) Nr)
+up_proj,True,False,41355368478.06792,800730.7636363637,True,0.0,1.0,False,True,MIXED,A_grad @ (Nr^T diag(gamma^2) Nr)
+down_proj,False,True,0.0,1.0,True,0.0,1.0,True,True,O,none

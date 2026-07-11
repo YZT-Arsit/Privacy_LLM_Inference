@@ -1,0 +1,51 @@
+{
+  "q_proj": {
+    "class": "MIXED",
+    "A_update_exact": false,
+    "B_update_exact": true,
+    "T_in_cond_max": 203.97860962566844,
+    "T_out_cond_max": 1.0000000000000038
+  },
+  "k_proj": {
+    "class": "MIXED",
+    "A_update_exact": false,
+    "B_update_exact": true,
+    "T_in_cond_max": 203.97860962566844,
+    "T_out_cond_max": 1.0000000000000016
+  },
+  "v_proj": {
+    "class": "MIXED",
+    "A_update_exact": false,
+    "B_update_exact": true,
+    "T_in_cond_max": 203.97860962566844,
+    "T_out_cond_max": 1.0
+  },
+  "o_proj": {
+    "class": "O",
+    "A_update_exact": true,
+    "B_update_exact": true,
+    "T_in_cond_max": 1.0,
+    "T_out_cond_max": 1.0
+  },
+  "gate_proj": {
+    "class": "MIXED",
+    "A_update_exact": false,
+    "B_update_exact": true,
+    "T_in_cond_max": 800730.7636363637,
+    "T_out_cond_max": 1.0
+  },
+  "up_proj": {
+    "class": "MIXED",
+    "A_update_exact": false,
+    "B_update_exact": true,
+    "T_in_cond_max": 800730.7636363637,
+    "T_out_cond_max": 1.0
+  },
+  "down_proj": {
+    "class": "O",
+    "A_update_exact": true,
+    "B_update_exact": true,
+    "T_in_cond_max": 1.0,
+    "T_out_cond_max": 1.0
+  }
+}

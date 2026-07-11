@@ -1,0 +1,7 @@
+component,seconds,note
+tdx_transform_and_ce,0.06463980674743652,real TDX CE+dlogits
+tdx_load,0.009753704071044922,
+tdx_save,0.027575254440307617,
+mac_ferry_net,46.93907690048218,25.5MB each way over slow cross-cloud tunnels
+transport_profile,,mac_ferried_authenticated_prototype (NOT final deployment latency)
+direct_h800_tdx_transport,,PREREGISTERED separate experiment; not implemented; do not use ferry wall-time as main-table latency

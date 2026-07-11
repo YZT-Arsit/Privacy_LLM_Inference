@@ -1,0 +1,12 @@
+{
+  "correction_tensor": "Nr^T diag(gamma^2) Nr (per RMSNorm, per layer)",
+  "reveals_gamma": true,
+  "reveals_N_T_diag_gamma2_N": true,
+  "eigenvalues_equal_gamma_squared_multiset": true,
+  "O1B_on_gpu_worker_sees_correction": true,
+  "O1C_in_tee_worker_sees_correction": false,
+  "can_be_folded_into_static_transformed_operator": false,
+  "reason_static_fold_impossible": "the correction multiplies the per-step gradient; folding it into a static operator on the GPU still materializes Nr^T diag(gamma^2) Nr on the untrusted worker, revealing the gamma^2 multiset",
+  "can_be_applied_inside_tee": true,
+  "custom_autograd_can_emit_masked_grads_without_publishing_metric": "only if the metric multiply happens in the TEE; a GPU-side custom backward still needs the gamma^2 metric on-device"
+}
