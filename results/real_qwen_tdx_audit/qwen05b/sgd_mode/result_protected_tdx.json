@@ -1,0 +1,79 @@
+{
+  "mode": "protected_tdx",
+  "model_id": "Qwen2.5-0.5B",
+  "vocab": 151936,
+  "num_lora_layers": 96,
+  "steps": 1,
+  "lr": 0.001,
+  "targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj"
+  ],
+  "rank": 8,
+  "alpha": 16.0,
+  "trajectory": [
+    {
+      "step": 0,
+      "loss": 2.058157205581665,
+      "finite": true,
+      "fwd_s": 0.06152701377868652,
+      "bwd_s": 0.1071770191192627
+    }
+  ],
+  "invocations_per_step": {
+    "input_init_boundary": 1,
+    "loss_boundary": 1,
+    "packed_update": 0,
+    "trusted_optimizer": 0,
+    "layer_wise": 0,
+    "total": 2,
+    "note": "input/init boundary = authorized init (labels+pi), amortized once for the fixed batch; loss boundary per step"
+  },
+  "wire_bytes": {
+    "init_out": 0,
+    "logits_out": 38591744,
+    "dlogits_in": 38591744
+  },
+  "rpc_latency_s": [
+    [
+      "init",
+      1.2859325408935547
+    ],
+    [
+      "logits_loss",
+      93.45080423355103
+    ]
+  ],
+  "attestation_bundle_public": {
+    "run_id": "gate3_qwen05b_sgd",
+    "model_id": "Qwen2.5-0.5B",
+    "runtime_hash_hex": "3e7fbece8f4d82c7b05ca87d6c52dc148bed1d4c4c9dbe3a4f4122597ef24169aa77d29daa1dfe7699fb6a6120c3d0ae47ffdbf90ed0af18804987e6fdb20ab2",
+    "config_digest": "a81cc081fbe399726e6b2f7ac350a291d6fe649be36d5f7690c6735366466fc7",
+    "gradient_convention": "nout_dual",
+    "optimizer_mode": "gpu_masked_sgd",
+    "guest_ephemeral_public_hex": "40b616e07eae55dcf76ff0c997eb7dd4a361d5e44dc02a28438b6520f582d124",
+    "report_data_hex": "fee136b2b41fd32bc68739087ba298d99e845c60c7e6e2246b1da39fa50987cf86e7dc6125ea008d2c7509da351ee7214d0daf43f5f63a4f50557c39a0b0ed5b",
+    "nonce": "21d5864f86ec1f96b5c89060f36a5655992b185c58fbd5cab8784491e58e6b08",
+    "tee_type": "real_tdx",
+    "quote_available": true,
+    "quote_hash": "3e0937144e8d8a42788983767e45cba2be9252cbf4b9a311e93efa068be8b8b3",
+    "overall_appraisal_result": 1,
+    "appraisal_ok": true,
+    "reportdata_binds": true,
+    "rp_reportdata_binds": true,
+    "signature_verified": true,
+    "appraisal_source": "relying_party_v_a",
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "rtmr0": "f59c0a3b673981a08cca43766031f508c11507f325bff88555067ae8a693c3fe85b56ac2def42bf1b2f05b1812eeb863",
+    "rtmr1": "341f62b531d339691421c9ee524c57df29b7fbd193e778386dd0cf784b14272466b55fe652668b860a9ddbc9c7e94af0",
+    "rtmr2": "fc0391f16762873d4d6af31b6200f4f14a4e31f5659d3e62217624657e1b6b2ba6b0c320a6fefb957099f48bc5c76a74",
+    "rtmr3": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "debug": false,
+    "td_attributes": "0000000010000000",
+    "quote_version": 5,
+    "quote_tee_type": "tdx",
+    "jwt_parts": 2
+  }
+}

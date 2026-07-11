@@ -28,16 +28,39 @@ class AttestationFailClosed(Exception):
     """Raised when a real-TDX attestation cannot be verified. No fallback."""
 
 
+# Every trusted-side source file the deployed service loads at runtime. The runtime
+# hash binds these exact artifacts, so any change re-quotes (stale quote fails).
+SERVICE_SOURCE_FILES: tuple[str, ...] = (
+    "real_tdx_training_service.py",
+    "real_tdx_attestation.py",
+    "real_tdx_training_client.py",
+    "real_tdx_safe_codec.py",
+    "real_tdx_session.py",
+    "real_tdx_kex.py",
+    "real_tdx_quote.py",
+)
+
+
 def service_source_sha() -> str:
-    """SHA-256 over the training-service + attestation source files."""
+    """SHA-256 over the deployed trusted-service source files (sorted, path-bound)."""
     here = Path(__file__).resolve().parent
     h = hashlib.sha256()
-    for name in ("real_tdx_training_service.py", "real_tdx_attestation.py",
-                 "real_tdx_training_client.py"):
+    for name in sorted(SERVICE_SOURCE_FILES):
         p = here / name
+        h.update(name.encode() + b"\x00")
         if p.exists():
             h.update(p.read_bytes())
     return h.hexdigest()
+
+
+def service_artifact_hashes() -> dict:
+    """Per-file SHA-256 of the deployed trusted-service artifacts (for evidence)."""
+    here = Path(__file__).resolve().parent
+    out = {}
+    for name in sorted(SERVICE_SOURCE_FILES):
+        p = here / name
+        out[name] = hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else None
+    return out
 
 
 def compute_service_runtime_hash(config_digest: str) -> str:
@@ -132,21 +155,53 @@ def digest_config(config: dict) -> str:
 
 
 # ===========================================================================
-# Gate 1.5-B — external challenge-response attestation verifier
+# Gate 1.5-B / Gate 2 §3 — external challenge-response attestation verifier
 # ===========================================================================
 # The guest CANNOT self-certify. A verifier issues a fresh nonce; the guest binds
-# report_data = SHA256(runtime_hash || protocol || config_digest || run_id || model_id
-# || nonce) and produces a REAL TDX quote. The external verifier checks the quote
-# signature/measurement (platform verifier) AND every bound field. Only then may the
-# service state be set to attestation_verified=true. Fail-closed throughout.
+#   report_data = SHA512( runtime_hash || protocol || config_digest || run_id ||
+#                         model_id || gradient_convention || optimizer_mode ||
+#                         guest_ephemeral_public_key || verifier_nonce )
+# and produces a REAL TDX quote (report_data is 64 bytes -> SHA-512 is an exact fit).
+# The external verifier cryptographically verifies the quote (DCAP QVL chain), checks
+# the measurement against an explicit policy, and re-checks EVERY bound field. Only
+# then may attestation_verified become true. Fail-closed throughout.
+REPORT_DATA_BYTES = 64
+
+
 def compute_report_data(*, runtime_hash_hex: str, config_digest: str, run_id: str,
-                        model_id: str, verifier_nonce: str,
+                        model_id: str, gradient_convention: str, optimizer_mode: str,
+                        guest_ephemeral_public_hex: str, verifier_nonce: str,
                         protocol_version: str = PROTOCOL_VERSION) -> str:
-    h = hashlib.sha256()
+    """64-byte (SHA-512) report_data binding every Gate-2 session-identity field.
+
+    The 64-byte width matches TDX report_data exactly, so this value is bound
+    directly into the real TD Quote."""
+    h = hashlib.sha512()
     for part in (runtime_hash_hex, protocol_version, config_digest, run_id, model_id,
+                 gradient_convention, optimizer_mode, guest_ephemeral_public_hex,
                  verifier_nonce):
         h.update(part.encode()); h.update(b"\x00")
-    return h.hexdigest()
+    return h.hexdigest()                     # 64 bytes -> 128 hex
+
+
+@dataclass
+class MeasurementPolicy:
+    """Explicit allowlist policy for the TD measurement. Fail-closed: an empty
+    allowlist means 'no measurement accepted' unless the caller opts in."""
+    allowed_mr_td: frozenset = frozenset()
+    allow_debug: bool = False
+    allow_any_mr_td: bool = False            # experiment escape hatch (recorded)
+
+    def check(self, *, mr_td: str | None, debug: bool | None) -> tuple[bool, str]:
+        if debug is True and not self.allow_debug:
+            return False, "TD is in DEBUG mode (not production-grade); policy denies"
+        if self.allow_any_mr_td:
+            return True, "mr_td not pinned (allow_any_mr_td=true, recorded)"
+        if not mr_td:
+            return False, "no mr_td parsed from the quote appraisal"
+        if mr_td.lower() not in {m.lower() for m in self.allowed_mr_td}:
+            return False, f"mr_td {mr_td[:16]}... not in measurement allowlist"
+        return True, "mr_td in allowlist"
 
 
 @dataclass
@@ -156,48 +211,77 @@ class Challenge:
     model_id: str
     config_digest: str
     expected_runtime_hash: str
+    gradient_convention: str
+    optimizer_mode: str
 
 
 class ExternalAttestationVerifier:
-    """Runs OUTSIDE the guest (on the GPU/orchestrator side). Single-use nonces."""
+    """Runs OUTSIDE the guest (on the GPU/orchestrator side). Single-use nonces.
 
-    def __init__(self):
+    ``chain_verifier(evidence) -> bool`` performs the REAL cryptographic quote
+    verification (DCAP QVL appraisal of the TD Quote against the Intel PCK cert
+    chain). Without it, ``attestation_verified`` stays False (honest). The verifier
+    additionally enforces a measurement policy and re-derives report_data from every
+    bound field including the guest ephemeral ECDH public key."""
+
+    def __init__(self, policy: "MeasurementPolicy | None" = None):
         self._used_nonces: set[str] = set()
+        self._used_quotes: set[str] = set()
+        self.policy = policy or MeasurementPolicy()
 
-    def issue_challenge(self, *, run_id, model_id, config_digest, expected_runtime_hash) -> Challenge:
+    def issue_challenge(self, *, run_id, model_id, config_digest, expected_runtime_hash,
+                        gradient_convention, optimizer_mode) -> Challenge:
         import secrets
         return Challenge(secrets.token_hex(32), run_id, model_id, config_digest,
-                         expected_runtime_hash)
+                         expected_runtime_hash, gradient_convention, optimizer_mode)
 
     def verify(self, *, evidence: dict, challenge: Challenge, chain_verifier=None) -> dict:
-        """evidence = {report_data_hex, runtime_hash_hex, mr_td, quote_bytes, nonce,
-        run_id, model_id, config_digest}. `chain_verifier(evidence)->bool` checks the
-        real quote signature/cert-chain/measurement (platform-specific); when absent or
-        failing, attestation_verified stays False (fail-closed). Raises
-        AttestationFailClosed on any binding mismatch."""
+        """evidence must carry: report_data_hex, runtime_hash_hex, mr_td, debug,
+        quote_bytes/quote_hash, nonce, run_id, model_id, config_digest,
+        gradient_convention, optimizer_mode, guest_ephemeral_public_hex.
+
+        Raises AttestationFailClosed on any binding/policy/replay failure. The
+        cryptographic chain check is delegated to ``chain_verifier``; when it is
+        absent or returns False, ``attestation_verified`` stays False."""
         n = evidence.get("nonce")
         if n != challenge.verifier_nonce:
             raise AttestationFailClosed("nonce does not match the issued challenge")
         if n in self._used_nonces:
             raise AttestationFailClosed("nonce replay (already used)")
-        for field in ("run_id", "model_id", "config_digest"):
+        for field in ("run_id", "model_id", "config_digest", "gradient_convention",
+                      "optimizer_mode"):
             if evidence.get(field) != getattr(challenge, field):
                 raise AttestationFailClosed(f"bound field mismatch: {field}")
         if evidence.get("runtime_hash_hex") != challenge.expected_runtime_hash:
             raise AttestationFailClosed("runtime hash mismatch")
+        guest_pub = evidence.get("guest_ephemeral_public_hex")
+        if not guest_pub:
+            raise AttestationFailClosed("missing guest ephemeral public key")
+        # replayed quote reuse (a stale quote can never satisfy a fresh nonce, but
+        # reject explicitly for defence in depth).
+        qh = evidence.get("quote_hash")
+        if qh and qh in self._used_quotes:
+            raise AttestationFailClosed("quote replay (already used)")
         expected_rd = compute_report_data(
             runtime_hash_hex=challenge.expected_runtime_hash,
             config_digest=challenge.config_digest, run_id=challenge.run_id,
-            model_id=challenge.model_id, verifier_nonce=challenge.verifier_nonce)
+            model_id=challenge.model_id, gradient_convention=challenge.gradient_convention,
+            optimizer_mode=challenge.optimizer_mode,
+            guest_ephemeral_public_hex=guest_pub, verifier_nonce=challenge.verifier_nonce)
         report_data_match = (evidence.get("report_data_hex") == expected_rd)
         if not report_data_match:
-            raise AttestationFailClosed("report_data not bound to runtime_hash+nonce")
-        # cryptographic quote verification is delegated to a platform verifier.
+            raise AttestationFailClosed("report_data not bound to runtime_hash+nonce+ecdh")
+        # measurement policy (debug mode / mr_td allowlist)
+        policy_ok, policy_reason = self.policy.check(
+            mr_td=evidence.get("mr_td"), debug=evidence.get("debug"))
+        # cryptographic quote verification is delegated to the platform verifier.
         chain_ok = False
         if chain_verifier is not None:
             chain_ok = bool(chain_verifier(evidence))
         self._used_nonces.add(n)             # consume nonce only after binding checks pass
-        attestation_verified = report_data_match and chain_ok
+        if qh:
+            self._used_quotes.add(qh)
+        attestation_verified = report_data_match and chain_ok and policy_ok
         return {
             "tee_type": "tdx" if attestation_verified else "unverified",
             "guest_verified": attestation_verified,
@@ -206,5 +290,9 @@ class ExternalAttestationVerifier:
             "report_data_match": report_data_match,
             "nonce_fresh": True,
             "quote_chain_verified": chain_ok,
+            "measurement_policy_passed": policy_ok,
+            "measurement_policy_reason": policy_reason,
+            "debug_mode": bool(evidence.get("debug")),
+            "guest_ephemeral_public_hex": guest_pub,
             "mr_td": evidence.get("mr_td"),
         }

@@ -84,7 +84,8 @@ def test_invocation_counts_two_vs_three():
 
 # ---- service-side fail-closed for the new mode ----
 def _svc(optimizer_mode, optimizer):
-    cfg = {"optimizer_mode": optimizer_mode, "optimizer": optimizer, "lr": 1e-3, "dtype": "float64"}
+    cfg = {"optimizer_mode": optimizer_mode, "optimizer": optimizer, "lr": 1e-3,
+           "dtype": "float64", "gradient_convention": "nout_dual"}
     cfg["config_digest"] = digest_config(dict(cfg))
     svc = TrustedTrainingService(run_id="r", config=cfg, mode="cpu_contract", dtype=DT, seed=1)
     init = svc.init_session({"run_id": "r", "config_digest": cfg["config_digest"],
@@ -125,3 +126,48 @@ def test_trusted_adamw_still_allows_packed_update():
                               "nonce": init["next_nonce"], "manifest": {"layers": man},
                               "packed_grads": packed})
     assert resp["verification"]["trusted_adamw_executed"]
+
+
+# ---- Gate 2 §1-B/§1-C: no implicit mode/convention switching ----
+def test_per_request_optimizer_mode_switch_rejected():
+    svc, cfg, init = _svc("gpu_masked_sgd", "sgd")
+    ml = torch.randn(2, 8, dtype=DT)
+    req = {"run_id": "r", "step_id": 0, "config_digest": cfg["config_digest"],
+           "nonce": init["next_nonce"],
+           "manifest": {"masked_logits": {"shape": [2, 8], "dtype": "float64"}},
+           "masked_logits": ml, "optimizer_mode": "trusted_adamw"}   # attempt switch
+    with pytest.raises(FailClosed, match="optimizer_mode switch"):
+        svc.logits_loss(req)
+
+
+def test_per_request_gradient_convention_switch_rejected():
+    svc, cfg, init = _svc("gpu_masked_sgd", "sgd")
+    ml = torch.randn(2, 8, dtype=DT)
+    req = {"run_id": "r", "step_id": 0, "config_digest": cfg["config_digest"],
+           "nonce": init["next_nonce"],
+           "manifest": {"masked_logits": {"shape": [2, 8], "dtype": "float64"}},
+           "masked_logits": ml, "gradient_convention": "independent_mout"}
+    with pytest.raises(FailClosed, match="gradient_convention switch"):
+        svc.logits_loss(req)
+
+
+def test_missing_gradient_convention_in_config_fails_closed():
+    cfg = {"optimizer_mode": "trusted_adamw", "optimizer": "adamw", "lr": 1e-3,
+           "dtype": "float64"}                          # no gradient_convention
+    cfg["config_digest"] = digest_config(dict(cfg))
+    svc = TrustedTrainingService(run_id="r", config=cfg, mode="cpu_contract", dtype=DT, seed=1)
+    with pytest.raises(FailClosed, match="gradient_convention"):
+        svc.init_session({"run_id": "r", "config_digest": cfg["config_digest"],
+                          "lora_manifest": [{"layer_id": "L0", "d_in": 6, "d_out": 6, "rank": 3}],
+                          "vocab_size": 8, "labels_by_step": {0: [1, 2]}})
+
+
+def test_unimplemented_convention_fails_closed():
+    cfg = {"optimizer_mode": "trusted_adamw", "optimizer": "adamw", "lr": 1e-3,
+           "dtype": "float64", "gradient_convention": "independent_mout"}
+    cfg["config_digest"] = digest_config(dict(cfg))
+    svc = TrustedTrainingService(run_id="r", config=cfg, mode="cpu_contract", dtype=DT, seed=1)
+    with pytest.raises(FailClosed, match="not implemented"):
+        svc.init_session({"run_id": "r", "config_digest": cfg["config_digest"],
+                          "lora_manifest": [{"layer_id": "L0", "d_in": 6, "d_out": 6, "rank": 3}],
+                          "vocab_size": 8, "labels_by_step": {0: [1, 2]}})

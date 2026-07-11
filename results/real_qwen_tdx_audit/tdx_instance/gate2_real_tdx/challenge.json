@@ -1,0 +1,4 @@
+{
+  "report_data_binding": "SHA512(runtime_hash || protocol || config_digest || run_id || model_id || gradient_convention || optimizer_mode || guest_ephemeral_public_key || verifier_nonce)",
+  "nonce": "fresh per run, single-use (not persisted)"
+}

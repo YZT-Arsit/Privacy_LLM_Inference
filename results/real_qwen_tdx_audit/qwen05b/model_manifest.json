@@ -1,0 +1,42 @@
+{
+  "model_identifier": "Qwen/Qwen2.5-0.5B",
+  "download_source": "ModelScope (snapshot_download)",
+  "revision": "master (ModelScope default)",
+  "local_dir": "/root/autodl-tmp/modelscope_cache/models/Qwen/Qwen2___5-0___5B",
+  "param_count": 494032768,
+  "num_tensors": 290,
+  "weight_dtype": "torch.bfloat16",
+  "quantized": false,
+  "config": {
+    "model_type": "qwen2",
+    "hidden_size": 896,
+    "num_hidden_layers": 24,
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "head_dim": 64,
+    "intermediate_size": 4864,
+    "vocab_size": 151936,
+    "torch_dtype": "bfloat16",
+    "max_position_embeddings": 32768,
+    "tie_word_embeddings": true,
+    "rope_theta": 1000000.0
+  },
+  "file_sha256": {
+    "model.safetensors": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+    "config.json": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "tokenizer_config.json": "c91efca15ceff6e9ee9424db58a6f59cd41294e550a86cbd07e3c1fb500b34f9",
+    "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "merges.txt": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+    "generation_config.json": "8c970692323e3ea0e9b8b0a4dca79388d31226e41f83c9fd6014804280ebf6e8"
+  },
+  "authenticity_checks": {
+    "is_real_pretrained": true,
+    "param_count_matches_0_5B": true,
+    "not_random_init": true,
+    "not_config_only": true,
+    "not_quantized_masquerading_as_bf16": true,
+    "not_gpt2_or_substitute": true
+  },
+  "recorded": "2026-07-10"
+}

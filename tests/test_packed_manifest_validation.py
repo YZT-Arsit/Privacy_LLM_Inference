@@ -12,7 +12,8 @@ DT = torch.float64
 
 
 def _svc_init():
-    cfg = {"model_id": "syn", "lr": 1e-3, "dtype": "float64"}
+    cfg = {"model_id": "syn", "lr": 1e-3, "dtype": "float64",
+           "optimizer_mode": "trusted_adamw", "gradient_convention": "nout_dual"}
     cfg["config_digest"] = digest_config({k: v for k, v in cfg.items()})
     svc = TrustedTrainingService(run_id="r1", config=cfg, mode="cpu_contract",
                                  dtype=DT, seed=1)

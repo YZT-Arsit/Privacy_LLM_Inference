@@ -1,0 +1,175 @@
+{
+  "gate": "gate2",
+  "uses_real_tee": true,
+  "uses_real_gpu": false,
+  "uses_real_qwen": false,
+  "service_validation_only": true,
+  "guest_hostname": "iZ2zebdihkqll10ragqp0cZ",
+  "profiles": {
+    "gpu_masked_sgd": {
+      "attestation": {
+        "tee_type": "tdx",
+        "guest_verified": true,
+        "attestation_verified": true,
+        "runtime_hash_bound": true,
+        "report_data_match": true,
+        "nonce_fresh": true,
+        "quote_chain_verified": true,
+        "measurement_policy_passed": true,
+        "measurement_policy_reason": "mr_td not pinned (allow_any_mr_td=true, recorded)",
+        "debug_mode": false,
+        "guest_ephemeral_public_hex": "5b1cdaf689a0fbddce21fe493a054520daf8fda9e220ad2ca48e022aea7fc879",
+        "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0"
+      },
+      "attestation_bundle_public": {
+        "run_id": "gate2_gpu_masked_sgd",
+        "model_id": "synthetic-gate2",
+        "runtime_hash_hex": "ec24ab8ef0801e4e5ed33a7711bd879c21562502b603d05892f38d2b6eed0e866a2078419b177911e64754c0c28a12bdfbd721a74cd5ffd2cee9ffc1c83e4c6c",
+        "config_digest": "5c8c87a5cdc2f5440d79a2871779934fe18dfe60bbccbc4f0753f36ed1698b11",
+        "gradient_convention": "nout_dual",
+        "optimizer_mode": "gpu_masked_sgd",
+        "guest_ephemeral_public_hex": "5b1cdaf689a0fbddce21fe493a054520daf8fda9e220ad2ca48e022aea7fc879",
+        "report_data_hex": "2c18f30717d059d789da742aa0d72fbe508cd2ef040db33354f13f3caa506ea9d4d7ac4be877d432fdbb3903229915eabf1aeac2488c5b93fdd3b1f29181b5dd",
+        "nonce": "30ef4ffc094fd90db4af60917c63c5c56dd2afbb19e39d6e2cbfb6b7c6036297",
+        "tee_type": "real_tdx",
+        "quote_available": true,
+        "quote_hash": "cbd70502d0878f8c29c71f534291978b49b775a2ca38130f1f2ed8d313a09542",
+        "overall_appraisal_result": 1,
+        "appraisal_ok": true,
+        "reportdata_binds": true,
+        "rp_reportdata_binds": true,
+        "signature_verified": true,
+        "appraisal_source": "relying_party_v_a",
+        "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+        "rtmr0": "f59c0a3b673981a08cca43766031f508c11507f325bff88555067ae8a693c3fe85b56ac2def42bf1b2f05b1812eeb863",
+        "rtmr1": "341f62b531d339691421c9ee524c57df29b7fbd193e778386dd0cf784b14272466b55fe652668b860a9ddbc9c7e94af0",
+        "rtmr2": "fc0391f16762873d4d6af31b6200f4f14a4e31f5659d3e62217624657e1b6b2ba6b0c320a6fefb957099f48bc5c76a74",
+        "rtmr3": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "debug": false,
+        "td_attributes": "0000000010000000",
+        "quote_version": 5,
+        "quote_tee_type": "tdx",
+        "jwt_parts": 2
+      },
+      "endpoint": {
+        "optimizer_mode": "gpu_masked_sgd",
+        "gradient_convention": "nout_dual",
+        "logits_loss": {
+          "loss_service": 1.6211172342300415,
+          "loss_ref": 1.6211172342300415,
+          "loss_abs_err": 0.0,
+          "dlogits_abs_err": 1.4156103134155273e-07,
+          "trusted_loss_executed": true
+        },
+        "packed_update_rejected": true,
+        "trusted_invocations_per_step": 2,
+        "trusted_optimizer_calls": 0,
+        "expected_invocations": 2,
+        "invocations_ok": true
+      },
+      "expected_runtime_hash": "ec24ab8ef0801e4e5ed33a7711bd879c21562502b603d05892f38d2b6eed0e866a2078419b177911e64754c0c28a12bdfbd721a74cd5ffd2cee9ffc1c83e4c6c"
+    },
+    "trusted_adamw": {
+      "attestation": {
+        "tee_type": "tdx",
+        "guest_verified": true,
+        "attestation_verified": true,
+        "runtime_hash_bound": true,
+        "report_data_match": true,
+        "nonce_fresh": true,
+        "quote_chain_verified": true,
+        "measurement_policy_passed": true,
+        "measurement_policy_reason": "mr_td not pinned (allow_any_mr_td=true, recorded)",
+        "debug_mode": false,
+        "guest_ephemeral_public_hex": "e9b388cc889cf0067d35ddd2a799cd8f1f30c15baddfb059c4df1f8aed1b5d3c",
+        "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0"
+      },
+      "attestation_bundle_public": {
+        "run_id": "gate2_trusted_adamw",
+        "model_id": "synthetic-gate2",
+        "runtime_hash_hex": "5a841ebe9fa1dae862d71a2cc27fb12b84cd582a60876ed318a258056540cec0c5374f01155679ee8b566b2273326b0dc6455449d043704f3995c64f17b54835",
+        "config_digest": "e524aa07a272cf20c3ef9f27767f4d3d296a145990ea7f77f5a621551c093711",
+        "gradient_convention": "nout_dual",
+        "optimizer_mode": "trusted_adamw",
+        "guest_ephemeral_public_hex": "e9b388cc889cf0067d35ddd2a799cd8f1f30c15baddfb059c4df1f8aed1b5d3c",
+        "report_data_hex": "51ab9240f1c7e565a11051339e3e14acdca9072d40ce0b0353cbf1b1719b78531c014650713a6b4d2527d06b61e8a37ae7fc806945f13c3cafa4125a60b00d66",
+        "nonce": "a1399f78a6fa39304575546e20f530e0c709b379ee037481a72829ec6faceb8d",
+        "tee_type": "real_tdx",
+        "quote_available": true,
+        "quote_hash": "10a72f483b2a10d002ecce6bfd86feba5233b4d70b2f9d4336b5ef3a9f80e26f",
+        "overall_appraisal_result": 1,
+        "appraisal_ok": true,
+        "reportdata_binds": true,
+        "rp_reportdata_binds": true,
+        "signature_verified": true,
+        "appraisal_source": "relying_party_v_a",
+        "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+        "rtmr0": "f59c0a3b673981a08cca43766031f508c11507f325bff88555067ae8a693c3fe85b56ac2def42bf1b2f05b1812eeb863",
+        "rtmr1": "341f62b531d339691421c9ee524c57df29b7fbd193e778386dd0cf784b14272466b55fe652668b860a9ddbc9c7e94af0",
+        "rtmr2": "fc0391f16762873d4d6af31b6200f4f14a4e31f5659d3e62217624657e1b6b2ba6b0c320a6fefb957099f48bc5c76a74",
+        "rtmr3": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "debug": false,
+        "td_attributes": "0000000010000000",
+        "quote_version": 5,
+        "quote_tee_type": "tdx",
+        "jwt_parts": 2
+      },
+      "endpoint": {
+        "optimizer_mode": "trusted_adamw",
+        "gradient_convention": "nout_dual",
+        "logits_loss": {
+          "loss_service": 1.6211172342300415,
+          "loss_ref": 1.6211172342300415,
+          "loss_abs_err": 0.0,
+          "dlogits_abs_err": 1.4156103134155273e-07,
+          "trusted_loss_executed": true
+        },
+        "packed_update": {
+          "adapter_abs_err": 2.682209014892578e-06,
+          "trusted_adamw_executed": true
+        },
+        "trusted_invocations_per_step": 3,
+        "trusted_optimizer_calls": 1,
+        "expected_invocations": 3,
+        "invocations_ok": true
+      },
+      "expected_runtime_hash": "5a841ebe9fa1dae862d71a2cc27fb12b84cd582a60876ed318a258056540cec0c5374f01155679ee8b566b2273326b0dc6455449d043704f3995c64f17b54835"
+    }
+  },
+  "negative_tests": [
+    {
+      "test": "wrong_runtime_hash_rejected",
+      "passed": true,
+      "detail": "AttestationFailClosed"
+    },
+    {
+      "test": "challenge_optimizer_mode_mismatch_rejected",
+      "passed": true,
+      "detail": "/train/challenge: HTTP 400: {\"error\": \"FailClosed: challenge optimizer_mode mismatch\"}"
+    },
+    {
+      "test": "aead_replay_rejected",
+      "passed": true,
+      "detail": "/train/logits_loss: HTTP 400: {\"error\": \"decode rejected: KexError: non-monotonic/replayed sequence 4 (last 4)\"}"
+    },
+    {
+      "test": "aead_tamper_rejected",
+      "passed": true,
+      "detail": "/train/init: HTTP 400: {\"error\": \"decode rejected: KexError: AEAD authentication failed\"}"
+    },
+    {
+      "test": "oversized_rejected",
+      "passed": true,
+      "detail": "declared > cap (server rejects on Content-Length)"
+    },
+    {
+      "test": "sgd_packed_update_rejected",
+      "passed": true,
+      "detail": "/train/packed_update: HTTP 400: {\"error\": \"FailClosed: packed_update not allowed in optimizer_mode=gpu_masked_sgd (GPU owns the masked SGD optimizer; no trusted update boundary)\"}"
+    }
+  ],
+  "gate2_pass": true,
+  "sgd_pass": true,
+  "adamw_pass": true,
+  "negatives_pass": true
+}

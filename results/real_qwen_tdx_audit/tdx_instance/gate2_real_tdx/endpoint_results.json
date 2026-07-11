@@ -1,0 +1,37 @@
+{
+  "gpu_masked_sgd": {
+    "optimizer_mode": "gpu_masked_sgd",
+    "gradient_convention": "nout_dual",
+    "logits_loss": {
+      "loss_service": 1.6211172342300415,
+      "loss_ref": 1.6211172342300415,
+      "loss_abs_err": 0.0,
+      "dlogits_abs_err": 1.4156103134155273e-07,
+      "trusted_loss_executed": true
+    },
+    "packed_update_rejected": true,
+    "trusted_invocations_per_step": 2,
+    "trusted_optimizer_calls": 0,
+    "expected_invocations": 2,
+    "invocations_ok": true
+  },
+  "trusted_adamw": {
+    "optimizer_mode": "trusted_adamw",
+    "gradient_convention": "nout_dual",
+    "logits_loss": {
+      "loss_service": 1.6211172342300415,
+      "loss_ref": 1.6211172342300415,
+      "loss_abs_err": 0.0,
+      "dlogits_abs_err": 1.4156103134155273e-07,
+      "trusted_loss_executed": true
+    },
+    "packed_update": {
+      "adapter_abs_err": 2.682209014892578e-06,
+      "trusted_adamw_executed": true
+    },
+    "trusted_invocations_per_step": 3,
+    "trusted_optimizer_calls": 1,
+    "expected_invocations": 3,
+    "invocations_ok": true
+  }
+}

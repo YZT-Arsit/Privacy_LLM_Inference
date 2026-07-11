@@ -24,7 +24,8 @@ torch.manual_seed(0)
 
 def _make_service(layers, vocab, labels_by_step, lr=1e-3):
     cfg = {"model_id": "synthetic", "lr": lr, "beta1": 0.9, "beta2": 0.999,
-           "eps": 1e-8, "weight_decay": 0.0, "dtype": "float64"}
+           "eps": 1e-8, "weight_decay": 0.0, "dtype": "float64",
+           "optimizer_mode": "trusted_adamw", "gradient_convention": "nout_dual"}
     cfg["config_digest"] = digest_config({k: v for k, v in cfg.items()})
     svc = TrustedTrainingService(run_id="run_gate1", config=cfg, mode="cpu_contract",
                                  require_real_tdx=False, dtype=DT, seed=1)

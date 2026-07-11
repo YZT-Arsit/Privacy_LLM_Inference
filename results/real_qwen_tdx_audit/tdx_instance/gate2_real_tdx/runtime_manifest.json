@@ -1,0 +1,53 @@
+{
+  "protocol_version": "pllo.train.v1",
+  "profiles": {
+    "gpu_masked_sgd": {
+      "runtime_hash": "ec24ab8ef0801e4e5ed33a7711bd879c21562502b603d05892f38d2b6eed0e866a2078419b177911e64754c0c28a12bdfbd721a74cd5ffd2cee9ffc1c83e4c6c",
+      "config_digest": null,
+      "optimizer_mode": "gpu_masked_sgd",
+      "gradient_convention": "nout_dual"
+    },
+    "trusted_adamw": {
+      "runtime_hash": "5a841ebe9fa1dae862d71a2cc27fb12b84cd582a60876ed318a258056540cec0c5374f01155679ee8b566b2273326b0dc6455449d043704f3995c64f17b54835",
+      "config_digest": null,
+      "optimizer_mode": "trusted_adamw",
+      "gradient_convention": "nout_dual"
+    }
+  },
+  "guest_identity": {
+    "gpu_masked_sgd": {
+      "run_id": "gate2_gpu_masked_sgd",
+      "config_digest": "5c8c87a5cdc2f5440d79a2871779934fe18dfe60bbccbc4f0753f36ed1698b11",
+      "runtime_hash": "ec24ab8ef0801e4e5ed33a7711bd879c21562502b603d05892f38d2b6eed0e866a2078419b177911e64754c0c28a12bdfbd721a74cd5ffd2cee9ffc1c83e4c6c",
+      "optimizer_mode": "gpu_masked_sgd",
+      "gradient_convention": "nout_dual",
+      "model_id": "synthetic-gate2",
+      "artifact_hashes": {
+        "real_tdx_attestation.py": "1b893191a04af3a822963cb675e284f2c21166dbac3deeb6750ebcb7ec7d2a57",
+        "real_tdx_kex.py": "a74b51060146f27f8b14928f48c458185a9c36c5c39ae893e72e36c871402e0f",
+        "real_tdx_quote.py": "deaf5c504cd7e04631fcefae57cb5c465a29f50a9bc37dc32f6e5399b7f7652c",
+        "real_tdx_safe_codec.py": "9d3c1c7020293adfef76fa5edf274c533a3b92e7e784ae85ed679dddd0cac424",
+        "real_tdx_session.py": "4966ea44023b7a2e740de7a2f46e20d688dd5ef6c81592c38f7a32d3a5d72aa6",
+        "real_tdx_training_client.py": "2ddaf4f6923e634b4a91d91c36ec5b962c20f1324e187ef09f4be41cb81db3b6",
+        "real_tdx_training_service.py": "bb0d3e6eb72f0d9d2f4b20e635ae4a77f85a409e70a354044a020a016d219f9f"
+      }
+    },
+    "trusted_adamw": {
+      "run_id": "gate2_trusted_adamw",
+      "config_digest": "e524aa07a272cf20c3ef9f27767f4d3d296a145990ea7f77f5a621551c093711",
+      "runtime_hash": "5a841ebe9fa1dae862d71a2cc27fb12b84cd582a60876ed318a258056540cec0c5374f01155679ee8b566b2273326b0dc6455449d043704f3995c64f17b54835",
+      "optimizer_mode": "trusted_adamw",
+      "gradient_convention": "nout_dual",
+      "model_id": "synthetic-gate2",
+      "artifact_hashes": {
+        "real_tdx_attestation.py": "1b893191a04af3a822963cb675e284f2c21166dbac3deeb6750ebcb7ec7d2a57",
+        "real_tdx_kex.py": "a74b51060146f27f8b14928f48c458185a9c36c5c39ae893e72e36c871402e0f",
+        "real_tdx_quote.py": "deaf5c504cd7e04631fcefae57cb5c465a29f50a9bc37dc32f6e5399b7f7652c",
+        "real_tdx_safe_codec.py": "9d3c1c7020293adfef76fa5edf274c533a3b92e7e784ae85ed679dddd0cac424",
+        "real_tdx_session.py": "4966ea44023b7a2e740de7a2f46e20d688dd5ef6c81592c38f7a32d3a5d72aa6",
+        "real_tdx_training_client.py": "2ddaf4f6923e634b4a91d91c36ec5b962c20f1324e187ef09f4be41cb81db3b6",
+        "real_tdx_training_service.py": "bb0d3e6eb72f0d9d2f4b20e635ae4a77f85a409e70a354044a020a016d219f9f"
+      }
+    }
+  }
+}

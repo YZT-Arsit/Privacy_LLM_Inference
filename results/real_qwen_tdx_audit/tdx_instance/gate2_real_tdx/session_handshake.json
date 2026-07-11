@@ -1,0 +1,14 @@
+{
+  "gpu_masked_sgd": {
+    "guest_ephemeral_public_hex": "5b1cdaf689a0fbddce21fe493a054520daf8fda9e220ad2ca48e022aea7fc879",
+    "authenticated_session": true,
+    "kex": "X25519 ECDH -> HKDF-SHA256 (salt=quote_hash) -> ChaCha20-Poly1305 AEAD",
+    "note": "verifier ephemeral public key + all derived keys are NOT exported"
+  },
+  "trusted_adamw": {
+    "guest_ephemeral_public_hex": "e9b388cc889cf0067d35ddd2a799cd8f1f30c15baddfb059c4df1f8aed1b5d3c",
+    "authenticated_session": true,
+    "kex": "X25519 ECDH -> HKDF-SHA256 (salt=quote_hash) -> ChaCha20-Poly1305 AEAD",
+    "note": "verifier ephemeral public key + all derived keys are NOT exported"
+  }
+}

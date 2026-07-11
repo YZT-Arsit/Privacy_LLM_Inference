@@ -1,0 +1,20 @@
+{
+  "gpu_masked_sgd": {
+    "real_tdx_attestation.py": "1b893191a04af3a822963cb675e284f2c21166dbac3deeb6750ebcb7ec7d2a57",
+    "real_tdx_kex.py": "a74b51060146f27f8b14928f48c458185a9c36c5c39ae893e72e36c871402e0f",
+    "real_tdx_quote.py": "deaf5c504cd7e04631fcefae57cb5c465a29f50a9bc37dc32f6e5399b7f7652c",
+    "real_tdx_safe_codec.py": "9d3c1c7020293adfef76fa5edf274c533a3b92e7e784ae85ed679dddd0cac424",
+    "real_tdx_session.py": "4966ea44023b7a2e740de7a2f46e20d688dd5ef6c81592c38f7a32d3a5d72aa6",
+    "real_tdx_training_client.py": "2ddaf4f6923e634b4a91d91c36ec5b962c20f1324e187ef09f4be41cb81db3b6",
+    "real_tdx_training_service.py": "bb0d3e6eb72f0d9d2f4b20e635ae4a77f85a409e70a354044a020a016d219f9f"
+  },
+  "trusted_adamw": {
+    "real_tdx_attestation.py": "1b893191a04af3a822963cb675e284f2c21166dbac3deeb6750ebcb7ec7d2a57",
+    "real_tdx_kex.py": "a74b51060146f27f8b14928f48c458185a9c36c5c39ae893e72e36c871402e0f",
+    "real_tdx_quote.py": "deaf5c504cd7e04631fcefae57cb5c465a29f50a9bc37dc32f6e5399b7f7652c",
+    "real_tdx_safe_codec.py": "9d3c1c7020293adfef76fa5edf274c533a3b92e7e784ae85ed679dddd0cac424",
+    "real_tdx_session.py": "4966ea44023b7a2e740de7a2f46e20d688dd5ef6c81592c38f7a32d3a5d72aa6",
+    "real_tdx_training_client.py": "2ddaf4f6923e634b4a91d91c36ec5b962c20f1324e187ef09f4be41cb81db3b6",
+    "real_tdx_training_service.py": "bb0d3e6eb72f0d9d2f4b20e635ae4a77f85a409e70a354044a020a016d219f9f"
+  }
+}

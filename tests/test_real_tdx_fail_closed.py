@@ -24,7 +24,8 @@ DT = torch.float64
 
 
 def _svc(require_real_tdx=False, mode="cpu_contract"):
-    cfg = {"model_id": "syn", "lr": 1e-3, "dtype": "float64"}
+    cfg = {"model_id": "syn", "lr": 1e-3, "dtype": "float64",
+           "optimizer_mode": "trusted_adamw", "gradient_convention": "nout_dual"}
     cfg["config_digest"] = digest_config({k: v for k, v in cfg.items()})
     return TrustedTrainingService(run_id="r1", config=cfg, mode=mode,
                                   require_real_tdx=require_real_tdx, dtype=DT, seed=1), cfg

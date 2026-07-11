@@ -140,16 +140,26 @@ def decode_message(data: bytes, *, limits: Limits = Limits()):
                          f"declared {off + total}, got {len(data)}")
 
     # ---- materialize tensors ----
+    # Memory ownership (Gate 2 §1-A): torch.frombuffer VIEWS the request buffer, so
+    # we must clone into fresh, contiguous, service-owned storage before the tensor
+    # reaches trusted computation or state. The per-tensor `bytearray(...)` copy plus
+    # `.clone()` guarantees (a) no alias to the mutable request bytes, (b) no alias
+    # between decoded tensors, (c) contiguous standard layout. The transient view and
+    # the source chunk are released immediately after cloning.
     tensors = []
     for m in meta:
         dt = m["dtype"]; nb = m["nbytes"]
         chunk = bytearray(data[off:off + nb]); off += nb
-        t = torch.frombuffer(chunk, dtype=torch.uint8).view(_DTYPE[dt]).reshape(m["shape"])
-        if tuple(t.shape) != tuple(m["shape"]) or str(t.dtype).replace("torch.", "") != dt:
+        view = torch.frombuffer(chunk, dtype=torch.uint8).view(_DTYPE[dt]).reshape(m["shape"])
+        if tuple(view.shape) != tuple(m["shape"]) or str(view.dtype).replace("torch.", "") != dt:
             raise CodecError("post-decode dtype/shape re-verification failed")
-        if limits.forbid_nan_inf and t.is_floating_point() and not torch.isfinite(t).all():
+        if limits.forbid_nan_inf and view.is_floating_point() and not torch.isfinite(view).all():
             raise CodecError("NaN/Inf present but forbidden by policy")
-        tensors.append(t.clone())     # own the memory
+        owned = view.clone().contiguous()     # fresh service-owned, unaliased storage
+        if owned.data_ptr() == view.data_ptr() or not owned.is_contiguous():
+            raise CodecError("failed to obtain unaliased contiguous storage")
+        tensors.append(owned)
+        del view, chunk                        # release the request-buffer view
 
     used = [0] * len(tensors)
 

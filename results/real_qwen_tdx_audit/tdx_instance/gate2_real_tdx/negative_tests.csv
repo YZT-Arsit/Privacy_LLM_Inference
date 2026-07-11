@@ -1,0 +1,7 @@
+test,passed,detail
+wrong_runtime_hash_rejected,True,AttestationFailClosed
+challenge_optimizer_mode_mismatch_rejected,True,"/train/challenge: HTTP 400: {""error"": ""FailClosed: challenge optimizer_mode mismatch""}"
+aead_replay_rejected,True,"/train/logits_loss: HTTP 400: {""error"": ""decode rejected: KexError: non-monotonic/replayed sequence 4 (last 4)""}"
+aead_tamper_rejected,True,"/train/init: HTTP 400: {""error"": ""decode rejected: KexError: AEAD authentication failed""}"
+oversized_rejected,True,declared > cap (server rejects on Content-Length)
+sgd_packed_update_rejected,True,"/train/packed_update: HTTP 400: {""error"": ""FailClosed: packed_update not allowed in optimizer_mode=gpu_masked_sgd (GPU owns the masked SGD optimizer; no trusted update boundary)""}"

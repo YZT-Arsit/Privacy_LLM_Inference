@@ -1,0 +1,35 @@
+{
+  "gate": "gate3",
+  "recorded": "2026-07-10",
+  "gpu_host": {
+    "hostname": "autodl-container-35eb4cbcf2-9d84e25e",
+    "ssh": "connect.westb.seetacloud.com:19948 (password auth via ControlMaster; secret NOT stored)",
+    "gpu": "NVIDIA H800 PCIe",
+    "vram_total_mib": 81559,
+    "vram_free_mib_at_audit": 81081,
+    "driver_version": "590.48.01",
+    "cuda_version": "13.1",
+    "ram_gb_total": 1007,
+    "ram_gb_avail": 841,
+    "disk_autodl_tmp": "280G total / 131G free",
+    "python": "3.12.3 (/root/miniconda3/bin/python)",
+    "torch": "2.8.0+cu128",
+    "cuda_available": true,
+    "bf16_supported": true,
+    "modelscope": "1.37.1",
+    "transformers": "5.12.1",
+    "cryptography": "42.0.5",
+    "repo_path": "/root/privacy_llm_obfuscation (non-git working copy; missing Gate-2 real_tdx_* files -> to be deployed)",
+    "model_cache": "/root/autodl-tmp/modelscope_cache (has Qwen2.5-7B-Instruct + 1.5B-Instruct; 0.5B being downloaded)"
+  },
+  "tdx_host": {
+    "ssh": "39.96.4.252 (key auth ~/Downloads/passkey.pem)",
+    "role": "Gate-3 private-loss service (gpu_masked_sgd profile); real quote re-generated (no Gate-2 reuse)"
+  },
+  "flags": {
+    "uses_real_gpu": true,
+    "uses_real_tee": true,
+    "uses_real_qwen": true,
+    "note": "flags asserted only for components actually executed; see summary.md/claims.md for the honest per-claim status"
+  }
+}

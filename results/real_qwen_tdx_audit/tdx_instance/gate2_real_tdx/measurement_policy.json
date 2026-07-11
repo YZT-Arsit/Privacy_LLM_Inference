@@ -1,0 +1,10 @@
+{
+  "policy": "DEBUG must be false; overall_appraisal_result must be SUCCESS; relying_party -v ES384 policy signature must verify; report_data must bind all session-identity fields.",
+  "mr_td_pinned": false,
+  "mr_td_pinning_note": "mr_td RECORDED per profile (below) but not pinned to a golden allowlist in this run (no pre-provisioned golden measurement). debug=false IS enforced.",
+  "allow_debug": false,
+  "recorded_mr_td": {
+    "gpu_masked_sgd": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "trusted_adamw": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0"
+  }
+}
