@@ -1,0 +1,23 @@
+{
+  "artifact_count": 17,
+  "per_artifact_bytes": {
+    "lm_head_tilde": 2195,
+    "model.embed_tokens_tilde": 2336,
+    "model.final_norm_folded_tilde": 2115,
+    "model.layers.0.wdown_tilde": 2094,
+    "model.layers.0.wgate_tilde": 2094,
+    "model.layers.0.wk_tilde": 2073,
+    "model.layers.0.wo_tilde": 2073,
+    "model.layers.0.wq_tilde": 2073,
+    "model.layers.0.wup_tilde": 2080,
+    "model.layers.0.wv_tilde": 2073,
+    "model.layers.1.wdown_tilde": 2094,
+    "model.layers.1.wgate_tilde": 2094,
+    "model.layers.1.wk_tilde": 2073,
+    "model.layers.1.wo_tilde": 2073,
+    "model.layers.1.wq_tilde": 2073,
+    "model.layers.1.wup_tilde": 2080,
+    "model.layers.1.wv_tilde": 2073
+  },
+  "total_bytes": 35766
+}

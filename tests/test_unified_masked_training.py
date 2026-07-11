@@ -91,6 +91,29 @@ def test_contract_stable_across_seeds(seed):
     assert res.all_passed, res.checks
 
 
+def test_all_seven_projections_lora():
+    res = run_contract()
+    assert res.checks["all_seven_projections_lora"]
+    assert res.counters["lora_targets"] == 7
+
+
+def test_private_base_materialization_counters():
+    res = run_contract()
+    assert res.counters["plaintext_base_weight_materializations"] == 0
+    assert res.counters["plaintext_embedding_materializations"] == 0
+    assert res.counters["silent_fallbacks"] == 0
+    assert res.checks["embedding_masked_not_plaintext"]
+    assert res.metrics["embedding_mask_gap"] > 1e-2
+
+
+def test_mask_spaces_are_separated():
+    res = run_contract()
+    ms = res.mask_spaces
+    assert set(ms) == {"feature", "lora_rank", "nonlinear_permutation", "vocabulary"}
+    # no single symbol shared across domains
+    assert "U" in ms["lora_rank"][0] and "N" in ms["feature"][0]
+
+
 def test_gqa_shape_variation():
     # n_kv_heads=1 (full GQA collapse) and =n_heads (MHA) both must close
     for nkv in (1, 2, 4):

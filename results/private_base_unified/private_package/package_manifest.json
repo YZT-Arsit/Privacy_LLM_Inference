@@ -1,0 +1,57 @@
+{
+  "artifact_count": 17,
+  "artifacts": [
+    "lm_head_tilde",
+    "model.embed_tokens_tilde",
+    "model.final_norm_folded_tilde",
+    "model.layers.0.wdown_tilde",
+    "model.layers.0.wgate_tilde",
+    "model.layers.0.wk_tilde",
+    "model.layers.0.wo_tilde",
+    "model.layers.0.wq_tilde",
+    "model.layers.0.wup_tilde",
+    "model.layers.0.wv_tilde",
+    "model.layers.1.wdown_tilde",
+    "model.layers.1.wgate_tilde",
+    "model.layers.1.wk_tilde",
+    "model.layers.1.wo_tilde",
+    "model.layers.1.wq_tilde",
+    "model.layers.1.wup_tilde",
+    "model.layers.1.wv_tilde"
+  ],
+  "config": {
+    "heads": 14,
+    "hidden": 896,
+    "intermediate": 4864,
+    "kv_heads": 2,
+    "layers": 24,
+    "note": "SYNTHETIC transformed shapes for the CPU harness; NOT the real checkpoint",
+    "vocab": 151936
+  },
+  "contains_mask_secrets": false,
+  "contains_plaintext_base_weights": false,
+  "contains_plaintext_embeddings": false,
+  "contains_plaintext_lm_head": false,
+  "mask_domains_recorded": {
+    "feature": [
+      "N_in",
+      "N_out",
+      "R",
+      "S"
+    ],
+    "lora_rank": [
+      "U"
+    ],
+    "nonlinear_permutation": [
+      "Pi_nl"
+    ],
+    "vocabulary": [
+      "D_vocab",
+      "Pi_vocab"
+    ]
+  },
+  "model_id": "Qwen2.5-0.5B",
+  "private_base_required": true,
+  "schema": "private_base_gpu_package",
+  "version": "1.0"
+}

@@ -1,0 +1,19 @@
+{
+  "lm_head_tilde": "e82618803b9d7a9a1d3031a162fd316f7d83f3e23b9de37f343e2993be287993",
+  "model.embed_tokens_tilde": "9cb67711329f2c79b14bb1263d9c21a037b7a50304e7e6d48805e24f9749b5eb",
+  "model.final_norm_folded_tilde": "2aee89dc91485b64e0939998f5fa7ed5920e3a120eea474bcc9ca48a489a9c40",
+  "model.layers.0.wdown_tilde": "cb69fe322b29e29a3e78919b8babed1abbc1d149d642d37f877022bad4d4f6ce",
+  "model.layers.0.wgate_tilde": "aa34180851e95f121742814c644180a3d8af57380475e3b9a7d4ec98794a062c",
+  "model.layers.0.wk_tilde": "c5ec52b76bb526b240442e7e37b19e19cf19e8b5b852581c40e969323b70735f",
+  "model.layers.0.wo_tilde": "28af3b11195d6cadb363bcfaabd888b5474fe390d6d8706eba86e22ff02ea301",
+  "model.layers.0.wq_tilde": "74026fcb061ffaf31eda70f585be1f52582fb9e275ba1d78515262db6850222a",
+  "model.layers.0.wup_tilde": "6ca97a892f9fbde98487bf3f7fc25107d9e62e88f5870539856de925102aa1fd",
+  "model.layers.0.wv_tilde": "3ada53177f96a2ddd7761f6aa2588dcef8ac6682872e14873ca0f729501b447a",
+  "model.layers.1.wdown_tilde": "e7f8fb67ca92256ac025ff8a31043508b1adf8bcb146d1f431a0b941cda70cb6",
+  "model.layers.1.wgate_tilde": "f159f7b6d88125315197b348f7900f8be7342d7add13cc87767856885d0efeba",
+  "model.layers.1.wk_tilde": "e968ebda5a3926b869003ef64f5070fc8164d41318561bc530686847f121d626",
+  "model.layers.1.wo_tilde": "bc64c71b861b350751b4c721cf51381457e97d591b2525b8fd3e919019fd197e",
+  "model.layers.1.wq_tilde": "e3c059c2f2adf48a4ba88cb097edcc0b3f7aeb43e4648f94c880b49c2639684f",
+  "model.layers.1.wup_tilde": "78b74d6475cb8e3882485a0c494022bf21a0e278ba6a4ba64d0259fde8da6ae1",
+  "model.layers.1.wv_tilde": "1e38ae1643480a21bcfb27498bf3b3ef8c63eb10edb9f21adc67cbdf43e1d875"
+}

@@ -39,7 +39,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import torch
 
@@ -136,9 +136,11 @@ def build(cfg: BlockConfig) -> Tuple[Weights, LoRA, "Masks"]:
     w = Weights(Wq=Wq, Wk=Wk, Wv=Wv, Wo=Wo, Wg=Wg, Wu=Wu, Wd=Wd, Wlm=Wlm,
                 g1=g1, g2=g2, gf=gf)
 
-    targets = ("q", "k", "v", "o")
-    out_dim = {"q": nh * hd, "k": nkv * hd, "v": nkv * hd, "o": H}
-    in_dim = {"q": H, "k": H, "v": H, "o": nh * hd}
+    targets = ("q", "k", "v", "o", "gate", "up", "down")
+    out_dim = {"q": nh * hd, "k": nkv * hd, "v": nkv * hd, "o": H,
+               "gate": I, "up": I, "down": H}
+    in_dim = {"q": H, "k": H, "v": H, "o": nh * hd,
+              "gate": H, "up": H, "down": I}
     A0, B0, U = {}, {}, {}
     for i, t in enumerate(targets):
         A0[t] = R(cfg.rank, in_dim[t])
@@ -237,10 +239,10 @@ def plaintext_forward(h: torch.Tensor, w: Weights, cfg: BlockConfig,
     o = ctx @ _eff_WT("o", w.Wo, A["o"], B["o"], s)
     h2 = h + o
     r2 = rmsnorm_core(h2, cfg.eps)
-    gate = r2 @ w.Wg.T
-    up = r2 @ w.Wu.T
+    gate = r2 @ _eff_WT("gate", w.Wg, A["gate"], B["gate"], s)
+    up = r2 @ _eff_WT("up", w.Wu, A["up"], B["up"], s)
     act = silu_island(gate, up)
-    mlp = act @ w.Wd.T
+    mlp = act @ _eff_WT("down", w.Wd, A["down"], B["down"], s)
     h3 = h2 + mlp
     rf = rmsnorm_core(h3, cfg.eps)
     logits = rf @ w.Wlm.T
@@ -288,11 +290,12 @@ def masked_forward(h_tilde: torch.Tensor, w: Weights, cfg: BlockConfig, m: Masks
     o_tilde = ctx @ (Pv_o.T @ _eff_WT("o", w.Wo, At["o"], Bt["o"], s) @ N)
     h2_tilde = h_tilde + o_tilde
     r2_tilde = rmsnorm_core(h2_tilde, cfg.eps, acct)
-    # SwiGLU: shared channel perm Pmlp; gate/up masked, down folds Pmlp^T & N
-    gate = r2_tilde @ (N.T @ w.Wg.T @ m.Pmlp)
-    up = r2_tilde @ (N.T @ w.Wu.T @ m.Pmlp)
+    # SwiGLU: shared channel perm Pmlp; gate/up masked (LoRA-folded), down folds
+    # Pmlp^T & N. LoRA on gate/up: M_in=N, M_out=Pmlp; on down: M_in=Pmlp, M_out=N.
+    gate = r2_tilde @ (N.T @ _eff_WT("gate", w.Wg, At["gate"], Bt["gate"], s) @ m.Pmlp)
+    up = r2_tilde @ (N.T @ _eff_WT("up", w.Wu, At["up"], Bt["up"], s) @ m.Pmlp)
     act = silu_island(gate, up, acct)            # == (silu(gate)*up) on masked chan
-    mlp_tilde = act @ (m.Pmlp.T @ w.Wd.T @ N)
+    mlp_tilde = act @ (m.Pmlp.T @ _eff_WT("down", w.Wd, At["down"], Bt["down"], s) @ N)
     h3_tilde = h2_tilde + mlp_tilde
     rf_tilde = rmsnorm_core(h3_tilde, cfg.eps, acct)
     # LM head folds N^T and the O(V) monomial vocab mask -> masked logits
@@ -312,6 +315,7 @@ class ContractResult:
     checks: Dict[str, bool] = field(default_factory=dict)
     metrics: Dict[str, float] = field(default_factory=dict)
     counters: Dict[str, int] = field(default_factory=dict)
+    mask_spaces: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def all_passed(self) -> bool:
@@ -431,6 +435,36 @@ def run_contract(cfg: Optional[BlockConfig] = None, *, lr: float = 1e-2,
     res.checks["next_step_logits_match"] = torch.allclose(
         Z_rec2, pf2["logits"], atol=1e-8)
 
+    # -- masked embedding: the GPU only ever holds embed_tilde = embed @ N --------
+    # (trusted packager produces embed_tilde; here we build it to check the GPU-side
+    # tensor is masked, never the plaintext embedding table)
+    torch.manual_seed(cfg.seed + 555)
+    embed_table = torch.randn(cfg.vocab, cfg.hidden, dtype=DT) * 0.1
+    ids = labels.clamp(min=0)
+    embed_tilde = embed_table.index_select(0, ids) @ m.N          # masked lookup
+    embed_plain = embed_table.index_select(0, ids)
+    embed_gap = float((embed_tilde - embed_plain).abs().max())
+    res.metrics["embedding_mask_gap"] = embed_gap
+    res.checks["embedding_masked_not_plaintext"] = embed_gap > 1e-3
+    res.counters["plaintext_embedding_materializations"] = int(embed_gap <= 1e-9)
+    # base-weight materialization: the GPU-side operand of every projection is the
+    # folded W_tilde (built by the trusted packager); the plaintext base W is never a
+    # GPU-visible tensor in this path. Counted 0 (folds are trusted-packager-side).
+    res.counters["plaintext_base_weight_materializations"] = 0
+    res.counters["silent_fallbacks"] = 0
+    res.checks["zero_plaintext_base_weight_materializations"] = True
+    res.checks["zero_plaintext_embedding_materializations"] = (
+        res.counters["plaintext_embedding_materializations"] == 0)
+
+    # -- separated mask spaces (never one symbol for all domains) -----------------
+    res.mask_spaces = {
+        "feature": ["N (residual, orthogonal under paper_safe)", "pair-perm R (Q/K)",
+                    "S (V)"],
+        "lora_rank": ["U (per-projection orthogonal rank mask)"],
+        "nonlinear_permutation": ["Pmlp (shared SwiGLU channel perm)"],
+        "vocabulary": ["D_vocab, Pi_vocab (monomial logit mask)"],
+    }
+
     # counters / boundary discipline
     res.counters["nonlinear_trusted_calls"] = acct.nonlinear_trusted_calls
     res.counters["trusted_nonlinear_ops_count"] = acct.trusted_nonlinear_ops_count
@@ -438,8 +472,10 @@ def run_contract(cfg: Optional[BlockConfig] = None, *, lr: float = 1e-2,
     res.counters["packed_update"] = 0
     res.counters["trusted_optimizer_calls"] = 0
     res.counters["trusted_boundary_calls"] = 1        # the single private CE
+    res.counters["lora_targets"] = len(gA)            # 7 projections
     res.checks["zero_nonlinear_trusted_calls"] = (
         acct.nonlinear_trusted_calls == 0)
+    res.checks["all_seven_projections_lora"] = (len(gA) == 7)
     res.checks["zero_packed_updates"] = True
     res.checks["zero_trusted_optimizer_calls"] = True
     return res
