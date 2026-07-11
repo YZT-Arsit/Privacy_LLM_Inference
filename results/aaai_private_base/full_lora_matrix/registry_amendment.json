@@ -1,0 +1,65 @@
+{
+  "amendment_id": "gate05_gamma_fold_nonorthogonal_metric",
+  "date": "2026-07-12",
+  "reason": "Gate 0.5 discovered gamma-fold-induced non-orthogonal LoRA input metrics.",
+  "head_hash_at_amendment": "a95b59f6c1d96f2ad4950220d93078218b81c607",
+  "preserved_identifiers_L0_L9": true,
+  "redefinitions": "none (L0-L9 definitions unchanged; gate05_role annotations added)",
+  "role_reclassification": {
+    "L2": {
+      "was": "main_protected",
+      "now_gate05_role": "efficiency_approximation_ablation",
+      "alias": "O1-A_uniform_gpu_masked_sgd",
+      "why": "A-factor update on q/k/v/gate/up not exact under non-orthogonal T_in (drift up to ~33% @10 steps); functionally aligned only"
+    },
+    "L4": {
+      "was": "main_protected",
+      "now_gate05_role": "efficiency_approximation_ablation",
+      "alias": "O1-A_uniform_gpu_masked_momentum"
+    },
+    "L6": {
+      "unchanged_semantics": "trusted AdamW reference",
+      "alias": "fully_trusted_optimizer_reference",
+      "role": "system control / upper reference for L12"
+    }
+  },
+  "added_identifiers": {
+    "L10": {
+      "name": "O1-C_hybrid_exact_sgd",
+      "role": "main_exact_protected",
+      "gpu_side_targets": [
+        "o_proj",
+        "down_proj"
+      ],
+      "tdx_corrected_targets": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "gate_proj",
+        "up_proj"
+      ],
+      "correction_metric": "A_grad @ (Nr^T diag(gamma^2) Nr) inside TDX"
+    },
+    "L11": {
+      "name": "O1-C_hybrid_exact_momentum",
+      "role": "main_exact_protected",
+      "momentum_buffer": "corrected in matching metric"
+    },
+    "L12": {
+      "name": "O1-C_hybrid_trusted_adamw",
+      "role": "main_quality_protected",
+      "implementation_status": "to_be_implemented_after_L10_L11",
+      "constraint": "affected-target AdamW moments inside TDX; do not substitute O1-A AdamW; document o/down state"
+    }
+  },
+  "invocation_convention_added": {
+    "o1c_hybrid": 3
+  },
+  "do_not_erase_original_frozen_registry_history": true,
+  "seeds_preregistered_before_execution": [
+    1234,
+    2025,
+    7
+  ],
+  "profile_decision_locked": "MAIN_PROFILE=O1-C hybrid (accepted; not modified during matrix)"
+}

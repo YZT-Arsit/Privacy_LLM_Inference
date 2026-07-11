@@ -1,5 +1,5 @@
 {
-  "internal_groups": "see experiment_registry.yaml groups L0-L9",
+  "internal_groups": "see experiment_registry.yaml groups L0-L12 (L10-L12 added by Gate 0.5 amendment)",
   "external_privacy_baselines": "NOT implemented yet; see baseline_research/ registry",
   "inference_only_methods": {
     "STIP": "training_support=N/A",
@@ -7,5 +7,8 @@
     "Amulet": "training_support=N/A",
     "note": "generation/inference comparison only; not reshaped into training baselines"
   },
-  "plaintext_lora": "correctness+utility reference, NOT the paper's only external baseline"
+  "plaintext_lora": "correctness+utility reference, NOT the paper's only external baseline",
+  "gate05_amendment": "see full_lora_matrix/registry_amendment.json",
+  "main_exact_profile": "L10 O1-C hybrid (SGD); L11 momentum; L12 trusted AdamW",
+  "o1a_status": "L2/L4 demoted to efficiency approximation (functionally aligned, not exact-parameter)"
 }

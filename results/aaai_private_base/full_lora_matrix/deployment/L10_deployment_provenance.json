@@ -1,0 +1,74 @@
+{
+  "label": "LORA_DEPLOYMENT_SMOKE",
+  "not_a_full_utility_claim": true,
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "package_root_hash_matches": true,
+  "adapter_hash": "3e7e3a263173162c5dba153c6121fc50c971a48ed0dd31bbad7ebde611fb68da",
+  "package_adapter_binding": {
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "adapter_sha256": "3e7e3a263173162c5dba153c6121fc50c971a48ed0dd31bbad7ebde611fb68da",
+    "adapter_targets": 168,
+    "bound": true
+  },
+  "fail_closed_all_pass": true,
+  "heldout_dataset": "gsm8k_test",
+  "heldout_prompts": 4,
+  "heldout_mean_ce": 3.8805344104766846,
+  "heldout_mean_ppl": 48.45009994506836,
+  "per_prompt": [
+    {
+      "gsm8k_test_id": 0,
+      "tokens": 48,
+      "heldout_ce": 5.1506524085998535,
+      "ppl": 172.5440216064453,
+      "finite": true
+    },
+    {
+      "gsm8k_test_id": 1,
+      "tokens": 30,
+      "heldout_ce": 4.000120639801025,
+      "ppl": 54.604736328125,
+      "finite": true
+    },
+    {
+      "gsm8k_test_id": 2,
+      "tokens": 48,
+      "heldout_ce": 3.3836793899536133,
+      "ppl": 29.479036331176758,
+      "finite": true
+    },
+    {
+      "gsm8k_test_id": 3,
+      "tokens": 39,
+      "heldout_ce": 2.987685203552246,
+      "ppl": 19.839704513549805,
+      "finite": true
+    }
+  ],
+  "assertions": {
+    "same_transformed_package": true,
+    "same_base_weight_view": true,
+    "same_qkv_forward": true,
+    "same_nonlinear_backend": true,
+    "same_residual_domains": true,
+    "training_adds_backward_only": true,
+    "adapter_reencoding_required": false,
+    "plaintext_adapter_materializations": 0,
+    "plaintext_base_materializations": 0,
+    "base_tensors_require_grad": false
+  },
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 388
+  },
+  "deployment_ok": true
+}

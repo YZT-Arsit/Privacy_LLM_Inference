@@ -1,0 +1,30 @@
+{
+  "optimizers": [
+    "sgd",
+    "momentum",
+    "adamw"
+  ],
+  "seeds": [
+    1234,
+    2025,
+    7
+  ],
+  "steps": [
+    1,
+    10,
+    50
+  ],
+  "layers": 24,
+  "targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "head_hash": "a95b59f6c1d96f2ad4950220d93078218b81c607",
+  "precision": "fp64",
+  "checkpoint_sha_ref": "see experiment_registry fixed_model"
+}

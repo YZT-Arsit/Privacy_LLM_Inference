@@ -11,5 +11,10 @@
   "private_package": "pending_checkpoint",
   "D4": "blocked_needs_h800_tdx_and_phase6",
   "post_d4_10step": "blocked",
-  "deploy_smoke": "blocked"
+  "deploy_smoke": "blocked",
+  "gate0": "GATE0_COMPLETE (accepted)",
+  "gate05": "GATE0_5_COMPLETE (profile decision accepted: O1-C hybrid)",
+  "full_lora_matrix": "in_progress",
+  "code_baseline": "recorded (HEAD a95b59f, clean tree)",
+  "registry_amendment": "applied (L10/L11/L12 added; L2/L4 demoted)"
 }

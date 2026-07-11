@@ -42,23 +42,58 @@ fixed_lora_config:            # identical across ALL L1-L8 trainable groups
 seeds: {manifest: seed_manifest.json, primary: [1234, 2025, 7], count: 3}
 
 # ---- internal comparison groups (PHASE 2) ----
+# AMENDMENT (Gate 0.5, 2026-07-12): Gate 0.5 discovered gamma-fold-induced non-orthogonal
+# LoRA input metrics for q/k/v/gate/up. L0-L9 identifiers are PRESERVED verbatim below (not
+# redefined); their gate05_role annotations record the reclassification. The exact main
+# profile is now L10 (O1-C hybrid). L2/L4 (uniform GPU masked update = O1-A) are DEMOTED from
+# main_protected to efficiency_approximation_ablation: functionally aligned but NOT globally
+# parameter-equivalent (A-factor drift up to ~33% at 10 steps on gamma-fed targets). Original
+# `role:` fields are left intact; `gate05_role:` is the amended status. Do not erase history.
 groups:
   L0: {name: frozen_base, trainable: false, role: reference}
   L1: {name: plaintext_lora_sgd, optimizer: sgd, base: plaintext, role: correctness_utility_ref}
-  L2: {name: private_base_masked_lora_gpu_sgd, optimizer: gpu_masked_sgd, base: private_transformed, role: main_protected}
+  L2: {name: private_base_masked_lora_gpu_sgd, optimizer: gpu_masked_sgd, base: private_transformed, role: main_protected,
+       gate05_alias: O1-A_uniform_gpu_masked_sgd, gate05_role: efficiency_approximation_ablation,
+       gate05_note: "functionally aligned, NOT globally parameter-equivalent; must not be called exact-parameter-equivalent"}
   L3: {name: plaintext_lora_momentum, optimizer: momentum, base: plaintext, role: correctness_utility_ref}
-  L4: {name: private_base_masked_lora_gpu_momentum, optimizer: gpu_masked_momentum, base: private_transformed, role: main_protected}
+  L4: {name: private_base_masked_lora_gpu_momentum, optimizer: gpu_masked_momentum, base: private_transformed, role: main_protected,
+       gate05_alias: O1-A_uniform_gpu_masked_momentum, gate05_role: efficiency_approximation_ablation}
   L5: {name: plaintext_lora_adamw, optimizer: adamw, base: plaintext, role: correctness_utility_ref}
-  L6: {name: private_base_masked_lora_trusted_adamw, optimizer: trusted_adamw, base: private_transformed, role: main_protected}
+  L6: {name: private_base_masked_lora_trusted_adamw, optimizer: trusted_adamw, base: private_transformed, role: main_protected,
+       gate05_alias: fully_trusted_optimizer_reference,
+       gate05_note: "all optimizer state trusted-side; system control / upper reference for L12 hybrid AdamW"}
   L7: {name: private_base_masked_lora_without_rank_mask, optimizer: gpu_masked_sgd, rank_mask: false, role: ablation}
   L8: {name: private_base_masked_lora_rank_mask_refresh, optimizer: gpu_masked_sgd, rank_mask: per_step_refresh, role: ablation}
   L9: {name: archived_plaintext_base_rank_masked_sgd, role: frozen_archive,
        artifact: results/real_qwen_tdx_audit/qwen05b/sgd_mode/archive_rank_masked_sgd_50step,
-       rerun: forbidden}
+       rerun: forbidden,
+       gate05_note: "protects rank-only, NOT private base weights/hidden states; do not compare as if it did"}
+  # ---- ADDED (Gate 0.5 amendment): O1-C hybrid trusted-corrected optimizer = MAIN exact profile
+  L10: {name: O1-C_hybrid_exact_sgd, base: private_transformed, role: main_exact_protected,
+        optimizer: hybrid_o1c_sgd,
+        gpu_side_targets: [o_proj, down_proj],          # orthogonal effective transforms -> exact on GPU
+        tdx_corrected_targets: [q_proj, k_proj, v_proj, gate_proj, up_proj],  # gamma-fold non-orthogonal -> corrected in TDX
+        correction_metric: "A_grad @ (Nr^T diag(gamma^2) Nr)  applied INSIDE TDX",
+        claim: exact_parameter_equivalent_sgd}
+  L11: {name: O1-C_hybrid_exact_momentum, base: private_transformed, role: main_exact_protected,
+        optimizer: hybrid_o1c_momentum,
+        gpu_side_targets: [o_proj, down_proj],
+        tdx_corrected_targets: [q_proj, k_proj, v_proj, gate_proj, up_proj],
+        momentum_buffer: corrected_in_matching_metric,
+        claim: exact_parameter_and_momentum_state_equivalent}
+  L12: {name: O1-C_hybrid_trusted_adamw, base: private_transformed, role: main_quality_protected,
+        optimizer: hybrid_o1c_adamw,
+        adamw_state_location: "affected targets (q/k/v/gate/up) 1st+2nd moments inside TDX; o/down state treatment DOCUMENTED per run",
+        claim: exact_adamw_semantics_equivalent,
+        implementation_status: to_be_implemented_after_L10_L11,
+        do_not: "do not mark L12 passed if only SGD/momentum correction exists; do not substitute O1-A AdamW"}
 
 invocation_convention:
-  gpu_masked_sgd_or_momentum: 2   # trusted invocations per step
+  gpu_masked_sgd_or_momentum: 2       # L2/L4 O1-A: (1) session/labels, (2) CE+dlogits
   trusted_sgd_or_adamw: 3
+  o1c_hybrid_sgd_momentum_adamw: 3    # L10/L11/L12: (1) session/labels, (2) CE+dlogits, (3) trusted grad-correction/opt-update
+  transport_profile: mac_ferried_authenticated_prototype   # ferried wall-time is NOT the deployment latency claim
+  register_not_blocking: direct_h800_tdx_transport
 
 # ---- Gate 0 experiments (this checkpoint) ----
 experiments:

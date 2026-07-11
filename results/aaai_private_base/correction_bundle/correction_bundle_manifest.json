@@ -1,0 +1,38 @@
+{
+  "artifact": "o1c_gamma_bundle.pt",
+  "sha256": "cc88dbb9120ab593733cd9a57a96397cec28ba698e7b3a7eb4840e879061b56f",
+  "contents": "private RMSNorm gains ga/gm per layer + Nr seed (gram_inv rebuilt IN-ENCLAVE)",
+  "gram_inv_matrices_transferred": false,
+  "trust_domain": "TRUSTED_ONLY",
+  "provision_to": "TDX_enclave",
+  "forbidden_on": "untrusted_gpu_worker",
+  "encodes_private_gamma_spectrum": true,
+  "reason_o1b_rejected": "materializing gram_inv GPU-side reveals eigenvalues=gamma^2 (private RMSNorm gains)",
+  "num_layers": 24,
+  "hidden": 896,
+  "per_layer_matrices_rebuilt_in_enclave": 2,
+  "matrices_total": 48,
+  "dtype": "float64",
+  "correction_targets": {
+    "attn": [
+      "q_proj",
+      "k_proj",
+      "v_proj"
+    ],
+    "mlp": [
+      "gate_proj",
+      "up_proj"
+    ]
+  },
+  "no_correction_targets": [
+    "o_proj",
+    "down_proj"
+  ],
+  "verification_worst": {
+    "selfcheck_attn_max_err": 1.1102230246251565e-16,
+    "selfcheck_mlp_max_err": 1.1102230246251565e-16,
+    "vs_audit_qproj_max_err": 5.684341886080802e-14,
+    "vs_audit_gate_max_err": 3.552713678800501e-15
+  },
+  "verified_identity": true
+}

@@ -1,0 +1,70 @@
+{
+  "mode": "backward",
+  "step": 0,
+  "profile": "o1c",
+  "backward_sec": 0.6593828201293945,
+  "peak_vram_gb": 2.77,
+  "lora_targets_connected": 168,
+  "lora_targets_total": 168,
+  "all_targets_connected": true,
+  "base_tensors_require_grad": false,
+  "gpu_exact_A_applied": 48,
+  "deferred_A_to_tdx": 120,
+  "bf16_raw_A_numerics_layer0": {
+    "q_proj": {
+      "max_abs": 0.00011345832899678499,
+      "min_abs_nonzero": 1.0120602134122691e-08,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "k_proj": {
+      "max_abs": 0.00031496956944465637,
+      "min_abs_nonzero": 2.964456735643495e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "v_proj": {
+      "max_abs": 0.002848112490028143,
+      "min_abs_nonzero": 4.945852793980521e-08,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_proj": {
+      "max_abs": 0.0009004638413898647,
+      "min_abs_nonzero": 3.1045597204126807e-09,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "up_proj": {
+      "max_abs": 0.0010382778709754348,
+      "min_abs_nonzero": 1.8191727235716826e-08,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "step_finite": true,
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 97,
+    "attention_score_exposures": 592704,
+    "total_logical_trusted_invocations_per_step": 3,
+    "untrusted_gamma_materializations": 0,
+    "untrusted_correction_matrix_materializations": 0,
+    "untrusted_plaintext_gradient_materializations": 0,
+    "deferred_A_correction_targets": 120
+  }
+}

@@ -31,7 +31,25 @@ from h800_unified_worker import (  # noqa: E402
 
 OUT = REPO / "results/aaai_private_base/gate0_d4"
 MSG = OUT / "msg"
-DTYPE = torch.float32     # deployment bf16 exercised separately; fp32 for clean equivalence
+_DT = os.environ.get("PB_DTYPE", "fp32")
+DTYPE = {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}[_DT]
+
+# O1-C target split: B always GPU-exact (T_out orthogonal); A GPU-exact only for
+# o_proj/down_proj (orthogonal T_in). q/k/v/gate/up A-grads are corrected IN TDX.
+GPU_EXACT_A = {"o_proj", "down_proj"}
+CORR_A = {"q_proj", "k_proj", "v_proj", "gate_proj", "up_proj"}
+
+
+def bf16_numerics(t):
+    """Diagnostic: what happens to this fp32 tensor under a bf16 cast."""
+    b = t.to(torch.bfloat16).to(torch.float32)
+    nz = t != 0
+    zeroed = (nz & (b == 0)).float().sum().item()
+    a = t.abs()
+    return {"max_abs": float(a.max()), "min_abs_nonzero": float(a[nz].min()) if nz.any() else 0.0,
+            "bf16_zeroed_fraction": zeroed / max(1, int(nz.sum().item())),
+            "bf16_overflow": int(torch.isinf(t.to(torch.bfloat16)).sum().item()),
+            "nan_inf": bool(~torch.isfinite(t).all())}
 
 
 def load_model():
@@ -75,7 +93,10 @@ def effective_dw(model):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", required=True, choices=["init", "forward", "backward"])
+    ap.add_argument("--mode", required=True,
+                    choices=["init", "forward", "backward", "apply_correction"])
+    ap.add_argument("--profile", default="o1a", choices=["o1a", "o1c"])
+    ap.add_argument("--corrected-grads", default="")
     ap.add_argument("--step", type=int, default=0)
     ap.add_argument("--state", default=str(OUT / "masked_lora_state.pt"))
     ap.add_argument("--input-ids", default=str(
@@ -138,11 +159,29 @@ def main():
             params += [A, B]; keys += [(l, proj, "A"), (l, proj, "B")]
         grads = torch.autograd.grad(logits_masked, params, grad_outputs=dlog,
                                     allow_unused=True)
-        # one GPU masked-SGD step (masked/rank domain)
+        gmap = {}
+        for i in range(0, len(params), 2):
+            l, proj, _ = keys[i]
+            gmap[(l, proj)] = (grads[i], grads[i + 1])
+
+        o1c = args.profile == "o1c"
+        corr_grads = {}                      # q/k/v/gate/up masked A-grads deferred to TDX
+        bf16_diag = {"raw_A_corr_targets": {}, "gpu_exact_applied": 0}
         with torch.no_grad():
-            for p, g in zip(params, grads):
-                if g is not None:
-                    p -= args.lr * g
+            for (l, proj), (A, B) in model.lora.items():
+                gA, gB = gmap[(l, proj)]
+                if gB is not None:                       # B always GPU-exact
+                    B -= args.lr * gB
+                if not o1c or proj in GPU_EXACT_A:        # o1a: all A on GPU; o1c: only o/down A
+                    if gA is not None:
+                        A -= args.lr * gA
+                        bf16_diag["gpu_exact_applied"] += 1
+                else:                                     # o1c: defer q/k/v/gate/up A-grad to TDX
+                    corr_grads[f"{l}.{proj}"] = gA.detach().float().cpu()
+                    if l == 0:
+                        bf16_diag["raw_A_corr_targets"][proj] = bf16_numerics(gA.detach().float())
+        if o1c:
+            torch.save(corr_grads, MSG / f"corr_grads_step{args.step}.pt")
         torch.cuda.synchronize(); bwd_t = time.time() - t0
         # per-target grad presence
         per_target = []
@@ -161,12 +200,21 @@ def main():
         base_grad = any(t.requires_grad for t in loader.tensors.values())
         connected = sum(1 for r in per_target if r["gradA_present"] and r["gradB_present"])
         counters["attention_score_exposures"] = model.attention_score_exposures
-        counters["total_logical_trusted_invocations_per_step"] = 2
-        result = {"mode": "backward", "step": args.step, "backward_sec": bwd_t,
+        counters["total_logical_trusted_invocations_per_step"] = 3 if o1c else 2
+        counters["untrusted_gamma_materializations"] = 0
+        counters["untrusted_correction_matrix_materializations"] = 0
+        counters["untrusted_plaintext_gradient_materializations"] = 0
+        counters["silent_fallbacks"] = 0
+        counters["deferred_A_correction_targets"] = len(corr_grads)
+        result = {"mode": "backward", "step": args.step, "profile": args.profile,
+                  "backward_sec": bwd_t,
                   "peak_vram_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2),
                   "lora_targets_connected": connected, "lora_targets_total": len(per_target),
                   "all_targets_connected": connected == len(per_target),
                   "base_tensors_require_grad": base_grad,
+                  "gpu_exact_A_applied": bf16_diag["gpu_exact_applied"],
+                  "deferred_A_to_tdx": len(corr_grads),
+                  "bf16_raw_A_numerics_layer0": bf16_diag["raw_A_corr_targets"],
                   "step_finite": all(bool(torch.isfinite(p).all()) for p in params),
                   "counters": counters}
         (OUT / f"backward_result_step{args.step}.json").write_text(json.dumps(result, indent=2))
@@ -175,8 +223,48 @@ def main():
             for r in per_target:
                 f.write(f"{r['layer']},{r['proj']},{r['gradA_present']},{r['gradB_present']}\n")
         print(json.dumps({k: result[k] for k in
-                          ["mode", "step", "all_targets_connected",
-                           "base_tensors_require_grad", "step_finite"]}))
+                          ["mode", "step", "profile", "all_targets_connected",
+                           "deferred_A_to_tdx", "base_tensors_require_grad", "step_finite"]}))
+        return
+
+    if args.mode == "apply_correction":
+        # O1-C: apply the TDX-corrected masked A-updates for q/k/v/gate/up. The worker
+        # never sees gamma / Nr / the correction matrix -- only the corrected gradients.
+        corrected = torch.load(args.corrected_grads, map_location=device)
+        applied, per = 0, {}
+        zeroed_total, elem_total = 0, 0
+        with torch.no_grad():
+            for (l, proj), (A, B) in model.lora.items():
+                if proj not in CORR_A:
+                    continue
+                key = f"{l}.{proj}"
+                if key not in corrected:
+                    raise SystemExit(f"missing_corrected_grad {key}")
+                cg = corrected[key].to(device, DTYPE)
+                A -= args.lr * cg
+                applied += 1
+                if l == 0:
+                    per[proj] = bf16_numerics(cg.float())
+                zeroed_total += int((cg == 0).sum().item()); elem_total += cg.numel()
+        new_state = {f"{l}.{proj}": (A.detach().cpu(), B.detach().cpu())
+                     for (l, proj), (A, B) in model.lora.items()}
+        torch.save(new_state, args.state)
+        counters["untrusted_gamma_materializations"] = 0
+        counters["untrusted_correction_matrix_materializations"] = 0
+        counters["silent_fallbacks"] = 0
+        res = {"mode": "apply_correction", "step": args.step,
+               "correction_targets_applied": applied,
+               "expected": len(CORR_A) * model.L,
+               "all_corrections_applied": applied == len(CORR_A) * model.L,
+               "corrected_grad_zeroed_fraction": zeroed_total / max(1, elem_total),
+               "corrected_A_numerics_layer0": per,
+               "step_finite": all(bool(torch.isfinite(A).all() and torch.isfinite(B).all())
+                                  for (A, B) in model.lora.values()),
+               "counters": counters}
+        (OUT / f"apply_correction_step{args.step}.json").write_text(json.dumps(res, indent=2))
+        print(json.dumps({k: res[k] for k in
+                          ["mode", "step", "correction_targets_applied",
+                           "all_corrections_applied", "step_finite"]}))
         return
 
 

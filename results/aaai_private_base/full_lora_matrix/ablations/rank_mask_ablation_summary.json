@@ -1,0 +1,38 @@
+{
+  "refresh_every_10": {
+    "max_dW_err": 1.7621951149684107e-15,
+    "all_exact": true,
+    "max_linkability": 0.2178549688669974,
+    "refreshes": 2
+  },
+  "refresh_per_session": {
+    "max_dW_err": 1.256419862995922e-15,
+    "all_exact": true,
+    "max_linkability": 0.06277071541618169,
+    "refreshes": 1
+  },
+  "NEG_refresh_no_state_transport": {
+    "max_dW_err": 0.7881706060130323,
+    "all_exact": false,
+    "max_linkability": 0.7474354572824636,
+    "refreshes": 20
+  },
+  "L10_fixed_U": {
+    "max_dW_err": 7.365945237294459e-16,
+    "all_exact": true,
+    "max_linkability": 0.0,
+    "refreshes": 0
+  },
+  "L7_no_rank_mask": {
+    "max_dW_err": 7.365945237294459e-16,
+    "all_exact": true,
+    "max_linkability": 0.0,
+    "refreshes": 0
+  },
+  "refresh_every_step": {
+    "max_dW_err": 3.356248415515359e-15,
+    "all_exact": true,
+    "max_linkability": 0.7459120086896234,
+    "refreshes": 20
+  }
+}

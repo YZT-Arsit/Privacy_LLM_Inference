@@ -1,0 +1,61 @@
+{
+  "mode": "apply_correction",
+  "step": 2,
+  "correction_targets_applied": 120,
+  "expected": 120,
+  "all_corrections_applied": true,
+  "corrected_grad_zeroed_fraction": 0.0,
+  "corrected_A_numerics_layer0": {
+    "q_proj": {
+      "max_abs": 6.154510629130527e-06,
+      "min_abs_nonzero": 1.7132779570050438e-12,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "k_proj": {
+      "max_abs": 1.0377988473919686e-05,
+      "min_abs_nonzero": 8.876085088281582e-13,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "v_proj": {
+      "max_abs": 0.0017724860226735473,
+      "min_abs_nonzero": 2.6570654010349415e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_proj": {
+      "max_abs": 0.0002296131569892168,
+      "min_abs_nonzero": 8.731583511778496e-11,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "up_proj": {
+      "max_abs": 0.00020761994528584182,
+      "min_abs_nonzero": 2.940869769929577e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "step_finite": true,
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 0,
+    "untrusted_gamma_materializations": 0,
+    "untrusted_correction_matrix_materializations": 0
+  }
+}

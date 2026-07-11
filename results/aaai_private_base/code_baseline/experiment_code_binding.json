@@ -1,0 +1,8 @@
+{
+  "binding_version": 1,
+  "head_hash": "a95b59f6c1d96f2ad4950220d93078218b81c607",
+  "worktree_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "worktree_clean_at_baseline": true,
+  "binding_policy": "Every full_lora_matrix run manifest MUST embed head_hash and a live worktree_diff_sha256 recomputed at run start (this baseline value is the clean-tree reference e3b0c442...). New uncommitted experiment code created during the matrix will change the live worktree diff; that live hash is what each run records, so the exact code used is bound per-run. Nothing is committed.",
+  "baseline_worktree_diff_sha256_empty_tree": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

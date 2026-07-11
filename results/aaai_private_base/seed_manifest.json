@@ -17,5 +17,7 @@
     3,
     4
   ],
-  "note": "fixed; preregistered"
+  "note": "fixed; preregistered before execution (matrix)",
+  "full_lora_matrix_preregistered": true,
+  "equivalence_subset_size": 1000
 }

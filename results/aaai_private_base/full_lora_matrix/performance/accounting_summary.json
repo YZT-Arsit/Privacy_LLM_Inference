@@ -1,0 +1,16 @@
+{
+  "transport_profile": "mac_ferried_authenticated_prototype",
+  "ferried_latency_is_deployment_claim": false,
+  "logical_trusted_invocations_per_step": 3,
+  "invocation_breakdown": [
+    "1: trusted session/labels/attestation",
+    "2: trusted CE + dlogits (in-enclave)",
+    "3: trusted gradient correction (in-enclave)"
+  ],
+  "mean_step_wall_sec": 182.6,
+  "mean_tdx_correction_compute_sec": 0.0472,
+  "correction_payload_bytes": 3476733,
+  "logits_payload_bytes": 25526860,
+  "correction_payload_frac_of_gpu_to_tdx": 0.1199,
+  "note": "In-enclave compute (CE+dlogits+correction) is ~0.05-0.1 s/step; the ~180 s step wall is cross-cloud SSH ferry. The O1-C correction adds one round-trip (+3.48 MB each way = +12% of GPU->TDX bytes) and ~48 ms in-enclave compute."
+}

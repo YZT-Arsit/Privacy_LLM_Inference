@@ -1,0 +1,30 @@
+{
+  "status": "deployment_provenance_done + preregistered_convergence_pending",
+  "protected_deployment": {
+    "deployment_ok": true,
+    "adapter_hash_prefix": "3e7e3a26",
+    "package_native": true,
+    "plaintext_adapter_materializations": 0,
+    "plaintext_base_materializations": 0,
+    "assertions_all_true": true,
+    "source": "full_lora_matrix/deployment/L10_deployment_provenance.json"
+  },
+  "heldout_ce_reference_gsm8k_subset": {
+    "note": "4-prompt preregistered held-out subset; CE only (NOT exact-match). The 10-step run is single-batch -> SMOKE, not a utility claim.",
+    "L0_base_mean_ce": 3.8124,
+    "L0_base_mean_ppl": 45.257,
+    "L10_10step_mean_ce": 3.8805,
+    "L10_10step_mean_ppl": 48.45,
+    "interpretation": "10-step single-batch protected training slightly overfits the batch; held-out CE ~unchanged/slightly up. Confirms this is a systems smoke, not converged utility."
+  },
+  "utility_claim_basis": [
+    "L10 == L1 by construction: O1-C is exact-parameter-equivalent to plaintext SGD/momentum/AdamW (fp64 matrix, worst 3.8e-13) -> identical trained model -> identical utility.",
+    "Protected deployability is demonstrated (package-native, zero plaintext materializations)."
+  ],
+  "preregistered_remaining": {
+    "gsm8k": "exact-match on official test after convergence on official/ budgeted train split; 3 seeds",
+    "sst2": "accuracy + macro-F1 on official dev after convergence; 3 seeds",
+    "why_not_run_here": "per-step Mac-ferry training (184 s/step) is impractical for convergence; the exactness proof certifies L10==L1, so the converged number is an L1 plaintext-train + fold->protected-deploy experiment, preregistered as budget-limited.",
+    "equivalence_margin_preregistered": "held-out metric |L10 - L1| <= 0 by exactness; report effect size vs L0"
+  }
+}

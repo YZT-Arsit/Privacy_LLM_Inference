@@ -1,0 +1,4 @@
+optimizer,trajectory_csv,rows,steps,seeds,layers,precision
+sgd,results/aaai_private_base/full_lora_matrix/equivalence/sgd_full_trajectory.csv,1512,"1,10,50","1234,2025,7",24,fp64
+momentum,results/aaai_private_base/full_lora_matrix/momentum/momentum_full_trajectory.csv,1512,"1,10,50","1234,2025,7",24,fp64
+adamw,results/aaai_private_base/full_lora_matrix/adamw/adamw_full_trajectory.csv,1512,"1,10,50","1234,2025,7",24,fp64
