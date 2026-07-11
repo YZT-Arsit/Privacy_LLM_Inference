@@ -1,0 +1,11 @@
+{
+  "internal_groups": "see experiment_registry.yaml groups L0-L9",
+  "external_privacy_baselines": "NOT implemented yet; see baseline_research/ registry",
+  "inference_only_methods": {
+    "STIP": "training_support=N/A",
+    "ObfuscaTune": "training_support=N/A",
+    "Amulet": "training_support=N/A",
+    "note": "generation/inference comparison only; not reshaped into training baselines"
+  },
+  "plaintext_lora": "correctness+utility reference, NOT the paper's only external baseline"
+}

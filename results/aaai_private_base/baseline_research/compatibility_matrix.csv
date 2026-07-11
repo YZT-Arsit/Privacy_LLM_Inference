@@ -1,0 +1,5 @@
+title,venue_year,link,code_repo,threat_model,base_weights,protects_input,protects_labels,protects_adapter,protects_gradients,supports_lora_peft,supports_backward,optimizer_location,tee_mpc_he_requirement,decoder_only,generation,real_model_scale,real_dataset,open_source,fair_comparison_dims,impl_effort,training_support,verified
+STIP,,,,inference_obfuscation,,,,,,,,,,,,,,,,,N/A,not_a_training_method
+ObfuscaTune,,,,inference_obfuscation,,,,,,,,,,,,,,,,,N/A,not_a_training_method
+Amulet,,,,inference_nonlinear_islands,,,,,,,,,,,,,,,,,N/A,not_a_training_method
+<secure-LoRA-candidate-1>,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,TBD,unverified

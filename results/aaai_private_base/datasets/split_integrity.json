@@ -1,0 +1,20 @@
+{
+  "gsm8k": {
+    "train_rows": 7473,
+    "test_rows": 1319,
+    "official_train": 7473,
+    "official_test": 1319,
+    "train_match": true,
+    "test_match": true,
+    "disjoint": true
+  },
+  "sst2": {
+    "train_rows": 67349,
+    "dev_rows": 872,
+    "official_train": 67349,
+    "official_dev": 872,
+    "train_match": true,
+    "dev_match": true,
+    "disjoint": true
+  }
+}

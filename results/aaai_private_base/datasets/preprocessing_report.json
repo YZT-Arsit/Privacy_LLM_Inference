@@ -1,0 +1,27 @@
+{
+  "gsm8k": {
+    "prompt": "Question: {question}\nAnswer:",
+    "target": "official answer incl. #### final",
+    "max_seq_len": 512,
+    "truncation_count": "computed_at_train_time",
+    "parsing_failures": 0,
+    "answer_extraction": "#### <number> regex (frozen)"
+  },
+  "sst2": {
+    "prompt": "Review: {sentence}\nSentiment:",
+    "verbalizer": {
+      "0": "negative",
+      "1": "positive"
+    },
+    "max_seq_len": 128,
+    "truncation_count": "computed_at_train_time",
+    "parsing_failures": 0
+  },
+  "excluded_rows": {
+    "gsm8k": 0,
+    "sst2": 0
+  },
+  "no_paraphrase": true,
+  "no_synthetic_augmentation": true,
+  "no_regenerated_labels": true
+}

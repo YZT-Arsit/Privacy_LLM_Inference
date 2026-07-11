@@ -1,0 +1,14 @@
+{
+  "gsm8k": {
+    "train_test_question_overlap": 0,
+    "train_internal_dupes": 0,
+    "test_internal_dupes": 0
+  },
+  "sst2": {
+    "train_dev_sentence_overlap": 0,
+    "train_internal_dupes": 371,
+    "dev_internal_dupes": 0
+  },
+  "method": "exact match on lowercased whitespace-normalized text",
+  "note": "no external instruction-corpus available locally to cross-check"
+}

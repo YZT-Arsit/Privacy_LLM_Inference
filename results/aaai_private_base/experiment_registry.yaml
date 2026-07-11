@@ -1,0 +1,118 @@
+# AAAI private-base + unified LoRA — frozen experiment registry (Gate 0)
+# No experiment runs without a registered config + immutable run_id.
+# Real data + real checkpoint for all main results; synthetic only for unit tests
+# and attack positive controls. Do not commit.
+schema_version: "1.0"
+threat_model: from_scratch_private_base
+security_posture:
+  cryptographic_security_claim: false
+  zero_leakage_claim: false
+  masks: orthogonal_feature + permutation_compatible_nonlinear
+  protected: [base_weights, inputs, labels, lora_adapters, lora_gradients,
+              hidden_residual_states, kv_cache, logits]
+
+fixed_model:
+  model_id: Qwen2.5-0.5B
+  checkpoint_source: Qwen/Qwen2.5-0.5B (HF)
+  checkpoint_sha256: PENDING_LOCAL_DOWNLOAD          # filled from local snapshot
+  tokenizer_sha256: PENDING_LOCAL_DOWNLOAD
+  arch: {hidden: 896, layers: 24, heads: 14, kv_heads: 2, intermediate: 4864,
+         vocab: 151936, rope_theta: 1000000, tie_word_embeddings: true}
+
+fixed_lora_config:            # identical across ALL L1-L8 trainable groups
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  rank: 8
+  alpha: 16
+  dropout: 0.0
+  lr: 2.0e-4
+  scheduler: constant
+  warmup: 0
+  weight_decay: 0.0
+  grad_clip: 1.0
+  batch_size: 1
+  grad_accum: 8
+  max_seq_len: {gsm8k: 512, sst2: 128}
+  precision: bf16
+  stopping_rule: fixed_step_budget
+
+seeds: {manifest: seed_manifest.json, primary: [1234, 2025, 7], count: 3}
+
+# ---- internal comparison groups (PHASE 2) ----
+groups:
+  L0: {name: frozen_base, trainable: false, role: reference}
+  L1: {name: plaintext_lora_sgd, optimizer: sgd, base: plaintext, role: correctness_utility_ref}
+  L2: {name: private_base_masked_lora_gpu_sgd, optimizer: gpu_masked_sgd, base: private_transformed, role: main_protected}
+  L3: {name: plaintext_lora_momentum, optimizer: momentum, base: plaintext, role: correctness_utility_ref}
+  L4: {name: private_base_masked_lora_gpu_momentum, optimizer: gpu_masked_momentum, base: private_transformed, role: main_protected}
+  L5: {name: plaintext_lora_adamw, optimizer: adamw, base: plaintext, role: correctness_utility_ref}
+  L6: {name: private_base_masked_lora_trusted_adamw, optimizer: trusted_adamw, base: private_transformed, role: main_protected}
+  L7: {name: private_base_masked_lora_without_rank_mask, optimizer: gpu_masked_sgd, rank_mask: false, role: ablation}
+  L8: {name: private_base_masked_lora_rank_mask_refresh, optimizer: gpu_masked_sgd, rank_mask: per_step_refresh, role: ablation}
+  L9: {name: archived_plaintext_base_rank_masked_sgd, role: frozen_archive,
+       artifact: results/real_qwen_tdx_audit/qwen05b/sgd_mode/archive_rank_masked_sgd_50step,
+       rerun: forbidden}
+
+invocation_convention:
+  gpu_masked_sgd_or_momentum: 2   # trusted invocations per step
+  trusted_sgd_or_adamw: 3
+
+# ---- Gate 0 experiments (this checkpoint) ----
+experiments:
+  D2:
+    id: gate0_d2_identifiability
+    claim: private_base_weight_confidentiality_empirical
+    threat_levels: [T0, T1, T2, T3]
+    positive_controls: [P0, P1, P2, P3, P4, P5]
+    hardware: cpu_local
+    tdx_required: false
+    stats: {restarts: 5, mask_seeds: 3, ci: bootstrap_95}
+    pass_fail: "T0/T1 must NOT recover a functional model; each attack valid only if its positive control succeeds"
+    artifacts: [gate0_d2/attack_summary.csv, gate0_d2/go_no_go.md]
+  D3:
+    id: gate0_d3_operator_correctness
+    claim: masked_operator_fwd_bwd_exact
+    hardware: cpu_local(fp64/fp32) + gpu(bf16 full model, optional)
+    tdx_required: false
+    counters_required_zero: [plaintext_base_weight_materializations, plaintext_embedding_materializations,
+                             plaintext_hidden_materializations, plaintext_lora_materializations,
+                             nonlinear_trusted_calls, silent_fallbacks]
+    artifacts: [gate0_d3/operator_results.csv, gate0_d3/per_layer_results.csv, gate0_d3/autograd_provenance.json]
+  PACKAGE:
+    id: gate0_private_package
+    claim: gpu_package_contains_no_plaintext
+    hardware: trusted_packager_local
+    artifacts: [private_package/plaintext_absence_scan.json, private_package/tensor_fingerprint_scan.json]
+  D4:
+    id: gate0_d4_unified_tdx_onestep
+    claim: real_private_base_unified_onestep_aligns_plaintext
+    hardware: real_h800 + real_tdx
+    tdx_required: true
+    fresh_attestation: true    # new run_id/quote/nonce/ephemeral; no Gate-3 reuse
+    batch: one_fixed_real_gsm8k_batch
+    counters_required_zero: [plaintext_base_weight_materializations, plaintext_embedding_materializations,
+                             plaintext_hidden_materializations, plaintext_lora_materializations,
+                             nonlinear_trusted_calls, silent_fallbacks]
+    invocations_per_step: 2
+    artifacts: [gate0_d4/*]
+  POST_D4_10STEP:
+    id: gate0_post_d4_10step
+    claim: protected_10step_aligns_plaintext_L1
+    hardware: real_h800 + real_tdx
+    gate: run_only_after_D4_onestep_passes
+  DEPLOY_SMOKE:
+    id: lora_deployment_smoke
+    claim: protected_adapter_deployable_in_same_package
+    tasks: {gsm8k: preregistered_heldout_subset, sst2: preregistered_dev_subset}
+    assertions_required: [same_transformed_package, same_base_weight_view, same_qkv_forward,
+                          same_nonlinear_backend, same_residual_domains, adapter_reencoding_required=false,
+                          plaintext_adapter_materializations=0]
+
+gate0_stop_after: [D2, D3, PACKAGE, D4, POST_D4_10STEP, DEPLOY_SMOKE_gsm8k, DEPLOY_SMOKE_sst2]
+
+do_not:
+  - rerun_generation_correctness_four_dimensions
+  - rerun_or_extend_archived_L9
+  - implement_external_privacy_baselines_yet
+  - use_synthetic_main_task_data
+  - simulate_tdx_or_mock_gpu
+  - commit

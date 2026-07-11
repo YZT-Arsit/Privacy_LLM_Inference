@@ -1,0 +1,21 @@
+{
+  "primary_seeds": [
+    1234,
+    2025,
+    7
+  ],
+  "count": 3,
+  "mask_seeds": [
+    11,
+    12,
+    13
+  ],
+  "attack_restart_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "note": "fixed; preregistered"
+}

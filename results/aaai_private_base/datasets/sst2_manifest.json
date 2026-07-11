@@ -1,0 +1,31 @@
+{
+  "dataset": "sst2",
+  "source": "glue/sst2",
+  "license": "CC-BY-4.0 (GLUE)",
+  "splits": {
+    "train": {
+      "rows": 67349,
+      "sha256": "92f9b070ae9dbbc0b6cc82d1963eeaa58e00a1d3b0391f0d335c8b125e38646d"
+    },
+    "validation": {
+      "rows": 872,
+      "sha256": "0122e4bd75e42039c4d4cc7941cca2b2bf10805f54131c8878765b3c8dc5bcb1"
+    }
+  },
+  "schema": [
+    "sentence",
+    "label",
+    "idx"
+  ],
+  "label_names": [
+    "negative",
+    "positive"
+  ],
+  "prompt_template": "Review: {sentence}\\nSentiment:",
+  "verbalizer": {
+    "0": "negative",
+    "1": "positive"
+  },
+  "eval_split": "validation (official dev; hidden test labels NOT used)",
+  "no_synthetic": true
+}

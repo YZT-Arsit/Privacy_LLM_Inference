@@ -1,0 +1,25 @@
+{
+  "dataset": "gsm8k",
+  "source": "openai/gsm8k",
+  "config": "main",
+  "license": "MIT",
+  "splits": {
+    "train": {
+      "rows": 7473,
+      "sha256": "02d985e9edbc0bb6fec82f1bd8a4fb3b5fa664cd9e6909247129716972549595"
+    },
+    "test": {
+      "rows": 1319,
+      "sha256": "219bb53321b72e6d673051e339331c203e0e7414fd29978316e37c5602057fef"
+    }
+  },
+  "schema": [
+    "question",
+    "answer"
+  ],
+  "answer_extraction": "official '#### <number>' final-answer regex",
+  "no_paraphrase": true,
+  "no_synthetic": true,
+  "no_regenerated_labels": true,
+  "no_tinygsm": true
+}

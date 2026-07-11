@@ -1,0 +1,15 @@
+{
+  "gate": "gate0",
+  "status": "in_progress",
+  "phase0_registry": "done",
+  "phase1_datasets": "done",
+  "phase2_groups": "frozen",
+  "phase2b_baseline_registry": "done",
+  "checkpoint_local": "downloading",
+  "D2": "pending_checkpoint",
+  "D3": "pending_checkpoint",
+  "private_package": "pending_checkpoint",
+  "D4": "blocked_needs_h800_tdx_and_phase6",
+  "post_d4_10step": "blocked",
+  "deploy_smoke": "blocked"
+}

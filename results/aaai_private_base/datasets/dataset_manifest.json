@@ -1,0 +1,39 @@
+{
+  "gsm8k": {
+    "source": "openai/gsm8k",
+    "config": "main",
+    "train_rows": 7473,
+    "test_rows": 1319,
+    "schema": [
+      "question",
+      "answer"
+    ],
+    "train_content_sha256": "02d985e9edbc0bb6fec82f1bd8a4fb3b5fa664cd9e6909247129716972549595",
+    "test_content_sha256": "219bb53321b72e6d673051e339331c203e0e7414fd29978316e37c5602057fef",
+    "train_sample_ids": [
+      0,
+      7472
+    ],
+    "test_sample_ids": [
+      0,
+      1318
+    ]
+  },
+  "sst2": {
+    "source": "glue/sst2",
+    "train_rows": 67349,
+    "dev_rows": 872,
+    "schema": [
+      "sentence",
+      "label",
+      "idx"
+    ],
+    "label_names": [
+      "negative",
+      "positive"
+    ],
+    "train_content_sha256": "92f9b070ae9dbbc0b6cc82d1963eeaa58e00a1d3b0391f0d335c8b125e38646d",
+    "dev_content_sha256": "0122e4bd75e42039c4d4cc7941cca2b2bf10805f54131c8878765b3c8dc5bcb1"
+  },
+  "download_timestamp_utc": "2026-07-11 (fixed; see run provenance)"
+}
