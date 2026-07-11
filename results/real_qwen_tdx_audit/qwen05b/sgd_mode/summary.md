@@ -31,7 +31,10 @@ relays tensors). Attestation-bound X25519/HKDF/ChaCha20-Poly1305 AEAD, safe code
 10. **10-step aligned?** Yes — protected loss 2.0582->1.7166 tracks plaintext 2.0582->1.7226;
     max per-step loss abs diff 0.0178, final ΔW min cosine 0.9984, next-logits top1=1.0, all
     protected steps finite (ten_step_results.json / ten_step_trajectory.csv).
-11. **50-step stable?** <PENDING_50STEP>
+11. **50-step stable?** Yes -- 50 steps, loss 2.0582->0.8686 strictly decreasing (max
+    consecutive increase -0.0005), zero NaN/Inf, tracks plaintext 2.0582->0.8771; max
+    per-step loss abs diff 0.0195, final ΔW min cosine 0.9995, next-logits top1=1.0,
+    all protected steps finite (fifty_step_results.json). No divergence.
 12. **bf16 error accumulation?** <PENDING — single-step residual ~3.6% ΔW is consistent
     with bf16/order-of-ops (fp32 control not yet run); multi-step growth reported below.>
 13. **Largest-error module?** see single_step_per_layer.csv (uniform ~bf16 across layers).
@@ -54,10 +57,20 @@ relays tensors). Attestation-bound X25519/HKDF/ChaCha20-Poly1305 AEAD, safe code
 - Fail-closed matrix (live service): 5/5 PASS (negative_tests.csv) — wrong run_id, wrong
   optimizer_mode, wrong config_digest, compute-without-session, and wrong runtime-hash
   (external Mac verifier refuses on report_data/runtime mismatch) all rejected.
-- 50-step (real TDX): <PENDING_50STEP>
+- 50-step (real TDX): PASS. loss 2.0582->0.8686 strictly decreasing, no NaN/Inf; max
+  step-loss diff 0.0195, ΔW cos 0.9995, top1 1.0, all finite (fifty_step_results.json).
+  Frozen evidence archived under archive_rank_masked_sgd_50step/.
 
-## Gate-3 PASS status
-Single-step meets all 12 PASS criteria (single_step_results.json); 10-step trajectory
-aligned; fail-closed 5/5. Per the Gate-3 rules, overall Gate 3 is marked PASS only when the
-50-step run completes without divergence/NaN; until then it is **single-step + 10-step PASS,
-fail-closed PASS / 50-step in progress**.
+## Gate-3 (rank-masked-SGD milestone) PASS status
+Single-step 12/12; 10-step aligned; **50-step stable without divergence/NaN**;
+fail-closed 5/5. This milestone -- **real Qwen2.5-0.5B on a real H800 + real TDX private
+loss, masked-domain rank-SGD (2 invocations/step, packed_update=0, trusted_optimizer=0)**
+-- is **PASS**.
+
+SCOPE (honest): this profile protects the LoRA *adapters* (rank-space mask) + the
+*loss/labels* (TDX). The base weights and the inter-block *activations* run in plaintext
+on the GPU (limitations.md item 1). This is **NOT** unified masked training and does NOT
+claim the private-base / masked-inter-block threat model. The masked-inter-block unified
+training path has a validated CPU integration contract + paper_safe profile + config
+schema ready (see ../training_path_alignment/), but its real H800 wiring
+(LoRA-aware folded forward) is the next implementation step -- not run here.

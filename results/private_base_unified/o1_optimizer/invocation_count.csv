@@ -1,0 +1,4 @@
+profile,masks,update,trusted_invocations_per_step,gram_visible_to_gpu,paper_safe_eligible
+O1-A,orthogonal,direct_masked_sgd,2,False,True
+O1-B,non_orthogonal,preconditioned,2,True,False
+O1-C,non_orthogonal,trusted,3,False,True

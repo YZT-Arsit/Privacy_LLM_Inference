@@ -1,0 +1,85 @@
+{
+  "schema": "private_base_unified_design_spec",
+  "version": "1.0",
+  "status": "frozen",
+  "frozen_date": "2026-07-11",
+  "threat_model": "private_base",
+  "supersedes_readme_public_scope": true,
+  "prior_milestone_frozen": {
+    "name": "archive_rank_masked_sgd_50step",
+    "verdict": "PASS",
+    "scope": "real Qwen2.5-0.5B, real H800, real TDX private loss, rank-space masked SGD, 50-step stable",
+    "caveat": "base weights and activations PLAINTEXT; must NOT support any private-base claim; do not extend"
+  },
+  "protected_assets": [
+    "base_weights", "embeddings", "user_inputs", "hidden_states", "kv_cache",
+    "lora_adapters", "lora_gradients", "labels_loss", "optimizer_state", "logits"
+  ],
+  "untrusted_never_plaintext": [
+    "checkpoint_tensors", "embeddings", "hidden_states",
+    "lora_parameters_or_gradients", "labels", "logits"
+  ],
+  "forward": {
+    "residual_feature_state": "H_tilde_l = H_l * N_l",
+    "linear_weights": "W_tilde_l = N_in^{-1} * W_l * N_out",
+    "qkv": {
+      "order": "rope_first_logical_then_feature_masks",
+      "Q_tilde": "RoPE(Q) * R",
+      "K_tilde": "RoPE(K) * R^{-T}",
+      "V_tilde": "V * S",
+      "score_preservation": "Q_tilde K_tilde^T == Q_rope K_rope^T for any invertible R",
+      "open_issue_OI1": "realise with plaintext_hidden_materializations=0: fold R into a RoPE-commuting Q/K output basis OR RoPE in masked basis; never materialise plaintext Q_rope/K_rope"
+    },
+    "kv_cache": {
+      "K_cache_tilde": "K_cache_rope * R^{-T}",
+      "V_cache_tilde": "V_cache * S",
+      "append_compatible": true
+    },
+    "nonlinear": {
+      "execution_profile": "paper_safe",
+      "nonlinear_backend": "A_rightmul",
+      "nonlinear_trusted_calls": 0,
+      "plaintext_hidden_materializations": 0
+    },
+    "logits": {
+      "mask": "logits_tilde = logits * D * Pi",
+      "family": "monomial",
+      "bounded_condition": true,
+      "dense_vocab_mask": false,
+      "baseline": "permutation_only (D=I)"
+    }
+  },
+  "attention_leakage": {
+    "exposed": "exact_token_token_attention_score_matrix_and_softmax_probs",
+    "do_not_claim": ["attention_score_confidentiality", "zero_leakage", "formal_security"],
+    "mitigation": "layer0_tee_relocation_partial_layers1plus_still_exposed"
+  },
+  "base_weight_security": {
+    "candidate_defense": "non_orthogonal_feature_masks_vs_orthogonal_gram_alignment",
+    "proven": false,
+    "decided_by": ["W1_residual_chain_alignment", "S1_orth_vs_nonorth", "A1_private_weight_attacks"]
+  },
+  "mask_spaces": {
+    "feature": ["N_in", "N_out", "R", "S"],
+    "lora_rank": ["U"],
+    "nonlinear_permutation": ["Pi_nl"],
+    "vocabulary": ["D_vocab", "Pi_vocab"],
+    "recorded_separately_in_manifest_and_config_digest": true
+  },
+  "effective_masked_linear": {
+    "formula": "W_eff_tilde = W_base_tilde + A_tilde * B_tilde",
+    "targets": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    "base_term": "frozen_detached",
+    "lora_term": "differentiable_in_masked_adapters"
+  },
+  "optimizer_profiles": {
+    "O1_A": {"masks": "orthogonal", "update": "direct_masked_sgd", "trusted_invocations_per_step": 2, "role": "correctness_control"},
+    "O1_B": {"masks": "non_orthogonal", "update": "preconditioned_masked_sgd", "trusted_invocations_per_step": 2, "paper_safe_conditional_on": "preconditioner_does_not_leak_gram"},
+    "O1_C": {"masks": "non_orthogonal", "update": "trusted_optimizer_packed_grads", "trusted_invocations_per_step": 3, "role": "deployable_reference"}
+  },
+  "never_claim": [
+    "private_base_security_from_transform_alone",
+    "non_orthogonal_mask_security_before_W1_S1_A1",
+    "attention_score_confidentiality_or_zero_leakage_or_formal_security"
+  ]
+}

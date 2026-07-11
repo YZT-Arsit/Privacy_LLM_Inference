@@ -1,0 +1,17 @@
+{
+  "O1-A": {
+    "preconditioner": "identity (orthogonal masks)",
+    "gram_visible_to_gpu": false,
+    "note": "no Gram exposed; but orthogonal mixer is recoverable by self-Gram alignment"
+  },
+  "O1-B": {
+    "preconditioner": "P P^T (left) and Q^T Q (right) = the mask Gram",
+    "gram_visible_to_gpu": true,
+    "note": "applying the update on the GPU exposes the exact mask Gram -- strictly more than the self-Gram attack already extracts; defeats the non-orthogonal defense unless moved into a custom backward that never materialises the Gram on the GPU (open)"
+  },
+  "O1-C": {
+    "preconditioner": "applied inside the trusted optimizer (TDX)",
+    "gram_visible_to_gpu": false,
+    "note": "GPU only sends packed masked grads; +1 trusted crossing"
+  }
+}

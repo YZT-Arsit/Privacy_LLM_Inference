@@ -33,3 +33,20 @@ outputs/*cost*.csv
 
 # large response dumps (kept locally, not in git)
 results/**/*.jsonl
+
+# large tensor / model artifacts (kept locally, NEVER pushed to GitHub;
+# exceed GitHub's 100MB per-file limit and would block the push)
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.gguf
+*.npz
+results/**/*.pt
+results/**/*.csv.gz
+# local model caches / checkpoints (must never enter git in the private-base line)
+**/modelscope_cache/
+**/models--*/
+**/*_hf_cache/
+private_base_package/
+**/plaintext_checkpoint/
