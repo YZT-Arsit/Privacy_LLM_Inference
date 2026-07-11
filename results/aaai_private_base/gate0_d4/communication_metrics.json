@@ -1,0 +1,15 @@
+{
+  "logits_bytes_sent": 25526860,
+  "gradient_bytes_returned": 25526867,
+  "ferry_net_sec": 46.93907690048218,
+  "tdx_timing": {
+    "tdx_load_sec": 0.009753704071044922,
+    "tdx_transform_and_ce_sec": 0.06463980674743652,
+    "tdx_save_sec": 0.027575254440307617,
+    "logits_bytes_received": 25526860,
+    "gradient_bytes_returned": 25526867
+  },
+  "logical_trusted_invocations_per_step": 2,
+  "physical_rpc_per_step": "~6 ssh exec/ferry hops (forward, logits pull, logits push, tdx loss, dlogits pull, dlogits push, backward) via Mac orchestration",
+  "note": "logical trusted crossings (2) != physical transport hops; transport is Mac-ferried, not a direct socket"
+}

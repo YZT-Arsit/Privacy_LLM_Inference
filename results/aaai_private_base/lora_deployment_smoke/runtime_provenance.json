@@ -1,0 +1,29 @@
+{
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "assertions": {
+    "same_transformed_package": true,
+    "same_base_weight_view": true,
+    "same_qkv_forward": true,
+    "same_nonlinear_backend": true,
+    "same_residual_domains": true,
+    "training_adds_backward_only": true,
+    "adapter_reencoding_required": false,
+    "plaintext_adapter_materializations": 0,
+    "plaintext_base_materializations": 0,
+    "base_tensors_require_grad": false
+  },
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 388
+  },
+  "same_package_native_forward_as_training": true
+}

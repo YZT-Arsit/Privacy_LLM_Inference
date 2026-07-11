@@ -1,0 +1,6 @@
+{
+  "plaintext_adapter_materializations": 0,
+  "plaintext_base_materializations": 0,
+  "base_tensors_require_grad": false,
+  "clean": true
+}

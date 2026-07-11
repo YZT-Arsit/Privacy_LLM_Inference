@@ -1,12 +1,12 @@
 {
   "tee": "tdx",
   "quote_source": "alibaba_tdx_quote_generation_sample",
-  "d4_run_id": "D4-1783795224-0d34dc05",
+  "d4_run_id": "D4-10STEP-1783795844-07582400",
   "attestation_verified": true,
   "verifier_overall_appraisal_result": "SUCCESS",
   "quote_generated": true,
-  "report_data_expected": "980190edb2c2c1fbcaed3efc3854fa60d231ff59f43a2c5b026904a164adaf79bed86e6249481d3d1b718d245b976d5c0e11640d125d06278144baac91a43827",
-  "tdx_reportdata": "980190edb2c2c1fbcaed3efc3854fa60d231ff59f43a2c5b026904a164adaf79bed86e6249481d3d1b718d245b976d5c0e11640d125d06278144baac91a43827",
+  "report_data_expected": "61704b310201a438725a53126b3298454687e6d7ec919c754643bcd4662cd1bd598f77649418a793f784d434cb3abf8a31b618f738a5be13b203f29ccf537c96",
+  "tdx_reportdata": "61704b310201a438725a53126b3298454687e6d7ec919c754643bcd4662cd1bd598f77649418a793f784d434cb3abf8a31b618f738a5be13b203f29ccf537c96",
   "reportdata_binds_d4_manifest": true,
   "td_attributes_debug": false,
   "debug_false": true,
@@ -15,7 +15,7 @@
   "nonce_fresh": true,
   "ephemeral_key_fresh": true,
   "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
-  "worker_runtime_hash": "03db678fe65129d74571b868e988b7bbc09945562e037abf1d24eb7b958982fb",
+  "worker_runtime_hash": "4a43a2e03103fc4ecd0c3c54a0750206d26b1de3aae4c1cbd02bd14ca4e97bb8",
   "tdx_service_hash": "b30b47b9a8cb1d25fb0a8f734cccfb5c12157ca8872fc026a5f786e73f4ae2e4",
   "binding_fields": [
     "code_revision_or_worktree_hash",
@@ -39,8 +39,8 @@
     "worker_runtime_hash"
   ],
   "timing_sec": {
-    "quote_generation": 0.005743980407714844,
-    "verification": 0.05505514144897461
+    "quote_generation": 0.005534648895263672,
+    "verification": 0.055568695068359375
   },
   "paper_facing": true,
   "quote_generation_alone_is_not_verification": true

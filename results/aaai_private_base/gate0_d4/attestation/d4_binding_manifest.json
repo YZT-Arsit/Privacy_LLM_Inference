@@ -1,7 +1,7 @@
 {
-  "d4_run_id": "D4-1783795224-0d34dc05",
+  "d4_run_id": "D4-10STEP-1783795844-07582400",
   "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
-  "worker_runtime_hash": "03db678fe65129d74571b868e988b7bbc09945562e037abf1d24eb7b958982fb",
+  "worker_runtime_hash": "4a43a2e03103fc4ecd0c3c54a0750206d26b1de3aae4c1cbd02bd14ca4e97bb8",
   "tdx_service_hash": "b30b47b9a8cb1d25fb0a8f734cccfb5c12157ca8872fc026a5f786e73f4ae2e4",
   "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
   "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
@@ -14,8 +14,8 @@
   "vocabulary_mask_profile": "monomial_perm_only",
   "gradient_convention": "masked_domain_dlogits",
   "dataset_batch_manifest_hash": "7690d215fb26dd0b0a347d5c27995ce928e3b5e7f2d1b2e8f6331116958fdd57",
-  "code_revision_or_worktree_hash": "be0d660f4b8503340e5c9d26237fa7d90374ced1",
+  "code_revision_or_worktree_hash": "36b2d6c37879b550e7a8baa14c982fe08140aed1",
   "debug_false_required": true,
-  "nonce": "ba4f601cc957e93012c30ea7adb35316",
-  "ephemeral_key_pub": "c5ed84bd2e813610de6956b35d3ae8e790b63d72ad62203e216a75ffecd32168"
+  "nonce": "e6d12ef107f5a2c73344d8e3c09f3e48",
+  "ephemeral_key_pub": "4ca4f56fdf4defa3e9a0126fd6adf1c2755ab46775b6304343d2689ea2679318"
 }

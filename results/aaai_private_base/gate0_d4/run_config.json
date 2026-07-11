@@ -1,0 +1,22 @@
+{
+  "run_id": "D4-1783795544-acf0dc3c",
+  "model": "Qwen2.5-0.5B",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "execution_profile": "paper_safe",
+  "backend": "package_native_A_rightmul",
+  "optimizer": "gpu_masked_sgd_O1A",
+  "dtype": "fp32(clean-equivalence); bf16 is deployment precision",
+  "seq_len": 42,
+  "lr": 0.001,
+  "lora": {
+    "rank": 8,
+    "alpha": 16,
+    "targets": 7,
+    "layers": 24,
+    "total_target_instances": 168
+  },
+  "batch": "one_preregistered_real_gsm8k_prompt (train id 0)",
+  "real_h800": true,
+  "real_tdx": true,
+  "tdx_loss_boundary": "real (Intel TDX guest 39.96.4.252, in-enclave CE+dlogits)"
+}

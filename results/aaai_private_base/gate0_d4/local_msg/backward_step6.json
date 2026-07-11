@@ -1,7 +1,7 @@
 {
   "mode": "backward",
-  "step": 0,
-  "backward_sec": 0.6525623798370361,
+  "step": 6,
+  "backward_sec": 0.6471364498138428,
   "peak_vram_gb": 2.77,
   "lora_targets_connected": 168,
   "lora_targets_total": 168,

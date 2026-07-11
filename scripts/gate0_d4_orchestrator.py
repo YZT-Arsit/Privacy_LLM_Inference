@@ -225,7 +225,7 @@ def main():
         rc, o, e = h800(
             f"cd {RH800} && {ENV_H800} {PY_H800} scripts/d4_trusted_verifier.py "
             f"--masked-logits {RH800}/results/aaai_private_base/gate0_d4/msg/logits_step{s}.pt "
-            f"--lora-state {RH800}/results/aaai_private_base/gate0_d4/masked_lora_state.pt "
+            f"--lora-state {RH800}/results/aaai_private_base/gate0_d4/msg/lora_state_at_step{s}.pt "
             f"--input-ids {RH800}/results/aaai_private_base/h800_unified_worker/dry_run_input_ids.json "
             f"--seq-len {args.seq_len} --out {RH800}/results/aaai_private_base/gate0_d4/equiv.json",
             timeout=900)

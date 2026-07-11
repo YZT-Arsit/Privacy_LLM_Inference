@@ -1,0 +1,9 @@
+{
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "worker_runtime_hash": "4a43a2e03103fc4ecd0c3c54a0750206d26b1de3aae4c1cbd02bd14ca4e97bb8",
+  "tdx_service_hash": "b30b47b9a8cb1d25fb0a8f734cccfb5c12157ca8872fc026a5f786e73f4ae2e4",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "bound_into_attestation_report_data": true,
+  "reportdata_binds_d4_manifest": true
+}

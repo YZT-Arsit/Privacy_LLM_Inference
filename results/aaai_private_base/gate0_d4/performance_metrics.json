@@ -1,0 +1,5 @@
+{
+  "tdx_transform_and_ce_sec": 0.06463980674743652,
+  "ferry_net_sec": 46.93907690048218,
+  "note": "per-token/VRAM in backward_result_step*.json; fp32 dry-run precision"
+}

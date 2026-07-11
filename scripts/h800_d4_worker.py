@@ -113,6 +113,9 @@ def main():
     counters = new_counters()
 
     if args.mode == "forward":
+        # snapshot the exact LoRA state used for THIS forward (pre-step), so the
+        # trusted-eval effective-equivalence check aligns temporally with these logits.
+        torch.save(state, MSG / f"lora_state_at_step{args.step}.pt")
         t0 = time.time()
         logits_masked = model.forward(input_ids, counters)
         torch.cuda.synchronize(); fwd_t = time.time() - t0

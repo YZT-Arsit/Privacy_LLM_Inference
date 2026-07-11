@@ -1,0 +1,15 @@
+{
+  "untrusted_worker_plaintext_base_weight_materializations": 0,
+  "untrusted_worker_plaintext_embedding_materializations": 0,
+  "untrusted_worker_plaintext_hidden_materializations": 0,
+  "untrusted_worker_plaintext_lora_materializations": 0,
+  "untrusted_worker_plaintext_gradient_materializations": 0,
+  "nonlinear_trusted_calls": 0,
+  "packed_update_calls": 0,
+  "trusted_optimizer_calls": 0,
+  "silent_fallbacks": 0,
+  "logical_trusted_invocations": 0,
+  "mask_domain_transitions": 97,
+  "attention_score_exposures": 592704,
+  "total_logical_trusted_invocations_per_step": 2
+}

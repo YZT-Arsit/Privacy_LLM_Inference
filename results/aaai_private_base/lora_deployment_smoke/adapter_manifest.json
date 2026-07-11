@@ -1,0 +1,7 @@
+{
+  "adapter_sha256": "99e40193e0eefbba29888c3cd9de97afac1820e28daf8de87c8e132ad32bc066",
+  "targets": 168,
+  "produced_by": "10-step protected masked-LoRA training through real TDX (D4-10STEP-1783795844-07582400)",
+  "masked_domain": true,
+  "plaintext_adapter_factors_materialized": false
+}
