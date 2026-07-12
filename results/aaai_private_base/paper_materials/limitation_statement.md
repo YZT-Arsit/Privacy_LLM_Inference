@@ -54,5 +54,5 @@ We state the following limitations plainly. Throughout, security is claimed only
 Under the evaluated threat model and published attacks, the private-base transformed model
 **empirically resists** recovery of private representations, adapters, gradients, and
 inference artifacts *when the TEE assumptions hold* (no paired-plaintext / per-example-
-gradient exposure, aggregated updates). Its guarantees are empirical and assumption-scoped,
+gradient exposure, aggregated updates). Its assurances are empirical and assumption-scoped,
 and the algebraic masking alone is explicitly **not** the source of confidentiality.
