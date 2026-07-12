@@ -1,0 +1,17 @@
+dir,MB,hmac,wall_s,throughput_MBps,reads,mean_read_KB,max_read_KB,blocked_read_s,client_hmac_us,server_hmac_us
+download_TDX_to_H800,1,False,0.0059,168.758,67,15.3,16.0,0.0042,0.0,1.7
+upload_H800_to_TDX,1,False,0.0065,154.686,0,0,0,0,0,1.7
+download_TDX_to_H800,1,True,0.0068,146.921,66,15.5,48.0,0.0054,841.4,781.8
+upload_H800_to_TDX,1,True,0.007,142.722,0,0,0,0,803.5,817.5
+download_TDX_to_H800,8,False,0.0445,179.875,508,16.1,64.0,0.0301,0.0,1.7
+upload_H800_to_TDX,8,False,0.0415,192.859,0,0,0,0,0,1.0
+download_TDX_to_H800,8,True,0.0504,158.71,480,17.1,64.0,0.0378,6463.1,5909.7
+upload_H800_to_TDX,8,True,0.0452,177.097,0,0,0,0,6353.4,5941.4
+download_TDX_to_H800,16,False,0.0874,183.002,878,18.7,64.0,0.0599,0.0,1.7
+upload_H800_to_TDX,16,False,0.0816,196.038,0,0,0,0,0,1.2
+download_TDX_to_H800,16,True,0.0924,173.137,1011,16.2,64.0,0.0811,12865.5,11900.4
+upload_H800_to_TDX,16,True,0.0879,182.111,0,0,0,0,12780.9,11925.2
+download_TDX_to_H800,32,False,0.1758,182.025,1826,17.9,64.0,0.1257,0.0,1.4
+upload_H800_to_TDX,32,False,0.1434,223.105,0,0,0,0,0,1.4
+download_TDX_to_H800,32,True,0.1907,167.764,1936,16.9,64.0,0.1424,25593.3,23553.4
+upload_H800_to_TDX,32,True,0.1729,185.113,0,0,0,0,25542.0,23811.1

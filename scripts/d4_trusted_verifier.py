@@ -80,7 +80,10 @@ def main():
         from transformers import AutoModelForCausalLM
         state = torch.load(args.lora_state, map_location="cpu")
         dw = {k: args.lora_scale * (B.to(DT) @ A.to(DT)) for k, (A, B) in state.items()}
-        hf = AutoModelForCausalLM.from_pretrained(str(CKPT), dtype=torch.float32).to(device).eval()
+        try:
+            hf = AutoModelForCausalLM.from_pretrained(str(CKPT), dtype=torch.float32).to(device).eval()
+        except TypeError:   # older transformers use torch_dtype (same numerics)
+            hf = AutoModelForCausalLM.from_pretrained(str(CKPT), torch_dtype=torch.float32).to(device).eval()
         # apply un-folded plaintext effective dW to each target weight
         with torch.no_grad():
             for l in range(cfg["num_hidden_layers"]):

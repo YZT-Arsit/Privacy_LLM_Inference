@@ -111,7 +111,7 @@ def main():
                          "wall_s": round(ul_wall, 4), "throughput_MBps": round(mb / ul_wall, 3),
                          "reads": 0, "mean_read_KB": 0, "max_read_KB": 0, "blocked_read_s": 0,
                          "client_hmac_us": round(client_mac_us, 1) if use_hmac else 0,
-                         "server_hmac_ok_us": ack.get("hmac_us")})
+                         "server_hmac_us": ack.get("hmac_us")})
     write_frame(p.stdin, {"op": "close"}); p.stdin.close()
     try: p.wait(timeout=10)
     except Exception: p.kill()

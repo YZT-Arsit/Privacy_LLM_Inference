@@ -1,0 +1,45 @@
+{
+  "phase": "PHASE_0_migration_provenance",
+  "head": "d271ef6101c54bf514acb63852c7cb63afc122a9",
+  "committed_by_me": false,
+  "git_status_dirty": true,
+  "source_bundle_hash": "09068b38bbebdbe50dc038255c7ab06ab5348f87bbcc16d7b6dbfb7c69269d84",
+  "source_file_count": 14,
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "package_root_matches_pinned": true,
+  "checkpoint_sha_pinned": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "dataset_manifest_hashes": {
+    "dry_run_input_ids": "7690d215fb26dd0b0a347d5c27995ce928e3b5e7f2d1b2e8f6331116958fdd57"
+  },
+  "h800_unified_worker_hash": "3d73c4eaeb4251e82800c23bfd4220e3136127f27d117007a9a0e39ad9a51caf",
+  "h800_d4_worker_hash": "d06058efd44ec3ec895b41de57cfac73e0061087f0afae93820730882bfc2e70",
+  "tdx_service_hash": "df1fb22de67fa11d0af041fa89926a7ad6fbeffbd7f88399484f179151e39d75",
+  "direct_runner_hash": "73a9d70f10e1c35fb244d149e3390ad6bb6b16004529e525e7a3922d8996eb0f",
+  "correction_bundle_hash": "cc88dbb9120ab593733cd9a57a96397cec28ba698e7b3a7eb4840e879061b56f",
+  "experiment_registry_version": "unversioned",
+  "experiment_registry_keys": [
+    "checkpoint_sha256",
+    "code_head",
+    "do_not_rerun",
+    "experiment_source_bundle_sha256",
+    "frozen_before_execution",
+    "hard_constraint_measured",
+    "no_profile_or_theory_change",
+    "package_root_hash",
+    "profiles",
+    "seeds_preregistered",
+    "shared_config",
+    "status_on_open",
+    "tokenizer_sha256",
+    "transport_profile"
+  ],
+  "migration_target": {
+    "a10_private_ip": "172.30.25.154",
+    "tdx_private_ip": "172.30.25.153",
+    "gpu": "NVIDIA A10 24GB",
+    "same_vpc_vswitch": true,
+    "data_plane": "private_ip_only",
+    "mac_role": "control_plane_only"
+  }
+}

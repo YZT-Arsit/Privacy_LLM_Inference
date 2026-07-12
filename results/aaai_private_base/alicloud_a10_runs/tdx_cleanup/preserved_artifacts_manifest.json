@@ -1,0 +1,25 @@
+{
+  "preserved": {
+    "attestation": [
+      "session_attestation.json (verified SUCCESS, debug=false, mr_td 8a56b29a)",
+      "session_quote.dat (b64) \u2014 pulled durably to Mac attestation_evidence/"
+    ],
+    "tdx_base_env": [
+      "/dev/tdx_guest intact",
+      "libtdx_attest / verifier env",
+      "management SSH key skp-* retained",
+      "system packages untouched"
+    ],
+    "non_secret_reports": [
+      "A10 run JSONs (trajectory/timing/counters)",
+      "run_index.csv",
+      "aggregate_metrics.csv",
+      "artifact_hashes.sha256"
+    ],
+    "code_package_on_a10": [
+      "private_package/gpu_package (root bfd578b8)",
+      "checkpoint /root/qwen25_05b",
+      "scripts/src retained for future runs"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+run_tag,steps,ce_first,ce_last,equiv_top1,mean_step_wall_s,all_finite,missing_total
+A10_L10_10STEP_bf16_10step,10,0.44526,0.29208,1.0,0.57,True,0
+A10_L10_50STEP_bf16_50step,50,0.44526,0.10804,1.0,0.536,True,0
+A10_L10_bf16_1step,1,0.44526,0.44526,,0.899,True,0
+A10_L11_10STEP_bf16_10step,10,0.44526,0.24613,1.0,0.588,True,0

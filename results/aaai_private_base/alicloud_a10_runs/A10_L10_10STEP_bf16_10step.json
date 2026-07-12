@@ -1,0 +1,505 @@
+{
+  "run_id": "A10_L10_10STEP-10s-1783828141-92806e",
+  "profile": "L10_O1C_sgd",
+  "dtype": "bf16",
+  "transport_profile": "direct_h800_tdx",
+  "steps_run": 10,
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "e4c8fa6eac2495e77b7f85f8d5a622d43296a5bd709a68d087233e3893a1e60014f0a1edb5a866376b31ec948000dd97e792ec75f223c37b1adb99f6f2a15006",
+    "session_setup_once": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "trajectory": [
+    {
+      "step": 0,
+      "ce": 0.4452628493309021,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 1,
+      "seq_correct": 3,
+      "numerics": {
+        "gradA_norm": 0.05185031508080779,
+        "gradB_norm": 13.789110572846575,
+        "corrected_grad_norm": 0.044554450775203105,
+        "updateA_norm": 4.982947983192691e-05,
+        "updateB_norm": 0.01378911057284658,
+        "deltaW_proxy_norm": 0.013789200606534435,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376195584,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.14036297798156738,
+        "serialize_sec": 0.01990818977355957,
+        "deserialize_sec": 0.013329267501831055,
+        "bwd_sec": 0.2864193916320801,
+        "apply_sec": 0.010413646697998047,
+        "net_ce_sec": 0.27408885955810547,
+        "net_correct_sec": 0.1036677360534668,
+        "enclave_ce_sec": 0.08715391159057617,
+        "enclave_correct_sec": 0.07099795341491699,
+        "ssh_wire_ce_sec": 0.1869349479675293,
+        "ssh_wire_correct_sec": 0.032669782638549805,
+        "step_wall_sec": 0.9033856391906738
+      }
+    },
+    {
+      "step": 1,
+      "ce": 0.3772820830345154,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 5,
+      "seq_correct": 7,
+      "numerics": {
+        "gradA_norm": 0.1491856611057566,
+        "gradB_norm": 5.599430026552962,
+        "corrected_grad_norm": 0.0290262569652684,
+        "updateA_norm": 4.318523263293485e-05,
+        "updateB_norm": 0.005599430026552963,
+        "deltaW_proxy_norm": 0.005599596555697604,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028695106506347656,
+        "serialize_sec": 0.020224571228027344,
+        "deserialize_sec": 0.013218879699707031,
+        "bwd_sec": 0.07388162612915039,
+        "apply_sec": 0.010468244552612305,
+        "net_ce_sec": 0.2550971508026123,
+        "net_correct_sec": 0.1038827896118164,
+        "enclave_ce_sec": 0.0772247314453125,
+        "enclave_correct_sec": 0.07030653953552246,
+        "ssh_wire_ce_sec": 0.1778724193572998,
+        "ssh_wire_correct_sec": 0.033576250076293945,
+        "step_wall_sec": 0.5523548126220703
+      }
+    },
+    {
+      "step": 2,
+      "ce": 0.3539002537727356,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 9,
+      "seq_correct": 11,
+      "numerics": {
+        "gradA_norm": 0.23505875446994776,
+        "gradB_norm": 4.439610248329004,
+        "corrected_grad_norm": 0.03493649065091773,
+        "updateA_norm": 6.698214516319118e-05,
+        "updateB_norm": 0.004439610248329005,
+        "deltaW_proxy_norm": 0.004440115512555793,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028215646743774414,
+        "serialize_sec": 0.011955738067626953,
+        "deserialize_sec": 0.01319742202758789,
+        "bwd_sec": 0.07432103157043457,
+        "apply_sec": 0.010466814041137695,
+        "net_ce_sec": 0.2591583728790283,
+        "net_correct_sec": 0.10367178916931152,
+        "enclave_ce_sec": 0.0701894760131836,
+        "enclave_correct_sec": 0.07008624076843262,
+        "ssh_wire_ce_sec": 0.18896889686584473,
+        "ssh_wire_correct_sec": 0.033585548400878906,
+        "step_wall_sec": 0.547978401184082
+      }
+    },
+    {
+      "step": 3,
+      "ce": 0.33799833059310913,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 13,
+      "seq_correct": 15,
+      "numerics": {
+        "gradA_norm": 0.2293094905180855,
+        "gradB_norm": 3.788895886538365,
+        "corrected_grad_norm": 0.03614843848024566,
+        "updateA_norm": 7.517797839210984e-05,
+        "updateB_norm": 0.0037888958865383644,
+        "deltaW_proxy_norm": 0.003789641641034474,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028407812118530273,
+        "serialize_sec": 0.010247945785522461,
+        "deserialize_sec": 0.013161420822143555,
+        "bwd_sec": 0.07387113571166992,
+        "apply_sec": 0.010368585586547852,
+        "net_ce_sec": 0.2545602321624756,
+        "net_correct_sec": 0.10441255569458008,
+        "enclave_ce_sec": 0.07251191139221191,
+        "enclave_correct_sec": 0.07182025909423828,
+        "ssh_wire_ce_sec": 0.18204832077026367,
+        "ssh_wire_correct_sec": 0.0325922966003418,
+        "step_wall_sec": 0.5415866374969482
+      }
+    },
+    {
+      "step": 4,
+      "ce": 0.3279573619365692,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 17,
+      "seq_correct": 19,
+      "numerics": {
+        "gradA_norm": 0.3024996284532259,
+        "gradB_norm": 3.460456689717026,
+        "corrected_grad_norm": 0.043559241363717076,
+        "updateA_norm": 9.345126618488094e-05,
+        "updateB_norm": 0.003460456689717027,
+        "deltaW_proxy_norm": 0.0034617183075112976,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028488636016845703,
+        "serialize_sec": 0.010195255279541016,
+        "deserialize_sec": 0.013111591339111328,
+        "bwd_sec": 0.07416772842407227,
+        "apply_sec": 0.010410070419311523,
+        "net_ce_sec": 0.24230599403381348,
+        "net_correct_sec": 0.10232043266296387,
+        "enclave_ce_sec": 0.07389330863952637,
+        "enclave_correct_sec": 0.07151603698730469,
+        "ssh_wire_ce_sec": 0.1684126853942871,
+        "ssh_wire_correct_sec": 0.03080439567565918,
+        "step_wall_sec": 0.527963399887085
+      }
+    },
+    {
+      "step": 5,
+      "ce": 0.31593751907348633,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 21,
+      "seq_correct": 23,
+      "numerics": {
+        "gradA_norm": 0.2934693376900992,
+        "gradB_norm": 3.0977479845025537,
+        "corrected_grad_norm": 0.044473600231860505,
+        "updateA_norm": 9.904838816438199e-05,
+        "updateB_norm": 0.003097747984502552,
+        "deltaW_proxy_norm": 0.003099331082457566,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.02838611602783203,
+        "serialize_sec": 0.010001420974731445,
+        "deserialize_sec": 0.013239383697509766,
+        "bwd_sec": 0.07413864135742188,
+        "apply_sec": 0.010481595993041992,
+        "net_ce_sec": 0.2341015338897705,
+        "net_correct_sec": 0.10160350799560547,
+        "enclave_ce_sec": 0.06709003448486328,
+        "enclave_correct_sec": 0.07005167007446289,
+        "ssh_wire_ce_sec": 0.16701149940490723,
+        "ssh_wire_correct_sec": 0.03155183792114258,
+        "step_wall_sec": 0.5188348293304443
+      }
+    },
+    {
+      "step": 6,
+      "ce": 0.3108256757259369,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 25,
+      "seq_correct": 27,
+      "numerics": {
+        "gradA_norm": 0.30810226739427343,
+        "gradB_norm": 2.8658590262958032,
+        "corrected_grad_norm": 0.04821831943249822,
+        "updateA_norm": 0.00010500642149227834,
+        "updateB_norm": 0.0028658590262958038,
+        "deltaW_proxy_norm": 0.002867782123376137,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028459787368774414,
+        "serialize_sec": 0.009912490844726562,
+        "deserialize_sec": 0.013337850570678711,
+        "bwd_sec": 0.07421875,
+        "apply_sec": 0.010525703430175781,
+        "net_ce_sec": 0.24573087692260742,
+        "net_correct_sec": 0.10309004783630371,
+        "enclave_ce_sec": 0.07008028030395508,
+        "enclave_correct_sec": 0.06956768035888672,
+        "ssh_wire_ce_sec": 0.17565059661865234,
+        "ssh_wire_correct_sec": 0.03352236747741699,
+        "step_wall_sec": 0.5322437286376953
+      }
+    },
+    {
+      "step": 7,
+      "ce": 0.30061253905296326,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 29,
+      "seq_correct": 31,
+      "numerics": {
+        "gradA_norm": 0.2921960707564116,
+        "gradB_norm": 2.5796697969522513,
+        "corrected_grad_norm": 0.04831129809476638,
+        "updateA_norm": 0.00010431692048666756,
+        "updateB_norm": 0.002579669796952251,
+        "deltaW_proxy_norm": 0.0025817781239307704,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028481483459472656,
+        "serialize_sec": 0.010316133499145508,
+        "deserialize_sec": 0.013181447982788086,
+        "bwd_sec": 0.07434582710266113,
+        "apply_sec": 0.010441780090332031,
+        "net_ce_sec": 0.24248695373535156,
+        "net_correct_sec": 0.10103607177734375,
+        "enclave_ce_sec": 0.06730055809020996,
+        "enclave_correct_sec": 0.07067370414733887,
+        "ssh_wire_ce_sec": 0.1751863956451416,
+        "ssh_wire_correct_sec": 0.030362367630004883,
+        "step_wall_sec": 0.5271337032318115
+      }
+    },
+    {
+      "step": 8,
+      "ce": 0.3000456392765045,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 33,
+      "seq_correct": 35,
+      "numerics": {
+        "gradA_norm": 0.33484024899365444,
+        "gradB_norm": 2.5502257011364553,
+        "corrected_grad_norm": 0.05349220117676197,
+        "updateA_norm": 0.00011657059262677448,
+        "updateB_norm": 0.0025502257011364563,
+        "deltaW_proxy_norm": 0.0025528885267089682,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028404951095581055,
+        "serialize_sec": 0.011202096939086914,
+        "deserialize_sec": 0.013402223587036133,
+        "bwd_sec": 0.07506370544433594,
+        "apply_sec": 0.01064920425415039,
+        "net_ce_sec": 0.2413651943206787,
+        "net_correct_sec": 0.10106492042541504,
+        "enclave_ce_sec": 0.06958913803100586,
+        "enclave_correct_sec": 0.07018399238586426,
+        "ssh_wire_ce_sec": 0.17177605628967285,
+        "ssh_wire_correct_sec": 0.03088092803955078,
+        "step_wall_sec": 0.5282318592071533
+      }
+    },
+    {
+      "step": 9,
+      "ce": 0.292075514793396,
+      "gpu_exact_A": 48,
+      "tdx_corrected": 120,
+      "missing": 0,
+      "finite": true,
+      "logical_invocations": 2,
+      "seq_ce": 37,
+      "seq_correct": 39,
+      "numerics": {
+        "gradA_norm": 0.35225711426453316,
+        "gradB_norm": 2.4662308516400753,
+        "corrected_grad_norm": 0.05819552218137706,
+        "updateA_norm": 0.0001239874054683628,
+        "updateB_norm": 0.0024662308516400742,
+        "deltaW_proxy_norm": 0.0024693455591099644,
+        "momentum_buffer_norm": 0.0
+      },
+      "vram": {
+        "base_alloc_bytes": 1277649408,
+        "peak_alloc_bytes": 1376304128,
+        "alloc_after_free_bytes": 1294797312,
+        "reserved_bytes": 1428160512,
+        "graph_freed": false
+      },
+      "bytes": {
+        "logits_up": 12764201,
+        "dlogits_down": 12764201,
+        "corr_up": 3475023,
+        "corrected_down": 3475023
+      },
+      "timing": {
+        "fwd_sec": 0.028712749481201172,
+        "serialize_sec": 0.01195216178894043,
+        "deserialize_sec": 0.013110160827636719,
+        "bwd_sec": 0.07377743721008301,
+        "apply_sec": 0.010415792465209961,
+        "net_ce_sec": 0.23917365074157715,
+        "net_correct_sec": 0.09938502311706543,
+        "enclave_ce_sec": 0.07297754287719727,
+        "enclave_correct_sec": 0.06867337226867676,
+        "ssh_wire_ce_sec": 0.16619610786437988,
+        "ssh_wire_correct_sec": 0.030711650848388672,
+        "step_wall_sec": 0.5244624614715576
+      }
+    }
+  ],
+  "session_reuse": {
+    "single_ssh_channel": true,
+    "channel_requests": 21,
+    "expected_requests": 21,
+    "seq_strictly_monotone": true,
+    "attestation_once": true,
+    "graph_freed_every_step": false
+  },
+  "vram_summary": {
+    "base_alloc_bytes": 1277649408,
+    "peak_alloc_slope_bytes_per_step": 12060.444444444445,
+    "max_peak_alloc_bytes": 1376304128,
+    "no_growth": true
+  },
+  "final_lora_state_saved": true
+}

@@ -1,0 +1,21 @@
+{
+  "counters": {
+    "ce_calls": 10,
+    "correct_calls": 10,
+    "auth_failures": 0,
+    "replay_rejected": 0,
+    "malformed_rejected": 0,
+    "forbidden_key_rejected": 0,
+    "untrusted_gamma_returns": 0,
+    "correction_missing_targets": 0
+  },
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "274007d0e16921d0d1d450dcada42ee5e9dec1e254e554f673f56a3c1b83360dab2ede03616ef8d5c8f596c02b508474c3a84f8e447d8c7ce2dea4a7aca0c298",
+    "session_setup_once": true
+  }
+}

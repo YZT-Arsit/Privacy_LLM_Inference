@@ -1,0 +1,45 @@
+=== remaining authorized keys (comments) ===
+skp-2zei5qbu8kfrrsyi2h6f
+=== secret scan of /tmp (session keys / gamma / labels) ===
+/tmp/l10_resp_corr_5.json
+/tmp/l10_resp_corr_0.json
+/tmp/l10_resp_corr_4.json
+/tmp/l10_resp_corr_7.json
+/tmp/l10_resp_corr_9.json
+/tmp/l10_resp_corr_8.json
+/tmp/l10_resp_corr_3.json
+/tmp/l10_resp_corr_6.json
+/tmp/l10_resp_corr_1.json
+/tmp/l10_resp_corr_2.json
+=== residual bundle/session files? ===
+NONE
+=== listening services ===
+LISTEN 0      5          127.0.0.1:18091      0.0.0.0:*    users:(("python",pid=1968,fd=3))
+=== experiment processes ===
+0
+=== pid 1968 ===
+   1968 python scripts/gate2_service.py --optimizer-mode gpu_masked_sgd --gradient-convent
+removed 82 stale experiment temp files
+=== re-scan /tmp for secrets/plaintext (session_key/gamma/labels/logits/grad) ===
+=== residual tensor/payload dumps in /tmp ===
+/tmp/l10_corr_in_0.pt
+/tmp/l10_corr_in_1.pt
+/tmp/l10_corr_in_2.pt
+/tmp/l10_corr_in_3.pt
+/tmp/l10_corr_in_4.pt
+/tmp/l10_corr_in_5.pt
+/tmp/l10_corr_in_6.pt
+/tmp/l10_corr_in_7.pt
+/tmp/l10_corr_in_8.pt
+/tmp/l10_corr_in_9.pt
+stopped gate2_service
+removed 70 remaining tensor dumps
+=== FINAL verification ===
+experiment procs: 0
+localhost experiment listeners: 0
+secret files: 0
+tensor dumps in /tmp: 0
+transport keys in authorized_keys: 0
+attestation evidence preserved on TDX (should keep quotes): mgmt_key_ok
+=== /dev/tdx_guest still present (base env preserved) ===
+TDX_BASE_INTACT

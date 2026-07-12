@@ -1,0 +1,25 @@
+{
+  "path": "private_vpc A10(172.30.25.154)<->TDX(172.30.25.153) via eth0, same vSwitch",
+  "rtt_ms": 0.143,
+  "mtu": 8500,
+  "packet_loss_pct": 0.0,
+  "route": "direct eth0, no NAT/proxy",
+  "method": "binary SSH-stream framed benchmark over port22 (iperf3 unavailable), content-verified",
+  "download_TDX_to_A10_MBps": {
+    "min": 146.9,
+    "max": 183.0,
+    "mean": 170.0
+  },
+  "upload_A10_to_TDX_MBps": {
+    "min": 142.7,
+    "max": 223.1,
+    "mean": 181.7
+  },
+  "download_Gbps": 1.18,
+  "upload_Gbps": 1.14,
+  "gate_20MBps_both": true,
+  "preferred_100MBps_both": true,
+  "throughput_flat_with_size": true,
+  "framing_hmac_overhead": "negligible (hmac on vs off within ~10%)",
+  "verdict": "PASS \u2014 long experiments unblocked (both directions >=100 MB/s)"
+}

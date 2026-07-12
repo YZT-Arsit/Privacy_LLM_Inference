@@ -1,0 +1,1 @@
+(eval):12: no such file or directory: ssh -i /Users/Hoshino/Downloads/passkey.pem -o StrictHostKeyChecking=no root@39.96.4.252

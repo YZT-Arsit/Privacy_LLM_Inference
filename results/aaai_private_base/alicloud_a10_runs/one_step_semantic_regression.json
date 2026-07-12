@@ -1,0 +1,66 @@
+{
+  "label": "DIRECT_TRANSPORT_SEMANTIC_REGRESSION_ONE_STEP",
+  "compute_host": "alicloud_a10",
+  "transport": "direct_a10_tdx_private",
+  "run_id": "A10_L10-1s-1783827875-588135",
+  "cross_hardware_note": "A10 sm_86 vs H800 sm_90 NOT required bitwise-identical; require algorithmic + trajectory alignment within bf16 tol",
+  "CE": {
+    "a10": 0.4452628493309021,
+    "h800_direct": 0.45357903838157654,
+    "ferried": 0.45357903838157654,
+    "a10_vs_h800_abs": 0.008316189050674438,
+    "within_bf16_tol_2e-2": true
+  },
+  "effective_equivalence_top1": {
+    "a10": 1.0,
+    "h800": 0.976190447807312,
+    "a10_algorithmically_correct": true
+  },
+  "effective_equivalence_kl": {
+    "a10": 0.00559032429009676,
+    "h800": 0.008146599866449833
+  },
+  "plaintext_reference_hf_ce": 0.36500489711761475,
+  "correction": {
+    "gpu_exact_A": 48,
+    "tdx_corrected": 120,
+    "missing": 0,
+    "finite": true
+  },
+  "numerics_a10": {
+    "gradA_norm": 0.05185031508080779,
+    "gradB_norm": 13.789110572846575,
+    "corrected_grad_norm": 0.044554450775203105,
+    "updateA_norm": 4.982947983192691e-05,
+    "updateB_norm": 0.01378911057284658,
+    "deltaW_proxy_norm": 0.013789200606534435,
+    "momentum_buffer_norm": 0.0
+  },
+  "security_counters": {
+    "ce_calls": 1,
+    "correct_calls": 1,
+    "auth_failures": 0,
+    "replay_rejected": 0,
+    "malformed_rejected": 0,
+    "forbidden_key_rejected": 0,
+    "untrusted_gamma_returns": 0,
+    "correction_missing_targets": 0
+  },
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0"
+  },
+  "session_reuse": {
+    "single_ssh_channel": true,
+    "channel_requests": 3,
+    "expected_requests": 3,
+    "seq_strictly_monotone": true,
+    "attestation_once": true,
+    "graph_freed_every_step": false
+  },
+  "step_wall_sec": 0.8987171649932861,
+  "verdict": "PASS \u2014 A10 private-path preserves semantics: top1=1.0 vs plaintext, CE within bf16 tol of H800, counters clean, attestation verified"
+}

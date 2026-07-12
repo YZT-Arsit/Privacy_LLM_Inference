@@ -1,0 +1,23 @@
+{
+  "head": "d271ef6101c54bf514acb63852c7cb63afc122a9",
+  "source_bundle_hash": "09068b38bbebdbe50dc038255c7ab06ab5348f87bbcc16d7b6dbfb7c69269d84",
+  "source_file_hashes": {
+    "scripts/h800_unified_worker.py": "3d73c4eaeb4251e82800c23bfd4220e3136127f27d117007a9a0e39ad9a51caf",
+    "scripts/h800_d4_worker.py": "d06058efd44ec3ec895b41de57cfac73e0061087f0afae93820730882bfc2e70",
+    "scripts/tdx_persistent_service.py": "df1fb22de67fa11d0af041fa89926a7ad6fbeffbd7f88399484f179151e39d75",
+    "scripts/h800_direct_runner.py": "73a9d70f10e1c35fb244d149e3390ad6bb6b16004529e525e7a3922d8996eb0f",
+    "scripts/gate0_direct_orchestrator.py": "0ca4e6b8e1e8e6c056b43889db8dcbea71dbeb94975e5edb35a958281d5b4b92",
+    "scripts/d4_trusted_verifier.py": "a8507b30a235f35213b6428a79d181c194a123265dc956908436ec91859912e5",
+    "scripts/gate0_d4_attestation.py": "6aec9fe9a498159f9ea514acfba145624b3b436160f9d7f91478f903ac4fd27a",
+    "scripts/build_correction_bundle.py": "ba3935cad82b03d8bbcc7fbf886c58c924e872687bc15d56665beae3ce9a32db",
+    "scripts/compare_direct_vs_ferried.py": "3a88944507665600e0ac254074c87ac4264ba100805fd32d12a37ee8fa7f4339",
+    "scripts/test_direct_transport_faults.py": "8fa5d836e59f97d9e7454e8ec14a1af82039ef1c03ebdc35b3b2d0977a359989",
+    "scripts/migration_preflight.py": "4a195a152244ab75e1bdcb758982abee333e5cac168f1e8360e77d3036591f7d",
+    "scripts/build_step_timeline.py": "e352b8c92aac6aaf08e8cba7cd16321e49882a8b83944a211e5ae72239185993",
+    "scripts/tdx_grad_correction_service.py": "4f8881bf08a577c5469b75270578ae9f57d31c9392fe2b07ec7ae2794627ad76",
+    "scripts/gate0_l10_orchestrator.py": "eb445ecc958258baa64281f40ca6c9ce4d5411d7d24a9cc7ea4f5095d7ceeb0f"
+  },
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "package_root_matches_pinned": true,
+  "note": "exact validated code + immutable package pinned for migration to A10"
+}

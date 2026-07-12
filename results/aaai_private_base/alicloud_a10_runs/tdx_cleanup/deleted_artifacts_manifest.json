@@ -1,0 +1,37 @@
+{
+  "deleted": {
+    "temporary_secrets": [
+      "/tmp/direct_session.json (session_key+labels+binding)",
+      "/tmp/o1c_bundle.pt (gamma correction bundle)",
+      "/tmp/direct_session_counters.json",
+      "/tmp/a10_session_counters.json",
+      "/tmp/fault_session.json",
+      "/tmp/mm_session.json"
+    ],
+    "temporary_payloads": [
+      "/tmp/l10_*.json (82 ferried correction/loss payloads)",
+      "/tmp/l10_*.pt + corr/logit/grad tensor dumps (70)",
+      "/tmp/rand32.bin",
+      "/tmp/uptest.bin"
+    ],
+    "temporary_keys_authorized_keys": [
+      "a10-to-tdx-prod",
+      "h800-direct-tdx"
+    ],
+    "a10_to_tdx_private_key_files": [
+      "/root/.ssh/a10_to_tdx",
+      "/root/.ssh/a10_to_tdx.pub (on A10)"
+    ],
+    "stopped_services": [
+      "gate2_service.py (stale ferried trusted service, localhost:18091)",
+      "tdx_persistent_service sessions (ephemeral)",
+      "tdx_bench_service"
+    ],
+    "removed_dirs": [
+      "/tmp/a10_attest (after preservation)",
+      "/tmp/direct_attest",
+      "/tmp/pkgxfer"
+    ]
+  },
+  "count_temp_files_removed": 152
+}

@@ -1,0 +1,13 @@
+{
+  "n_runs": 4,
+  "n_artifacts": 28,
+  "archive_root": "results/aaai_private_base/alicloud_a10_runs",
+  "all_runs_finite": true,
+  "all_missing_zero": true,
+  "runs": [
+    "A10_L10_10STEP_bf16_10step",
+    "A10_L10_50STEP_bf16_50step",
+    "A10_L10_bf16_1step",
+    "A10_L11_10STEP_bf16_10step"
+  ]
+}

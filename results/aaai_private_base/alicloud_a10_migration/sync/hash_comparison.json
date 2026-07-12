@@ -1,0 +1,36 @@
+{
+  "package_root": {
+    "source": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "a10_dest": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "match": true
+  },
+  "scripts": {
+    "h800_unified_worker.py": {
+      "source": "3d73c4eaeb4251e8",
+      "a10": "3d73c4eaeb4251e8",
+      "match": true
+    },
+    "h800_direct_runner.py": {
+      "source": "73a9d70f10e1c35f",
+      "a10": "73a9d70f10e1c35f",
+      "match": true
+    },
+    "tdx_persistent_service.py": {
+      "source": "df1fb22de67fa11d",
+      "a10": "df1fb22de67fa11d",
+      "match": true
+    },
+    "d4_trusted_verifier.py": {
+      "source": "a8507b30a235f352",
+      "a10": "a8507b30a235f352",
+      "match": true
+    },
+    "gate0_a10_orchestrator.py": {
+      "source": "8286ecc327d93609",
+      "a10": "",
+      "match": false
+    }
+  },
+  "all_match": false,
+  "checkpoint_sha_match": true
+}

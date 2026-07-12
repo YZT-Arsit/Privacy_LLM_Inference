@@ -1,0 +1,18 @@
+{
+  "a10": {
+    "hostname": "iZ2zeajy3dc0ssoyi2cf3vZ",
+    "gpu": "NVIDIA A10, 580.126.09, 23028 MiB",
+    "cpu": "8",
+    "mem_gb": "",
+    "disk": "/dev/vda3       197G   29G  161G  15% /",
+    "private_ip": "172.30.25.154",
+    "os": "\"Ubuntu 22.04.5 LTS\""
+  },
+  "tdx": {
+    "hostname": "iZ2zebdihkqll10ragqp0cZ",
+    "private_ip": "172.30.25.153",
+    "tdx_device": "present",
+    "disk": "/dev/nvme0n1p3   40G   11G   28G  28% /",
+    "os": "\"Alibaba Cloud Linux 3.2104 U13.1 (OpenAnolis Edition)\""
+  }
+}

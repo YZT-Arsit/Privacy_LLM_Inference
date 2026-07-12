@@ -1,0 +1,9 @@
+=== TDX route to A10 private ===
+172.30.25.154 dev eth0 src 172.30.25.153 uid 0 
+    cache 
+=== ping A10 ===
+--- 172.30.25.154 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3105ms
+rtt min/avg/max/mdev = 0.128/0.153/0.194/0.029 ms
+=== TDX iface ===
+eth0             UP             172.30.25.153/20 fe80::216:3eff:fe38:2ed/64 
