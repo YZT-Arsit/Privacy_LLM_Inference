@@ -1,0 +1,19 @@
+{
+  "title": "PHASE 1 — SGD hardware matrix L1/L2/L10 (real A10 + real TDX, BF16 compute/FP32 master)",
+  "profiles": {"L1": "plaintext LoRA SGD (reference = O1-C effective)", "L2": "O1-A naive masked SGD (uncorrected)", "L10": "O1-C hybrid plaintext-equivalent SGD (gamma-fed A in enclave)"},
+  "seeds": [1234, 2025, 7], "steps": 50, "lr": 1e-3,
+  "L10_O1C_exact": {
+    "effective_equiv_top1": {"s1234": 1.0, "s2025": 1.0, "s7": 1.0},
+    "effective_equiv_kl": {"s1234": 0.00188, "s2025": 0.00193, "s7": 0.00368},
+    "per_target_oracle_10step_s1234": {"worst_master_rel_A": 0.0, "worst_master_rel_B": 1.62e-8, "worst_deltaw_cos_qk": 0.9999999999998, "PASS": true},
+    "verdict": "O1-C SGD is plaintext-EXACT per target (master 0.0, dW cos 1-2e-13) and at scale (top1=1.0)"
+  },
+  "L2_O1A_divergence": {
+    "effective_equiv_top1": {"s1234": 1.0, "s2025": 1.0, "s7": 1.0},
+    "note": "top1 not flipped at this training scale (single-batch overfit; ce 0.45->~0.16)",
+    "effective_deltaW_relerr_O1A_vs_O1C_s1234": {"gamma_fed_A_targets": {"median": 0.0175, "max": 0.247}, "orthogonal_targets_via_coupling": {"median": 0.0282, "max": 0.0942}},
+    "verdict": "O1-A DIVERGES from plaintext: median ~2-3% effective dW relerr at 50 steps, up to ~25% on gamma-fed targets; divergence propagates to all targets through the coupled forward. NOT hidden; measurable though sub-top1-flip at this scale."
+  },
+  "instrumentation": "per-step ce/version/finite + net timing recorded in trajectory; per-target master/dW via oracle (o1c) and effective-dW divergence (o1a vs o1c)",
+  "no_NaN": "all runs finite=true every step"
+}

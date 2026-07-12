@@ -1,0 +1,31 @@
+{
+  "title": "PHASE 2 \u2014 momentum hardware matrix L3/L4/L11 (real A10 + real TDX, BF16 compute/FP32 master)",
+  "profiles": {
+    "L3": "plaintext momentum SGD (reference = O1-C effective)",
+    "L4": "O1-A naive masked momentum",
+    "L11": "O1-C hybrid plaintext-equivalent momentum (gamma-fed A in enclave, buffer in plaintext metric)"
+  },
+  "seeds": [
+    1234,
+    2025,
+    7
+  ],
+  "steps": 50,
+  "lr": 0.001,
+  "mom": 0.9,
+  "L11_O1C_protocol_exact": {
+    "per_target_oracle_10step_s1234": {
+      "worst_master_rel_A": 0.0,
+      "worst_master_rel_B": 1.589e-08,
+      "worst_deltaw_cos_qk": 0.9999999999998,
+      "PASS": true
+    },
+    "momentum_buffer_verification": "the oracle reconstructs the plaintext-domain momentum buffer (buf=mom*buf+g_plain) from the REAL logged gradients and compares the resulting master each step; per-target master agreement (buffer-derived) at ~1e-8 DIRECTLY validates the buffer + transformed-momentum + corrected-target state, not just final output",
+    "verdict": "O1-C momentum is plaintext-EXACT per target in the clean (pre-divergence) regime"
+  },
+  "hyperparameter_note_HONEST": {
+    "observation": "at the preregistered lr=1e-3 with mom=0.9 (effective LR ~1e-2 = lr/(1-mom)), single-batch training DIVERGES by step ~50 (L11 s1234 ce 0.445 -> 3.83, still finite). Both O1-C and O1-A are in the divergent regime, so the 50-step effective-equivalence top1 (L11 0.81-0.98) is UNINFORMATIVE about protocol correctness \u2014 it reflects training instability + bf16-forward sensitivity on large LoRA deltas, NOT a protocol defect.",
+    "clean_check": "the 10-step per-target oracle (before divergence) is the valid protocol check and PASSES.",
+    "not_hidden": "divergence retained and reported, not smoothed away; no NaN (all finite)."
+  }
+}

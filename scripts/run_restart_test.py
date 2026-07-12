@@ -41,9 +41,15 @@ def main():
     outA = run(["--steps", str(K + 1), "--seed", str(a.seed), "--run-tag", "L12RST",
                 "--checkpoint-at", str(K), "--attest", "--skip-compare"])
     run_id, key = parse_meta(outA)
-    ckpt_path = f"/tmp/l12_ckpt/{run_id}.v{version}.enc"
-    exp = {"run_id": run_id, "package_root_hash": PKG_ROOT, "adapter_id": run_id, "version": version}
+    # read the ChaCha20-Poly1305 checkpoint metadata (full binding + version + checkpoint_seq) from session A
+    ckA = json.loads((OUT / f"L12RST_s{a.seed}_{K+1}step.json").read_text())
+    ck = next((s["checkpoint"] for s in ckA["trajectory"] if s.get("checkpoint")), None)
+    if ck is None:
+        print("  [FATAL] no checkpoint recorded in session A"); sys.exit(1)
+    ckpt_path = ck["path"]; cseq = ck["checkpoint_seq"]
+    exp = dict(ck["binding"]); exp["version"] = ck["version"]; exp["checkpoint_sequence"] = cseq
     exp_json = json.dumps(exp)
+    print(f"  checkpoint aead={ck.get('aead')} v{ck['version']} seq{cseq} -> {ckpt_path}")
 
     print(f"\n[B] restart with FRESH attestation; restore v{version}; continue steps {K+1}..{a.total-1}")
     run(["--steps", str(a.total - (K + 1)), "--seed", str(a.seed), "--run-tag", "L12RST",
@@ -72,7 +78,7 @@ def main():
     print(f"  worst_adapter_rel_err={worst:.3e} at {wk}  continuity_PASS={cont_ok}")
 
     print("\n[E] live rollback-rejection probe: restore with bumped version -> expect service reject")
-    bad = dict(exp, version=version + 7)
+    bad = dict(exp, version=exp["version"] + 7)
     outE = run(["--steps", "1", "--seed", str(a.seed), "--run-tag", "L12RB",
                 "--restore-first", "--ckpt-path", ckpt_path, "--expected-binding", json.dumps(bad),
                 "--reuse-run-id", run_id, "--reuse-key", key, "--skip-compare"], timeout=600)
@@ -83,8 +89,8 @@ def main():
     res = {"seed": a.seed, "total_steps": a.total, "checkpoint_at": K, "enclave_version_at_ckpt": version,
            "worst_adapter_rel_err_restart_vs_uninterrupted": worst, "worst_target": wk,
            "restart_continuity_PASS": bool(cont_ok), "live_rollback_rejected": bool(rollback_rejected),
-           "fresh_attestation_each_session": True,
-           "restore_gated_on": "AEAD auth + run_id + package_root + adapter_id + monotonic version"}
+           "fresh_attestation_each_session": True, "aead": "ChaCha20Poly1305",
+           "restore_gated_on": "ChaCha20-Poly1305 AEAD auth over AAD binding run_id+package_root+adapter_id+optimizer_profile+model_config_hash+service_hash+version+checkpoint_sequence + monotonic version + nonce-reuse guard"}
     (OUT / f"restart_test_s{a.seed}.json").write_text(json.dumps(res, indent=2))
     print("\n" + json.dumps(res, indent=2))
     sys.exit(0 if cont_ok and rollback_rejected else 1)

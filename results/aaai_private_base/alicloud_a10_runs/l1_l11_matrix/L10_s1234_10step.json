@@ -1,0 +1,108 @@
+{
+  "run_id": "L10_s1234_10step-1783842564-5d3e3f",
+  "profile": "o1c",
+  "optimizer": "sgd",
+  "mom": null,
+  "seed": 1234,
+  "compute_dtype": "bf16",
+  "master_dtype": "fp32",
+  "transport_profile": "direct_a10_tdx_private",
+  "steps_run": 10,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "trajectory": [
+    {
+      "step": 0,
+      "ce": 0.4453800618648529,
+      "state_version": 1,
+      "finite": true,
+      "net_ce": 0.26625537872314453,
+      "net_step": 0.13445043563842773,
+      "wall": 0.8914339542388916
+    },
+    {
+      "step": 1,
+      "ce": 0.37548863887786865,
+      "state_version": 2,
+      "finite": true,
+      "net_ce": 0.25409865379333496,
+      "net_step": 0.13091826438903809,
+      "wall": 0.5517559051513672
+    },
+    {
+      "step": 2,
+      "ce": 0.355222225189209,
+      "state_version": 3,
+      "finite": true,
+      "net_ce": 0.23962116241455078,
+      "net_step": 0.13780426979064941,
+      "wall": 0.5377137660980225
+    },
+    {
+      "step": 3,
+      "ce": 0.3445616364479065,
+      "state_version": 4,
+      "finite": true,
+      "net_ce": 0.2515981197357178,
+      "net_step": 0.13635039329528809,
+      "wall": 0.54715895652771
+    },
+    {
+      "step": 4,
+      "ce": 0.3366684913635254,
+      "state_version": 5,
+      "finite": true,
+      "net_ce": 0.25035810470581055,
+      "net_step": 0.1324615478515625,
+      "wall": 0.5404384136199951
+    },
+    {
+      "step": 5,
+      "ce": 0.3286343216896057,
+      "state_version": 6,
+      "finite": true,
+      "net_ce": 0.2357785701751709,
+      "net_step": 0.132948637008667,
+      "wall": 0.5263938903808594
+    },
+    {
+      "step": 6,
+      "ce": 0.3189498484134674,
+      "state_version": 7,
+      "finite": true,
+      "net_ce": 0.2420809268951416,
+      "net_step": 0.13623833656311035,
+      "wall": 0.5787820816040039
+    },
+    {
+      "step": 7,
+      "ce": 0.31537187099456787,
+      "state_version": 8,
+      "finite": true,
+      "net_ce": 0.2525811195373535,
+      "net_step": 0.13495492935180664,
+      "wall": 0.5458633899688721
+    },
+    {
+      "step": 8,
+      "ce": 0.30797019600868225,
+      "state_version": 9,
+      "finite": true,
+      "net_ce": 0.2550811767578125,
+      "net_step": 0.1356809139251709,
+      "wall": 0.5496344566345215
+    },
+    {
+      "step": 9,
+      "ce": 0.3015878200531006,
+      "state_version": 10,
+      "finite": true,
+      "net_ce": 0.25104737281799316,
+      "net_step": 0.13332176208496094,
+      "wall": 0.5498933792114258
+    }
+  ]
+}

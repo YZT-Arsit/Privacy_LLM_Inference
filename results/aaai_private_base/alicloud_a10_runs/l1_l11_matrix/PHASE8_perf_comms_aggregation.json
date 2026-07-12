@@ -1,0 +1,39 @@
+{
+  "title": "PHASE 8 \u2014 performance/communication aggregation (Alibaba private VPC, deployment-like path ONLY; AutoDL throttled timings excluded)",
+  "hosts": "A10 (172.30.25.154) <-> TDX (172.30.25.153), private VPC ~170-182 MB/s, RTT 0.143ms",
+  "per_step_medians": [
+    {
+      "profile": "L10_sgd_o1c",
+      "n_steps": 150,
+      "med_step_wall_s": 0.534,
+      "med_net_ce_s": 0.238,
+      "med_net_trusted_step_s": 0.135,
+      "network_frac": 0.7
+    },
+    {
+      "profile": "L11_mom_o1c",
+      "n_steps": 150,
+      "med_step_wall_s": 0.536,
+      "med_net_ce_s": 0.237,
+      "med_net_trusted_step_s": 0.137,
+      "network_frac": 0.7
+    },
+    {
+      "profile": "L12_adamw",
+      "n_steps": 150,
+      "med_step_wall_s": 0.587,
+      "med_net_ce_s": 0.24,
+      "med_net_trusted_step_s": 0.153,
+      "network_frac": 0.67
+    }
+  ],
+  "trusted_logical_invocations_per_step": {
+    "L10_sgd_o1c": 2,
+    "L11_mom_o1c": 2,
+    "L12_adamw": 2,
+    "note": "ce_dlogits + trusted optimizer step; O1-A profiles = 1 (ce_dlogits only, no enclave)"
+  },
+  "enclave_state_footprint": "L12: trusted master+m+v FP32 for 168 factors; L10/L11: master(+buffer) FP32 for same trusted set; A-factor 8x896, B q 896x8/k 128x8",
+  "checkpoint_restart_overhead": "ChaCha20-Poly1305 seal of full trusted state; restart continuity bit-identical (PHASE0)",
+  "note": "AutoDL throttled path (~0.1MB/s) explicitly NOT mixed into this table"
+}

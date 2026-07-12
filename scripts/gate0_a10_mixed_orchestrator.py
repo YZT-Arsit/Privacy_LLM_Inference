@@ -86,6 +86,8 @@ def main():
                 "attest": bool(args.attest), "attest_out": "/tmp/a10_attest",
                 "binding_manifest": binding, "counters_out": "/tmp/a10_session_counters.json",
                 "package_root_hash": PKG_ROOT, "ckpt_dir": "/tmp/l12_ckpt",
+                "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+                "service_hash": hashlib.sha256((REPO/"scripts/tdx_persistent_service.py").read_bytes()).hexdigest(),
                 "model_cfg": {"num_attention_heads": 14, "num_key_value_heads": 2,
                               "hidden_size": 896, "intermediate_size": 4864}}
     Path(OUT / f"{tag}.tdx_session.json").write_text(json.dumps(tdx_sess, indent=2))

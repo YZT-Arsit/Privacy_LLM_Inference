@@ -101,37 +101,46 @@ def main():
     tw32, rA32, rB32 = build_full(gb, torch.float32, seed=42)
     fp32_roundtrip = max(float((tw32.stateA[k][0] - rA32[k][0]).abs().max()) for k in rA32)
 
-    # (5) checkpoint / restore
-    tw.set_binding(run_id="R1", package_root_hash="PKGHASH", adapter_id="AD1")
+    # (5) STANDARD-AEAD (ChaCha20-Poly1305) checkpoint / restore
+    tw.set_binding(run_id="R1", package_root_hash="PKGHASH", adapter_id="AD1",
+                   optimizer_profile="L12_adamw", model_config_hash="MCFG", service_hash="SVC")
     blob = tw.checkpoint(session_key=b"k" * 32)
-    exp = {"run_id": "R1", "package_root_hash": "PKGHASH", "adapter_id": "AD1", "version": tw.version}
+    assert blob.startswith(b"L12AEADv1"), "not a standard-AEAD seal"
+    exp = {"run_id": "R1", "package_root_hash": "PKGHASH", "adapter_id": "AD1",
+           "optimizer_profile": "L12_adamw", "model_config_hash": "MCFG", "service_hash": "SVC",
+           "version": tw.version, "checkpoint_sequence": tw.checkpoint_seq}
     tw_r = TrustedAdamW(gb, CFG, lr=1e-3)
     info = tw_r.restore(blob, session_key=b"k" * 32, expected_binding=exp, min_version=0)
     ck_roundtrip = max(float((tw_r.stateA[k][0] - tw.stateA[k][0]).abs().max()) for k in tw.stateA)
-    # fail-closed cases
     def fails(fn):
         try:
             fn(); return False
         except Exception:
             return True
-    tamper = bytearray(blob); tamper[60] ^= 0x01
+    tamper = bytearray(blob); tamper[-1] ^= 0x01     # flip a ciphertext/tag byte
     fc_tamper = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(bytes(tamper), b"k" * 32, exp))
     fc_wrongkey = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"x" * 32, exp))
-    exp_roll = dict(exp, version=exp["version"] + 5)   # ask for a newer version than the blob holds
-    fc_rollback = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, exp_roll))
-    exp_badbind = dict(exp, package_root_hash="OTHER")
-    fc_badbind = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, exp_badbind))
+    fc_rollback = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, dict(exp, version=exp["version"] + 5)))
+    fc_badpkg = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, dict(exp, package_root_hash="OTHER")))
+    fc_badprofile = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, dict(exp, optimizer_profile="L5")))
+    fc_badadapter = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, dict(exp, adapter_id="OTHER")))
+    fc_badseq = fails(lambda: TrustedAdamW(gb, CFG, lr=1e-3).restore(blob, b"k" * 32, dict(exp, checkpoint_sequence=exp["checkpoint_sequence"] + 3)))
+    # nonce-reuse: opening the same blob twice against a ledger that already saw the nonce must fail
+    tw_n = TrustedAdamW(gb, CFG, lr=1e-3); tw_n.restore(blob, b"k" * 32, exp)
+    fc_nonce_reuse = fails(lambda: tw_n.restore(blob, b"k" * 32, exp))
+    fc_badbind = fc_badpkg and fc_badprofile and fc_badadapter and fc_badseq
 
     ok = (max_transform_err < 1e-9 and max_roundtrip_err < 1e-9 and max_step_err < 1e-10
           and fp32_roundtrip < 1e-4 and ck_roundtrip < 1e-12
-          and fc_tamper and fc_wrongkey and fc_rollback and fc_badbind)
+          and fc_tamper and fc_wrongkey and fc_rollback and fc_badbind and fc_nonce_reuse)
     print(json.dumps({
-        "max_transform_err": max_transform_err, "max_roundtrip_err": max_roundtrip_err,
+        "aead": "ChaCha20Poly1305", "max_transform_err": max_transform_err, "max_roundtrip_err": max_roundtrip_err,
         "max_step_err_5steps": max_step_err, "final_version": tw.version,
         "fp32_state_roundtrip": fp32_roundtrip, "checkpoint_restore_roundtrip": ck_roundtrip,
         "restore_info": info,
-        "fail_closed": {"tamper": fc_tamper, "wrong_key": fc_wrongkey,
-                        "version_rollback": fc_rollback, "binding_mismatch": fc_badbind},
+        "fail_closed": {"tamper": fc_tamper, "wrong_key": fc_wrongkey, "version_rollback": fc_rollback,
+                        "bad_package": fc_badpkg, "bad_profile": fc_badprofile, "bad_adapter": fc_badadapter,
+                        "bad_checkpoint_seq": fc_badseq, "nonce_reuse": fc_nonce_reuse},
         "PASS": bool(ok)}, indent=2))
     sys.exit(0 if ok else 1)
 

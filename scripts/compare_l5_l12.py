@@ -63,10 +63,19 @@ def main():
     ap.add_argument("--tlog", required=True); ap.add_argument("--run-json", required=True)
     ap.add_argument("--seed", type=int, required=True); ap.add_argument("--out", required=True)
     ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--optimizer", default="adamw", choices=["adamw", "sgd", "momentum"])
+    ap.add_argument("--mom", type=float, default=0.9)
     ap.add_argument("--master-rel-max", type=float, default=5e-3)
     ap.add_argument("--deltaw-cos-min", type=float, default=0.999)
     a = ap.parse_args()
     b1, b2, eps, wd, scale = 0.9, 0.999, 1e-8, 0.01, 16 / 8
+
+    def upd(theta, g, m, v, t):
+        if a.optimizer == "adamw":
+            return adamw_step(theta, g, m, v, t, a.lr, b1, b2, eps, wd)
+        if a.optimizer == "momentum":
+            m = a.mom * m + g; return theta - a.lr * m, m, v
+        return theta - a.lr * g, m, v
     gb = torch.load(BUNDLE, map_location="cpu")
     foldA, gradMTA, invA, toutB = build_transforms(gb)
     tlog = torch.load(a.tlog, map_location="cpu", weights_only=False)
@@ -98,7 +107,7 @@ def main():
             l, p = int(k.split(".")[0]), k.split(".", 1)[1]
             g_plain = g_tilde.to(DT) @ gradMTA[(l, p)]
             Ap, m, v = refA[(l, p)]
-            Ap, m, v = adamw_step(Ap, g_plain, m, v, t, a.lr, b1, b2, eps, wd)
+            Ap, m, v = upd(Ap, g_plain, m, v, t)
             refA[(l, p)] = [Ap, m, v]
             enc = slog.get("refoldA", {}).get(k)
             if enc is not None:
@@ -108,7 +117,7 @@ def main():
             l, p = int(k.split(".")[0]), k.split(".", 1)[1]
             g_plain = toutB[(l, p)] @ g_tilde.to(DT)
             Bp, m, v = refB[(l, p)]
-            Bp, m, v = adamw_step(Bp, g_plain, m, v, t, a.lr, b1, b2, eps, wd)
+            Bp, m, v = upd(Bp, g_plain, m, v, t)
             refB[(l, p)] = [Bp, m, v]
             enc = slog.get("refoldB", {}).get(k)
             if enc is not None:

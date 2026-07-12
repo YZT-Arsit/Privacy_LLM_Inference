@@ -1,0 +1,17 @@
+{
+  "title": "PHASE 0 — standard AEAD optimizer-state sealing (ChaCha20-Poly1305)",
+  "replaces": "prototype SHA256-CTR+HMAC (preserved as prototype_aead_seal/open, magic L12PROTOv0)",
+  "aead": "ChaCha20Poly1305 (RFC 8439)",
+  "key_derivation": "HKDF-SHA256 from attested session key; dedicated sealing key, domain-separated from transport HMAC/session key",
+  "nonce": "random unique 96-bit per seal; in-session ledger refuses reuse (fail closed)",
+  "aad_binds": ["run_id","package_root_hash","adapter_id","optimizer_profile","model_config_hash","service_hash","optimizer_state_version","checkpoint_sequence","aead"],
+  "rollback_protection": "monotonic optimizer_state_version + checkpoint_sequence in AAD",
+  "self_test_fail_closed": {"tamper": true, "wrong_key": true, "version_rollback": true, "bad_package": true, "bad_profile": true, "bad_adapter": true, "bad_checkpoint_seq": true, "nonce_reuse": true, "restore_roundtrip": 0.0},
+  "hardware_restart_regression": {
+    "hosts": "real A10 + real Intel TDX, private VPC", "seed": 1234, "total_steps": 16, "checkpoint_at": 8,
+    "enclave_version_at_ckpt": 9, "fresh_attestation_each_session": true,
+    "worst_adapter_rel_err_restart_vs_uninterrupted": 0.0, "restart_continuity_PASS": true,
+    "live_rollback_rejected": true, "aead_on_wire": "ChaCha20Poly1305"
+  },
+  "verdict": "standard-AEAD optimizer-state checkpoint validated end-to-end on hardware; prototype preserved, not erased"
+}

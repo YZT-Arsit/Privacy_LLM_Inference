@@ -1,0 +1,9 @@
+{
+  "l1_ce_from_worker_effective": 0.003715514438226819,
+  "seq_len": 42,
+  "effective_equivalence_top1_agreement": 1.0,
+  "effective_equivalence_next_logit_kl": 0.0005801246734336019,
+  "effective_equivalence_max_abs": 4.733786582946777,
+  "hf_plaintext_plus_effective_lora_ce": 0.005050694569945335,
+  "l1_vs_hf_ce_abs_diff": 0.0013351801317185163
+}

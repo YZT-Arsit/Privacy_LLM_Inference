@@ -1,0 +1,114 @@
+{
+  "profile_compared": "L12_mixed_bf16compute_fp32master  vs  L5_plaintext_adamw_reference (fp32)",
+  "seed": 1234,
+  "steps": 10,
+  "reference_construction": "INDEPENDENT plaintext-domain FP32 AdamW fed the REAL enclave gradients (A: g_tilde@M^T, B: Tout@g_tilde); verification oracle, not a substitute for the hardware L12 arm",
+  "trusted_A_per_step": 120,
+  "trusted_B_per_step": 48,
+  "worst_master_rel_err_A": 0.0,
+  "worst_master_rel_err_B": 1.6162885761209515e-08,
+  "worst_target": null,
+  "worst_step": null,
+  "worst_deltaw_rel_qk": 9.766700225254617e-08,
+  "worst_deltaw_cos_qk": 0.9999999999998367,
+  "per_step": [
+    {
+      "step": 0,
+      "adam_t": 1,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.4328954628844886e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.766700225254617e-08,
+      "min_deltaw_cos_qk": 0.9999999999998452
+    },
+    {
+      "step": 1,
+      "adam_t": 2,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.460896261586002e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.735068664563713e-08,
+      "min_deltaw_cos_qk": 0.9999999999998517
+    },
+    {
+      "step": 2,
+      "adam_t": 3,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.5420865184505375e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.55882575021582e-08,
+      "min_deltaw_cos_qk": 0.9999999999998528
+    },
+    {
+      "step": 3,
+      "adam_t": 4,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.4326299580886771e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.503771488878601e-08,
+      "min_deltaw_cos_qk": 0.9999999999998638
+    },
+    {
+      "step": 4,
+      "adam_t": 5,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.6162885761209515e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.582881894959622e-08,
+      "min_deltaw_cos_qk": 0.9999999999998367
+    },
+    {
+      "step": 5,
+      "adam_t": 6,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.4545318446919366e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.596769510429388e-08,
+      "min_deltaw_cos_qk": 0.9999999999998446
+    },
+    {
+      "step": 6,
+      "adam_t": 7,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.5474757575948367e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.679058517799998e-08,
+      "min_deltaw_cos_qk": 0.9999999999998512
+    },
+    {
+      "step": 7,
+      "adam_t": 8,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.5486605712436118e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.524611458626165e-08,
+      "min_deltaw_cos_qk": 0.999999999999856
+    },
+    {
+      "step": 8,
+      "adam_t": 9,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.583389910857077e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.623062947659214e-08,
+      "min_deltaw_cos_qk": 0.999999999999857
+    },
+    {
+      "step": 9,
+      "adam_t": 10,
+      "max_master_rel_A": 0.0,
+      "max_master_rel_B": 1.556159957248852e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.47505564217742e-08,
+      "min_deltaw_cos_qk": 0.9999999999998466
+    }
+  ],
+  "hardware_state_version_final": 10,
+  "runtime_copy_matches_master_transform_all": false,
+  "finite_all": true,
+  "PREREGISTERED": {
+    "master_rel_max": 0.005,
+    "deltaw_cos_min": 0.999
+  },
+  "PASS": true
+}

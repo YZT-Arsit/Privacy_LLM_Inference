@@ -1,12 +1,13 @@
 {
   "seed": 1234,
-  "total_steps": 50,
-  "checkpoint_at": 25,
-  "enclave_version_at_ckpt": 26,
+  "total_steps": 16,
+  "checkpoint_at": 8,
+  "enclave_version_at_ckpt": 9,
   "worst_adapter_rel_err_restart_vs_uninterrupted": 0.0,
   "worst_target": null,
   "restart_continuity_PASS": true,
   "live_rollback_rejected": true,
   "fresh_attestation_each_session": true,
-  "restore_gated_on": "AEAD auth + run_id + package_root + adapter_id + monotonic version"
+  "aead": "ChaCha20Poly1305",
+  "restore_gated_on": "ChaCha20-Poly1305 AEAD auth over AAD binding run_id+package_root+adapter_id+optimizer_profile+model_config_hash+service_hash+version+checkpoint_sequence + monotonic version + nonce-reuse guard"
 }

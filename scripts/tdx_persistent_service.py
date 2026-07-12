@@ -240,9 +240,12 @@ def main():
             _sdt = torch.float32 if hp.get("state_dtype", "fp32") == "fp32" else torch.float64
             tw = TrustedAdamW(gb, cfg["model_cfg"], lr=hp.get("lr", 1e-3), b1=hp.get("b1", 0.9),
                               b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01),
-                              state_dtype=_sdt)
+                              state_dtype=_sdt, optimizer=hp.get("optimizer", "adamw"), mom=hp.get("mom", 0.9))
             tw.set_binding(run_id=run_id, package_root_hash=cfg.get("package_root_hash", "unpinned"),
-                           adapter_id=hp.get("adapter_id", run_id))
+                           adapter_id=hp.get("adapter_id", run_id),
+                           optimizer_profile=hp.get("optimizer_profile", "L12_adamw"),
+                           model_config_hash=cfg.get("model_config_hash", ""),
+                           service_hash=cfg.get("service_hash", ""))
             counters["authoritative_state_dtype"] = "FP32" if _sdt == torch.float32 else "FP64"
             bad = False
             for k, t in data.get("A", {}).items():
@@ -313,15 +316,17 @@ def main():
             if tw is None or not tw.state_present():
                 counters["checkpoint_restore_rejected"] += 1
                 write_frame(fout, {"op": "reject", "reason": "no_adamw_state", "seq": seq}); continue
-            blob = tw.checkpoint(session_key=key)
+            blob = tw.checkpoint(session_key=key)   # ChaCha20-Poly1305; checkpoint_seq incremented inside
             ckpt_dir = Path(cfg.get("ckpt_dir", "/tmp/l12_ckpt")); ckpt_dir.mkdir(parents=True, exist_ok=True)
-            ckpt_path = ckpt_dir / f"{run_id}.v{tw.version}.enc"
+            ckpt_path = ckpt_dir / f"{run_id}.v{tw.version}.s{tw.checkpoint_seq}.enc"
             ckpt_path.write_bytes(blob)                      # durable state is ciphertext only
             counters["adamw_checkpoint_calls"] += 1; last_seq = seq
             resp_seq = seq + 1
             write_frame(fout, {"op": "checkpoint_adamw_ack", "seq": resp_seq,
                                "hmac": mac(key, b"", resp_seq, run_id, "checkpoint_adamw_ack"),
                                "state_version": tw.version, "adam_t": tw.t,
+                               "checkpoint_seq": tw.checkpoint_seq, "binding": tw.binding,
+                               "aead": "ChaCha20Poly1305",
                                "ckpt_path": str(ckpt_path), "ckpt_bytes": len(blob),
                                "durable_plaintext": False})
 

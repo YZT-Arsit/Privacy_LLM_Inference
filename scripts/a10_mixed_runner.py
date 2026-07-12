@@ -116,7 +116,8 @@ def main():
                                "ckpt_path": a.ckpt_path, "expected_binding": exp,
                                "min_version": int(exp.get("version", 0)),
                                "hparams": {"lr": a.lr, "b1": b1, "b2": b2, "eps": eps, "wd": wd,
-                                           "state_dtype": "fp32", "adapter_id": adapter_id}})
+                                           "state_dtype": "fp32", "adapter_id": adapter_id,
+                                           "optimizer_profile": exp.get("optimizer_profile", "L12_adamw")}})
         if rh.get("op") != "restore_adamw_ack" or not rh.get("trusted_adamw_state_present"):
             raise TransportError(f"restore_adamw failed: {rh}")
         last_seq = rh["seq"]
@@ -128,7 +129,8 @@ def main():
         ih = {"op": "init_adamw", "seq": 0, "run_id": run_id,
               "hmac": mac(key, ipayload, 0, run_id, "init_adamw"),
               "hparams": {"lr": a.lr, "b1": b1, "b2": b2, "eps": eps, "wd": wd,
-                          "state_dtype": "fp32", "adapter_id": adapter_id}}
+                          "state_dtype": "fp32", "adapter_id": adapter_id,
+                          "optimizer_profile": "L12_adamw"}}
         rh, _, _ = ch.request(ih, ipayload)
         if rh.get("op") != "init_adamw_ack" or not rh.get("trusted_adamw_state_present"):
             raise TransportError(f"init_adamw failed: {rh}")
@@ -202,6 +204,8 @@ def main():
                 raise TransportError(f"checkpoint failed: {crh}")
             last_seq = crh["seq"]
             steps[-1]["checkpoint"] = {"path": crh["ckpt_path"], "version": crh["state_version"],
+                                       "checkpoint_seq": crh.get("checkpoint_seq"), "binding": crh.get("binding"),
+                                       "aead": crh.get("aead"),
                                        "bytes": crh["ckpt_bytes"], "durable_plaintext": crh["durable_plaintext"]}
             if a.gpu_state_path:   # persist GPU-exact factor state locally (enclave state is durable in TDX)
                 torch.save({"master": {f"{l}.{p}": [A.detach().cpu(), B.detach().cpu()]
