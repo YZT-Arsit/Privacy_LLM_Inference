@@ -1,0 +1,57 @@
+{
+  "experiment": "S5_membership",
+  "model": "Qwen2.5-0.5B",
+  "threat_model": "from_scratch_private_base_black_box_outputs_only",
+  "method": "Shokri et al. S&P'17 shadow-model MIA",
+  "config": {
+    "n_samples": 1500,
+    "n_shadow": 8,
+    "member": 120,
+    "nonmember": 120,
+    "head": "linear 896->2 (LoRA-style probe)",
+    "head_epochs": 150,
+    "device": "cpu",
+    "seeds": [
+      0,
+      1,
+      42
+    ]
+  },
+  "channels": {
+    "B0_plaintext": {
+      "auc": 0.6138888597488403,
+      "accuracy": 0.5833333333333334,
+      "precision": 0.5454545454545454,
+      "recall": 1.0
+    },
+    "B1_perm_only": {
+      "auc": 0.5947916507720947,
+      "accuracy": 0.5083333333333333,
+      "precision": 0.5045454545454545,
+      "recall": 0.925
+    },
+    "B1_monomial": {
+      "auc": 0.4990277588367462,
+      "accuracy": 0.5125,
+      "precision": 0.5073891625615764,
+      "recall": 0.8583333333333333
+    }
+  },
+  "positive_control_pass": true,
+  "limitations": [
+    "MIA target is a LoRA-style linear probe over frozen private-base features (standard lightweight MIA target); it models the output-confidence channel the mask affects, not a full attention/MLP LoRA.",
+    "Black-box outputs-only attacker; a white-box or per-example-gradient attacker is out of this channel.",
+    "Absolute AUC is modest because the fine-tune is light and SST-2 generalizes well (small member gap); we report the RELATIVE channel comparison, which is the design-relevant quantity.",
+    "Protected channels are modeled at the 2-class verbalizer boundary via the S3 monomial mask; a full vocab-logit MIA would see the same set-symmetric preservation (perm-only) shown in S3."
+  ],
+  "interpretation": {
+    "membership_signal_source": "the fine-tuned head's over-confidence on members (generalization gap); a property of training, NOT of the mask.",
+    "masking_effect": "the mask only changes READABILITY of the output confidence. perm-only preserves the set-symmetric confidence (maxprob/entropy) so most of the black-box signal remains; monomial distorts it, reducing readable signal; neither removes membership leakage at its source (the trained weights).",
+    "auc_by_channel": {
+      "B0_plaintext": 0.6138888597488403,
+      "B1_perm_only": 0.5947916507720947,
+      "B1_monomial": 0.4990277588367462
+    }
+  },
+  "wall_sec": 52.3
+}

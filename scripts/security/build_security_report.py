@@ -33,6 +33,8 @@ def main():
     s2, p2 = load("S2_lora_recovery", "s2_results.json")
     s3, p3 = load("S3_logit_leakage", "s3_results.json")
     s4, p4 = load("S4_gradient_inversion", "s4_results.json")
+    s5, p5 = load("S5_membership", "s5_results.json")
+    s6, p6 = load("S6_kv_cache", "s6_results.json")
 
     manifest = {
         "schema": "security_run_manifest", "version": "1.0",
@@ -50,6 +52,8 @@ def main():
                          "sha256": sha(SEC / "security_registry.yaml")},
             "budget": {"path": "results/aaai_private_base/security/attack_budget_registry.json",
                        "sha256": sha(SEC / "attack_budget_registry.json")},
+            "S5": {"path": str(p5.relative_to(SEC.parents[3])), "sha256": sha(p5)},
+            "S6": {"path": str(p6.relative_to(SEC.parents[3])), "sha256": sha(p6)},
             "paper_mapping": {"path": "results/aaai_private_base/security/attack_paper_mapping.md",
                               "sha256": sha(SEC / "attack_paper_mapping.md")},
         },
@@ -99,6 +103,23 @@ def main():
         }
         # control passes if DLG token recovery beats random by orders of magnitude
         manifest["positive_controls_pass"]["S4"] = (r(v["plaintext_b1_token_acc"]) > 10.0 / 151936)
+    if s5:
+        a = s5["interpretation"]["auc_by_channel"]
+        manifest["headline_metrics"]["S5"] = {
+            "auc_B0_plaintext": r(a["B0_plaintext"]), "auc_B1_perm_only": r(a["B1_perm_only"]),
+            "auc_B1_monomial": r(a["B1_monomial"]),
+            "B0_accuracy": r(s5["channels"]["B0_plaintext"]["accuracy"]),
+            "B0_precision": r(s5["channels"]["B0_plaintext"]["precision"]),
+            "B0_recall": r(s5["channels"]["B0_plaintext"]["recall"])}
+        manifest["positive_controls_pass"]["S5"] = bool(s5["positive_control_pass"])
+    if s6:
+        lin = s6["settings"]["linear_decoder"]
+        manifest["headline_metrics"]["S6"] = {
+            "chance_top1": s6["chance_top1"],
+            "plaintext_KV_top1": r(lin["plaintext_KV"]["top1"]),
+            "masked_transfer_top1": r(lin["masked_KV_transfer_plaintext_decoder"]["top1"]),
+            "masked_adapted_top1": r(lin["masked_KV_adapted_decoder"]["top1"])}
+        manifest["positive_controls_pass"]["S6"] = bool(s6["positive_control_pass"])
 
     (SEC / "security_run_manifest.json").write_text(json.dumps(manifest, indent=2, default=float))
 
@@ -138,12 +159,22 @@ def main():
         A(f"| S4 | transformed gradients | plaintext-b1 DLG token acc={k['plaintext_b1_token_acc']} ≫ rand {k['random_baseline_token_acc']:.1e} | "
           f"basis-invariance loss-gap={k['basis_invariance_max_gradmatch_loss_gap']:.1e}, tokens agree={k['basis_invariance_tokens_agree_frac']} | "
           f"mask is a transparent basis change; defense = aggregation/non-exposure |")
+    if s5:
+        k = manifest["headline_metrics"]["S5"]
+        A(f"| S5 | black-box outputs (MIA) | B0 plaintext AUC={k['auc_B0_plaintext']} > 0.5 | "
+          f"perm-only AUC={k['auc_B1_perm_only']}, monomial AUC={k['auc_B1_monomial']} | "
+          f"membership leaks at the trained weights; monomial removes readable signal, perm-only retains it |")
+    if s6:
+        k = manifest["headline_metrics"]["S6"]
+        A(f"| S6 | masked KV cache | plaintext KV top1={k['plaintext_KV_top1']} ≫ chance {k['chance_top1']:.1e} | "
+          f"masked-transfer top1={k['masked_transfer_top1']}, masked-adapted top1={k['masked_adapted_top1']} | "
+          f"mask defeats a plaintext-calibrated attacker; orthogonal-invertible given masked pairs (=TEE) |")
 
     A("\n## 2. Paper mapping\n")
     A("See `attack_paper_mapping.md`. Methodologies: Mahendran & Vedaldi (CVPR'15) + Fredrikson "
-      "et al. (CCS'15) [S1]; Hu et al. LoRA (ICLR'22) [S2]; internal design_spec §F [S3]; Zhu et al. "
-      "DLG (NeurIPS'19) + Zhao et al. iDLG (2020) [S4]. Shokri et al. (S&P'17) registered for the "
-      "deferred S5. **All citations are real; none fabricated.**\n")
+      "et al. (CCS'15) [S1, S6]; Hu et al. LoRA (ICLR'22) [S2]; internal design_spec §F [S3]; Zhu et al. "
+      "DLG (NeurIPS'19) + Zhao et al. iDLG (2020) [S4]; Shokri et al. (S&P'17) shadow-model MIA [S5]. "
+      "**All citations are real; none fabricated.**\n")
 
     A("## 3. Positive controls (must pass before trusting any attack)\n")
     for exp, ok in manifest["positive_controls_pass"].items():
@@ -196,8 +227,29 @@ def main():
           f"recovery {k['batch_sweep_plaintext_token_acc']} → degrades with batch size. **The real defense is batch "
           f"aggregation + never exposing per-example gradients, not the mask.**\n")
 
+    if s5:
+        k = manifest["headline_metrics"]["S5"]
+        A("### S5 — Membership inference (Shokri shadow-model MIA)")
+        A(f"- Positive control (B0 plaintext outputs): ROC-AUC **{k['auc_B0_plaintext']}** (acc {k['B0_accuracy']}, "
+          f"prec {k['B0_precision']}, rec {k['B0_recall']}) > 0.5 → non-random membership signal.")
+        A(f"- Protected outputs: **perm-only AUC {k['auc_B1_perm_only']}** (retains most signal — set-symmetric "
+          f"confidence preserved, cf. S3) vs **monomial AUC {k['auc_B1_monomial']}** (≈ random — distortion removes "
+          f"readable confidence). Membership leaks at the *trained weights* (generalization gap), not the mask; the "
+          f"mask only changes readability of the output channel.\n")
+    if s6:
+        k = manifest["headline_metrics"]["S6"]
+        A("### S6 — KV-cache inversion")
+        A(f"- Positive control (plaintext KV, linear decoder): token top-1 **{k['plaintext_KV_top1']}** vs chance "
+          f"**{k['chance_top1']:.1e}** → highly recoverable.")
+        A(f"- **Masked KV, plaintext-calibrated attacker (transfer)**: top-1 **{k['masked_transfer_top1']}** ≈ chance → "
+          f"the orthogonal KV mask (Bk rope-commuting, Sv signed-perm) defeats an attacker who does not know the mask "
+          f"(**reduced recovery**).")
+        A(f"- **Masked KV, adapted attacker (masked pairs)**: top-1 **{k['masked_adapted_top1']}** → the orthogonal "
+          f"mask is invertible given masked pairs, so protection rests on **mask secrecy / the TEE**, not information "
+          f"destruction (consistent with S1).\n")
+
     A("## 5. Limitations (honest, per experiment)\n")
-    for tag, d in [("S1", s1), ("S2", s2), ("S3", s3), ("S4", s4)]:
+    for tag, d in [("S1", s1), ("S2", s2), ("S3", s3), ("S4", s4), ("S5", s5), ("S6", s6)]:
         for lim in d.get("limitations", []):
             A(f"- **{tag}**: {lim}")
     A("- **Global**: real Qwen2.5-0.5B weights stand in for a from-scratch private base (secret, never "
@@ -208,8 +260,8 @@ def main():
 
     A("## 6. Files changed / added\n")
     A("Harness+attacks (all new, untracked): `scripts/security/{pb_harness,s1_representation_inversion,"
-      "s2_lora_recovery,s3_logit_leakage,s4_gradient_inversion,test_security_harness,build_security_report,"
-      "monitor_main_experiment}.py`. Results+registry (new, untracked): "
+      "s2_lora_recovery,s3_logit_leakage,s4_gradient_inversion,s5_membership,s6_kv_cache,test_security_harness,"
+      "build_security_report,monitor_main_experiment}.py`. Results+registry (new, untracked): "
       "`results/aaai_private_base/security/**`, `results/aaai_private_base/security_progress_monitor/**`. "
       "No existing training/protocol file modified.\n")
 
@@ -230,8 +282,8 @@ def main():
     A("Confirmed: no commits, no staging. The active A10+TDX converged-utility run was monitored read-only "
       "(`security_progress_monitor/`) and never interrupted.\n")
 
-    A("---\n_Stop condition honored: S1–S4 complete; S5 (membership) and S6 (KV-cache) registered but not "
-      "run; no 7B, no external-baseline reproduction, no new training._")
+    A("---\n_Stop condition honored: S1–S6 complete (S5 membership + S6 KV-cache added this round); no 7B, "
+      "no external-baseline reproduction, no new training. All six positive controls pass._")
 
     (SEC / "SECURITY_EVALUATION_REPORT.md").write_text("\n".join(L))
     print("wrote security_run_manifest.json + SECURITY_EVALUATION_REPORT.md")

@@ -1,0 +1,282 @@
+[
+  {
+    "sample_id": 0,
+    "pred": 10,
+    "gold": 18,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 1,
+    "pred": 2,
+    "gold": 3,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 2,
+    "pred": 200,
+    "gold": 70000,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 3,
+    "pred": 30,
+    "gold": 540,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 4,
+    "pred": 1,
+    "gold": 20,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 5,
+    "pred": 100,
+    "gold": 64,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 6,
+    "pred": 10,
+    "gold": 260,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 7,
+    "pred": 100,
+    "gold": 160,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 8,
+    "pred": 500,
+    "gold": 45,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 9,
+    "pred": 1,
+    "gold": 460,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 10,
+    "pred": 1,
+    "gold": 366,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 11,
+    "pred": 330,
+    "gold": 694,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 12,
+    "pred": 5,
+    "gold": 13,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 13,
+    "pred": 45,
+    "gold": 18,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 14,
+    "pred": 20,
+    "gold": 60,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 15,
+    "pred": 10,
+    "gold": 125,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 16,
+    "pred": 3,
+    "gold": 230,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 17,
+    "pred": 100,
+    "gold": 57500,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 18,
+    "pred": 7,
+    "gold": 7,
+    "correct": true,
+    "n_tokens": 92
+  },
+  {
+    "sample_id": 19,
+    "pred": 100,
+    "gold": 6,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 20,
+    "pred": 200,
+    "gold": 15,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 21,
+    "pred": 20,
+    "gold": 14,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 22,
+    "pred": 30,
+    "gold": 7,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 23,
+    "pred": 2,
+    "gold": 8,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 24,
+    "pred": 1,
+    "gold": 26,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 25,
+    "pred": 200,
+    "gold": 2,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 26,
+    "pred": 200,
+    "gold": 243,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 27,
+    "pred": 1,
+    "gold": 16,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 28,
+    "pred": 1000,
+    "gold": 25,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 29,
+    "pred": 167,
+    "gold": 104,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 30,
+    "pred": 200,
+    "gold": 109,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 31,
+    "pred": 7,
+    "gold": 80,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 32,
+    "pred": 135,
+    "gold": 35,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 33,
+    "pred": 1000,
+    "gold": 70,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 34,
+    "pred": 100,
+    "gold": 23,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 35,
+    "pred": 20,
+    "gold": 9,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 36,
+    "pred": 20,
+    "gold": 75,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 37,
+    "pred": 30,
+    "gold": 2,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 38,
+    "pred": 2,
+    "gold": 10,
+    "correct": false,
+    "n_tokens": 200
+  },
+  {
+    "sample_id": 39,
+    "pred": 100,
+    "gold": 18,
+    "correct": false,
+    "n_tokens": 200
+  }
+]

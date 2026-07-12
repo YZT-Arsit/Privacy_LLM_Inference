@@ -1,0 +1,76 @@
+{
+  "experiment": "S6_kv_cache",
+  "model": "Qwen2.5-0.5B",
+  "threat_model": "from_scratch_private_base",
+  "layer": 0,
+  "method": "S1 representation-inversion decoders (linear + MLP) on KV",
+  "budget": {
+    "decoders": "linear + 1x512 MLP, Adam lr1e-2 x400",
+    "device": "cpu",
+    "seeds": [
+      0,
+      3,
+      7
+    ],
+    "n_sentences": 120
+  },
+  "n_positions": 2024,
+  "n_unique_tokens": 758,
+  "chance_top1": 0.0013192612137203166,
+  "settings": {
+    "linear_decoder": {
+      "plaintext_KV": {
+        "top1": 0.5411184430122375,
+        "top5": 0.5460526347160339
+      },
+      "identity_KV": {
+        "top1": 0.5411184430122375,
+        "top5": 0.5460526347160339
+      },
+      "masked_KV_transfer_plaintext_decoder": {
+        "top1": 0.003289473708719015,
+        "top5": 0.00657894741743803
+      },
+      "masked_KV_adapted_decoder": {
+        "top1": 0.5361841917037964,
+        "top5": 0.5493420958518982
+      }
+    },
+    "mlp_decoder": {
+      "plaintext_KV": {
+        "top1": 0.30427631735801697,
+        "top5": 0.44736841320991516
+      },
+      "identity_KV": {
+        "top1": 0.30427631735801697,
+        "top5": 0.44736841320991516
+      },
+      "masked_KV_transfer_plaintext_decoder": {
+        "top1": 0.014802631922066212,
+        "top5": 0.06578947603702545
+      },
+      "masked_KV_adapted_decoder": {
+        "top1": 0.10526315867900848,
+        "top5": 0.34210526943206787
+      }
+    }
+  },
+  "embedding_cosine_knownpairs": {
+    "plaintext_KV": 0.6590050458908081,
+    "masked_KV": 0.6848166584968567,
+    "note": "orthogonal KV mask is linearly invertible given masked pairs -> similar cosine"
+  },
+  "positive_control_pass": true,
+  "limitations": [
+    "Layer-0 KV (least contextualized) is the attacker-favourable case; deeper layers mix context and are harder to invert to a single token.",
+    "Closed-set token classification over tokens present gives a clean chance baseline but is easier than open-vocabulary recovery; the plaintext-vs-masked-transfer CONTRAST is the design-relevant quantity.",
+    "The masked-adapted decoder assumes masked (KV_tilde, token) pairs; consistent with S1, the orthogonal KV mask provides no information-theoretic protection \u2014 confidentiality is the secret mask / TEE.",
+    "KV masks are orthogonal per-kv-head (Bk rope-commuting, Sv signed-perm); norms/Grams are preserved as in S1 (documented structural leak)."
+  ],
+  "interpretation": {
+    "plaintext_recoverable": "plaintext KV top1=0.541 vs chance 0.0013",
+    "masked_transfer_reduced": "a plaintext-calibrated decoder applied to masked KV drops to top1=0.003 (attacker does not know the mask) => masking REDUCES recovery for an attacker without the secret mask.",
+    "masked_adapted_caveat": "with masked pairs the orthogonal mask is invertible: an adapted decoder recovers top1=0.536 => protection rests on mask secrecy (the TEE), not on information destruction."
+  },
+  "wall_sec": 10.7
+}

@@ -33,6 +33,14 @@
       "path": "results/aaai_private_base/security/attack_budget_registry.json",
       "sha256": "dbc97488b3fdeaa51a8ce8b6bd3724b80061df69dd18f0333fef9e65a7068be2"
     },
+    "S5": {
+      "path": "privacy_llm_obfuscation/results/aaai_private_base/security/S5_membership/s5_results.json",
+      "sha256": "55c8cb7875f6c309d1a72cb4dc3caca43c10b98f0d3561ce77dd3e02bf053c27"
+    },
+    "S6": {
+      "path": "privacy_llm_obfuscation/results/aaai_private_base/security/S6_kv_cache/s6_results.json",
+      "sha256": "0e72b3636715463e6adea0b47c6096300d44af353e5349d523b5ae5d8f7a23ea"
+    },
     "paper_mapping": {
       "path": "results/aaai_private_base/security/attack_paper_mapping.md",
       "sha256": "b5dbbed6d603d2f2852ebc2b52496b3207e820c4b0a45e81bdad7e444f6557cc"
@@ -76,12 +84,28 @@
         0.25,
         0.0
       ]
+    },
+    "S5": {
+      "auc_B0_plaintext": 0.6139,
+      "auc_B1_perm_only": 0.5948,
+      "auc_B1_monomial": 0.499,
+      "B0_accuracy": 0.5833,
+      "B0_precision": 0.5455,
+      "B0_recall": 1.0
+    },
+    "S6": {
+      "chance_top1": 0.0013192612137203166,
+      "plaintext_KV_top1": 0.5411,
+      "masked_transfer_top1": 0.0033,
+      "masked_adapted_top1": 0.5362
     }
   },
   "positive_controls_pass": {
     "S1": true,
     "S2": true,
     "S3": true,
-    "S4": true
+    "S4": true,
+    "S5": true,
+    "S6": true
   }
 }

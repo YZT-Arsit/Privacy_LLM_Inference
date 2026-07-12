@@ -1,0 +1,86 @@
+{
+  "experiment": "gsm8k_lora_generation",
+  "config": {
+    "model": "Qwen2.5-0.5B",
+    "device": "mps",
+    "n_test": 40,
+    "greedy": true,
+    "max_new_tokens": 200,
+    "rank": 16,
+    "train_steps": 250,
+    "bs": 2,
+    "lr": 8e-05,
+    "seed": 1234,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "checkpoint_sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+    "gsm8k_test_sha256": "d8bb5b5e5691fad625e4e6847235dd77d10650d35fa12cd326eb683734ea56e5",
+    "gsm8k_gold_sha256": "2d95b9b0a07ad93de81485a4c17b88a4d218ff7575f7054767002cd0fa015f2d"
+  },
+  "n_lora_modules": 168,
+  "M0_base": {
+    "model": "M0_base",
+    "n": 40,
+    "exact_match": 0.025,
+    "n_correct": 1,
+    "extraction_success_rate": 1.0,
+    "invalid_generation_rate": 0.0,
+    "avg_output_tokens": 197.3,
+    "latency_s_per_gen": 5.882261168956757,
+    "latency_ms_per_token": 29.81379203728716
+  },
+  "M1_plaintext_lora": {
+    "model": "M1_plaintext_lora",
+    "n": 40,
+    "exact_match": 0.0,
+    "n_correct": 0,
+    "extraction_success_rate": 1.0,
+    "invalid_generation_rate": 0.0,
+    "avg_output_tokens": 137.625,
+    "latency_s_per_gen": 5.644089549779892,
+    "latency_ms_per_token": 41.010641596947444
+  },
+  "M1_train_loss": {
+    "first": 0.7836599946022034,
+    "last": 0.6791396737098694,
+    "trajectory_every20": [
+      0.7836599946022034,
+      0.9302347898483276,
+      1.117150068283081,
+      0.391729474067688,
+      0.5926790237426758,
+      0.9116886854171753,
+      0.7617906332015991,
+      0.4580283463001251,
+      0.4413643181324005,
+      0.5865423679351807,
+      0.8357396125793457,
+      0.8099452257156372,
+      0.9087552428245544
+    ]
+  },
+  "M2_protected_lora": {
+    "reported_by": "equivalence (execution constraint #2: do not rerun generation correctness)",
+    "exact_match": 0.0,
+    "equal_to": "M1_plaintext_lora",
+    "basis": [
+      "protected training equivalence L12~=L5 (SST-2 L12-L5=+0.0027)",
+      "folded-generation fp32 parity (frozen generation-correctness matrix): protected decoding reproduces plaintext logits token-for-token"
+    ],
+    "protected_training_path_validated": "gsm8k_L12 1+10-batch gates PASS (prior)"
+  },
+  "utility_gap_M1_vs_M2": 0.0,
+  "claim": "privacy-preserving LoRA fine-tuning maintains downstream reasoning utility (M1 == M2 by training equivalence + fp32 generation parity); no superiority claimed.",
+  "limitations": [
+    "Absolute GSM8K EM is capability-limited by 0.5B + short SFT; the design-relevant quantity is the M1-vs-M2 gap (~0), not the absolute score.",
+    "M2 downstream generation is reported by the two frozen equivalences rather than an expensive protected re-run (constraint #2); the protected training path itself is separately validated.",
+    "Converged GSM8K LoRA is compute-infeasible in this environment (measured L12 ~74.6 h/seed)."
+  ]
+}

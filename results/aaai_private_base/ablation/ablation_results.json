@@ -1,0 +1,146 @@
+{
+  "experiment": "mask_component_ablation",
+  "model": "Qwen2.5-0.5B",
+  "method_note": "ablation shows per-component CONTRIBUTION; NOT a formal security proof",
+  "config": {
+    "device": "cpu",
+    "seeds": [
+      0,
+      5,
+      11
+    ],
+    "reuses": [
+      "S1",
+      "S2",
+      "S3",
+      "S5",
+      "S6"
+    ]
+  },
+  "ablation_table": {
+    "A0_full_method": {
+      "correctness": {
+        "recovery_rel_err": 0.0,
+        "logits_KL": 0.0,
+        "exact": true
+      },
+      "security": {
+        "S1_strict_inversion_cosine": 0.0017942450719908914,
+        "S3_confidence_corr(monomial)": 0.00919503252953291,
+        "S5_MIA_AUC(monomial)": 0.4990277588367462,
+        "S6_masked_transfer_top1": 0.003289473708719015
+      },
+      "efficiency": {
+        "trusted_calls_per_opt_step": 2,
+        "comm_bytes_per_example": 1142347
+      },
+      "verdict": "exact + all attack surfaces at their protected (near-random) level"
+    },
+    "A1_remove_feature_mask": {
+      "correctness": {
+        "recovery_rel_err": 0.0,
+        "logits_KL": 0.0,
+        "exact": true,
+        "note": "identity mask is numerically exact"
+      },
+      "security": {
+        "S1_strict_inversion_cosine": 1.0,
+        "note": "with Nr=I the untrusted GPU holds plaintext H -> representation inversion (S1) and KV inversion (S6) become trivial (cosine/top1 -> plaintext levels)",
+        "S6_top1_becomes": 0.5411184430122375
+      },
+      "efficiency": {
+        "trusted_calls_per_opt_step": 2,
+        "note": "no per-step RPC change (feature mask is baked into the package), but removes the representation/KV protection"
+      },
+      "verdict": "feature mask is the S1/S6 representation-confidentiality component"
+    },
+    "A2_remove_nonlinear_permutation_masking": {
+      "correctness": {
+        "silu_commutes_with_permutation_err": 0.0,
+        "silu_through_signed_mask_err": 4.164000271271054,
+        "swiglu_output_rel_err_A2": 1.1819470493158564,
+        "note": "SiLU commutes with a permutation (err~0) but NOT with a signed/general mask; removing the permutation-compatible handling breaks exact reconstruction.",
+        "exact": false
+      },
+      "security": {
+        "note": "not deployable (reconstruction broken); if forced, the nonlinear region would expose plaintext pre-activations"
+      },
+      "efficiency": {
+        "note": "would require moving nonlinear islands into the TEE (extra crossings) to stay correct"
+      },
+      "verdict": "permutation-compatible nonlinear handling is a CORRECTNESS requirement (sign-free perm)"
+    },
+    "A3_remove_rank_mask": {
+      "correctness": {
+        "exact": true,
+        "logits_KL": 0.0,
+        "note": "rank mask cancels in A_tilde@B_tilde; correctness unchanged"
+      },
+      "security": {
+        "S2_plaintext_dW_rel_err": 1.414751463039873,
+        "factor_alignment_with_U": {
+          "subspace_alignment_mean_cos": 0.11012517485218348,
+          "subspace_alignment_min_cos": 0.0008671264267287148
+        },
+        "note": "rank mask hides the A/B factor SPLIT; plaintext dW protection comes from the orthogonal SIDE masks, not U (S2). Contribution is factor-split confidentiality only."
+      },
+      "efficiency": {
+        "trusted_calls_per_opt_step": 2
+      },
+      "verdict": "rank mask = marginal (factor-split hiding); dW confidentiality is the side masks"
+    },
+    "A4_remove_monomial_logit_mask": {
+      "correctness": {
+        "exact": true,
+        "logits_KL": 0.0,
+        "note": "permutation-only is still exact"
+      },
+      "security": {
+        "S3_confidence_corr_perm_only": 1.0000001192092896,
+        "S3_confidence_corr_monomial": 0.00919503252953291,
+        "S5_MIA_AUC_perm_only": 0.5947916507720947,
+        "S5_MIA_AUC_monomial": 0.4990277588367462,
+        "note": "removing D (perm-only) restores the EXACT confidence-profile leak (S3 corr 1.0) and the readable membership signal (S5 AUC up)"
+      },
+      "efficiency": {
+        "comm_bytes_per_example": 1142347,
+        "note": "monomial D is O(V), no extra RPC"
+      },
+      "verdict": "monomial mask = the logit/confidence + membership-readability component (S3/S5)"
+    },
+    "A5_remove_mask_refresh": {
+      "correctness": {
+        "exact": true,
+        "logits_KL": 0.0
+      },
+      "security": {
+        "static_mask_recovery_rel_err": 1.0164239918046778e-07,
+        "refreshed_mask_per_step_rel_err_mean": 0.8169576888406073,
+        "note": "static mask enables cross-step known-plaintext accumulation -> mask recovery"
+      },
+      "efficiency": {
+        "note": "refresh cost = re-fold package / re-bind; amortized, not per-step"
+      },
+      "verdict": "mask refresh = cross-step known-plaintext-accumulation resistance"
+    }
+  },
+  "summary": {
+    "correctness_critical": [
+      "A2 (permutation-compatible nonlinear handling)"
+    ],
+    "security_critical": {
+      "representation/KV": "A1 (feature mask)",
+      "logit/membership": "A4 (monomial)",
+      "cross-step KPA": "A5 (refresh)"
+    },
+    "marginal": [
+      "A3 (rank mask): factor-split hiding only; dW protection is the side masks"
+    ]
+  },
+  "limitations": [
+    "Ablation demonstrates each component's contribution to correctness/attack-resistance/cost; it does NOT prove security formally.",
+    "Security columns reuse the S1-S6 attacks (same CPU harness, private-base threat model).",
+    "A2 is shown at the operator level (SiLU vs permutation/signed mask); a full end-to-end broken run is not deployed because it is by-construction incorrect."
+  ],
+  "wall_sec": 2.5
+}

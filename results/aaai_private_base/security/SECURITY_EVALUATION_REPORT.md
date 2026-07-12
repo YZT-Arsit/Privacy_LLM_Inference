@@ -12,10 +12,12 @@ All experiments ran **CPU-only, offline**, on a defender-side oracle holding the
 | S2 | transformed LoRA A~,B~ | plaintext ΔW rel_err=2.4e-15 | plaintext ΔW rel_err=1.4148 (≈√2 scramble) | masked product recoverable; plaintext ΔW not, w/o side masks |
 | S3 | logit masking | B0 plaintext multiset_gap=0 | B1 conf_corr=1.0 (full leak) vs B2 conf_corr=0.0092 | monomial removes the exactly-preserved confidence leak |
 | S4 | transformed gradients | plaintext-b1 DLG token acc=0.625 ≫ rand 6.6e-06 | basis-invariance loss-gap=9.1e-13, tokens agree=1.0 | mask is a transparent basis change; defense = aggregation/non-exposure |
+| S5 | black-box outputs (MIA) | B0 plaintext AUC=0.6139 > 0.5 | perm-only AUC=0.5948, monomial AUC=0.499 | membership leaks at the trained weights; monomial removes readable signal, perm-only retains it |
+| S6 | masked KV cache | plaintext KV top1=0.5411 ≫ chance 1.3e-03 | masked-transfer top1=0.0033, masked-adapted top1=0.5362 | mask defeats a plaintext-calibrated attacker; orthogonal-invertible given masked pairs (=TEE) |
 
 ## 2. Paper mapping
 
-See `attack_paper_mapping.md`. Methodologies: Mahendran & Vedaldi (CVPR'15) + Fredrikson et al. (CCS'15) [S1]; Hu et al. LoRA (ICLR'22) [S2]; internal design_spec §F [S3]; Zhu et al. DLG (NeurIPS'19) + Zhao et al. iDLG (2020) [S4]. Shokri et al. (S&P'17) registered for the deferred S5. **All citations are real; none fabricated.**
+See `attack_paper_mapping.md`. Methodologies: Mahendran & Vedaldi (CVPR'15) + Fredrikson et al. (CCS'15) [S1, S6]; Hu et al. LoRA (ICLR'22) [S2]; internal design_spec §F [S3]; Zhu et al. DLG (NeurIPS'19) + Zhao et al. iDLG (2020) [S4]; Shokri et al. (S&P'17) shadow-model MIA [S5]. **All citations are real; none fabricated.**
 
 ## 3. Positive controls (must pass before trusting any attack)
 
@@ -23,6 +25,8 @@ See `attack_paper_mapping.md`. Methodologies: Mahendran & Vedaldi (CVPR'15) + Fr
 - **S2**: PASS
 - **S3**: PASS
 - **S4**: PASS
+- **S5**: PASS
+- **S6**: PASS
 
 ## 4. Main attack results (detail)
 
@@ -45,6 +49,15 @@ See `attack_paper_mapping.md`. Methodologies: Mahendran & Vedaldi (CVPR'15) + Fr
 - **Path-independent basis invariance**: mapping each plaintext DLG solution through Nr matches the MASKED gradients with a gradient-match-loss gap of at most **9.1e-13** and recovers the **same token in 100%** of cases → the orthogonal mask (exact Nr-conjugate = the deployed fold) is a **transparent change of basis** for gradient inversion; the attacker inverts in the masked basis and NNs against the shipped E~.
 - Aggregation defense (batch sweep [1, 2, 4, 8], plaintext basis; masked identical by invariance): token recovery [0.625, 0.875, 0.25, 0.0] → degrades with batch size. **The real defense is batch aggregation + never exposing per-example gradients, not the mask.**
 
+### S5 — Membership inference (Shokri shadow-model MIA)
+- Positive control (B0 plaintext outputs): ROC-AUC **0.6139** (acc 0.5833, prec 0.5455, rec 1.0) > 0.5 → non-random membership signal.
+- Protected outputs: **perm-only AUC 0.5948** (retains most signal — set-symmetric confidence preserved, cf. S3) vs **monomial AUC 0.499** (≈ random — distortion removes readable confidence). Membership leaks at the *trained weights* (generalization gap), not the mask; the mask only changes readability of the output channel.
+
+### S6 — KV-cache inversion
+- Positive control (plaintext KV, linear decoder): token top-1 **0.5411** vs chance **1.3e-03** → highly recoverable.
+- **Masked KV, plaintext-calibrated attacker (transfer)**: top-1 **0.0033** ≈ chance → the orthogonal KV mask (Bk rope-commuting, Sv signed-perm) defeats an attacker who does not know the mask (**reduced recovery**).
+- **Masked KV, adapted attacker (masked pairs)**: top-1 **0.5362** → the orthogonal mask is invertible given masked pairs, so protection rests on **mask secrecy / the TEE**, not information destruction (consistent with S1).
+
 ## 5. Limitations (honest, per experiment)
 
 - **S1**: Ground-truth private base uses real Qwen2.5-0.5B weights (secret, never exposed to attackers) for realistic representations; leakage geometry is weight-distribution invariant.
@@ -60,11 +73,19 @@ See `attack_paper_mapping.md`. Methodologies: Mahendran & Vedaldi (CVPR'15) + Fr
 - **S4**: Shallow batch-1 supervised head, not the full 24-layer LoRA stack; DLG is known not to converge on deep models / large batches, so batch-1 is the strongest (favourable-to-attacker) case.
 - **S4**: Token recovery uses NN against the (masked) embedding table the attacker legitimately holds; this isolates the change-of-basis transparency, the key point.
 - **S4**: The real protocol's per-step adapter gradients are computed on the untrusted GPU; this experiment argues the defense must be aggregation / non-exposure, and is scoped accordingly — we do NOT claim the mask defeats gradient inversion.
+- **S5**: MIA target is a LoRA-style linear probe over frozen private-base features (standard lightweight MIA target); it models the output-confidence channel the mask affects, not a full attention/MLP LoRA.
+- **S5**: Black-box outputs-only attacker; a white-box or per-example-gradient attacker is out of this channel.
+- **S5**: Absolute AUC is modest because the fine-tune is light and SST-2 generalizes well (small member gap); we report the RELATIVE channel comparison, which is the design-relevant quantity.
+- **S5**: Protected channels are modeled at the 2-class verbalizer boundary via the S3 monomial mask; a full vocab-logit MIA would see the same set-symmetric preservation (perm-only) shown in S3.
+- **S6**: Layer-0 KV (least contextualized) is the attacker-favourable case; deeper layers mix context and are harder to invert to a single token.
+- **S6**: Closed-set token classification over tokens present gives a clean chance baseline but is easier than open-vocabulary recovery; the plaintext-vs-masked-transfer CONTRAST is the design-relevant quantity.
+- **S6**: The masked-adapted decoder assumes masked (KV_tilde, token) pairs; consistent with S1, the orthogonal KV mask provides no information-theoretic protection — confidentiality is the secret mask / TEE.
+- **S6**: KV masks are orthogonal per-kv-head (Bk rope-commuting, Sv signed-perm); norms/Grams are preserved as in S1 (documented structural leak).
 - **Global**: real Qwen2.5-0.5B weights stand in for a from-scratch private base (secret, never exposed to attackers); the leakage geometry under test is weight-distribution invariant. The recurring structural theme — orthogonal/permutation masks preserve norms, Grams, and value multisets, and are linearly invertible given paired plaintext — means **confidentiality rests on the TEE preventing paired-plaintext / per-example-gradient exposure, and on aggregation, not on the algebraic mask alone.**
 
 ## 6. Files changed / added
 
-Harness+attacks (all new, untracked): `scripts/security/{pb_harness,s1_representation_inversion,s2_lora_recovery,s3_logit_leakage,s4_gradient_inversion,test_security_harness,build_security_report,monitor_main_experiment}.py`. Results+registry (new, untracked): `results/aaai_private_base/security/**`, `results/aaai_private_base/security_progress_monitor/**`. No existing training/protocol file modified.
+Harness+attacks (all new, untracked): `scripts/security/{pb_harness,s1_representation_inversion,s2_lora_recovery,s3_logit_leakage,s4_gradient_inversion,s5_membership,s6_kv_cache,test_security_harness,build_security_report,monitor_main_experiment}.py`. Results+registry (new, untracked): `results/aaai_private_base/security/**`, `results/aaai_private_base/security_progress_monitor/**`. No existing training/protocol file modified.
 
 ## 7. Tests
 
@@ -79,4 +100,4 @@ All security files (`scripts/security/**`, `results/aaai_private_base/security/*
 Confirmed: no commits, no staging. The active A10+TDX converged-utility run was monitored read-only (`security_progress_monitor/`) and never interrupted.
 
 ---
-_Stop condition honored: S1–S4 complete; S5 (membership) and S6 (KV-cache) registered but not run; no 7B, no external-baseline reproduction, no new training._
+_Stop condition honored: S1–S6 complete (S5 membership + S6 KV-cache added this round); no 7B, no external-baseline reproduction, no new training. All six positive controls pass._

@@ -1,0 +1,21 @@
+{
+  "schema": "system_comparison",
+  "no_new_experiments": true,
+  "sources": {
+    "inference_latency": {
+      "path": "results/baselines/obfuscatune_latency_h800.json",
+      "sha256": "cc209f8ae63640a51bee0423e295b038c320884fc04385e7dea3e4a0c3ea5629",
+      "gpu": "NVIDIA H800 PCIe",
+      "dtype": "bfloat16",
+      "dims": {
+        "D": 3584,
+        "FFN": 18944,
+        "layers": 28
+      }
+    },
+    "training_profile": {
+      "path": "results/aaai_private_base/alicloud_a10_runs/utility_dataplane/PHASE_profiling_gate.json",
+      "sha256": "01fa7c2aba42189928ddb2a5d247977f97b11c5c9b06ad5abe0948cbe8c26e1b"
+    }
+  }
+}

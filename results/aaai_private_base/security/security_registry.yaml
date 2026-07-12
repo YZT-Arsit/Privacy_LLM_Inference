@@ -119,15 +119,32 @@ experiments:
   - id: S5
     name: membership_inference
     priority: MEDIUM
-    status: only_after_S1_S4
+    status: RUN (after S1-S4)
+    target_leakage_surface: black-box model outputs (confidence) of a LoRA-style fine-tune
+    threat_assumption: attacker observes outputs only; no base weights/masks/TDX secrets
     reference_papers:
       - "Shokri et al., Membership Inference Attacks Against Machine Learning Models, IEEE S&P 2017"
+    attacks: [shadow_model_attack_classifier]
+    compare: {B0: plaintext_lora_outputs, B1_perm_only: monomial_D_eq_I, B1_monomial: monomial_D>0}
+    metrics: [roc_auc, accuracy, precision, recall]
+    positive_control: plaintext outputs must be non-random (AUC>0.5)
+    baseline: random (AUC 0.5)
     output: security/S5_membership/
 
   - id: S6
     name: kv_cache_leakage
     priority: OPTIONAL
-    status: only_if_prior_complete
+    status: RUN
+    target_leakage_surface: masked KV cache (K_tilde=RoPE(K)Bk, V_tilde=V Sv; orthogonal per kv-head)
+    threat_assumption: attacker receives only KV_tilde; no weights/masks/TDX
+    reference_papers:
+      - "reuses S1 representation-inversion decoders (Mahendran & Vedaldi CVPR'15; Fredrikson CCS'15)"
+    attacks: [linear_decoder, mlp_decoder]
+    compare: {plaintext_KV: recoverable, identity_KV: recoverable,
+              masked_transfer: plaintext-calibrated-on-masked, masked_adapted: masked-pairs}
+    metrics: [token_top1, token_top5, embedding_cosine]
+    positive_control: plaintext KV top1 >> chance
+    baseline: chance = 1/n_unique_tokens
     output: security/S6_kv_cache/
 
 scientific_requirements:
@@ -140,4 +157,4 @@ scientific_requirements:
 resource_constraints:
   - do not use the active A10 utility GPU or TDX training service or production checkpoints
   - CPU only; cached artifacts only
-stop_condition: after S1-S4 complete, STOP (no 7B, no external baseline reproduction, no new training)
+stop_condition: S1-S6 complete, STOP (no 7B, no external baseline reproduction, no new training)
