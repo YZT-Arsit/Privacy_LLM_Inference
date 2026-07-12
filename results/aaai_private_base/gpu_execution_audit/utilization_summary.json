@@ -1,0 +1,14 @@
+{
+  "device": "NVIDIA H800 PCIe",
+  "loop_steps": 300,
+  "loop_total_wall_s": 23.075,
+  "mean_step_wall_s": 0.07691,
+  "gpu_samples": 154,
+  "gpu_util_avg_pct": 23.05,
+  "gpu_util_max_pct": 34.0,
+  "active_duty_cycle_pct_samples_util_gt0": 85.71,
+  "mem_used_max_mb": 2143.0,
+  "power_avg_w": 86.6,
+  "power_max_w": 92.58,
+  "note": "nvidia-smi GPU-Util is a coarse duty proxy; the intrinsic per-step compute duty (kernel_time/step_wall) is reported in audit_summary.json S3. This loop is pure back-to-back compute (NO network/TDX) \u2014 a REAL direct step adds seconds of transport, driving end-to-end GPU duty far lower."
+}

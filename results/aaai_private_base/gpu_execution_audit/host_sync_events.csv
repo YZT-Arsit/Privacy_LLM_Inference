@@ -1,0 +1,8 @@
+kind,stack
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:230:main <- gpu_execution_audit.py:174:protected_step
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:230:main <- gpu_execution_audit.py:175:protected_step
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:230:main <- gpu_execution_audit.py:183:protected_step
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:230:main <- gpu_execution_audit.py:191:protected_step
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:230:main <- gpu_execution_audit.py:206:protected_step
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:230:main <- gpu_execution_audit.py:216:protected_step
+cuda.synchronize,gpu_execution_audit.py:348:<module> <- gpu_execution_audit.py:228:main

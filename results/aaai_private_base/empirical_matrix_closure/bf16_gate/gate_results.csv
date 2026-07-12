@@ -1,0 +1,6 @@
+tag,optimizer,dtype,seed,steps,gate_pass,attestation_verified,final_ce,top1,kl,gpu_exact_A_per_step,tdx_corrected_per_step,correction_missing,corrected_grad_zeroed_fraction,all_finite,logical_invocations,untrusted_gamma_materializations,untrusted_correction_matrix_materializations,silent_fallbacks
+L10BF16,o1c_hybrid_sgd,bf16,1234,1,True,True,0.45357903838157654,0.976190447807312,0.008146599866449833,48,120,0,0.0,True,3,0,0,0
+L10BF16,o1c_hybrid_sgd,bf16,2025,1,True,True,0.45357903838157654,0.976190447807312,0.008146599866449833,48,120,0,0.0,True,3,0,0,0
+L10BF16,o1c_hybrid_sgd,bf16,7,1,True,True,0.45357903838157654,0.976190447807312,0.008146599866449833,48,120,0,0.0,True,3,0,0,0
+L10BF16,o1c_hybrid_sgd,bf16,1234,10,True,True,0.2926563620567322,1.0,0.003201631596311927,48,120,0,0.0,True,3,0,0,0
+L10BF16,o1c_hybrid_sgd,bf16,2025,10,True,True,0.2926563620567322,1.0,0.003201631596311927,48,120,0,0.0,True,3,0,0,0

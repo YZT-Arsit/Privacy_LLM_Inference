@@ -1,0 +1,18 @@
+{
+  "mean_step_wall_s": 155.845,
+  "mean_fractions": {
+    "frac_gpu_compute": 0.0052,
+    "frac_cpu_processing": 0.0003,
+    "frac_network_wait": 0.993,
+    "frac_tdx": 0.001,
+    "frac_idle": 0.0005
+  },
+  "per_step_bytes": [
+    {
+      "dlogits_down": 12764201,
+      "corrected_down": 3475023,
+      "logits_up": 12764201,
+      "corr_up": 3475023
+    }
+  ]
+}

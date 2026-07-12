@@ -1,0 +1,6 @@
+phase,seconds,fraction_of_compute
+h800_forward,0.042524,0.2889
+dlogits_gpu_stub(TDX in real path),0.000541,0.0037
+h800_backward,0.074628,0.507
+apply_gpu+stage_DtoH,0.018775,0.1275
+apply_corrected_proxy(TDX in real path),0.010737,0.0729

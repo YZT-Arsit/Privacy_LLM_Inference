@@ -66,7 +66,13 @@ def main():
 
     run_id = f"{args.run_tag}-{args.steps}s-{int(time.time())}-{secrets.token_hex(3)}"
     session_key = secrets.token_bytes(32); nonce = secrets.token_hex(16)
-    head = (REPO / "results/aaai_private_base/code_baseline_closure/head_hash.txt").read_text().strip()
+    # Bind the application-layer HMAC key INTO the attested report_data: the enclave commits
+    # to sha256(session_key || nonce) inside the quote, so a verifier confirms the exact key
+    # used for message authentication was the one present at attestation time. SSH transport
+    # encryption and this app-layer HMAC/attestation binding are two INDEPENDENT layers; SSH
+    # alone does not bind messages to the attested TDX session.
+    hmac_key_commitment = hashlib.sha256(session_key + bytes.fromhex(nonce)).hexdigest()
+    head = (REPO / "results/aaai_private_base/code_baseline_closure/head.txt").read_text().strip()
     ids = json.loads((REPO / "results/aaai_private_base/h800_unified_worker/dry_run_input_ids.json").read_text())
     labels = ids["input_ids"][:args.seq_len]
     binding = {  # for fresh attestation at session setup
@@ -82,6 +88,7 @@ def main():
         "vocabulary_mask_profile": "monomial_perm_only", "gradient_convention": "masked_domain_dlogits",
         "dataset_batch_manifest_hash": hashlib.sha256(json.dumps(labels).encode()).hexdigest(),
         "code_revision_or_worktree_hash": head, "transport_profile": "direct_h800_tdx",
+        "hmac_key_commitment": hmac_key_commitment, "session_key_derivation": "sha256(session_key||nonce)",
         "debug_false_required": True, "nonce": nonce, "ephemeral_key_pub": hashlib.sha256(nonce.encode()).hexdigest()}
 
     # ---- provision code + gamma bundle + session config ----
@@ -113,6 +120,20 @@ def main():
     rc, o, e = h800(cmd, timeout=3600)
     wall = time.time() - t0
     print(o[-1500:] if o else "", "\n[stderr]", e[-600:] if rc != 0 else "")
+
+    # ---- effective-equivalence (trusted-eval on H800) at the FINAL trained state ----
+    # Reuses the SAME verifier as the ferried gate on the direct run's adapter + final logits,
+    # so direct effective_equivalence (top1/KL) is directly comparable to the ferried metric.
+    equiv_remote = out_json.replace(".json", ".equiv.json")
+    eq_cmd = (f"cd {RH800} && {ENV_H800} {PY_H800} scripts/d4_trusted_verifier.py "
+              f"--masked-logits {out_json.replace('.json', '.final_logits.pt')} "
+              f"--lora-state {out_json.replace('.json', '.adapter.pt')} "
+              f"--input-ids {IDS} --seq-len {args.seq_len} --out {equiv_remote}")
+    erc, eo, ee = h800(eq_cmd, timeout=1200)
+    if erc == 0:
+        pull_h800(equiv_remote, str(OUT / f"{args.run_tag}_{args.dtype}_{args.steps}step.equiv.json"))
+    else:
+        print("[equiv] verifier failed:", ee[-400:])
 
     # ---- collect (control-plane): result + attestation + tdx counters ----
     lout = OUT / f"{args.run_tag}_{args.dtype}_{args.steps}step.json"

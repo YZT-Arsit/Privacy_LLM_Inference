@@ -1,0 +1,12 @@
+{
+  "dtoh_bytes": 3440640,
+  "htod_bytes": 1731072,
+  "dtoh_count": 120,
+  "htod_count": 122,
+  "profiler_memcpy_us": {
+    "HtoD": 185.21100000000007,
+    "DtoH": 249.31000000000046,
+    "DtoD": 94.87799999999991
+  },
+  "note": "dtoh includes the legitimate transport-staging of q/k/v/gate/up A-grads to TDX"
+}

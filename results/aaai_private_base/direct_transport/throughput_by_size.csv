@@ -1,0 +1,4 @@
+source,direction,payload_MB,wall_s,throughput_MB_s
+S5_real_corrected_download,TDX_to_H800_download,3.475,31.81,0.1092
+S5_real_dlogits_download,TDX_to_H800_download,12.764,122.94,0.1038
+prior_reachability_audit,H800_to_TDX_upload,,,12.7

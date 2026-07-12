@@ -1,0 +1,2 @@
+step,h800_forward_s,serialize_logits_DtoH_s,net_ce_roundtrip_s,tdx_ce_s,ssh_wire_ce_s,deserialize_dlogits_HtoD_s,h800_backward_s,apply_gpu_and_stage_s,net_correct_roundtrip_s,tdx_correction_s,ssh_wire_correct_s,step_wall_s,bytes_logits_up,bytes_dlogits_down,bytes_corr_up,bytes_corrected_down,frac_gpu_compute,frac_cpu_processing,frac_network_wait,frac_tdx,frac_idle
+0,0.2937,0.0332,123.026,0.0899,122.936,0.0124,0.5089,0.0089,31.882,0.0695,31.813,155.845,12764201,12764201,3475023,3475023,0.0052,0.0003,0.993,0.001,0.0005

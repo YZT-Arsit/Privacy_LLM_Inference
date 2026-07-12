@@ -1,0 +1,23 @@
+{
+  "key_id": "h800-bench-tdx",
+  "fingerprint_non_secret": "SHA256:KNpHHHT/UvuKI+6hxKVGwOcDNDWhO8aOyaZa8vgyhNk",
+  "scope_while_active": "forced-command to tdx_bench_service.py only, restrict (no pty/forward/shell); NO gamma/labels/attestation/session-key access",
+  "removed_from_tdx_authorized_keys": true,
+  "tdx_bench_entries_before": 1,
+  "tdx_bench_entries_after": 0,
+  "remaining_tdx_keys": [
+    "skp-2zei5qbu8kfrrsyi2h6f (original)",
+    "h800-direct-tdx (production forced+restricted)"
+  ],
+  "key_files_deleted_on_h800": [
+    "/root/.ssh/h800_bench_tdx",
+    "/root/.ssh/h800_bench_tdx.pub"
+  ],
+  "production_forced_key_intact_and_blocks_arbitrary_cmd": true,
+  "removed_key_now_rejected": true,
+  "rejection_reason": "pubkey no longer in authorized_keys; private key file deleted",
+  "key_in_logs": false,
+  "key_in_result_artifacts": false,
+  "bench_hmac_key_used": "all-zero 0x00*32 (non-secret, benchmark only)",
+  "note": "only a non-secret fingerprint is recorded; no private key material persisted anywhere"
+}

@@ -1,0 +1,61 @@
+{
+  "direct_run": "AUDIT_S5-1s-1783820131-eb5b1b",
+  "ferried_run": "L10BF16-1234-1783814331-0710752e",
+  "direct_transport_profile": "direct_h800_tdx",
+  "steps_compared": 1,
+  "ce_trajectory": {
+    "max_abs_diff": 0.0,
+    "tol": 0.01,
+    "pass": true
+  },
+  "correction_counts": {
+    "all_steps_match_48gpu_120tdx": true,
+    "pass": true
+  },
+  "effective_equivalence": {
+    "direct_top1": 0.976190447807312,
+    "ferried_top1": 0.976190447807312,
+    "direct_kl": 0.008146599866449833,
+    "ferried_kl": 0.008146599866449833,
+    "top1_pass": true,
+    "kl_pass": true,
+    "kl_tol": 0.005
+  },
+  "session_reuse_direct": {
+    "single_ssh_channel": true,
+    "channel_requests": 3,
+    "expected_requests": 3,
+    "seq_strictly_monotone": true,
+    "attestation_once": true,
+    "graph_freed_every_step": false
+  },
+  "vram_summary_direct": {
+    "base_alloc_bytes": 1277649408,
+    "peak_alloc_slope_bytes_per_step": 0,
+    "max_peak_alloc_bytes": 1426265088,
+    "no_growth": true
+  },
+  "VERDICT_numerics_consistent": true,
+  "per_step": [
+    {
+      "step": 0,
+      "ce_direct": 0.45357903838157654,
+      "ce_ferried": 0.45357903838157654,
+      "ce_abs_diff": 0.0,
+      "gpuA_direct": 48,
+      "gpuA_ferried": 48,
+      "tdxA_direct": 120,
+      "tdxA_ferried": 120,
+      "counts_match": true,
+      "direct_numerics": {
+        "gradA_norm": 0.058913216583154036,
+        "gradB_norm": 15.081416297568977,
+        "corrected_grad_norm": 0.046305667495192826,
+        "updateA_norm": 5.2185265358956104e-05,
+        "updateB_norm": 0.015081416297568982,
+        "deltaW_proxy_norm": 0.015081506583975616,
+        "momentum_buffer_norm": 0.0
+      }
+    }
+  ]
+}

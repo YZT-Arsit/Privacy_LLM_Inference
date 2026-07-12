@@ -1,0 +1,44 @@
+{
+  "cuda_available": true,
+  "device_name": "NVIDIA H800 PCIe",
+  "dtype": "bf16",
+  "seq_len": 42,
+  "num_layers": 24,
+  "S1_inventory": {
+    "tensors_recorded": 607,
+    "on_cuda": 606,
+    "on_cpu_total": 1,
+    "on_cpu_DISALLOWED": 0,
+    "disallowed_examples": []
+  },
+  "S2_host_conversions_during_step": {
+    "cpu_calls": 120,
+    "item_calls": 0,
+    "numpy_calls": 0,
+    "synchronize_calls": 7,
+    "torch_save_calls": 0,
+    "dtoh_bytes": 3440640,
+    "htod_bytes": 1731072
+  },
+  "S3_profile_one_step": {
+    "cuda_self_us_total_ops": 27858.2,
+    "cpu_self_us_total_ops": 104421.4,
+    "kernel_launches": 11126,
+    "kernel_us_total_trace": 13398.8,
+    "memcpy_us": {
+      "HtoD": 185.21100000000007,
+      "DtoH": 249.31000000000046,
+      "DtoD": 94.87799999999991
+    }
+  },
+  "S5c_compute_timeline_s": {
+    "h800_forward": 0.042524,
+    "dlogits_gpu_stub(TDX in real path)": 0.000541,
+    "h800_backward": 0.074628,
+    "apply_gpu+stage_DtoH": 0.018775,
+    "apply_corrected_proxy(TDX in real path)": 0.010737
+  },
+  "step_compute_total_s": 0.147206,
+  "forward_ran_on_cuda": true,
+  "verdict_note": "forward/backward operands on CUDA; low duty cycle is expected for a 0.5B model at short seq \u2014 dominated by transport, not a CPU-compute bug"
+}

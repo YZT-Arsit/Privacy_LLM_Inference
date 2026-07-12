@@ -118,9 +118,19 @@ def do_attestation(cfg, out_dir):
 
 
 def main():
+    # Under the SSH forced command, sys.argv is fixed by authorized_keys (H800 cannot choose it);
+    # we always read the pinned session config path. SSH_ORIGINAL_COMMAND is ignored.
     cfg = json.loads(Path(sys.argv[1]).read_text()) if len(sys.argv) > 1 else \
         json.loads(Path("/tmp/direct_session.json").read_text())
     key = bytes.fromhex(cfg["session_key_hex"]); run_id = cfg["run_id"]
+    # Verify the app-layer HMAC key is the one bound into the attested report_data. This ties
+    # message authentication to attestation: refuse to serve if the held key does not match the
+    # commitment the enclave will (or did) attest. Fail-closed, before any request is served.
+    _bm = cfg.get("binding_manifest", {})
+    if _bm.get("hmac_key_commitment"):
+        _expect = hashlib.sha256(key + bytes.fromhex(_bm["nonce"])).hexdigest()
+        if _expect != _bm["hmac_key_commitment"]:
+            sys.stderr.write("hmac_key_commitment_mismatch\n"); sys.exit(3)
     labels = torch.tensor(cfg["labels"])
     gb = torch.load(cfg["gamma_bundle"], map_location="cpu")
     gi_attn, gi_mlp = build_gram_inv(gb)
@@ -171,8 +181,11 @@ def main():
             dpl = torch.zeros_like(plain); dpl[:-1] = dp
             dmask = dpl[:, perm_inv]
             counters["ce_calls"] += 1; last_seq = seq
-            out = dump_tensor(dmask.to(masked.dtype) if header.get("dtype") == "bf16"
-                              else dmask)
+            # Return dlogits in the RUN dtype. For bf16 runs the client casts to bf16 on receipt
+            # anyway (backward runs in bf16), so returning bf16 here is semantics-preserving and
+            # HALVES the throttled TDX->H800 download (masked was .float()'d, so masked.dtype was
+            # fp32 -> the old code shipped 25.5MB fp32 even for bf16 runs; now 12.75MB bf16).
+            out = dump_tensor(dmask.to(torch.bfloat16) if header.get("dtype") == "bf16" else dmask)
             resp_seq = seq + 1
             write_frame(fout, {"op": "ce_dlogits_ack", "seq": resp_seq,
                                "hmac": mac(key, out, resp_seq, run_id, "ce_dlogits_ack"),

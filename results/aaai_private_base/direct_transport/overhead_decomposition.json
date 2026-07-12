@@ -1,0 +1,11 @@
+{
+  "serialize_ms": 3.6,
+  "deserialize_ms": 0.6,
+  "hmac_ms": 4.0,
+  "total_non_network_ms": 8.3,
+  "dlogits_payload_mb": 12.76,
+  "network_wait_ms": 123026,
+  "measured_tdx_to_h800_throughput_mb_s": 0.104,
+  "non_network_fraction_percent": 0.0067,
+  "note": "local torch.save/load + HMAC over a 42x151936 bf16 tensor; network_wait from S5 real step ssh_wire_ce"
+}

@@ -1,12 +1,12 @@
 {
   "tee": "tdx",
   "quote_source": "alibaba_tdx_quote_generation_sample",
-  "d4_run_id": "L10BF16-7-1783814912-cde2fb7f",
+  "d4_run_id": "L10BF16-7-1783818800-7f0e6498",
   "attestation_verified": true,
   "verifier_overall_appraisal_result": "SUCCESS",
   "quote_generated": true,
-  "report_data_expected": "36de9b0da262c99f1b9d5145fc27485b7906a2a9e53a40b360b036139159174ae0ed4100f71eda3496db263181aaa6ff3117f5d541d0b06bd347f440db8631cc",
-  "tdx_reportdata": "36de9b0da262c99f1b9d5145fc27485b7906a2a9e53a40b360b036139159174ae0ed4100f71eda3496db263181aaa6ff3117f5d541d0b06bd347f440db8631cc",
+  "report_data_expected": "596458a95cf8d9dda5c65738611eb0a7df805496a68652ad9e44d56e90a42ce6fee823d9820f761da61fa1528e37899613b10e9b4381cdd39b5eb380561d033f",
+  "tdx_reportdata": "596458a95cf8d9dda5c65738611eb0a7df805496a68652ad9e44d56e90a42ce6fee823d9820f761da61fa1528e37899613b10e9b4381cdd39b5eb380561d033f",
   "reportdata_binds_d4_manifest": true,
   "td_attributes_debug": false,
   "debug_false": true,
@@ -49,8 +49,8 @@
     "worktree_diff_sha256"
   ],
   "timing_sec": {
-    "quote_generation": 0.005610227584838867,
-    "verification": 0.055487871170043945
+    "quote_generation": 0.0057408809661865234,
+    "verification": 0.055438995361328125
   },
   "paper_facing": true,
   "quote_generation_alone_is_not_verification": true

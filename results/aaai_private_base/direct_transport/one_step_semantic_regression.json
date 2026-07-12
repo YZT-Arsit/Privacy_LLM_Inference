@@ -1,0 +1,70 @@
+{
+  "label": "DIRECT_TRANSPORT_SEMANTIC_REGRESSION_ONE_STEP",
+  "run_id": "AUDIT_S5-1s-1783820131-eb5b1b",
+  "transport_profile": "direct_h800_tdx",
+  "dtype": "bf16",
+  "after_bf16_dlogits_fix": true,
+  "comparisons": {
+    "CE": {
+      "direct": 0.45357903838157654,
+      "ferried": 0.45357903838157654,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    "top1": {
+      "direct": 0.976190447807312,
+      "ferried": 0.976190447807312,
+      "match": true
+    },
+    "next_logit_KL": {
+      "direct": 0.008146599866449833,
+      "ferried": 0.008146599866449833,
+      "match": true
+    },
+    "equiv_max_abs": {
+      "direct": 4.0074968338012695,
+      "ferried": 4.0074968338012695,
+      "match": true
+    },
+    "plaintext_reference_hf_ce": 0.36956697702407837,
+    "gradA_norm": 0.058913216583154036,
+    "gradB_norm": 15.081416297568977,
+    "corrected_grad_norm": 0.046305667495192826,
+    "updateA_norm": 5.2185265358956104e-05,
+    "updateB_norm": 0.015081416297568982,
+    "deltaW_proxy_norm": 0.015081506583975616,
+    "momentum_buffer_norm": 0.0
+  },
+  "correction": {
+    "gpu_exact_A": 48,
+    "tdx_corrected": 120,
+    "missing": 0,
+    "finite": true
+  },
+  "security_counters": {
+    "ce_calls": 1,
+    "correct_calls": 1,
+    "auth_failures": 0,
+    "replay_rejected": 0,
+    "malformed_rejected": 0,
+    "forbidden_key_rejected": 0,
+    "untrusted_gamma_returns": 0,
+    "correction_missing_targets": 0
+  },
+  "replay_hmac_behavior": "fail-closed verified in test_direct_transport_faults.py (bad-hmac/replay/forbidden-key/wrong-runid rejected; watchdog aborts, no fallback)",
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true
+  },
+  "session_reuse": {
+    "single_ssh_channel": true,
+    "channel_requests": 3,
+    "expected_requests": 3,
+    "seq_strictly_monotone": true,
+    "attestation_once": true,
+    "graph_freed_every_step": false
+  },
+  "verdict": "CONSISTENT \u2014 direct persistent transport preserves semantics (CE/top1/KL/equiv bit-identical to ferried; counters zero; attestation verified)"
+}

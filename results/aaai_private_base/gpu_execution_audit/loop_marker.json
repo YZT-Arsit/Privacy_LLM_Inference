@@ -1,0 +1,8 @@
+{
+  "loop_start_unix": 1783819612.7639477,
+  "loop_end_unix": 1783819635.8385653,
+  "steps": 300,
+  "total_wall_s": 23.074617862701416,
+  "mean_step_wall_s": 0.07691422780354817,
+  "device": "NVIDIA H800 PCIe"
+}

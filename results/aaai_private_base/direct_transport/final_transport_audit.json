@@ -1,0 +1,24 @@
+{
+  "bottleneck_class": "infrastructure_ingress_throttle",
+  "code_path_bottleneck": false,
+  "framing_bottleneck": false,
+  "serialization_bottleneck": false,
+  "hmac_bottleneck": false,
+  "gpu_compute_bottleneck": false,
+  "tdx_compute_bottleneck": false,
+  "measured_download_throughput_mb_s": [
+    0.1092,
+    0.1038
+  ],
+  "download_throughput_flat_with_size": true,
+  "upload_throughput_mb_s_prior_audit": 12.7,
+  "directional_asymmetry": "upload~12.7MB/s vs download~0.10MB/s",
+  "provider_mechanism": "consistent_with an AutoDL container ingress throttle (not asserted as provider policy)",
+  "bf16_dlogits_fix_applied": true,
+  "bf16_download_bytes_from_mb": 25.53,
+  "to_mb": 12.76,
+  "transport_code_overhead_ms": 8.3,
+  "network_ms_for_one_dlogits_msg": 123026,
+  "benchmark_status": "STOPPED_EARLY_SUFFICIENT_EVIDENCE",
+  "evidence_basis": "two real S5 download points (~3.48MB, ~12.76MB) both ~0.10-0.11 MB/s + local overhead decomposition"
+}

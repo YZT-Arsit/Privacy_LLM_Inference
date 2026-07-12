@@ -1,0 +1,78 @@
+{
+  "mode": "apply_correction",
+  "step": 9,
+  "correction_targets_applied": 120,
+  "expected": 120,
+  "all_corrections_applied": true,
+  "corrected_grad_zeroed_fraction": 0.0,
+  "corrected_A_numerics_layer0": {
+    "q_proj": {
+      "max_abs": 5.364418029785156e-06,
+      "min_abs_nonzero": 4.5297099404706387e-13,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "k_proj": {
+      "max_abs": 8.046627044677734e-06,
+      "min_abs_nonzero": 1.9610979506978765e-12,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "v_proj": {
+      "max_abs": 0.004669189453125,
+      "min_abs_nonzero": 1.7644197214394808e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_proj": {
+      "max_abs": 0.0003070831298828125,
+      "min_abs_nonzero": 4.615685611497611e-11,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "up_proj": {
+      "max_abs": 0.00052642822265625,
+      "min_abs_nonzero": 9.240466170012951e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "corrected_A_per_group_all_layers": {
+    "qkv": {
+      "max_abs": 0.01104736328125,
+      "min_abs_nonzero": 4.5297099404706387e-13,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_up": {
+      "max_abs": 0.015869140625,
+      "min_abs_nonzero": 3.8510861166685117e-16,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "dtype": "bf16",
+  "step_finite": true,
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 0,
+    "untrusted_gamma_materializations": 0,
+    "untrusted_correction_matrix_materializations": 0
+  }
+}

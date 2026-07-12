@@ -1,0 +1,31 @@
+{
+  "environment": "AutoDL H800 container + Alibaba TDX guest (current)",
+  "measured_tdx_to_h800_throughput_mb_s": 0.1,
+  "reason": "measured TDX-to-H800 throughput of approximately 0.1 MB/s causes the experiment to measure infrastructure throttling rather than method behavior",
+  "status": "DEFERRED_NETWORK_ENVIRONMENT",
+  "not_failed": true,
+  "not_complete": true,
+  "deferred": [
+    {
+      "name": "50-step multi-seed matrix (SGD/momentum)",
+      "status": "DEFERRED_NETWORK_ENVIRONMENT"
+    },
+    {
+      "name": "L12 real AdamW long run",
+      "status": "DEFERRED_NETWORK_ENVIRONMENT"
+    },
+    {
+      "name": "converged GSM8K utility",
+      "status": "DEFERRED_NETWORK_ENVIRONMENT"
+    },
+    {
+      "name": "converged SST-2 utility",
+      "status": "DEFERRED_NETWORK_ENVIRONMENT"
+    },
+    {
+      "name": "7B long runs",
+      "status": "DEFERRED_NETWORK_ENVIRONMENT"
+    }
+  ],
+  "unblock_condition": "sustained bidirectional throughput >= 20 MB/s on a migrated GPU+TDX environment (preflight-gated)"
+}

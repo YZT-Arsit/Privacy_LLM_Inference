@@ -1,0 +1,16 @@
+{
+  "session_key_hex": "<redacted-ephemeral-session-key>",
+  "run_id": "MM",
+  "labels": [
+    0,
+    1,
+    2
+  ],
+  "gamma_bundle": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/correction_bundle/o1c_gamma_bundle.pt",
+  "attest": false,
+  "binding_manifest": {
+    "hmac_key_commitment": "1d32a41b2ebf4c83d9a438ff9724c1a85977fece35b47b782bbfe7c2b46ef7ff",
+    "nonce": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+  },
+  "counters_out": "/tmp/mm_counters.json"
+}
