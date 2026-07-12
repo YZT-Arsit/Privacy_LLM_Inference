@@ -1,0 +1,56 @@
+{
+  "status": "INTERNAL_LORA_MATRIX_PARTIAL",
+  "measured_constraint": {
+    "per_step_ferry_wall_sec": 184,
+    "per_1step_run_min": 7,
+    "per_10step_run_min": 35,
+    "per_50step_run_min_est": 155,
+    "reason": "mac_ferried_authenticated_prototype: ~25MB logits + 3.5MB grads each way per step over cross-cloud SSH; TDX compute itself is ~0.05s"
+  },
+  "completed_or_running_this_session": {
+    "phase_A_code_provenance": "DONE (code_baseline_closure/, source bundle content-addressed, remote==local verified)",
+    "phase_C_bf16_L10_gate_3seed_1and10step": "RUNNING on real H800+TDX (auto-collected to bf16_gate/)",
+    "phase_D2_L11_momentum_3seed_1and10step": "RUNNING on real H800+TDX (auto-collected to momentum_real/)",
+    "deployment_provenance_L10": "DONE earlier (full_lora_matrix/deployment/, all assertions, 0 plaintext)",
+    "timing_communication_decomposition": "DONE (full_lora_matrix/{communication,performance}/ + bf16 per-group numerics)"
+  },
+  "not_completed_this_session_registered_missing": {
+    "phase_D1_sgd_50step_3seed_L1_L2_L10": {
+      "why": "3 seeds x 3 profiles x ~155 min ferry = ~23 h",
+      "status": "MISSING"
+    },
+    "phase_D2_momentum_50step_3seed": {
+      "why": "same ferry cost after momentum 1/10 validated",
+      "status": "MISSING"
+    },
+    "phase_D3_L12_adamw_real_hardware": {
+      "why": "requires a TDX-side AdamW-state protocol (enclave holds m,v for trusted factors, returns updated factors) not yet implemented; distinct from SGD/momentum correction-of-gradient protocol",
+      "status": "MISSING (fp64-validated only; NOT claimed hardware-validated)"
+    },
+    "phase_D3_adamw_50step_3seed": {
+      "status": "MISSING"
+    },
+    "phase_F_G_converged_gsm8k_utility_L0_L5_L12_3seed": {
+      "why": "converged training on official split + generation exact-match harness; many GPU-hours; L12 needs AdamW hardware first",
+      "status": "MISSING"
+    },
+    "phase_F_H_converged_sst2_utility_L0_L5_L12_3seed": {
+      "status": "MISSING"
+    },
+    "phase_J_real_bf16_rank_mask_confirmation": {
+      "why": "needs worker support for L7 (no rank mask) + L8 (in-place refresh with opt-state transport); fp64 ablation already exact, real 10-step confirmation pending",
+      "status": "MISSING (fp64 ablation done)"
+    }
+  },
+  "explicitly_not_rerun": [
+    "D2",
+    "D3",
+    "package_construction",
+    "Gate0",
+    "Gate0.5",
+    "prior_generation_correctness",
+    "archived_rank_only_50step"
+  ],
+  "no_analytic_substitution_for_missing_real_runs": true,
+  "final_status_rule": "INTERNAL_LORA_MATRIX_EMPIRICALLY_COMPLETE requires all 10 FINAL-STOP-POINT items; not met -> PARTIAL with this enumeration"
+}

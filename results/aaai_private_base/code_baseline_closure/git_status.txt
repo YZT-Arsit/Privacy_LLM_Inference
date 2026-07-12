@@ -1,0 +1,16 @@
+ M results/aaai_private_base/full_lora_matrix/limitations.md
+ M scripts/gate0_l10_orchestrator.py
+ M scripts/h800_d4_worker.py
+?? results/aaai_private_base/code_baseline_closure/
+?? results/aaai_private_base/empirical_matrix_closure/
+?? results/aaai_private_base/full_lora_matrix/profile_validation/L10_bf16_s1234_1step.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/L10_bf16_s2025_1step.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/attestation_L10BF16_s1234.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/attestation_L10BF16_s2025.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/attestation_L10BF16_s7.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/binding_L10BF16_s1234.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/binding_L10BF16_s2025.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/binding_L10BF16_s7.json
+?? results/aaai_private_base/full_lora_matrix/profile_validation/msg_L10BF16_s1234/
+?? results/aaai_private_base/full_lora_matrix/profile_validation/msg_L10BF16_s2025/
+?? scripts/code_provenance_closure.py

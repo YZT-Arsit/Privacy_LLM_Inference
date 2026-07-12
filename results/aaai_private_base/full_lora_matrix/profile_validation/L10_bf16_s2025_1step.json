@@ -1,0 +1,57 @@
+{
+  "run_id": "L10BF16-2025-1783813563-9c0083d9",
+  "profile": "L10_O1C_hybrid",
+  "dtype": "bf16",
+  "seed": 2025,
+  "steps_run": 0,
+  "attestation": {
+    "attestation_verified": true,
+    "verifier_overall_appraisal_result": "SUCCESS",
+    "reportdata_binds_d4_manifest": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0"
+  },
+  "binding_manifest": {
+    "d4_run_id": "L10BF16-2025-1783813563-9c0083d9",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "worker_runtime_hash": "d866b855f00fb5e6b3af09025674d7faeba70fe15b5250788183ce69574ff0e0",
+    "tdx_service_hash": "b30b47b9a8cb1d25fb0a8f734cccfb5c12157ca8872fc026a5f786e73f4ae2e4",
+    "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "execution_profile": "paper_safe",
+    "feature_mask_family": "orthogonal_signed_perm",
+    "nonlinear_permutation_profile": "swiglu_shared_perm_P",
+    "qk_bias_handling_profile": "rope_commuting_planar_rotation_OI1",
+    "rank_mask_profile": "orthogonal_U",
+    "optimizer_profile": "o1c_hybrid_sgd",
+    "vocabulary_mask_profile": "monomial_perm_only",
+    "gradient_convention": "masked_domain_dlogits",
+    "dataset_batch_manifest_hash": "7690d215fb26dd0b0a347d5c27995ce928e3b5e7f2d1b2e8f6331116958fdd57",
+    "code_revision_or_worktree_hash": "a95b59f6c1d96f2ad4950220d93078218b81c607",
+    "debug_false_required": true,
+    "nonce": "42982964ca3fc71ec671f7dc4594f82d",
+    "ephemeral_key_pub": "399404104d82e091af2ab1f8e7264bb43c7891e4871d1e6f109219bf677e2116",
+    "profile": "L10_O1C_hybrid",
+    "tdx_correction_service_hash": "4f8881bf08a577c5469b75270578ae9f57d31c9392fe2b07ec7ae2794627ad76",
+    "correction_bundle_hash": "cc88dbb9120ab593733cd9a57a96397cec28ba698e7b3a7eb4840e879061b56f",
+    "correction_bundle_trust_domain": "TDX_only_never_gpu",
+    "gpu_side_targets": [
+      "o_proj",
+      "down_proj"
+    ],
+    "tdx_corrected_targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "gate_proj",
+      "up_proj"
+    ],
+    "dtype": "bf16",
+    "seed": 2025,
+    "worktree_diff_sha256": "9e8a908c87bc933f5580159acad1f1417a63fecc07307de073832b49faaf0ed5",
+    "invocations_per_step_expected": 3
+  },
+  "trajectory": [],
+  "effective_equivalence": {},
+  "gate_pass": false
+}

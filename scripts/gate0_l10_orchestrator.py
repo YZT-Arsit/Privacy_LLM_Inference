@@ -52,6 +52,7 @@ def main():
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--dtype", default="fp32", choices=["fp32", "bf16"])
+    ap.add_argument("--momentum", type=float, default=0.0)   # >0 -> L11 momentum
     ap.add_argument("--run-tag", default="L10")
     ap.add_argument("--input-ids", default=str(
         REPO / "results/aaai_private_base/h800_unified_worker/dry_run_input_ids.json"))
@@ -84,7 +85,7 @@ def main():
         "nonlinear_permutation_profile": "swiglu_shared_perm_P",
         "qk_bias_handling_profile": "rope_commuting_planar_rotation_OI1",
         "rank_mask_profile": "orthogonal_U",
-        "optimizer_profile": "o1c_hybrid_sgd",            # re-quoted per design (binds O1-C)
+        "optimizer_profile": ("o1c_hybrid_momentum" if args.momentum > 0 else "o1c_hybrid_sgd"),  # re-quoted per design
         "vocabulary_mask_profile": "monomial_perm_only",
         "gradient_convention": "masked_domain_dlogits",
         "dataset_batch_manifest_hash": sha_local(ids_path),
@@ -163,6 +164,7 @@ def main():
         push_h800(str(MSG / f"dlog_{step}.pt"), f"{RH800}/results/aaai_private_base/gate0_d4/msg/dlog_{step}.pt")
         rc, o, e = h800(f"cd {RH800} && {ENV} {PY_H800} scripts/h800_d4_worker.py --mode backward "
                         f"--profile o1c --step {step} --seq-len {args.seq_len} --lr {args.lr} "
+                        f"--momentum {args.momentum} "
                         f"--dlogits {RH800}/results/aaai_private_base/gate0_d4/msg/dlog_{step}.pt", timeout=600)
         if rc != 0:
             print("[backward FAIL]", e[-400:]); break
@@ -195,6 +197,7 @@ def main():
                   f"{RH800}/results/aaai_private_base/gate0_d4/msg/corr_out_{step}.pt")
         rc, o, e = h800(f"cd {RH800} && {ENV} {PY_H800} scripts/h800_d4_worker.py --mode apply_correction "
                         f"--profile o1c --step {step} --seq-len {args.seq_len} --lr {args.lr} "
+                        f"--momentum {args.momentum} "
                         f"--corrected-grads {RH800}/results/aaai_private_base/gate0_d4/msg/corr_out_{step}.pt", timeout=600)
         if rc != 0:
             print("[apply FAIL]", e[-400:]); break
@@ -262,7 +265,7 @@ def main():
                   s["all_corrections_applied"] and s["correction_missing_targets"] == 0
                   and s["step_finite"] and s["correction_hmac_ok"] and s["loss_hmac_ok"]
                   for s in steps)}
-    rpath = OUT / f"L10_{args.dtype}_s{args.seed}_{args.steps}step.json"
+    rpath = OUT / f"{args.run_tag}_{args.dtype}_s{args.seed}_{args.steps}step.json"
     rpath.write_text(json.dumps(report, indent=2))
     print(json.dumps({"run_id": run_id, "steps": len(steps), "gate_pass": report["gate_pass"],
                       "attestation_verified": att.get("attestation_verified"),

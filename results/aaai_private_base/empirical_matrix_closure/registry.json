@@ -1,0 +1,76 @@
+{
+  "status_on_open": "INTERNAL_MATRIX_IMPLEMENTED_NOT_EMPIRICALLY_CLOSED",
+  "frozen_before_execution": true,
+  "no_profile_or_theory_change": true,
+  "checkpoint_sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "code_head": "9773d9c84cebec517cba8bc812338c51f114c95d",
+  "experiment_source_bundle_sha256": "5253952cdefa26f819986cbe42260950f09511010a4d9188a91d9bea75b2d779",
+  "seeds_preregistered": [
+    1234,
+    2025,
+    7
+  ],
+  "profiles": {
+    "L0": "frozen_base",
+    "L1": "plaintext_lora_sgd",
+    "L2": "O1-A_uniform_gpu_masked_sgd",
+    "L3": "plaintext_lora_momentum",
+    "L4": "O1-A_uniform_gpu_masked_momentum",
+    "L5": "plaintext_lora_adamw",
+    "L6": "fully_trusted_optimizer_reference",
+    "L10": "O1-C_hybrid_exact_sgd",
+    "L11": "O1-C_hybrid_exact_momentum",
+    "L12": "O1-C_hybrid_trusted_adamw",
+    "L7": "rank_mask_off",
+    "L8": "rank_mask_refresh"
+  },
+  "shared_config": {
+    "lr": 0.001,
+    "momentum": 0.9,
+    "adamw": {
+      "b1": 0.9,
+      "b2": 0.999,
+      "eps": 1e-08,
+      "wd": 0.01
+    },
+    "rank": 8,
+    "alpha": 16,
+    "dropout": 0.0,
+    "scheduler": "constant",
+    "grad_clip": 1.0,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "lora_init": "rank_masked_orthogonal_U seed 7000+l*10+idx",
+    "eval_checkpoints": [
+      1,
+      10,
+      50
+    ],
+    "seq_len": 42,
+    "note": "paired L1/L2/L10 (and L3/L4/L11, L5/L12) share tokenized inputs, order, init, hypers, dtype"
+  },
+  "transport_profile": "mac_ferried_authenticated_prototype",
+  "hard_constraint_measured": {
+    "per_step_wall_sec_approx": 184,
+    "implication": "50-step x 3-seed x 3-optimizer-families + converged 3-seed utility = multi-day of cross-cloud ferry; not completable in one session. Runs that fit are executed; the rest are enumerated as missing with this measured justification.",
+    "direct_h800_tdx_transport": "registered, not required for closure, not built"
+  },
+  "do_not_rerun": [
+    "D2",
+    "D3",
+    "package_construction",
+    "Gate0",
+    "Gate0.5",
+    "prior_generation_correctness",
+    "archived_rank_only_50step"
+  ]
+}

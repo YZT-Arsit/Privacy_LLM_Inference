@@ -6,13 +6,14 @@
   fp64 on the real Qwen2.5-0.5B checkpoint. The real H800 run is fp32 for the clean-equivalence
   gate; it validates the systems integration (in-enclave correction, counters, transport) and
   model-level equivalence (top1 1.0), NOT exactness.
-- **BF16 note.** Section 4 asked for BF16. The gate/up correction produces components ~14 orders
-  below the gradient max (min_abs 5.9e-17 vs max 8e-3, measured in-enclave) because of the γ-fold
-  ill-conditioning (cond ~8e5). In pure BF16 these vanish → the correction (and O1-A itself)
-  is numerically destroyed. The correct engineering answer is **fp32 master weights + fp32/fp64
-  correction** (standard mixed precision); the pure-BF16 zeroed-fraction is recorded as the
-  justification. A full BF16-forward + fp32-master run is **preregistered** (not blocking; the
-  exactness claim is fp64-decided and the systems claim is fp32-validated).
+- **BF16 note (CORRECTED).** An earlier draft claimed the tiny gate/up correction components
+  (min_abs 5.9e-17) "vanish in BF16." That was **wrong**: BF16 shares FP32's 8-bit exponent
+  (range ~1e-38), so those components are representable (with reduced mantissa) and do **not**
+  underflow. The **real BF16 L10 gate was subsequently run on real H800+TDX** (see
+  `empirical_matrix_closure/bf16_gate/`): stable, finite, `corrected_grad_zeroed_fraction ≈ 0`,
+  correction executes in-enclave; equivalence degrades to top1 ~0.976 / KL ~8e-3 vs the fp64
+  plaintext reference — this is BF16 *mantissa* precision, not instability. Exactness remains an
+  fp64 property; BF16 is the deployment-numerics validation.
 
 ## O1-A instability (a finding, not just drift)
 - On gate/up, naive O1-A is not merely approximate — it **numerically diverges** (NaN in 66/144

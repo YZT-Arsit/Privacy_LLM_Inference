@@ -1,0 +1,94 @@
+{
+  "mode": "backward",
+  "step": 6,
+  "profile": "o1c",
+  "backward_sec": 0.7410202026367188,
+  "peak_vram_gb": 1.43,
+  "lora_targets_connected": 168,
+  "lora_targets_total": 168,
+  "all_targets_connected": true,
+  "base_tensors_require_grad": false,
+  "gpu_exact_A_applied": 48,
+  "deferred_A_to_tdx": 120,
+  "bf16_raw_A_numerics_layer0": {
+    "q_proj": {
+      "max_abs": 3.2901763916015625e-05,
+      "min_abs_nonzero": 3.019522409886122e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "k_proj": {
+      "max_abs": 9.72747802734375e-05,
+      "min_abs_nonzero": 1.1859810911118984e-09,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "v_proj": {
+      "max_abs": 0.0218505859375,
+      "min_abs_nonzero": 2.123415470123291e-07,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_proj": {
+      "max_abs": 0.00067138671875,
+      "min_abs_nonzero": 6.439222488552332e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "up_proj": {
+      "max_abs": 0.00133514404296875,
+      "min_abs_nonzero": 4.132743924856186e-09,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "raw_A_per_group_all_layers": {
+    "qkv": {
+      "max_abs": 0.0218505859375,
+      "min_abs_nonzero": 1.9753088054130785e-12,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_up": {
+      "max_abs": 0.0025482177734375,
+      "min_abs_nonzero": 6.934897101018578e-12,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "o_down": {
+      "max_abs": 0.039306640625,
+      "min_abs_nonzero": 8.526512829121202e-13,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "dtype": "bf16",
+  "step_finite": true,
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 97,
+    "attention_score_exposures": 592704,
+    "total_logical_trusted_invocations_per_step": 3,
+    "untrusted_gamma_materializations": 0,
+    "untrusted_correction_matrix_materializations": 0,
+    "untrusted_plaintext_gradient_materializations": 0,
+    "deferred_A_correction_targets": 120
+  }
+}

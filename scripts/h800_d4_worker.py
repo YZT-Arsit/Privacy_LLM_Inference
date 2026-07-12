@@ -103,9 +103,13 @@ def main():
         REPO / "results/aaai_private_base/h800_unified_worker/dry_run_input_ids.json"))
     ap.add_argument("--seq-len", type=int, default=42)
     ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--momentum", type=float, default=0.0)   # >0 -> L11 momentum ferry
+    ap.add_argument("--opt-state", default=str(OUT / "opt_state.pt"))
     ap.add_argument("--dlogits", default="")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True); MSG.mkdir(parents=True, exist_ok=True)
+    mom = args.momentum
+    OPT = Path(args.opt_state)
 
     if args.mode == "init":
         model, loader, cfg, device = load_model()
@@ -116,6 +120,9 @@ def main():
                 A, B = rank_masked_init(l, proj, W.shape[1], W.shape[0])
                 state[f"{l}.{proj}"] = (A.cpu(), B.cpu())
         torch.save(state, args.state)
+        # momentum buffers sidecar (zeros) for L11
+        opt = {k: (torch.zeros_like(A), torch.zeros_like(B)) for k, (A, B) in state.items()}
+        torch.save(opt, args.opt_state)
         # fail-closed + provenance snapshot
         root = compute_root_hash(PKG)
         fc = fail_closed_checks(cfg, "paper_safe", "package_native_A_rightmul", root)
@@ -167,19 +174,41 @@ def main():
         o1c = args.profile == "o1c"
         corr_grads = {}                      # q/k/v/gate/up masked A-grads deferred to TDX
         bf16_diag = {"raw_A_corr_targets": {}, "gpu_exact_applied": 0}
+        # per-group A-grad tensors (all 24 layers) for Phase-C separated numerics
+        GRP = {"qkv": ("q_proj", "k_proj", "v_proj"), "gate_up": ("gate_proj", "up_proj"),
+               "o_down": ("o_proj", "down_proj")}
+        grp_gA = {g: [] for g in GRP}
+        opt = torch.load(args.opt_state, map_location=device) if (mom > 0 and OPT.exists()) else None
         with torch.no_grad():
             for (l, proj), (A, B) in model.lora.items():
                 gA, gB = gmap[(l, proj)]
+                for g, ps in GRP.items():
+                    if proj in ps and gA is not None:
+                        grp_gA[g].append(gA.detach().float())
+                bufA, bufB = (opt[f"{l}.{proj}"] if opt is not None else (None, None))
                 if gB is not None:                       # B always GPU-exact
-                    B -= args.lr * gB
+                    if mom > 0:
+                        bufB = mom * bufB + gB; B -= args.lr * bufB
+                    else:
+                        B -= args.lr * gB
                 if not o1c or proj in GPU_EXACT_A:        # o1a: all A on GPU; o1c: only o/down A
                     if gA is not None:
-                        A -= args.lr * gA
+                        if mom > 0:
+                            bufA = mom * bufA + gA; A -= args.lr * bufA
+                        else:
+                            A -= args.lr * gA
                         bf16_diag["gpu_exact_applied"] += 1
                 else:                                     # o1c: defer q/k/v/gate/up A-grad to TDX
                     corr_grads[f"{l}.{proj}"] = gA.detach().float().cpu()
                     if l == 0:
                         bf16_diag["raw_A_corr_targets"][proj] = bf16_numerics(gA.detach().float())
+                if opt is not None:
+                    opt[f"{l}.{proj}"] = (bufA, bufB)     # corrected-A bufA unchanged until apply
+        if opt is not None:
+            torch.save({k: (a.cpu(), b.cpu()) for k, (a, b) in opt.items()}, args.opt_state)
+        # aggregate raw A-grad numerics per group across ALL layers (not hidden in a mean)
+        bf16_diag["raw_A_per_group_all_layers"] = {
+            g: bf16_numerics(torch.cat([t.flatten() for t in ts])) for g, ts in grp_gA.items() if ts}
         if o1c:
             torch.save(corr_grads, MSG / f"corr_grads_step{args.step}.pt")
         torch.cuda.synchronize(); bwd_t = time.time() - t0
@@ -215,6 +244,8 @@ def main():
                   "gpu_exact_A_applied": bf16_diag["gpu_exact_applied"],
                   "deferred_A_to_tdx": len(corr_grads),
                   "bf16_raw_A_numerics_layer0": bf16_diag["raw_A_corr_targets"],
+                  "raw_A_per_group_all_layers": bf16_diag["raw_A_per_group_all_layers"],
+                  "dtype": _DT,
                   "step_finite": all(bool(torch.isfinite(p).all()) for p in params),
                   "counters": counters}
         (OUT / f"backward_result_step{args.step}.json").write_text(json.dumps(result, indent=2))
@@ -233,6 +264,9 @@ def main():
         corrected = torch.load(args.corrected_grads, map_location=device)
         applied, per = 0, {}
         zeroed_total, elem_total = 0, 0
+        GRP2 = {"qkv": ("q_proj", "k_proj", "v_proj"), "gate_up": ("gate_proj", "up_proj")}
+        grp_cg = {g: [] for g in GRP2}
+        opt = torch.load(args.opt_state, map_location=device) if (mom > 0 and OPT.exists()) else None
         with torch.no_grad():
             for (l, proj), (A, B) in model.lora.items():
                 if proj not in CORR_A:
@@ -241,14 +275,27 @@ def main():
                 if key not in corrected:
                     raise SystemExit(f"missing_corrected_grad {key}")
                 cg = corrected[key].to(device, DTYPE)
-                A -= args.lr * cg
+                if mom > 0:                              # buffer accumulates the CORRECTED grad
+                    bufA, bufB = opt[key]
+                    bufA = mom * bufA + cg; A -= args.lr * bufA
+                    opt[key] = (bufA, bufB)
+                else:
+                    A -= args.lr * cg
                 applied += 1
                 if l == 0:
                     per[proj] = bf16_numerics(cg.float())
+                for g, ps in GRP2.items():
+                    if proj in ps:
+                        grp_cg[g].append(cg.detach().float())
                 zeroed_total += int((cg == 0).sum().item()); elem_total += cg.numel()
+        # per-group corrected-grad numerics across ALL layers (gate/up not hidden in a mean)
+        corrected_per_group = {g: bf16_numerics(torch.cat([t.flatten() for t in ts]))
+                               for g, ts in grp_cg.items() if ts}
         new_state = {f"{l}.{proj}": (A.detach().cpu(), B.detach().cpu())
                      for (l, proj), (A, B) in model.lora.items()}
         torch.save(new_state, args.state)
+        if opt is not None:
+            torch.save({k: (a.cpu(), b.cpu()) for k, (a, b) in opt.items()}, args.opt_state)
         counters["untrusted_gamma_materializations"] = 0
         counters["untrusted_correction_matrix_materializations"] = 0
         counters["silent_fallbacks"] = 0
@@ -258,6 +305,8 @@ def main():
                "all_corrections_applied": applied == len(CORR_A) * model.L,
                "corrected_grad_zeroed_fraction": zeroed_total / max(1, elem_total),
                "corrected_A_numerics_layer0": per,
+               "corrected_A_per_group_all_layers": corrected_per_group,
+               "dtype": _DT,
                "step_finite": all(bool(torch.isfinite(A).all() and torch.isfinite(B).all())
                                   for (A, B) in model.lora.values()),
                "counters": counters}

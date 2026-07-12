@@ -1,0 +1,94 @@
+{
+  "mode": "backward",
+  "step": 7,
+  "profile": "o1c",
+  "backward_sec": 0.6731917858123779,
+  "peak_vram_gb": 1.43,
+  "lora_targets_connected": 168,
+  "lora_targets_total": 168,
+  "all_targets_connected": true,
+  "base_tensors_require_grad": false,
+  "gpu_exact_A_applied": 48,
+  "deferred_A_to_tdx": 120,
+  "bf16_raw_A_numerics_layer0": {
+    "q_proj": {
+      "max_abs": 3.4809112548828125e-05,
+      "min_abs_nonzero": 6.330083124339581e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "k_proj": {
+      "max_abs": 7.295608520507812e-05,
+      "min_abs_nonzero": 3.54702933691442e-10,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "v_proj": {
+      "max_abs": 0.023193359375,
+      "min_abs_nonzero": 7.301568984985352e-07,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_proj": {
+      "max_abs": 0.00064849853515625,
+      "min_abs_nonzero": 1.6298145055770874e-09,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "up_proj": {
+      "max_abs": 0.00133514404296875,
+      "min_abs_nonzero": 1.433363649994135e-09,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "raw_A_per_group_all_layers": {
+    "qkv": {
+      "max_abs": 0.023193359375,
+      "min_abs_nonzero": 1.6626700016786344e-12,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "gate_up": {
+      "max_abs": 0.0028533935546875,
+      "min_abs_nonzero": 1.7962520360015333e-11,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    },
+    "o_down": {
+      "max_abs": 0.04052734375,
+      "min_abs_nonzero": 1.5916157281026244e-12,
+      "bf16_zeroed_fraction": 0.0,
+      "bf16_overflow": 0,
+      "nan_inf": false
+    }
+  },
+  "dtype": "bf16",
+  "step_finite": true,
+  "counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 97,
+    "attention_score_exposures": 592704,
+    "total_logical_trusted_invocations_per_step": 3,
+    "untrusted_gamma_materializations": 0,
+    "untrusted_correction_matrix_materializations": 0,
+    "untrusted_plaintext_gradient_materializations": 0,
+    "deferred_A_correction_targets": 120
+  }
+}
