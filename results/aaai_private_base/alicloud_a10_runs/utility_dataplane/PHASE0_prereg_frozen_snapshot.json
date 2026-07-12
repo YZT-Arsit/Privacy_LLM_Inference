@@ -1,0 +1,46 @@
+{
+  "title": "PHASE 4 — utility budget FREEZE (immutable preregistration, recorded before any utility metric)",
+  "frozen_before_any_utility_result": true,
+  "profiles": {
+    "L0": "frozen private base model (no LoRA update; eval only)",
+    "L5": "plaintext LoRA AdamW, BF16 compute + FP32 master parameters",
+    "L12": "protected trusted AdamW, BF16 compute + FP32 master state in TDX",
+    "constraint": "L5 and L12 use IDENTICAL optimization + data settings; L12 NOT separately tuned"
+  },
+  "shared_hparams": {
+    "rank": 8, "alpha": 16, "dropout": 0.0, "optimizer": "adamw", "b1": 0.9, "b2": 0.999, "eps": 1e-8,
+    "weight_decay": 0.01, "grad_clip": 1.0, "scheduler": "linear_warmup_constant", "warmup_ratio": 0.03,
+    "batch_size": 16, "grad_accum": 1, "seeds": [1234, 2025, 7],
+    "target_modules": ["q_proj","k_proj","v_proj","o_proj","gate_proj","up_proj","down_proj"],
+    "checkpoint_selection": "best dev metric (SST-2 accuracy / GSM8K exact-match on a held-out dev subset)",
+    "early_stopping": "patience 3 evals on dev metric",
+    "failure_handling": "NaN/Inf -> record + retain the cell; do not drop from aggregates"
+  },
+  "SST2": {
+    "source": "glue/sst2", "train_rows": 67349, "dev_rows": 872,
+    "train_sha256": "92f9b070ae9dbbc0b6cc82d1963eeaa58e00a1d3b0391f0d335c8b125e38646d",
+    "dev_sha256": "0122e4bd75e42039c4d4cc7941cca2b2bf10805f54131c8878765b3c8dc5bcb1",
+    "eval_split": "validation (official dev; hidden test labels NOT used)",
+    "prompt_template": "Review: {sentence}\nSentiment:", "verbalizer": {"0": "negative", "1": "positive"},
+    "max_seq_len": 128, "lr": 5e-4, "epochs": 3, "eval_every_steps": 200,
+    "metrics": ["accuracy","macro_F1","NLL","parse/verbalizer_failure_rate","train_loss","dev_loss"],
+    "equivalence_margin_accuracy": 0.01, "bootstrap": "10000 resamples, paired, 95% CI"
+  },
+  "GSM8K": {
+    "source": "openai/gsm8k main", "train_rows": 7473, "test_rows": 1319,
+    "train_sha256": "02d985e9edbc0bb6fec82f1bd8a4fb3b5fa664cd9e6909247129716972549595",
+    "test_sha256": "219bb53321b72e6d673051e339331c203e0e7414fd29978316e37c5602057fef",
+    "answer_extraction": "official '#### <number>' final-answer regex",
+    "max_seq_len": 512, "lr": 2e-4, "optimizer_step_budget": 2000, "eval_every_steps": 500,
+    "generation": {"max_new_tokens": 256, "do_sample": false, "temperature": 0.0, "num_beams": 1},
+    "metrics": ["exact_match","invalid_answer_rate","extraction_failure_rate","avg_generated_length","held_out_NLL","train_loss"],
+    "equivalence_margin_exact_match": 0.02, "bootstrap": "10000 resamples, paired, 95% CI",
+    "store_raw_and_extracted_answers_separately": true
+  },
+  "protected_eval_constraints": [
+    "same immutable transformed package (root bfd578b8)", "masked protected adapter",
+    "package-native worker", "NO plaintext adapter reconstruction", "NO second plaintext base model",
+    "NO adapter re-encoding"
+  ],
+  "STATUS_NOTE": "Budgets FROZEN. Converged SST-2/GSM8K runs NOT executed this stage — see PARTIAL: the current data plane trains on a single fixed batch with fixed labels baked into the TDX session; converged utility requires a BATCHED training data plane (per-batch input_ids on A10 + per-batch labels for TDX ce_dlogits + generation loop for GSM8K), which is not yet built. Data provisioning (hashes/splits/templates above) IS done."
+}

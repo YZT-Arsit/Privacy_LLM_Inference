@@ -1,0 +1,31 @@
+{
+  "title": "PHASE 0 \u2014 prereg freeze seal (recorded before batched-data-plane implementation)",
+  "frozen_immutable": true,
+  "may_not_change": [
+    "seeds",
+    "train/dev/test splits",
+    "sample order",
+    "prompt templates",
+    "verbalizers/extractors",
+    "rank/alpha/dropout",
+    "optimizer and learning rate",
+    "scheduler/warmup",
+    "batch size",
+    "grad accumulation",
+    "sequence lengths",
+    "training budget",
+    "checkpoint selection",
+    "equivalence margins",
+    "bootstrap procedure"
+  ],
+  "deviation_policy": "any implementation-driven deviation recorded as a protocol deviation BEFORE any utility metric",
+  "files": {
+    "results/aaai_private_base/alicloud_a10_runs/PHASE4_utility_budget_freeze.json": "414a469b1671cc1adca39dcb3a5685c615c40f6246193b00f5437ca39812b979",
+    "results/aaai_private_base/datasets/sst2_manifest.json": "751eee05361b12f70e475ce7c46b55515584d26a0fbb382e2ce2aeade5a12cf2",
+    "results/aaai_private_base/datasets/gsm8k_manifest.json": "fa1ca40078fcf7d692b0e94fd0387009c9b7ff75977543ebc5ade8b38b205c1e",
+    "results/aaai_private_base/datasets/sample_id_lists/sst2_train_ids.json": "5d8d4274b106f1cc1b9a780b377b2e9dc53208e475ca581c6d89b65812f593d8",
+    "results/aaai_private_base/datasets/sample_id_lists/sst2_dev_ids.json": "7aba309ccd1dc6b55a9db36dc8d2e54c061c99134d6002771236bd630a6722ee",
+    "results/aaai_private_base/datasets/sample_id_lists/gsm8k_train_ids.json": "5cd888f25a1501de9cf63bb0f1328415030f7e5133203c9f48b38a1c7c06288d",
+    "results/aaai_private_base/datasets/sample_id_lists/gsm8k_test_ids.json": "96be048d5fbb6aa9aeb7c96da5444164958527ff7c5ec134515ee22ccbfb3326"
+  }
+}

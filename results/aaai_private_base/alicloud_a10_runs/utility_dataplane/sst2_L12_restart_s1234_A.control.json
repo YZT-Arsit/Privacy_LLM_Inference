@@ -1,0 +1,38 @@
+{
+  "run_id": "sst2_L12_restart_s1234_A-1783849671-e8dcce",
+  "session_key_hex": "25d5b0f8c364b5bc89aed62a0b02cce69dc266ce3fe73e430c0f8fec6efc22af",
+  "tag": "sst2_L12_restart_s1234_A",
+  "control_wall_sec": 40.9,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": {
+    "path": "/tmp/l12_ckpt/sst2_L12_restart_s1234_A-1783849671-e8dcce.v3.s1.enc",
+    "binding": {
+      "run_id": "sst2_L12_restart_s1234_A-1783849671-e8dcce",
+      "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+      "adapter_id": "sst2_L12_restart_s1234_A-1783849671-e8dcce",
+      "optimizer_profile": "L12_adamw",
+      "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+      "service_hash": "59cd01c7b4dbc4b5f6bd99c9daa3cb0dcdb861b7926f1cecb6bcbbb550f313de"
+    },
+    "version": 3,
+    "checkpoint_seq": 1
+  },
+  "ledger_checkpoint": {
+    "path": "/tmp/l12_ckpt/sst2_L12_restart_s1234_A-1783849671-e8dcce.ledger.enc",
+    "state": {
+      "sst2|train": 2
+    }
+  },
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.8440366972477065,
+    "mean_nll": 0.6198666653501879,
+    "n_correct": 736
+  }
+}

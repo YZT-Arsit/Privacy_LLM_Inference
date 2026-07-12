@@ -1,0 +1,99 @@
+{
+  "run_id": "sst2_L12_restart_s1234_R-1783849806-472a86",
+  "profile": "L12",
+  "task": "cls",
+  "dataset_id": "sst2",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0005,
+  "schedule_hash": "1f695a8825b9a647aa795a0a908179e10b80b91df30969e525c26682eb417c56",
+  "steps_run": 6,
+  "start_step": 0,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.6376146788990825,
+    "mean_nll": 0.8251952873457462,
+    "n_correct": 556
+  },
+  "trajectory": [
+    {
+      "gbi": 0,
+      "opt_step": 0,
+      "ce": 2.2208926677703857,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.2367403507232666,
+      "net_adamw": 0.15729546546936035,
+      "wall": 2.246
+    },
+    {
+      "gbi": 1,
+      "opt_step": 1,
+      "ce": 0.6528991460800171,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.08173513412475586,
+      "net_adamw": 0.14939212799072266,
+      "wall": 1.696
+    },
+    {
+      "gbi": 2,
+      "opt_step": 2,
+      "ce": 2.240577220916748,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.07561421394348145,
+      "net_adamw": 0.14850091934204102,
+      "wall": 1.682
+    },
+    {
+      "gbi": 3,
+      "opt_step": 3,
+      "ce": 0.9198517203330994,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.07775664329528809,
+      "net_adamw": 0.15097618103027344,
+      "wall": 1.706
+    },
+    {
+      "gbi": 4,
+      "opt_step": 4,
+      "ce": 0.7031509876251221,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.07223320007324219,
+      "net_adamw": 0.14925122261047363,
+      "wall": 1.785
+    },
+    {
+      "gbi": 5,
+      "opt_step": 5,
+      "ce": 0.3799448013305664,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.07044577598571777,
+      "net_adamw": 0.14889049530029297,
+      "wall": 1.704
+    }
+  ]
+}

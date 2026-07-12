@@ -1,0 +1,231 @@
+{
+  "title": "Batched authenticated training/eval data plane \u2014 build + hardware gates (real A10 + real TDX)",
+  "status_note": "Data plane BUILT + hardware-validated at 1/10-batch scale + restart-safe; CONVERGED 3-seed utility is compute-bound (see wall estimates) -> INTERNAL_LORA_MATRIX_PARTIAL.",
+  "phase0_prereg_frozen": true,
+  "phase1_2_state_machine": "batch descriptor bound into per-batch HMAC (batch_mac); monotonic ledger; rejects stale/repeat/out-of-order/wrong-sample-id/wrong-split/wrong-shape/wrong-ignore-mask/wrong-accum-window; eval bypasses sequencing (validated ids).",
+  "phase3_4_local_tests": "35/35 PASS (cls+clm CE & dlogits exact vs autograd/ignore_index oracle; ledger rejections; snapshot round-trip; descriptor HMAC binding).",
+  "threat_model_split": "A10 holds input_ids + supervised-position metadata only (NO labels/targets/loss/dlogits). TDX holds the private label table + schedule + ledger, computes CE+dlogits over the un-permuted vocab, returns authenticated dlogits only.",
+  "clm_transport": "causal-LM ce_batch is row-chunked (<=256 supervised rows/frame) with a shared full-batch denominator so summed chunk dlogits == mean-reduction gradient; ledger advances once per optimizer batch (chunk 0), continuations validate ids only. Needed because the CPU-only TDX guest cannot softmax+serialize a full 16x123xV (~600MB) frame within the read window.",
+  "hardware_gates": {
+    "sst2_L0_s1234_0b": {
+      "tag": "sst2_L0_s1234_0b",
+      "profile": "L0",
+      "steps": 0,
+      "ce_first_last": null,
+      "all_finite": true,
+      "eval": {
+        "split": "dev",
+        "n": 128,
+        "accuracy": 0.875,
+        "mean_nll": 1.023910403251648,
+        "n_correct": 112
+      },
+      "attest_verified": null,
+      "fail_closed_all_pass": true,
+      "package_root_hash_matches": true,
+      "counters": {
+        "auth_failures": 0,
+        "replay_rejected": 0,
+        "malformed_rejected": 0,
+        "forbidden_key_rejected": 0,
+        "adamw_step_calls": 0,
+        "authoritative_state_location": "TDX",
+        "authoritative_state_dtype": null,
+        "eval_batch_calls": 8
+      }
+    },
+    "sst2_L5_s1234_10b": {
+      "tag": "sst2_L5_s1234_10b",
+      "profile": "L5",
+      "steps": 10,
+      "ce_first_last": [
+        2.2737,
+        1.461
+      ],
+      "all_finite": true,
+      "eval": {
+        "split": "dev",
+        "n": 128,
+        "accuracy": 0.8046875,
+        "mean_nll": 0.8952862657606602,
+        "n_correct": 103
+      },
+      "attest_verified": null,
+      "fail_closed_all_pass": true,
+      "package_root_hash_matches": true,
+      "counters": {
+        "auth_failures": 0,
+        "replay_rejected": 0,
+        "malformed_rejected": 0,
+        "forbidden_key_rejected": 0,
+        "adamw_step_calls": 10,
+        "authoritative_state_location": "TDX",
+        "authoritative_state_dtype": "FP32",
+        "ce_batch_calls": 10,
+        "eval_batch_calls": 8
+      }
+    },
+    "sst2_L12_s1234_1b": {
+      "tag": "sst2_L12_s1234_1b",
+      "profile": "L12",
+      "steps": 1,
+      "ce_first_last": [
+        2.2209,
+        2.2209
+      ],
+      "all_finite": true,
+      "eval": {
+        "split": "dev",
+        "n": 32,
+        "accuracy": 0.6875,
+        "mean_nll": 0.5969222187995911,
+        "n_correct": 22
+      },
+      "attest_verified": null,
+      "fail_closed_all_pass": true,
+      "package_root_hash_matches": true,
+      "counters": {
+        "auth_failures": 0,
+        "replay_rejected": 0,
+        "malformed_rejected": 0,
+        "forbidden_key_rejected": 0,
+        "adamw_step_calls": 1,
+        "authoritative_state_location": "TDX",
+        "authoritative_state_dtype": "FP32",
+        "ce_batch_calls": 1,
+        "eval_batch_calls": 2
+      }
+    },
+    "sst2_L12_s1234_10b": {
+      "tag": "sst2_L12_s1234_10b",
+      "profile": "L12",
+      "steps": 10,
+      "ce_first_last": [
+        2.2209,
+        0.9613
+      ],
+      "all_finite": true,
+      "eval": {
+        "split": "dev",
+        "n": 32,
+        "accuracy": 0.9375,
+        "mean_nll": 0.2781332368031144,
+        "n_correct": 30
+      },
+      "attest_verified": null,
+      "fail_closed_all_pass": true,
+      "package_root_hash_matches": true,
+      "counters": {
+        "auth_failures": 0,
+        "replay_rejected": 0,
+        "malformed_rejected": 0,
+        "forbidden_key_rejected": 0,
+        "adamw_step_calls": 10,
+        "authoritative_state_location": "TDX",
+        "authoritative_state_dtype": "FP32",
+        "ce_batch_calls": 10,
+        "eval_batch_calls": 2
+      }
+    },
+    "gsm8k_L12_s1234_1b": {
+      "tag": "gsm8k_L12_s1234_1b",
+      "profile": "L12",
+      "steps": 1,
+      "ce_first_last": [
+        0.8201,
+        0.8201
+      ],
+      "all_finite": true,
+      "eval": {
+        "split": "test",
+        "n": 8,
+        "accuracy": null,
+        "mean_nll": 0.6528228887187663,
+        "n_correct": null
+      },
+      "attest_verified": null,
+      "fail_closed_all_pass": true,
+      "package_root_hash_matches": true,
+      "counters": {
+        "auth_failures": 0,
+        "replay_rejected": 0,
+        "malformed_rejected": 0,
+        "forbidden_key_rejected": 0,
+        "adamw_step_calls": 1,
+        "authoritative_state_location": "TDX",
+        "authoritative_state_dtype": "FP32",
+        "ce_batch_calls": 7,
+        "eval_batch_calls": 4
+      }
+    },
+    "gsm8k_L12_s1234_10b": {
+      "tag": "gsm8k_L12_s1234_10b",
+      "profile": "L12",
+      "steps": 10,
+      "ce_first_last": [
+        0.8201,
+        0.6181
+      ],
+      "all_finite": true,
+      "eval": {
+        "split": "test",
+        "n": 4,
+        "accuracy": null,
+        "mean_nll": 0.42430394351969625,
+        "n_correct": null
+      },
+      "attest_verified": null,
+      "fail_closed_all_pass": true,
+      "package_root_hash_matches": true,
+      "counters": {
+        "auth_failures": 0,
+        "replay_rejected": 0,
+        "malformed_rejected": 0,
+        "forbidden_key_rejected": 0,
+        "adamw_step_calls": 10,
+        "authoritative_state_location": "TDX",
+        "authoritative_state_dtype": "FP32",
+        "ce_batch_calls": 88,
+        "eval_batch_calls": 2
+      }
+    }
+  },
+  "phase6_restart_recovery": {
+    "A_batches": [
+      0,
+      1,
+      2
+    ],
+    "B_batches": [
+      3,
+      4,
+      5
+    ],
+    "R_batches": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "resume_starts_at_K": true,
+    "no_duplicate_sample": true,
+    "contiguous_0_to_2K-1": true,
+    "no_skip_vs_reference": true,
+    "ledger_monotonic_B": true,
+    "resumed_vs_reference_rel_err": 0.0,
+    "all_continuity_checks_pass": true
+  },
+  "converged_utility_compute_wall": {
+    "sst2_per_batch_wall_sec_L12": 1.75,
+    "sst2_total_batches_3epoch": 12630,
+    "sst2_est_hours_per_seed_L12": 6.1,
+    "gsm8k_per_batch_wall_sec_L12": 134.3,
+    "gsm8k_opt_step_budget": 2000,
+    "gsm8k_est_hours_per_seed_L12_train_only": 74.6,
+    "gsm8k_generation_L12": "INFEASIBLE over this network: greedy decode needs a per-TOKEN trusted vocab un-permute (perm is a mask secret) -> ~256 tokens x 1319 test x 3 seeds ~= 1M round trips; plus the CPU-TDX per-frame softmax cost. L0/L5 generation is GPU-only but still heavy.",
+    "interpretation": "SST-2 converged (12630 opt steps x ~1.7s x 3 seeds x {L5,L12}) ~ tens of GPU-hours; GSM8K L12 converged is dominated by the CPU-only TDX softmax on ~600MB/step clm frames (~2-3 min/step measured) and the infeasible per-token generation. Both exceed a single interactive session; NOT executed. Data plane is proven correct + restart-safe."
+  },
+  "phase7_8_converged_status": "NOT RUN (compute-bound, enumerated above). Frozen budgets + arm definitions in PHASE4_utility_budget_freeze.json + deviations.json; data plane ready."
+}

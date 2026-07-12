@@ -1,0 +1,21 @@
+{
+  "run_id": "sst2_L5_s1234_10b-1783849506-ba719d",
+  "session_key_hex": "6a571baef59591e8ab743f1bb59e1a2015df492c442289a0a0f51d07c2700213",
+  "tag": "sst2_L5_s1234_10b",
+  "control_wall_sec": 33.4,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L5",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 128,
+    "accuracy": 0.8046875,
+    "mean_nll": 0.8952862657606602,
+    "n_correct": 103
+  }
+}

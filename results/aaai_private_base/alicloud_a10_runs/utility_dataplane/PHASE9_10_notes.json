@@ -1,0 +1,36 @@
+{
+  "PHASE9_rank_refresh_R0_R4": {
+    "scope_note": "PHASE 9 asks only for the MINIMUM missing rank-refresh cells R0/R4 'if inexpensive', and forbids a large new SGD/momentum refresh matrix. The hard AdamW signed-permutation case + negative controls (R1/R2/R3/R5/R6) were the primary evidence completed on real A10+TDX in the prior stage (l12_mixed/PHASE3_rank_mask_ablation.json).",
+    "R4_refresh_once_per_attested_session": {
+      "status": "COVERED_A_FORTIORI",
+      "argument": "R4 (a single rebase at the session boundary) is a strict subset of the already hardware-validated R2 (rebase EVERY step) and R3 (rebase every 5 steps): those refresh strictly MORE often via the identical rebase_adamw op + signed-permutation v-transport and preserved loss continuity + converged to <= baseline. A once-per-session refresh exercises the same, less frequently, so it cannot fail where R2/R3 pass. No new run needed to claim R4 for the validated signed-permutation transform.",
+      "not_a_new_measurement": true
+    },
+    "R0_no_rank_mask": {
+      "status": "OPTIONAL_NOT_RUN",
+      "reason": "Requires an unmasked-init (U=I) code path not present in the current runner; PHASE 9 marks it optional ('if inexpensive'). The rank mask's causal role is already isolated by the R5 (params_only) and R6 (inconsistent A-not-B) NEGATIVE CONTROLS from the prior stage, which measurably drift/break when the mask-state transport is broken. R0 would be a convenience baseline, not new evidence for the mechanism.",
+      "honest_label": "not built this session; not claimed"
+    }
+  },
+  "PHASE10_final_interpretation": {
+    "categories_kept_separate": {
+      "A_algebraic_optimizer_equivalence": "prior stage: L10/L11/L12 master rel err 0.0; monomial GPU AdamW == plaintext AdamW; enclave un-fold->AdamW->re-fold exact. Independent of this stage.",
+      "B_protocol_state_equivalence": "THIS stage: authenticated variable-batch state machine + monotonic ledger; restart from ChaCha20-sealed optimizer state + restored ledger reproduces the uninterrupted trajectory BIT-IDENTICALLY (resumed_vs_reference_rel_err = 0.0), no duplicated/skipped samples, contiguous batch indices. This is a systems/protocol-integrity result, NOT a utility result.",
+      "C_short_horizon_numerical_alignment": "THIS stage 1/10-batch gates: CE finite + decreasing on real hardware; SST-2 CE 2.22->~0.03 over 10 batches, dev acc 0.69->0.94 (32-subset); these are SMOKE GATES proving the pipeline learns, NOT converged utility and NOT a bitwise claim.",
+      "D_converged_held_out_utility": "NOT MEASURED (compute-bound). Explicitly separate from A/B/C: optimizer-semantic + protocol equivalence do NOT imply equal converged held-out utility; that requires the frozen multi-seed runs, which were not executed.",
+      "E_system_overhead": "measured: causal-LM full-vocab dlogits on the CPU-only TDX guest is the dominant cost (~600MB/step; ~2-3 min/step chunked). Classification is cheap (~1.7s/batch). GSM8K L12 generation needs per-token trusted vocab un-permute -> infeasible over this network at test scale."
+    },
+    "explicit_non_conflations": [
+      "protocol-state equivalence (rel_err 0.0 on restart) is NOT converged utility equivalence.",
+      "a decreasing 10-batch CE is NOT a converged-utility claim.",
+      "SST-2 dev accuracy on a 32/128-example gate subset is NOT the frozen dev-set metric.",
+      "the L0/L5/L12 gate numbers here are SMOKE TESTS on differing small eval subsets; they are not paired, not bootstrap-tested, and must not be reported as the utility comparison.",
+      "'the data plane runs correctly' does NOT establish that L12 matches L5 held-out utility within the frozen margin."
+    ],
+    "momentum_and_rank_refresh_carryover": {
+      "momentum": "prior stage: L3/L11 shared single-batch instability; L11 master error 0.0 through the divergent region; no claim of stable optimization at the preregistered hyperparameters.",
+      "rank_refresh": "exact semantic preservation claimed ONLY for the validated signed-permutation transform + AdamW-v permutation transport; NOT generalized to dense rotations.",
+      "R3_bf16_deviation_wording": "the prior ~3% effective-adapter deviation under refresh is labeled 'observed BF16-runtime deviation under the current refresh schedule' (NOT attributed to a BF16 floor absent an isolated precision control)."
+    }
+  }
+}

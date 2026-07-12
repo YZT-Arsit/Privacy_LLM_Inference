@@ -1,0 +1,51 @@
+{
+  "session_key_hex": "a03e35f7a9bdc8e33a5dd8addf925b9137615b9ea5ebd8da8ccc4b583e5cdc8f",
+  "run_id": "gsm8k_L12_s1234_1b-1783849106-62f202",
+  "labels": [
+    0
+  ],
+  "gamma_bundle": "/tmp/o1c_bundle.pt",
+  "vocab_seed": 8000,
+  "attest": false,
+  "attest_out": "/tmp/a10_attest",
+  "binding_manifest": {
+    "d4_run_id": "gsm8k_L12_s1234_1b-1783849106-62f202",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "seed": 1234,
+    "optimizer_profile": "L12_adamw",
+    "execution_profile": "paper_safe",
+    "transport_profile": "direct_a10_tdx_private",
+    "compute_host": "alicloud_a10",
+    "data_plane_ip": "172.30.25.153",
+    "code_revision_or_worktree_hash": "9773d9c84cebec517cba8bc812338c51f114c95d",
+    "hmac_key_commitment": "99b179bb5070b4b77c604b20d61cb03222fe3e0ee5e7b0b4da6dbdb030557438",
+    "nonce": "70a108fb42867273019af6805ed88c09",
+    "debug_false_required": true,
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "dataset_id": "gsm8k",
+    "task": "clm"
+  },
+  "counters_out": "/tmp/a10_batch_counters.json",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "ckpt_dir": "/tmp/l12_ckpt",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "service_hash": "59cd01c7b4dbc4b5f6bd99c9daa3cb0dcdb861b7926f1cecb6bcbbb550f313de",
+  "dataset_id": "gsm8k",
+  "task": "clm",
+  "template_hash": "fed1f23d10864dfbacd7c0eaa5ec031f6d31dac5652d79c871badd754e5e314a",
+  "label_schema_hash": "de4f75df52e95dac17ddb6dca5dc6422f590203f7ddabc88e57ecfbd8f80076e",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "batch_label_tables": {
+    "test": "/tmp/gsm8k_test_labels.pt",
+    "train": "/tmp/gsm8k_train_labels.pt"
+  },
+  "batch_schedules": {
+    "train": "/tmp/gsm8k_schedule_s1234.json"
+  },
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
+}

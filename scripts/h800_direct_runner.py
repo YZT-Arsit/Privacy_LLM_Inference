@@ -24,7 +24,7 @@ from h800_unified_worker import (PackageNativeLoader, MaskedQwen, fail_closed_ch
                                  EXPECTED_ROOT_HASH)
 from h800_d4_worker import rank_masked_init, GPU_EXACT_A, CORR_A, bf16_numerics
 
-MAX_MSG = 200 * 1024 * 1024
+MAX_MSG = 1200 * 1024 * 1024   # match TDX service bound (causal-LM full-vocab supervised logits)
 # per-frame watchdog (s); on expiry we ABORT the step (no fallback). Sized for the throttled
 # TDX->H800 ingress (~0.1 MB/s measured): a bf16 dlogits frame (~12.75 MB) needs ~120 s, so 600 s
 # gives margin while still bounding a genuinely hung/crashed enclave.

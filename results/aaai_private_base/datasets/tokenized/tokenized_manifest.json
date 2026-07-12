@@ -1,0 +1,84 @@
+{
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "ignore_index": -100,
+  "eos": 151643,
+  "seeds": [
+    1234,
+    2025,
+    7
+  ],
+  "batch_size": 16,
+  "grad_accum": 1,
+  "artifacts": {
+    "sst2_train_a10": {
+      "rows": 67349,
+      "sha256": "779b4b7639ad8b2b259a165406db0917628e1fdd7e36c577e7864a9bd353e515",
+      "max_seq": 67,
+      "mean_seq": 16.7
+    },
+    "sst2_train_labels": {
+      "rows": 67349,
+      "sha256": "ddf04e27a05213706364e2b5720fe32bbb4cf3538320748c15ac88f330ee2eb6"
+    },
+    "sst2_dev_a10": {
+      "rows": 872,
+      "sha256": "67b8f1f5fd607ba97f7d2b14470291786014c799425469746c802440a79b7c88",
+      "max_seq": 63,
+      "mean_seq": 27.7
+    },
+    "sst2_dev_labels": {
+      "rows": 872,
+      "sha256": "087e9d1f37bca4e509af8ba2f53256ac527a5d1f3142e83bb5b74b066b741a96"
+    },
+    "sst2_schedule_s1234": {
+      "batches": 12630,
+      "sha256": "1f695a8825b9a647aa795a0a908179e10b80b91df30969e525c26682eb417c56"
+    },
+    "sst2_schedule_s2025": {
+      "batches": 12630,
+      "sha256": "e8f877f748eb732c3daf29c7e8edbb5d469a21d7b5624637ee6e78af11d5899f"
+    },
+    "sst2_schedule_s7": {
+      "batches": 12630,
+      "sha256": "6e0e5063bbf00d9ea3ab5728faf1ea7476240c63b72695d4daea9768dc24ef9a"
+    },
+    "gsm8k_train_a10": {
+      "rows": 7473,
+      "sha256": "3c181ea138c923c12586255c70de150c8b23c435f5b4771323eb716bde6f918c",
+      "max_seq": 512,
+      "mean_seq": 186.1,
+      "mean_sup": 122.7
+    },
+    "gsm8k_train_labels": {
+      "rows": 7473,
+      "sha256": "b8da3778d1b53b3c97aeb15cc0ed52f3b80b3540b44713bcc238f7589686c1ee"
+    },
+    "gsm8k_test_a10": {
+      "rows": 1319,
+      "sha256": "d8bb5b5e5691fad625e4e6847235dd77d10650d35fa12cd326eb683734ea56e5",
+      "max_seq": 512,
+      "mean_seq": 190.1,
+      "mean_sup": 125.1
+    },
+    "gsm8k_test_labels": {
+      "rows": 1319,
+      "sha256": "3664fe080f27a54b6a1f086917f8a0fe9cd334933a4e542fb5b49a1003ddeb44"
+    },
+    "gsm8k_test_gold": {
+      "rows": 1319,
+      "sha256": "2d95b9b0a07ad93de81485a4c17b88a4d218ff7575f7054767002cd0fa015f2d"
+    },
+    "gsm8k_schedule_s1234": {
+      "batches": 2340,
+      "sha256": "ebeaa85d98b777f1f43d21af9c8e446f5ca751c7b79ee8ab4c8a0559ad8834fb"
+    },
+    "gsm8k_schedule_s2025": {
+      "batches": 2340,
+      "sha256": "517bbbd8adf67565560c9048fedb806feee7bbc624c4364ec27ca114321b92eb"
+    },
+    "gsm8k_schedule_s7": {
+      "batches": 2340,
+      "sha256": "bcf944bdacd6cd7f7ea7a51f42985be6ce3235b1dc0f7c4ff2c9e672acaa03b7"
+    }
+  }
+}

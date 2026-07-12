@@ -1,0 +1,21 @@
+{
+  "run_id": "gsm8k_L12_s1234_10b-1783850194-323222",
+  "session_key_hex": "4ea8347ee2fd985ddb5195ad9410a01568b1c27c9826dd4d74aaabcc538893a6",
+  "tag": "gsm8k_L12_s1234_10b",
+  "control_wall_sec": 1629.8,
+  "rc": 0,
+  "dataset": "gsm8k",
+  "task": "clm",
+  "profile": "L12",
+  "seed": 1234,
+  "eval_split": "test",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "test",
+    "n": 4,
+    "accuracy": null,
+    "mean_nll": 0.42430394351969625,
+    "n_correct": null
+  }
+}

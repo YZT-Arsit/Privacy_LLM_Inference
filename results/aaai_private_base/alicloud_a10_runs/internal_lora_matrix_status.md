@@ -1,5 +1,12 @@
 # Internal LoRA matrix — closure status (rank-refresh + momentum-audit + freeze stage)
 
+> **NEXT STAGE (2026-07-12): batched authenticated data plane BUILT** — see
+> [`utility_dataplane/DATAPLANE_STAGE_STATUS.md`](utility_dataplane/DATAPLANE_STAGE_STATUS.md).
+> The prior "converged utility blocked on a batched data plane" item is now unblocked and
+> hardware-validated (SST-2/GSM8K L0/L5/L12 1+10-batch gates + restart PASS rel_err 0.0);
+> converged 3-seed utility remains PARTIAL, now with a *measured* compute wall (not a missing tool).
+
+
 **Status: `INTERNAL_LORA_MATRIX_PARTIAL`** · Nothing committed by me.
 Bound to code HEAD `f96bd26` (+ uncommitted edits), package `bfd578b8`, checkpoint `88c14255`.
 

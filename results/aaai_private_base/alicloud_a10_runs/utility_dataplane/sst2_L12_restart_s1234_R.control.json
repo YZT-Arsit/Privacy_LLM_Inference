@@ -1,0 +1,21 @@
+{
+  "run_id": "sst2_L12_restart_s1234_R-1783849806-472a86",
+  "session_key_hex": "f88ec7721b57be31720afa7bb35962f44a5d8a880a119915084e7712a7f6a897",
+  "tag": "sst2_L12_restart_s1234_R",
+  "control_wall_sec": 46.7,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.6376146788990825,
+    "mean_nll": 0.8251952873457462,
+    "n_correct": 556
+  }
+}

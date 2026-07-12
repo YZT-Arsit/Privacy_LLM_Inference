@@ -1,0 +1,15 @@
+{
+  "gsm8k_training_prompt_template": {
+    "value": "Question: {q}\nAnswer:",
+    "reason": "GSM8K training prompt template was NOT fixed in the PHASE 0 freeze (only answer_extraction + generation config were). Recorded here BEFORE any utility metric, per the deviation policy.",
+    "recorded_before_metrics": true
+  },
+  "utility_arm_operational_definition": {
+    "recorded_before_metrics": true,
+    "L0": "masked base package (root bfd578b8), LoRA adapter contributes zero (no optimizer steps); eval only. Utility floor.",
+    "L5": "exact plaintext-equivalent reference: fp32 masked forward + fp32 master + identical optimizer split (GPU-exact monomial AdamW for {o,down}A + {o,down,v,gate,up}B, enclave FP32 trusted AdamW for {q,k,v,gate,up}A + {q,k}B). Private CE+dlogits from TDX.",
+    "L12": "protected deployment: bf16 masked forward + fp32 master + identical optimizer split + private CE+dlogits from TDX.",
+    "why_this_distinction": "The freeze listed L5 and L12 both as bf16-compute + fp32-master + identical settings, which makes them numerically identical (monomial-factor GPU AdamW is provably plaintext-equivalent and the enclave path is exact plaintext AdamW). To give L5 a meaningful role as the EXACT reference, L5 runs fp32 masked forward while L12 runs bf16. Paired L12-L5 then measures the converged held-out utility impact of the bf16 deployment relative to the fp32 exact reference; both beat the L0 floor. No second plaintext base model, no plaintext adapter reconstruction, same immutable transformed package.",
+    "deviation_from_freeze": "freeze had L5 compute=bf16; changed to fp32 so L5 != L12. Recorded before any metric."
+  }
+}

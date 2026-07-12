@@ -22,7 +22,7 @@ from pathlib import Path
 
 import torch
 
-MAX_MSG = 200 * 1024 * 1024        # 200 MB bound
+MAX_MSG = 1200 * 1024 * 1024       # 1.2 GB bound (causal-LM full-vocab supervised logits, batch 16)
 ATTN = ("q_proj", "k_proj", "v_proj"); MLP = ("gate_proj", "up_proj")
 ALLOWED = set(ATTN) | set(MLP)
 FORBIDDEN = ("o_proj", "down_proj", "N_inv", "Nr", "gamma", "pad", "token", "input_ids", "label")
@@ -137,6 +137,30 @@ def main():
     perm = perm_inv = None
     last_seq = -1
     adamw = {"tw": None}     # lazy TrustedAdamW (L12); holds trusted theta_plain + m + v in-enclave
+    # ---- batched training/eval data plane (PHASE 1-6) ----
+    from batch_dataplane import (BatchLedger, batch_mac, canonical_desc, unpermute,
+                                 cls_ce_dlogits, cls_eval, clm_ce_dlogits, EVAL_SPLITS as EVAL)
+    bstate = {"ledger": BatchLedger(), "labels": {}, "sched": {}, "loaded": False,
+              "dataset_id": cfg.get("dataset_id", ""), "task": cfg.get("task", ""),
+              "template_hash": cfg.get("template_hash", ""),
+              "label_schema_hash": cfg.get("label_schema_hash", ""),
+              "tokenizer_hash": cfg.get("tokenizer_hash", "")}
+
+    def _load_batch_assets():
+        if bstate["loaded"]:
+            return
+        for split, p in cfg.get("batch_label_tables", {}).items():
+            bstate["labels"][split] = torch.load(p, map_location="cpu", weights_only=False)
+        for split, p in cfg.get("batch_schedules", {}).items():
+            bstate["sched"][split] = {b["global_batch_index"]: b for b in json.loads(Path(p).read_text())["schedule"]}
+        bstate["loaded"] = True
+
+    def _expected_ids(desc):
+        sc = bstate["sched"].get(desc["split"])
+        if sc is None:
+            return desc["sample_ids"]              # eval one-pass w/o schedule: accept provided
+        b = sc.get(desc["global_batch_index"])
+        return b["sample_ids"] if b else None
     counters = {"ce_calls": 0, "correct_calls": 0, "auth_failures": 0, "replay_rejected": 0,
                 "malformed_rejected": 0, "forbidden_key_rejected": 0,
                 "untrusted_gamma_returns": 0, "correction_missing_targets": -1,
@@ -159,6 +183,14 @@ def main():
         try:
             header, payload = read_frame(fin)
         except EOFError:
+            break
+        except ValueError as _fe:
+            # oversize / malformed framing is unrecoverable (stream desynced) -> fail closed, exit cleanly
+            counters["malformed_rejected"] += 1
+            try:
+                write_frame(fout, {"op": "reject", "reason": f"frame:{_fe}"})
+            except Exception:
+                pass
             break
         op = header.get("op")
         if op == "close":
@@ -371,6 +403,167 @@ def main():
                                "hmac": mac(key, b"", resp_seq, run_id, "restore_adamw_ack"),
                                "trusted_adamw_state_present": tw.state_present(),
                                "restored_version": info["restored_version"], "restored_t": info["restored_t"]})
+
+        elif op in ("ce_batch", "eval_batch"):
+            # ---- authenticated variable-batch CE + dlogits (classification / causal-LM) ----
+            t0 = time.time()
+            _load_batch_assets()
+            desc = header.get("desc", {})
+            # re-verify the HMAC WITH the batch descriptor bound in (transport-layer mac() above did not
+            # include desc; fail-closed if the descriptor was tampered).
+            if header.get("bmac") != batch_mac(key, payload, seq, run_id, op, desc):
+                counters["auth_failures"] += 1
+                write_frame(fout, {"op": "reject", "reason": "batch_auth", "seq": seq}); continue
+            # binding checks
+            binderr = None
+            if desc.get("run_id") != run_id: binderr = "wrong_run_id"
+            elif desc.get("dataset_id") != bstate["dataset_id"]: binderr = "wrong_dataset"
+            elif desc.get("package_hash") != cfg.get("package_root_hash"): binderr = "wrong_package"
+            elif desc.get("template_hash") != bstate["template_hash"]: binderr = "wrong_template"
+            elif desc.get("tokenizer_hash") != bstate["tokenizer_hash"]: binderr = "wrong_tokenizer"
+            elif desc.get("label_schema_hash") != bstate["label_schema_hash"]: binderr = "wrong_label_schema"
+            if binderr:
+                counters.setdefault("batch_binding_rejected", 0); counters["batch_binding_rejected"] += 1
+                write_frame(fout, {"op": "reject", "reason": binderr, "seq": seq}); continue
+            split = desc["split"]
+            labels = bstate["labels"].get(split)
+            if labels is None:
+                write_frame(fout, {"op": "reject", "reason": "no_label_table", "seq": seq}); continue
+            exp_ids = _expected_ids(desc)
+            if exp_ids is None:
+                write_frame(fout, {"op": "reject", "reason": "unknown_global_batch_index", "seq": seq}); continue
+            ledger = bstate["ledger"]
+            # causal-LM transport is chunked (row-slices of the concatenated supervised logits) so the
+            # CPU-only TDX guest can softmax+serialize each frame under the read window; the ledger
+            # advances ONCE per optimizer batch (on chunk 0), continuation chunks validate ids only.
+            chunk = int(desc.get("chunk", 0)); nchunks = int(desc.get("nchunks", 1))
+            if op == "eval_batch" and split in EVAL:
+                if list(desc["sample_ids"]) != list(exp_ids):
+                    counters.setdefault("batch_ledger_rejected", 0); counters["batch_ledger_rejected"] += 1
+                    write_frame(fout, {"op": "reject", "reason": "wrong_sample_ids", "seq": seq}); continue
+            elif chunk == 0:
+                ok, reason = ledger.check_and_advance(desc, exp_ids)
+                if not ok:
+                    counters.setdefault("batch_ledger_rejected", 0); counters["batch_ledger_rejected"] += 1
+                    write_frame(fout, {"op": "reject", "reason": reason, "seq": seq}); continue
+            else:                                        # continuation chunk of an advanced training batch
+                if list(desc["sample_ids"]) != list(exp_ids):
+                    counters.setdefault("batch_ledger_rejected", 0); counters["batch_ledger_rejected"] += 1
+                    write_frame(fout, {"op": "reject", "reason": "wrong_sample_ids", "seq": seq}); continue
+            data = load_tensor(payload)                 # {"logits":..., optional "sup_positions":...}
+            masked = data["logits"].float()             # cls: [n,V]; clm: [rows_in_chunk,V]
+            V = masked.shape[1]
+            if perm is None:
+                perm, perm_inv = vocab_perm(V, cfg.get("vocab_seed", 8000))
+            plain = masked[:, perm]
+            sample_ids = desc["sample_ids"]; task = desc["task"]
+            if task == "cls":
+                # one supervised logit per example
+                if masked.shape[0] != len(sample_ids):
+                    write_frame(fout, {"op": "reject", "reason": "wrong_sequence_shape", "seq": seq}); continue
+                tgt = torch.tensor([labels[int(s)]["target_tok"] for s in sample_ids])
+                lab = torch.tensor([labels[int(s)]["label"] for s in sample_ids])
+                neg = labels[int(sample_ids[0])]["neg_tok"]; pos = labels[int(sample_ids[0])]["pos_tok"]
+                if op == "eval_batch":
+                    pred, correct, nll = cls_eval(plain, tgt, neg, pos, lab)
+                    counters.setdefault("eval_batch_calls", 0); counters["eval_batch_calls"] += 1; last_seq = seq
+                    resp_seq = seq + 1
+                    out = dump_tensor({"pred": pred.cpu(), "correct": correct.cpu(), "nll": nll.cpu(),
+                                       "label": lab.cpu()})
+                    write_frame(fout, {"op": "eval_batch_ack", "seq": resp_seq,
+                                       "hmac": mac(key, out, resp_seq, run_id, "eval_batch_ack"),
+                                       "n": len(sample_ids), "correct": int(correct.sum()),
+                                       "mean_nll": float(nll.mean()), "compute_sec": time.time() - t0}, out)
+                    continue
+                ce, dpl, nll = cls_ce_dlogits(plain, tgt)
+                dmask = torch.zeros_like(plain); dmask[:] = dpl
+                dmask = dmask[:, perm_inv]
+            elif task == "clm":
+                # verify the ignore_index / supervised-position pattern vs the label table, build the FULL
+                # concatenated target vector, then serve only this chunk's row-slice [row_start:row_start+rows].
+                sup_counts = desc["sup_counts"]
+                tgt_list, bad = [], False
+                for s, sc in zip(sample_ids, sup_counts):
+                    ent = labels[int(s)]
+                    if len(ent["sup_positions"]) != sc:
+                        bad = True; break
+                    tgt_list += [ent["target"][p] for p in ent["sup_positions"]]
+                if bad:
+                    counters.setdefault("batch_ledger_rejected", 0); counters["batch_ledger_rejected"] += 1
+                    write_frame(fout, {"op": "reject", "reason": "wrong_ignore_index_pattern", "seq": seq}); continue
+                total_sup = len(tgt_list)
+                denom = int(desc.get("sup_denominator", total_sup))    # mean-reduction denominator (full batch)
+                row_start = int(desc.get("row_start", 0)); rows = masked.shape[0]
+                if row_start + rows > total_sup:
+                    write_frame(fout, {"op": "reject", "reason": "wrong_sequence_shape", "seq": seq}); continue
+                tgt = torch.tensor(tgt_list[row_start:row_start + rows])
+                logp = torch.log_softmax(plain, -1)
+                nll = -logp[torch.arange(tgt.shape[0]), tgt]
+                if op == "eval_batch":
+                    counters.setdefault("eval_batch_calls", 0); counters["eval_batch_calls"] += 1; last_seq = seq
+                    resp_seq = seq + 1
+                    out = dump_tensor({"nll": nll.cpu()})
+                    write_frame(fout, {"op": "eval_batch_ack", "seq": resp_seq,
+                                       "hmac": mac(key, out, resp_seq, run_id, "eval_batch_ack"),
+                                       "n_sup": int(tgt.shape[0]), "sum_nll": float(nll.sum()),
+                                       "mean_nll": float(nll.mean()), "compute_sec": time.time() - t0}, out)
+                    continue
+                # training: dlogits scaled by the FULL-batch denominator so summing chunks == mean gradient
+                probs = torch.softmax(plain, -1)
+                probs[torch.arange(tgt.shape[0]), tgt] -= 1.0
+                dpl = probs / denom
+                dmask = dpl[:, perm_inv]
+                ce = float(nll.sum())                    # partial CE sum; client aggregates / denom
+            else:
+                write_frame(fout, {"op": "reject", "reason": "unknown_task", "seq": seq}); continue
+            counters.setdefault("ce_batch_calls", 0); counters["ce_batch_calls"] += 1; last_seq = seq
+            out = dump_tensor(dmask.to(torch.bfloat16) if header.get("dtype") == "bf16" else dmask)
+            resp_seq = seq + 1
+            write_frame(fout, {"op": "ce_batch_ack", "seq": resp_seq,
+                               "hmac": mac(key, out, resp_seq, run_id, "ce_batch_ack"),
+                               "ce_loss": float(ce), "n_out": int(dmask.shape[0]),
+                               "global_batch_index": desc["global_batch_index"],
+                               "ledger_last": ledger.last.get((desc["dataset_id"], split), -1),
+                               "compute_sec": time.time() - t0,
+                               "bytes_in": len(payload), "bytes_out": len(out)}, out)
+
+        elif op == "checkpoint_ledger":
+            # seal the batch ledger (ChaCha20-Poly1305) bound to the run for restart continuity.
+            from tdx_adamw_protocol import aead_seal_std, canonical_aad
+            _bind = adamw["tw"].binding if adamw["tw"] else {
+                "run_id": run_id, "package_root_hash": cfg.get("package_root_hash", ""),
+                "adapter_id": header.get("adapter_id", run_id), "optimizer_profile": "ledger",
+                "model_config_hash": cfg.get("model_config_hash", ""), "service_hash": cfg.get("service_hash", "")}
+            aad = canonical_aad(_bind, header.get("ledger_version", 0), header.get("ledger_seq", 0))
+            blob = aead_seal_std(key, bstate["ledger"].snapshot(), aad)
+            lp = Path(cfg.get("ckpt_dir", "/tmp/l12_ckpt")); lp.mkdir(parents=True, exist_ok=True)
+            fpath = lp / f"{run_id}.ledger.enc"; fpath.write_bytes(blob)
+            counters.setdefault("ledger_checkpoint_calls", 0); counters["ledger_checkpoint_calls"] += 1
+            last_seq = seq; resp_seq = seq + 1
+            write_frame(fout, {"op": "checkpoint_ledger_ack", "seq": resp_seq,
+                               "hmac": mac(key, b"", resp_seq, run_id, "checkpoint_ledger_ack"),
+                               "ledger_path": str(fpath), "ledger_bytes": len(blob),
+                               "ledger_state": {f"{a}|{b}": v for (a, b), v in bstate["ledger"].last.items()}})
+
+        elif op == "restore_ledger":
+            from tdx_adamw_protocol import aead_open_std, canonical_aad
+            _load_batch_assets()
+            _bind = header["expected_binding"]
+            aad = canonical_aad(_bind, header.get("ledger_version", 0), header.get("ledger_seq", 0))
+            fpath = Path(header.get("ledger_path", ""))
+            if not fpath.exists():
+                write_frame(fout, {"op": "reject", "reason": "ledger_missing", "seq": seq}); continue
+            try:
+                pt = aead_open_std(key, fpath.read_bytes(), aad)
+                bstate["ledger"].load(pt)
+            except Exception as e:
+                counters.setdefault("ledger_restore_rejected", 0); counters["ledger_restore_rejected"] += 1
+                write_frame(fout, {"op": "reject", "reason": f"ledger_restore_failed:{repr(e)[:60]}", "seq": seq}); continue
+            counters.setdefault("ledger_restore_calls", 0); counters["ledger_restore_calls"] += 1
+            last_seq = seq; resp_seq = seq + 1
+            write_frame(fout, {"op": "restore_ledger_ack", "seq": resp_seq,
+                               "hmac": mac(key, b"", resp_seq, run_id, "restore_ledger_ack"),
+                               "ledger_state": {f"{a}|{b}": v for (a, b), v in bstate["ledger"].last.items()}})
 
         else:
             counters["malformed_rejected"] += 1

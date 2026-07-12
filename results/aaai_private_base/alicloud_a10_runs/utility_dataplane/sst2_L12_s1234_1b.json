@@ -1,0 +1,39 @@
+{
+  "run_id": "sst2_L12_s1234_1b-1783847628-d8e490",
+  "profile": "L12",
+  "task": "cls",
+  "dataset_id": "sst2",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0005,
+  "schedule_hash": "1f695a8825b9a647aa795a0a908179e10b80b91df30969e525c26682eb417c56",
+  "steps_run": 1,
+  "start_step": 0,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": {
+    "split": "dev",
+    "n": 32,
+    "accuracy": 0.6875,
+    "mean_nll": 0.5969222187995911,
+    "n_correct": 22
+  },
+  "trajectory": [
+    {
+      "gbi": 0,
+      "opt_step": 0,
+      "ce": 2.2208926677703857,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": 0,
+      "net_ce": 0.23325800895690918,
+      "net_adamw": 0.1529374122619629,
+      "wall": 2.234
+    }
+  ]
+}

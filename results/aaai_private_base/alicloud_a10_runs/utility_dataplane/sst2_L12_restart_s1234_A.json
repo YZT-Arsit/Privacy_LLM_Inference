@@ -1,0 +1,82 @@
+{
+  "run_id": "sst2_L12_restart_s1234_A-1783849671-e8dcce",
+  "profile": "L12",
+  "task": "cls",
+  "dataset_id": "sst2",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0005,
+  "schedule_hash": "1f695a8825b9a647aa795a0a908179e10b80b91df30969e525c26682eb417c56",
+  "steps_run": 3,
+  "start_step": 0,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.8440366972477065,
+    "mean_nll": 0.6198666653501879,
+    "n_correct": 736
+  },
+  "trajectory": [
+    {
+      "gbi": 0,
+      "opt_step": 0,
+      "ce": 2.2208926677703857,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.2372746467590332,
+      "net_adamw": 0.15103435516357422,
+      "wall": 2.203
+    },
+    {
+      "gbi": 1,
+      "opt_step": 1,
+      "ce": 0.6528991460800171,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.07645082473754883,
+      "net_adamw": 0.14943337440490723,
+      "wall": 1.699
+    },
+    {
+      "gbi": 2,
+      "opt_step": 2,
+      "ce": 2.240577220916748,
+      "n": 16,
+      "sup_total": 16,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 0.0776834487915039,
+      "net_adamw": 0.14875006675720215,
+      "wall": 1.691,
+      "checkpoint": {
+        "path": "/tmp/l12_ckpt/sst2_L12_restart_s1234_A-1783849671-e8dcce.v3.s1.enc",
+        "binding": {
+          "run_id": "sst2_L12_restart_s1234_A-1783849671-e8dcce",
+          "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+          "adapter_id": "sst2_L12_restart_s1234_A-1783849671-e8dcce",
+          "optimizer_profile": "L12_adamw",
+          "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+          "service_hash": "59cd01c7b4dbc4b5f6bd99c9daa3cb0dcdb861b7926f1cecb6bcbbb550f313de"
+        },
+        "version": 3,
+        "checkpoint_seq": 1
+      },
+      "ledger_checkpoint": {
+        "path": "/tmp/l12_ckpt/sst2_L12_restart_s1234_A-1783849671-e8dcce.ledger.enc",
+        "state": {
+          "sst2|train": 2
+        }
+      }
+    }
+  ]
+}

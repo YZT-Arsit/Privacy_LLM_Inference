@@ -1,0 +1,39 @@
+{
+  "run_id": "gsm8k_L12_s1234_1b-1783849106-62f202",
+  "profile": "L12",
+  "task": "clm",
+  "dataset_id": "gsm8k",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0002,
+  "schedule_hash": "ebeaa85d98b777f1f43d21af9c8e446f5ca751c7b79ee8ab4c8a0559ad8834fb",
+  "steps_run": 1,
+  "start_step": 0,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": {
+    "split": "test",
+    "n": 8,
+    "accuracy": null,
+    "mean_nll": 0.6528228887187663,
+    "n_correct": null
+  },
+  "trajectory": [
+    {
+      "gbi": 0,
+      "opt_step": 0,
+      "ce": 0.8201410795512952,
+      "n": 16,
+      "sup_total": 1710,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 130.0565299987793,
+      "net_adamw": 0.16366887092590332,
+      "wall": 134.304
+    }
+  ]
+}

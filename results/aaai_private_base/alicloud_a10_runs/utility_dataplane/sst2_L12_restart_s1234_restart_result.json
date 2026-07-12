@@ -1,0 +1,27 @@
+{
+  "A_batches": [
+    0,
+    1,
+    2
+  ],
+  "B_batches": [
+    3,
+    4,
+    5
+  ],
+  "R_batches": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "resume_starts_at_K": true,
+  "no_duplicate_sample": true,
+  "contiguous_0_to_2K-1": true,
+  "no_skip_vs_reference": true,
+  "ledger_monotonic_B": true,
+  "resumed_vs_reference_rel_err": 0.0,
+  "all_continuity_checks_pass": true
+}

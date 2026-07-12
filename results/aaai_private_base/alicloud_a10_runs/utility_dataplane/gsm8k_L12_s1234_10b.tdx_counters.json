@@ -1,0 +1,34 @@
+{
+  "counters": {
+    "ce_calls": 0,
+    "correct_calls": 0,
+    "auth_failures": 0,
+    "replay_rejected": 0,
+    "malformed_rejected": 0,
+    "forbidden_key_rejected": 0,
+    "untrusted_gamma_returns": 0,
+    "correction_missing_targets": -1,
+    "adamw_init_calls": 1,
+    "adamw_step_calls": 10,
+    "trusted_target_state_missing": 0,
+    "untrusted_moment_returns": 0,
+    "authoritative_state_location": "TDX",
+    "authoritative_state_dtype": "FP32",
+    "runtime_copy_dtype": "BF16",
+    "runtime_copy_matches_master_transform": true,
+    "gpu_trusted_factor_optimizer_step": "forbidden",
+    "untrusted_m_materializations": 0,
+    "untrusted_v_materializations": 0,
+    "untrusted_fp32_master_materializations": 0,
+    "silent_fallbacks": 0,
+    "adamw_checkpoint_calls": 0,
+    "adamw_restore_calls": 0,
+    "adamw_state_version": 10,
+    "checkpoint_restore_rejected": 0,
+    "ce_batch_calls": 88,
+    "eval_batch_calls": 2
+  },
+  "attestation": {
+    "attestation_skipped": true
+  }
+}
