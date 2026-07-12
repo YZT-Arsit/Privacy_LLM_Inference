@@ -1,0 +1,91 @@
+{
+  "batches_profiled": 200,
+  "wall_p50_ms": 1725.68,
+  "wall_p95_ms": 1810.12,
+  "wall_mean_ms": 1739.06,
+  "sec_per_batch_mean": 1.739,
+  "examples_per_sec": 9.2,
+  "ce_bytes_mean": 9727058,
+  "adamw_bytes_mean": 8550494,
+  "unaccounted_ms": 0.04,
+  "components": {
+    "regen_runtime": {
+      "p50_ms": 3.79,
+      "p95_ms": 3.95,
+      "mean_ms": 3.81,
+      "pct_of_wall": 0.2
+    },
+    "gpu_forward_and_row_gather": {
+      "p50_ms": 498.41,
+      "p95_ms": 574.9,
+      "mean_ms": 505.58,
+      "pct_of_wall": 29.1
+    },
+    "ce_roundtrip_total": {
+      "p50_ms": 97.51,
+      "p95_ms": 104.84,
+      "mean_ms": 98.83,
+      "pct_of_wall": 5.7
+    },
+    "ce_serialize_framing": {
+      "p50_ms": 10.29,
+      "p95_ms": 16.64,
+      "mean_ms": 11.54,
+      "pct_of_wall": 0.7
+    },
+    "ce_tdx_compute": {
+      "p50_ms": 28.92,
+      "p95_ms": 32.23,
+      "mean_ms": 29.96,
+      "pct_of_wall": 1.7
+    },
+    "ce_network_transfer": {
+      "p50_ms": 44.93,
+      "p95_ms": 48.62,
+      "mean_ms": 45.21,
+      "pct_of_wall": 2.6
+    },
+    "gpu_backward_and_scatter": {
+      "p50_ms": 897.94,
+      "p95_ms": 912.16,
+      "mean_ms": 899.78,
+      "pct_of_wall": 51.7
+    },
+    "gpu_monomial_adamw_and_trusted_pack": {
+      "p50_ms": 25.61,
+      "p95_ms": 25.99,
+      "mean_ms": 25.62,
+      "pct_of_wall": 1.5
+    },
+    "adamw_roundtrip_total": {
+      "p50_ms": 180.47,
+      "p95_ms": 233.79,
+      "mean_ms": 185.1,
+      "pct_of_wall": 10.6
+    },
+    "adamw_tdx_compute": {
+      "p50_ms": 114.31,
+      "p95_ms": 118.46,
+      "mean_ms": 115.1,
+      "pct_of_wall": 6.6
+    },
+    "adamw_network_transfer": {
+      "p50_ms": 37.21,
+      "p95_ms": 40.65,
+      "mean_ms": 37.51,
+      "pct_of_wall": 2.2
+    },
+    "runtime_factor_return_update": {
+      "p50_ms": 3.59,
+      "p95_ms": 3.69,
+      "mean_ms": 3.59,
+      "pct_of_wall": 0.2
+    },
+    "finite_check": {
+      "p50_ms": 16.61,
+      "p95_ms": 16.73,
+      "mean_ms": 16.7,
+      "pct_of_wall": 1.0
+    }
+  }
+}

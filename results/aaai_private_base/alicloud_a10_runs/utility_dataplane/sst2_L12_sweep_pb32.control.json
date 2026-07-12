@@ -1,0 +1,21 @@
+{
+  "run_id": "sst2_L12_sweep_pb32-1783855852-127fdc",
+  "session_key_hex": "6d2ee8d26b3b2c6062978ff15864d52fd6565bf68f0cbb9735ee842cf50a0401",
+  "tag": "sst2_L12_sweep_pb32",
+  "control_wall_sec": 20.5,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 2,
+    "accuracy": 1.0,
+    "mean_nll": 0.022121522575616837,
+    "n_correct": 2
+  }
+}

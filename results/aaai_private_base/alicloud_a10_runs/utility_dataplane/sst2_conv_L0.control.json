@@ -1,0 +1,22 @@
+{
+  "run_id": "sst2_conv_L0-1783856870-f85a30",
+  "session_key_hex": "2401f3d92574303c9fed036bbc9d5185b7695e7666e7d7655df4cc0866fd02d4",
+  "tag": "sst2_conv_L0",
+  "control_wall_sec": 12.5,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L0",
+  "seed": 1234,
+  "eval_split": "dev",
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.8853211009174312,
+    "mean_nll": 0.8760087408057047,
+    "n_correct": 772,
+    "selected_checkpoint_step": -1,
+    "selected_by": "best_dev_metric",
+    "eval_history": []
+  }
+}

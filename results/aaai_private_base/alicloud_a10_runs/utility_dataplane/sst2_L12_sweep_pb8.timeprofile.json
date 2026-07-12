@@ -1,0 +1,93 @@
+{
+  "batches_profiled": 15,
+  "phys_batch": 8,
+  "gpu_peak_mem_mb": 2112.4,
+  "wall_p50_ms": 372.36,
+  "wall_p95_ms": 382.53,
+  "wall_mean_ms": 407.03,
+  "sec_per_batch_mean": 0.407,
+  "examples_per_sec": 19.7,
+  "ce_bytes_mean": 4865106,
+  "adamw_bytes_mean": 8550494,
+  "unaccounted_ms": 0.03,
+  "components": {
+    "regen_runtime": {
+      "p50_ms": 3.67,
+      "p95_ms": 3.75,
+      "mean_ms": 3.67,
+      "pct_of_wall": 0.9
+    },
+    "gpu_forward_and_row_gather": {
+      "p50_ms": 35.73,
+      "p95_ms": 39.0,
+      "mean_ms": 43.5,
+      "pct_of_wall": 10.7
+    },
+    "ce_roundtrip_total": {
+      "p50_ms": 45.53,
+      "p95_ms": 49.67,
+      "mean_ms": 55.06,
+      "pct_of_wall": 13.5
+    },
+    "ce_serialize_framing": {
+      "p50_ms": 3.14,
+      "p95_ms": 3.36,
+      "mean_ms": 3.07,
+      "pct_of_wall": 0.8
+    },
+    "ce_tdx_compute": {
+      "p50_ms": 15.43,
+      "p95_ms": 17.72,
+      "mean_ms": 24.53,
+      "pct_of_wall": 6.0
+    },
+    "ce_network_transfer": {
+      "p50_ms": 21.21,
+      "p95_ms": 23.73,
+      "mean_ms": 21.69,
+      "pct_of_wall": 5.3
+    },
+    "gpu_backward_and_scatter": {
+      "p50_ms": 66.13,
+      "p95_ms": 66.93,
+      "mean_ms": 82.15,
+      "pct_of_wall": 20.2
+    },
+    "gpu_monomial_adamw_and_trusted_pack": {
+      "p50_ms": 24.75,
+      "p95_ms": 24.98,
+      "mean_ms": 24.76,
+      "pct_of_wall": 6.1
+    },
+    "adamw_roundtrip_total": {
+      "p50_ms": 176.52,
+      "p95_ms": 180.59,
+      "mean_ms": 177.26,
+      "pct_of_wall": 43.6
+    },
+    "adamw_tdx_compute": {
+      "p50_ms": 111.44,
+      "p95_ms": 112.26,
+      "mean_ms": 111.57,
+      "pct_of_wall": 27.4
+    },
+    "adamw_network_transfer": {
+      "p50_ms": 36.98,
+      "p95_ms": 39.25,
+      "mean_ms": 37.39,
+      "pct_of_wall": 9.2
+    },
+    "runtime_factor_return_update": {
+      "p50_ms": 3.53,
+      "p95_ms": 3.58,
+      "mean_ms": 3.52,
+      "pct_of_wall": 0.9
+    },
+    "finite_check": {
+      "p50_ms": 16.47,
+      "p95_ms": 16.57,
+      "mean_ms": 17.08,
+      "pct_of_wall": 4.2
+    }
+  }
+}

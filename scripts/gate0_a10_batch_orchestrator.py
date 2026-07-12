@@ -67,6 +67,10 @@ def main():
     ap.add_argument("--ckpt-path", default=""); ap.add_argument("--expected-binding", default="")
     ap.add_argument("--ledger-path", default="")
     ap.add_argument("--timeout", type=int, default=7200)
+    ap.add_argument("--time-profile", action="store_true")
+    ap.add_argument("--batched-forward", action="store_true")
+    ap.add_argument("--verify-batched", action="store_true")
+    ap.add_argument("--phys-batch", type=int, default=0)   # throughput sweep: batch-N schedule (16=frozen)
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     ds = args.dataset
@@ -87,7 +91,8 @@ def main():
     # push code + shared modules
     for f in ["tdx_persistent_service.py", "tdx_adamw_protocol.py", "batch_dataplane.py"]:
         push_tdx(str(REPO / "scripts" / f), f"{RTDX}/scripts/{f}")
-    for f in ["h800_direct_runner.py", "a10_batch_runner.py", "tdx_adamw_protocol.py", "batch_dataplane.py"]:
+    for f in ["h800_direct_runner.py", "a10_batch_runner.py", "tdx_adamw_protocol.py", "batch_dataplane.py",
+              "h800_unified_worker.py"]:
         push_a10(str(REPO / "scripts" / f), f"{RA10}/scripts/{f}")
     # gamma bundle for the enclave AdamW
     push_tdx(str(REPO / "results/aaai_private_base/correction_bundle/o1c_gamma_bundle.pt"), "/tmp/o1c_bundle.pt")
@@ -96,8 +101,22 @@ def main():
     for split in ({"train", eval_split}):
         lt = TOKD / f"{ds}_{split}_labels.pt"
         rlt = f"/tmp/{ds}_{split}_labels.pt"; push_tdx(str(lt), rlt); label_tables[split] = rlt
-    rsched = f"/tmp/{ds}_schedule_s{args.seed}.json"
-    push_tdx(str(TOKD / f"{ds}_schedule_s{args.seed}.json"), rsched)
+    # schedule: frozen seed schedule, OR a batch-N throughput-characterization schedule (--phys-batch)
+    if args.phys_batch and args.phys_batch != 16:
+        import sys as _sys; _sys.path.insert(0, str(REPO / "scripts"))
+        from prepare_utility_data import batch_schedule
+        import torch as _t
+        nrows = {"sst2": 67349, "gsm8k": 7473}[ds]
+        sched_list, shash = batch_schedule(nrows, args.seed, 1, args.phys_batch, 1)
+        sfile = TOKD / f"{ds}_schedule_s{args.seed}_pb{args.phys_batch}.json"
+        sfile.write_text(json.dumps({"hash": shash, "schedule": sched_list}))
+        local_sched = sfile
+    else:
+        local_sched = TOKD / f"{ds}_schedule_s{args.seed}.json"
+    rsched = f"/tmp/{ds}_schedule_s{args.seed}_pb{args.phys_batch or 16}.json"
+    push_tdx(str(local_sched), rsched)
+    push_a10(str(local_sched), f"{RA10}/results/aaai_private_base/datasets/tokenized/{local_sched.name}")
+    sched_a10_name = local_sched.name
     schedules = {"train": rsched}
 
     binding = {"d4_run_id": run_id, "package_root_hash": PKG_ROOT, "seed": args.seed,
@@ -127,7 +146,7 @@ def main():
     a10(f"mkdir -p {RA10}/results/aaai_private_base/alicloud_a10_runs/utility_dataplane")
     train_data = f"{RA10}/results/aaai_private_base/datasets/tokenized/{ds}_{args.train_split}_a10.pt"
     eval_data = f"{RA10}/results/aaai_private_base/datasets/tokenized/{ds}_{eval_split}_a10.pt"
-    sched_a10 = f"{RA10}/results/aaai_private_base/datasets/tokenized/{ds}_schedule_s{args.seed}.json"
+    sched_a10 = f"{RA10}/results/aaai_private_base/datasets/tokenized/{sched_a10_name}"
     extra = ""
     if args.profile != "L0":
         extra += f" --train-data {train_data} --schedule {sched_a10} --max-steps {args.max_steps}"
@@ -138,10 +157,16 @@ def main():
         extra += (f" --restore-first --ckpt-path {args.ckpt_path} --expected-binding '{args.expected_binding}'"
                   f" --gpu-state-path /tmp/gpustate_{run_id}.pt")
         if args.ledger_path: extra += f" --ledger-path {args.ledger_path}"
+    prof_remote = f"{RA10}/results/aaai_private_base/alicloud_a10_runs/utility_dataplane/{tag}.timeprofile.json"
+    if args.time_profile:
+        extra += f" --time-profile {prof_remote}"
+    if args.batched_forward: extra += " --batched-forward"
+    if args.verify_batched: extra += " --verify-batched"
+    if args.eval_max == 0 and args.profile != "L0": extra += " "  # (no-op guard)
     cmd = (f"cd {RA10} && {ENV_A10} {PY_A10} scripts/a10_batch_runner.py "
            f"--session /tmp/batch_session_a10.json --profile {args.profile} --task {args.task} "
            f"--dataset-id {ds} --train-split {args.train_split} --eval-data {eval_data} "
-           f"--eval-split {eval_split} --eval-max {args.eval_max} --lr "
+           f"--eval-split {eval_split} --eval-max {args.eval_max} --eval-every {args.eval_every} --lr "
            f"{5e-4 if ds == 'sst2' else 2e-4} --seed {args.seed} --max-seq {max_seq} "
            f"--template-hash {tmpl_hash} --tokenizer-hash {TOK_HASH} --label-schema-hash {lsch_hash} "
            f"--tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx --service-cmd \"{service_cmd}\" "
@@ -153,6 +178,7 @@ def main():
     for suffix in [".adapter.pt", ".preds.pt"]:
         pull_a10(out_json.replace(".json", suffix), str(OUT / f"{tag}{suffix}"))
     pull_tdx("/tmp/a10_batch_counters.json", str(OUT / f"{tag}.tdx_counters.json"))
+    if args.time_profile: pull_a10(prof_remote, str(OUT / f"{tag}.timeprofile.json"))
     if args.attest: pull_tdx("/tmp/a10_attest/session_attestation.json", str(OUT / f"{tag}.attestation.json"))
     # control sidecar (run_id/key/checkpoint/ledger/binding) for the restart driver
     ctrl = {"run_id": run_id, "session_key_hex": session_key.hex(), "tag": tag,

@@ -1,0 +1,21 @@
+{
+  "run_id": "sst2_L12_prof200_baseline-1783854323-71257a",
+  "session_key_hex": "0cf9da51c20b0c671ae81ce58053f892092718fa19d5a9713b154680d3b420f2",
+  "tag": "sst2_L12_prof200_baseline",
+  "control_wall_sec": 359.7,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 4,
+    "accuracy": 1.0,
+    "mean_nll": 0.06403051316738129,
+    "n_correct": 4
+  }
+}

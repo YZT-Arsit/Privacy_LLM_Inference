@@ -217,6 +217,47 @@ class MaskedQwen:
         logits_masked = h @ self.t["lm_head"].t()             # (T,V) vocab-permuted
         return logits_masked
 
+    def forward_batch(self, input_ids, counters):
+        """Batched, RIGHT-PADDED forward: input_ids [B,T]. Causal attention only. Real (non-pad)
+        positions are BIT-IDENTICAL to the per-sequence forward() — a real query at index p attends
+        only to keys 0..p (all real, since padding is to the right), rope positions match the
+        unpadded sequence, and RMSNorm/residual are per-position. Pad positions produce ignored
+        outputs and receive zero gradient. Returns logits_masked [B,T,V]; caller reads the frozen
+        supervised position per example. Used only as a throughput optimization; NOT a semantics
+        change (verified bit-identical at supervised rows before use)."""
+        B, T = input_ids.shape
+        h = F.embedding(input_ids, self.t["embed"])          # (B,T,H)
+        counters["mask_domain_transitions"] += 1
+        cos, sin = rope_cos_sin(T, self.hd, self.theta, self.dtype)
+        cos = cos.to(self.device); sin = sin.to(self.device)
+        causal = torch.full((T, T), float("-inf"), device=self.device, dtype=self.dtype).triu(1)
+        nrep = self.nh // self.nkv
+        for l in range(self.L):
+            r = rmsnorm_core(h, self.eps)
+            q = self._proj(r, l, "q_proj", self.t[f"L{l}.q_proj.b"])
+            k = self._proj(r, l, "k_proj", self.t[f"L{l}.k_proj.b"])
+            v = self._proj(r, l, "v_proj", self.t[f"L{l}.v_proj.b"])
+            q = q.view(B, T, self.nh, self.hd).transpose(1, 2)    # (B,nh,T,hd)
+            k = k.view(B, T, self.nkv, self.hd).transpose(1, 2)
+            v = v.view(B, T, self.nkv, self.hd).transpose(1, 2)
+            q = apply_rope(q, cos, sin); k = apply_rope(k, cos, sin)
+            k = k.repeat_interleave(nrep, dim=1); v = v.repeat_interleave(nrep, dim=1)
+            scores = (q @ k.transpose(-1, -2)) / (self.hd ** 0.5)  # (B,nh,T,T)
+            self.attention_score_exposures += B * self.nh * T * T
+            attn = torch.softmax(scores + causal, dim=-1)
+            o = (attn @ v).transpose(1, 2).reshape(B, T, self.H)
+            o = self._proj(o, l, "o_proj")
+            h = h + o
+            counters["mask_domain_transitions"] += 2
+            r2 = rmsnorm_core(h, self.eps)
+            gate = self._proj(r2, l, "gate_proj"); up = self._proj(r2, l, "up_proj")
+            act = F.silu(gate) * up
+            down = self._proj(act, l, "down_proj")
+            h = h + down
+            counters["mask_domain_transitions"] += 2
+        h = rmsnorm_core(h, self.eps)
+        return h @ self.t["lm_head"].t()                      # (B,T,V)
+
 
 # ============================================================ trusted verifier
 class TrustedVerifier:

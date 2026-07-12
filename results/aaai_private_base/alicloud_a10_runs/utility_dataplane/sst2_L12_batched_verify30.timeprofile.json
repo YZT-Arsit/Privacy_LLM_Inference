@@ -1,0 +1,91 @@
+{
+  "batches_profiled": 30,
+  "wall_p50_ms": 419.2,
+  "wall_p95_ms": 427.1,
+  "wall_mean_ms": 451.1,
+  "sec_per_batch_mean": 0.451,
+  "examples_per_sec": 35.5,
+  "ce_bytes_mean": 9727058,
+  "adamw_bytes_mean": 8550494,
+  "unaccounted_ms": 0.04,
+  "components": {
+    "regen_runtime": {
+      "p50_ms": 3.71,
+      "p95_ms": 3.85,
+      "mean_ms": 3.72,
+      "pct_of_wall": 0.8
+    },
+    "gpu_forward_and_row_gather": {
+      "p50_ms": 36.74,
+      "p95_ms": 44.01,
+      "mean_ms": 55.12,
+      "pct_of_wall": 12.2
+    },
+    "ce_roundtrip_total": {
+      "p50_ms": 89.12,
+      "p95_ms": 94.29,
+      "mean_ms": 94.94,
+      "pct_of_wall": 21.0
+    },
+    "ce_serialize_framing": {
+      "p50_ms": 4.6,
+      "p95_ms": 7.15,
+      "mean_ms": 4.77,
+      "pct_of_wall": 1.1
+    },
+    "ce_tdx_compute": {
+      "p50_ms": 28.94,
+      "p95_ms": 33.95,
+      "mean_ms": 34.59,
+      "pct_of_wall": 7.7
+    },
+    "ce_network_transfer": {
+      "p50_ms": 43.92,
+      "p95_ms": 46.92,
+      "mean_ms": 44.27,
+      "pct_of_wall": 9.8
+    },
+    "gpu_backward_and_scatter": {
+      "p50_ms": 65.8,
+      "p95_ms": 68.18,
+      "mean_ms": 73.73,
+      "pct_of_wall": 16.3
+    },
+    "gpu_monomial_adamw_and_trusted_pack": {
+      "p50_ms": 24.93,
+      "p95_ms": 25.15,
+      "mean_ms": 24.9,
+      "pct_of_wall": 5.5
+    },
+    "adamw_roundtrip_total": {
+      "p50_ms": 177.83,
+      "p95_ms": 180.91,
+      "mean_ms": 178.33,
+      "pct_of_wall": 39.5
+    },
+    "adamw_tdx_compute": {
+      "p50_ms": 112.18,
+      "p95_ms": 114.05,
+      "mean_ms": 112.32,
+      "pct_of_wall": 24.9
+    },
+    "adamw_network_transfer": {
+      "p50_ms": 37.04,
+      "p95_ms": 40.76,
+      "mean_ms": 37.77,
+      "pct_of_wall": 8.4
+    },
+    "runtime_factor_return_update": {
+      "p50_ms": 3.54,
+      "p95_ms": 3.64,
+      "mean_ms": 3.53,
+      "pct_of_wall": 0.8
+    },
+    "finite_check": {
+      "p50_ms": 16.6,
+      "p95_ms": 16.82,
+      "mean_ms": 16.79,
+      "pct_of_wall": 3.7
+    }
+  }
+}

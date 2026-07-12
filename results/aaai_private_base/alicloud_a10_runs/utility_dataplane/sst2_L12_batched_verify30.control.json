@@ -1,0 +1,21 @@
+{
+  "run_id": "sst2_L12_batched_verify30-1783855220-971d4b",
+  "session_key_hex": "1e2ea45ff11b8f4f3d88a65abe2742b0c28734f7a98321da5fe42d662a0b64c7",
+  "tag": "sst2_L12_batched_verify30",
+  "control_wall_sec": 25.6,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 4,
+    "accuracy": 1.0,
+    "mean_nll": 0.00552296731621027,
+    "n_correct": 4
+  }
+}

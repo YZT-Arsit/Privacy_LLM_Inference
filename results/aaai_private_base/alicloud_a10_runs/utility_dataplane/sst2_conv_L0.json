@@ -1,0 +1,31 @@
+{
+  "run_id": "sst2_conv_L0-1783856870-f85a30",
+  "profile": "L0",
+  "task": "cls",
+  "dataset_id": "sst2",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0005,
+  "schedule_hash": "",
+  "steps_run": 0,
+  "start_step": 0,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.8853211009174312,
+    "mean_nll": 0.8760087408057047,
+    "n_correct": 772,
+    "selected_checkpoint_step": -1,
+    "selected_by": "best_dev_metric",
+    "eval_history": []
+  },
+  "batched_forward": true,
+  "verify_batched": null,
+  "trajectory": []
+}

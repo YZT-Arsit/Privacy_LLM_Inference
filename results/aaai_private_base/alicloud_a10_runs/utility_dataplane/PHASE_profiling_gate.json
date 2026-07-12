@@ -1,0 +1,86 @@
+{
+  "selected_config": {
+    "physical_batch": 16,
+    "effective_batch": 16,
+    "grad_accum": 1,
+    "batched_forward": true,
+    "rationale": "physical=effective=16 is the semantics-preserving maximum (sequential optimizer + frozen effective batch 16); >16 changes the frozen effective batch or needs stale-adapter speculative forward; <16 needs grad_accum>1 which doubles TDX RPCs."
+  },
+  "sweep_characterization_only": {
+    "8": {
+      "sec_per_batch": 0.407,
+      "examples_per_sec": 19.7,
+      "gpu_peak_mem_mb": 2112.4,
+      "bytes_per_example": 1142544,
+      "trusted_rpcs_per_example": 0.25,
+      "adamw_tdx_ms": 111.6,
+      "ce_net_ms": 21.7,
+      "gpu_fwd_ms": 43.5,
+      "gpu_bwd_ms": 82.2
+    },
+    "16": {
+      "sec_per_batch": 0.459,
+      "examples_per_sec": 34.9,
+      "gpu_peak_mem_mb": 2999.3,
+      "bytes_per_example": 1142347,
+      "trusted_rpcs_per_example": 0.125,
+      "adamw_tdx_ms": 113.6,
+      "ce_net_ms": 44.5,
+      "gpu_fwd_ms": 46.3,
+      "gpu_bwd_ms": 82.5
+    },
+    "32": {
+      "sec_per_batch": 0.581,
+      "examples_per_sec": 55.1,
+      "gpu_peak_mem_mb": 4914.7,
+      "bytes_per_example": 1142248,
+      "trusted_rpcs_per_example": 0.0625,
+      "adamw_tdx_ms": 114.3,
+      "ce_net_ms": 112.0,
+      "gpu_fwd_ms": 52.8,
+      "gpu_bwd_ms": 79.8
+    },
+    "64": {
+      "sec_per_batch": 1.059,
+      "examples_per_sec": 60.4,
+      "gpu_peak_mem_mb": 10134.1,
+      "bytes_per_example": 1142199,
+      "trusted_rpcs_per_example": 0.0312,
+      "adamw_tdx_ms": 118.1,
+      "ce_net_ms": 363.4,
+      "gpu_fwd_ms": 102.7,
+      "gpu_bwd_ms": 131.9
+    }
+  },
+  "sweep_note": "8/16/32/64 measured as GPU-throughput characterization (effective=physical there). Only pb16 preserves the frozen effective batch. ex/s rises with batch because the fixed adamw_tdx (~113ms/opt-step, 168 factors) amortizes over more examples; ce network grows linearly with batch. peak mem 2.1/3.0/4.9/10.1 GB (A10 23 GB) \u2014 pb64 stable but invalid config.",
+  "measured_per_batch_sec": {
+    "L12_bf16_batched": 0.459,
+    "L5_fp32_batched": 0.495,
+    "L12_per_example_baseline": 1.739
+  },
+  "projection_frozen_config": {
+    "opt_steps_per_seed": 12630,
+    "seeds": 3,
+    "L12_hours_per_seed": 1.66,
+    "L5_hours_per_seed": 1.78,
+    "L0_hours_once": 0.0008,
+    "eval_hours_per_seed": 0.048,
+    "L12_total_hours": 4.97,
+    "L5_total_hours": 5.35,
+    "TOTAL_SST2_hours": 10.33,
+    "pre_optimization_total_hours_estimate": 36.6
+  },
+  "feasibility_gate": {
+    "preferred_max_hours": 12,
+    "hard_max_hours": 18,
+    "projected_total_hours": 10.33,
+    "meets_preferred": true,
+    "meets_hard": true,
+    "verdict": "PASS (preferred)"
+  },
+  "remaining_bottleneck": {
+    "dominant": "fixed per-optimizer-step TDX round trips: adamw_tdx_compute ~113ms (168-factor un-fold/AdamW/re-fold on the CPU-only TDX guest) + ce/adamw network ~80ms, \u00d7 12630 steps.",
+    "inherent_vs_overhead": "INHERENT to the protected design at effective batch 16 (one trusted AdamW round trip per optimizer step is required; the enclave holds m/v). Not implementation overhead. Further safe wins if needed: keep L5 fully local/plaintext (removes L5's TDX RPCs, ~-5h); speed the enclave fold matmuls (adamw_tdx). Neither needed to pass the gate.",
+    "gpu_now_minor": "after batching, GPU fwd+bwd is ~28% of the step; was 81%."
+  }
+}
