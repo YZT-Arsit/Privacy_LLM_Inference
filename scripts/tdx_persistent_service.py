@@ -136,9 +136,12 @@ def main():
     gi_attn, gi_mlp = build_gram_inv(gb)
     perm = perm_inv = None
     last_seq = -1
+    adamw = {"tw": None}     # lazy TrustedAdamW (L12); holds trusted theta_plain + m + v in-enclave
     counters = {"ce_calls": 0, "correct_calls": 0, "auth_failures": 0, "replay_rejected": 0,
                 "malformed_rejected": 0, "forbidden_key_rejected": 0,
-                "untrusted_gamma_returns": 0, "correction_missing_targets": -1}
+                "untrusted_gamma_returns": 0, "correction_missing_targets": -1,
+                "adamw_init_calls": 0, "adamw_step_calls": 0, "trusted_target_state_missing": -1,
+                "untrusted_moment_returns": 0}
     fin = sys.stdin.buffer; fout = sys.stdout.buffer
     att = do_attestation(cfg, cfg.get("attest_out", "/tmp/direct_attest")) if cfg.get("attest") else {"attestation_skipped": True}
 
@@ -218,6 +221,69 @@ def main():
                                "corrected": len(corrected), "missing": counters["correction_missing_targets"],
                                "compute_sec": time.time() - t0,
                                "bytes_in": len(payload), "bytes_out": len(out)}, out)
+        elif op == "init_adamw":
+            # receive initial masked trusted factors; un-fold to plaintext in-enclave, zero m/v.
+            t0 = time.time()
+            from tdx_adamw_protocol import TrustedAdamW, TRUSTED_A, TRUSTED_B
+            data = load_tensor(payload)
+            hp = header.get("hparams", {})
+            tw = TrustedAdamW(gb, cfg["model_cfg"], lr=hp.get("lr", 1e-3), b1=hp.get("b1", 0.9),
+                              b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01))
+            bad = False
+            for k, t in data.get("A", {}).items():
+                l_str, proj = k.split(".", 1); l = int(l_str)
+                if proj not in TRUSTED_A or any(s in k for s in FORBIDDEN):
+                    counters["forbidden_key_rejected"] += 1; bad = True; break
+                tw.init_factor(l, proj, A_tilde=t)
+            for k, t in data.get("B", {}).items():
+                l_str, proj = k.split(".", 1); l = int(l_str)
+                if proj not in TRUSTED_B or any(s in k for s in FORBIDDEN):
+                    counters["forbidden_key_rejected"] += 1; bad = True; break
+                tw.init_factor(l, proj, B_tilde=t)
+            if bad:
+                write_frame(fout, {"op": "reject", "reason": "forbidden_key", "seq": seq}); continue
+            adamw["tw"] = tw
+            counters["adamw_init_calls"] += 1; last_seq = seq
+            present = tw.state_present()
+            counters["trusted_target_state_missing"] = 0 if present else 1
+            resp_seq = seq + 1
+            write_frame(fout, {"op": "init_adamw_ack", "seq": resp_seq,
+                               "hmac": mac(key, b"", resp_seq, run_id, "init_adamw_ack"),
+                               "trusted_adamw_state_present": present,
+                               "trusted_A_factors": len(tw.stateA), "trusted_B_factors": len(tw.stateB),
+                               "compute_sec": time.time() - t0})
+
+        elif op == "adamw_step":
+            # masked trusted grads in -> exact plaintext AdamW in-enclave -> re-folded masked factors out.
+            t0 = time.time()
+            tw = adamw["tw"]
+            if tw is None or not tw.state_present():          # fail-closed on missing/stale state
+                counters["trusted_target_state_missing"] = 1
+                write_frame(fout, {"op": "reject", "reason": "stale_or_missing_adamw_state", "seq": seq}); continue
+            data = load_tensor(payload); bad = False
+            for k in list(data.get("gA", {})) + list(data.get("gB", {})):
+                if any(s in k for s in FORBIDDEN):
+                    counters["forbidden_key_rejected"] += 1; bad = True; break
+            if bad:
+                write_frame(fout, {"op": "reject", "reason": "forbidden_key", "seq": seq}); continue
+            try:
+                outA, outB, missing = tw.step(data.get("gA", {}), data.get("gB", {}))
+            except KeyError:
+                write_frame(fout, {"op": "reject", "reason": "stale_or_missing_adamw_state", "seq": seq}); continue
+            counters["trusted_target_state_missing"] = missing
+            if missing != 0:
+                write_frame(fout, {"op": "reject", "reason": "incomplete_trusted_set", "seq": seq}); continue
+            # return ONLY re-folded masked factors (never m/v/gamma/plaintext theta)
+            out = dump_tensor({"A": {k: v.to(torch.float32) for k, v in outA.items()},
+                               "B": {k: v.to(torch.float32) for k, v in outB.items()}})
+            counters["adamw_step_calls"] += 1; last_seq = seq
+            resp_seq = seq + 1
+            write_frame(fout, {"op": "adamw_step_ack", "seq": resp_seq,
+                               "hmac": mac(key, out, resp_seq, run_id, "adamw_step_ack"),
+                               "updated_A": len(outA), "updated_B": len(outB), "missing": missing,
+                               "adam_t": tw.t, "compute_sec": time.time() - t0,
+                               "bytes_in": len(payload), "bytes_out": len(out)}, out)
+
         else:
             counters["malformed_rejected"] += 1
             write_frame(fout, {"op": "reject", "reason": "unknown_op"})

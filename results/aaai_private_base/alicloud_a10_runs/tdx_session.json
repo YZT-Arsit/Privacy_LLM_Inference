@@ -1,6 +1,6 @@
 {
-  "session_key_hex": "92e1e356426b2569360fd466713f21d26ab0be76f17127f41dbf571d32bbe110",
-  "run_id": "A10_L10_50STEP-50s-1783828324-d9782a",
+  "session_key_hex": "756d0433257bf6e4d24c71f1d5bfd5bb49cf59cab2dbbd28bdf1840df60d3c93",
+  "run_id": "A10_L12_FP32-1s-1783830454-fb2874",
   "labels": [
     14582,
     25,
@@ -50,10 +50,10 @@
   "attest": true,
   "attest_out": "/tmp/a10_attest",
   "binding_manifest": {
-    "d4_run_id": "A10_L10_50STEP-50s-1783828324-d9782a",
+    "d4_run_id": "A10_L12_FP32-1s-1783830454-fb2874",
     "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
     "worker_runtime_hash": "73a9d70f10e1c35fb244d149e3390ad6bb6b16004529e525e7a3922d8996eb0f",
-    "tdx_service_hash": "df1fb22de67fa11d0af041fa89926a7ad6fbeffbd7f88399484f179151e39d75",
+    "tdx_service_hash": "73329c35ddfd634333f3acc8d03d2e33f24d2a8a78e800372078368bf5d07471",
     "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
     "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
     "execution_profile": "paper_safe",
@@ -61,7 +61,7 @@
     "nonlinear_permutation_profile": "swiglu_shared_perm_P",
     "qk_bias_handling_profile": "rope_commuting_planar_rotation_OI1",
     "rank_mask_profile": "orthogonal_U",
-    "optimizer_profile": "o1c_hybrid_sgd",
+    "optimizer_profile": "o1c_hybrid_adamw_L12",
     "vocabulary_mask_profile": "monomial_perm_only",
     "gradient_convention": "masked_domain_dlogits",
     "dataset_batch_manifest_hash": "bc7f327616674854eb516a43721d9a7e038196b72eea738008070bb4b4137600",
@@ -69,11 +69,17 @@
     "transport_profile": "direct_a10_tdx_private",
     "compute_host": "alicloud_a10",
     "data_plane_ip": "172.30.25.153",
-    "hmac_key_commitment": "ef3f377f1ff7244ca5511215948821a89a59d1f793710bd331e14fbce97ab0e7",
+    "hmac_key_commitment": "5f81ff376781c8a9f6aa7a9e00c515a614d166fd813b2fb9fed35b4549e8b573",
     "session_key_derivation": "sha256(session_key||nonce)",
     "debug_false_required": true,
-    "nonce": "f5482f76e623dac8f7db1a909b65aa23",
-    "ephemeral_key_pub": "1b37e9b19e2681563daa553c56c0d0ab194ce65d69ab873d15f0cb4636626f6e"
+    "nonce": "15f9f82c25f94c98d73b24ec6a131abb",
+    "ephemeral_key_pub": "36bdfe42e840a8f031c985b8d5377d3d77255c484633d5e55c9e1667938ab33c"
   },
-  "counters_out": "/tmp/a10_session_counters.json"
+  "counters_out": "/tmp/a10_session_counters.json",
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
 }

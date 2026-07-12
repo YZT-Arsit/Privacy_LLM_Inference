@@ -1,0 +1,40 @@
+{
+  "label": "L12_PROTECTED_ADAMW_HARDWARE_GATE",
+  "compute_host": "alicloud_a10",
+  "transport": "direct_a10_tdx_private",
+  "protocol": "trusted enclave AdamW: m,v,step in TDX for A of {q,k,v,gate,up}+B of {q,k} (168 factors); GPU-exact monomial AdamW for A of {o,down}+B of {o,down,v,gate,up} (168 factors)",
+  "fp64_self_test": {
+    "max_transform_err": 0.0,
+    "max_roundtrip_err": 8.9e-16,
+    "max_step_err_5steps": 7.1e-15,
+    "PASS": true
+  },
+  "fp32_hardware_1step": {
+    "effective_equivalence_top1": 1.0,
+    "next_logit_kl": 5.785683043768586e-09,
+    "max_abs": 0.00033283233642578125,
+    "EXACT": true
+  },
+  "bf16_hardware_1step": {
+    "effective_equivalence_top1": 0.9047619104385376,
+    "note": "bf16 storage precision on the larger AdamW updates -> fp32 master weights required for L12 (known)"
+  },
+  "required_counters": {
+    "adamw_init_calls": 1,
+    "adamw_step_calls": 1,
+    "trusted_target_state_missing": 0,
+    "untrusted_moment_returns": 0,
+    "untrusted_gamma_returns": 0,
+    "auth_failures": 0,
+    "replay_rejected": 0,
+    "forbidden_key_rejected": 0
+  },
+  "trusted_adamw_state_present": true,
+  "attestation": {
+    "attestation_verified": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0"
+  },
+  "no_offline_fp64_substitution": "real A10 GPU forward/backward + real TDX enclave AdamW; NOT an fp64 simulation",
+  "verdict": "L12 protocol VALIDATED on real hardware \u2014 fp32 exact (top1 1.0, KL 5.8e-9); enclave holds all trusted m,v; counters clean; attestation verified"
+}

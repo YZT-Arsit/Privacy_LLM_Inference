@@ -1,0 +1,43 @@
+{
+  "phase": "PHASE_1_validated_baseline_freeze",
+  "head": "e475a597d25bfb21b25e1f1b7bf064f0d58dd501",
+  "committed_by_me": false,
+  "source_bundle_hash": "a4497a2dca9e748d6942e4a0df2c8201c76f724d21c3b84c6e9beaac285459dc",
+  "a10_worker_hash_h800_unified_worker": "3d73c4eaeb4251e82800c23bfd4220e3136127f27d117007a9a0e39ad9a51caf",
+  "a10_direct_runner_hash": "73a9d70f10e1c35fb244d149e3390ad6bb6b16004529e525e7a3922d8996eb0f",
+  "tdx_service_hash": "df1fb22de67fa11d0af041fa89926a7ad6fbeffbd7f88399484f179151e39d75",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "checkpoint_sha": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "dataset_manifest_hash_dry_run_ids": "7690d215fb26dd0b0a347d5c27995ce928e3b5e7f2d1b2e8f6331116958fdd57",
+  "result_archive_sha256": "464b93221342f799cdcd852bd7b61bc350bcde0bf5f6e9924b5a72a05b1bd8ca",
+  "topology": {
+    "a10_priv": "172.30.25.154",
+    "tdx_priv": "172.30.25.153",
+    "data_plane": "private_vpc_only",
+    "mac": "control_plane_only"
+  },
+  "measured_throughput_MBps": {
+    "download_TDX_to_A10": 170.0,
+    "upload_A10_to_TDX": 181.7
+  },
+  "software": {
+    "a10_torch": "2.8.0+cu128",
+    "a10_python": "3.10",
+    "transformers": "4.44.2",
+    "tdx_python": "miniconda tdx310"
+  },
+  "INTEGRITY_NOTE_ce_tolerance": {
+    "claim": "A10 vs H800 one-step CE delta = 0.008316189",
+    "preregistered_before_observation": false,
+    "classification": "OBSERVED_CROSS_PLATFORM_DIFFERENCE (bf16 sm_86 vs sm_90), NOT a pre-passed tolerance result",
+    "rationale": "the 2e-2 comparison band was chosen AFTER observing 0.008; honest labeling per reviewer instruction. The pre-passed algorithmic-correctness metric is effective_equivalence top1=1.0 vs A10 plaintext (that IS a proper check)."
+  },
+  "all_subsequent_runs_bind": [
+    "head",
+    "source_bundle_hash",
+    "package_root_hash",
+    "checkpoint_sha",
+    "tdx_service_hash"
+  ]
+}
