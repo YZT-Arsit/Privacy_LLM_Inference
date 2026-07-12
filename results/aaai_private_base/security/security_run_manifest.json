@@ -1,0 +1,87 @@
+{
+  "schema": "security_run_manifest",
+  "version": "1.0",
+  "model": "Qwen2.5-0.5B",
+  "threat_model": "from_scratch_private_base",
+  "goal_scope": "empirical resistance under evaluated threat model + published attacks; NOT formal/zero-leakage/information-theoretic security",
+  "device": "cpu_only_offline",
+  "used_active_a10_or_tdx": false,
+  "used_production_checkpoints": false,
+  "committed": false,
+  "artifacts": {
+    "S1": {
+      "path": "privacy_llm_obfuscation/results/aaai_private_base/security/S1_representation_inversion/s1_results.json",
+      "sha256": "9473fa0ee932c99abc9ac1d7b1c639cb872d9c957b1e4e90f60c3012b0e1c9a6"
+    },
+    "S2": {
+      "path": "privacy_llm_obfuscation/results/aaai_private_base/security/S2_lora_recovery/s2_results.json",
+      "sha256": "c6841c4b000091889e765b213dc4b98389d92aca2179913ff4ae93984503cced"
+    },
+    "S3": {
+      "path": "privacy_llm_obfuscation/results/aaai_private_base/security/S3_logit_leakage/s3_results.json",
+      "sha256": "f5f04f770aac1158044fa579e6b5668f35035f41cfc3dbd4c03c11f79fd1a29a"
+    },
+    "S4": {
+      "path": "privacy_llm_obfuscation/results/aaai_private_base/security/S4_gradient_inversion/s4_results.json",
+      "sha256": "b26c519d71cbd82ea1677393778030e6938b3329fb45405e22c07f0acbc8b9fe"
+    },
+    "registry": {
+      "path": "results/aaai_private_base/security/security_registry.yaml",
+      "sha256": "5b07aa02ca081334ffba8fdf0fa1ff52275de78734eedbe005215ce2ff79debd"
+    },
+    "budget": {
+      "path": "results/aaai_private_base/security/attack_budget_registry.json",
+      "sha256": "dbc97488b3fdeaa51a8ce8b6bd3724b80061df69dd18f0333fef9e65a7068be2"
+    },
+    "paper_mapping": {
+      "path": "results/aaai_private_base/security/attack_paper_mapping.md",
+      "sha256": "b5dbbed6d603d2f2852ebc2b52496b3207e820c4b0a45e81bdad7e444f6557cc"
+    }
+  },
+  "headline_metrics": {
+    "S1": {
+      "strict_inversion_cosine_middle": 0.0018,
+      "random_baseline_cosine_middle": 0.0029,
+      "known_pairs_A1_linear_cosine_middle": 0.9291,
+      "synthetic_orthogonal_invertibility_rel_err": 5.666270406517282e-07,
+      "embedding_boundary_token_NN_acc": 1.0,
+      "invariant_norm_gap_middle": 1.8189894035458565e-12,
+      "invariant_gram_gap_middle": 7.916241884231567e-09
+    },
+    "S2": {
+      "control_plaintext_dW_rel_err": 2.3821776096480896e-15,
+      "ours_plaintext_dW_rel_err": 1.4148,
+      "sqrt2_uninformative_reference": 1.41421356
+    },
+    "S3": {
+      "B1_perm_only": {
+        "multiset_gap": 0.0,
+        "confidence_corr": 1.0
+      },
+      "B2_monomial": {
+        "multiset_gap": 30.2985,
+        "confidence_corr": 0.0092,
+        "sorted_prob_KL": 3.7215
+      }
+    },
+    "S4": {
+      "plaintext_b1_token_acc": 0.625,
+      "random_baseline_token_acc": 6.581718618365627e-06,
+      "plaintext_b1_mean_cosine": 0.2511,
+      "basis_invariance_max_gradmatch_loss_gap": 9.094947017729282e-13,
+      "basis_invariance_tokens_agree_frac": 1.0,
+      "batch_sweep_plaintext_token_acc": [
+        0.625,
+        0.875,
+        0.25,
+        0.0
+      ]
+    }
+  },
+  "positive_controls_pass": {
+    "S1": true,
+    "S2": true,
+    "S3": true,
+    "S4": true
+  }
+}

@@ -1,0 +1,542 @@
+{
+  "config": {
+    "physical_batch": 16,
+    "batched_forward": true,
+    "steps": 12630,
+    "eval_every": 200,
+    "seeds": [
+      1234,
+      2025,
+      7
+    ]
+  },
+  "cells": {
+    "L0": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.8853211009174312,
+      "mean_nll": 0.8760087408057047,
+      "n_correct": 772,
+      "selected_checkpoint_step": -1,
+      "selected_by": "best_dev_metric",
+      "eval_history": []
+    },
+    "L5_s1234": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.9162844036697247,
+      "mean_nll": 0.2374358276981826,
+      "n_correct": 799,
+      "selected_checkpoint_step": 400,
+      "selected_by": "best_dev_metric",
+      "eval_history": [
+        {
+          "step": 200,
+          "metric": 0.8956422018348624,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8956422018348624,
+            "mean_nll": 0.2558826536213586,
+            "n_correct": 781
+          }
+        },
+        {
+          "step": 400,
+          "metric": 0.9162844036697247,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9162844036697247,
+            "mean_nll": 0.2374358276981826,
+            "n_correct": 799
+          }
+        },
+        {
+          "step": 600,
+          "metric": 0.9139908256880734,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9139908256880734,
+            "mean_nll": 0.2283372220438008,
+            "n_correct": 797
+          }
+        },
+        {
+          "step": 800,
+          "metric": 0.8761467889908257,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8761467889908257,
+            "mean_nll": 0.29997612915317945,
+            "n_correct": 764
+          }
+        },
+        {
+          "step": 1000,
+          "metric": 0.8944954128440367,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8944954128440367,
+            "mean_nll": 0.2774320518204925,
+            "n_correct": 780
+          }
+        }
+      ]
+    },
+    "L12_s1234": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.9151376146788991,
+      "mean_nll": 0.2396792232853557,
+      "n_correct": 798,
+      "selected_checkpoint_step": 400,
+      "selected_by": "best_dev_metric",
+      "eval_history": [
+        {
+          "step": 200,
+          "metric": 0.911697247706422,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.911697247706422,
+            "mean_nll": 0.2394919732431753,
+            "n_correct": 795
+          }
+        },
+        {
+          "step": 400,
+          "metric": 0.9151376146788991,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9151376146788991,
+            "mean_nll": 0.2396792232853557,
+            "n_correct": 798
+          }
+        },
+        {
+          "step": 600,
+          "metric": 0.8922018348623854,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8922018348623854,
+            "mean_nll": 0.28406248767988396,
+            "n_correct": 778
+          }
+        },
+        {
+          "step": 800,
+          "metric": 0.9048165137614679,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9048165137614679,
+            "mean_nll": 0.2309170080297584,
+            "n_correct": 789
+          }
+        },
+        {
+          "step": 1000,
+          "metric": 0.8944954128440367,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8944954128440367,
+            "mean_nll": 0.2818184433453674,
+            "n_correct": 780
+          }
+        }
+      ]
+    },
+    "L5_s2025": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.9048165137614679,
+      "mean_nll": 0.2534260511945147,
+      "n_correct": 789,
+      "selected_checkpoint_step": 1200,
+      "selected_by": "best_dev_metric",
+      "eval_history": [
+        {
+          "step": 200,
+          "metric": 0.8807339449541285,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8807339449541285,
+            "mean_nll": 0.3210808506936108,
+            "n_correct": 768
+          }
+        },
+        {
+          "step": 400,
+          "metric": 0.8669724770642202,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8669724770642202,
+            "mean_nll": 0.36189021963045137,
+            "n_correct": 756
+          }
+        },
+        {
+          "step": 600,
+          "metric": 0.8876146788990825,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8876146788990825,
+            "mean_nll": 0.300159130484686,
+            "n_correct": 774
+          }
+        },
+        {
+          "step": 800,
+          "metric": 0.9013761467889908,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9013761467889908,
+            "mean_nll": 0.26860737827939724,
+            "n_correct": 786
+          }
+        },
+        {
+          "step": 1000,
+          "metric": 0.8681192660550459,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8681192660550459,
+            "mean_nll": 0.3011859716898804,
+            "n_correct": 757
+          }
+        },
+        {
+          "step": 1200,
+          "metric": 0.9048165137614679,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9048165137614679,
+            "mean_nll": 0.2534260511945147,
+            "n_correct": 789
+          }
+        },
+        {
+          "step": 1400,
+          "metric": 0.8704128440366973,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8704128440366973,
+            "mean_nll": 0.32993740130455124,
+            "n_correct": 759
+          }
+        },
+        {
+          "step": 1600,
+          "metric": 0.8830275229357798,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8830275229357798,
+            "mean_nll": 0.31721573729717406,
+            "n_correct": 770
+          }
+        },
+        {
+          "step": 1800,
+          "metric": 0.8853211009174312,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8853211009174312,
+            "mean_nll": 0.2806209412599922,
+            "n_correct": 772
+          }
+        }
+      ]
+    },
+    "L12_s2025": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.9231651376146789,
+      "mean_nll": 0.20849722534964937,
+      "n_correct": 805,
+      "selected_checkpoint_step": 400,
+      "selected_by": "best_dev_metric",
+      "eval_history": [
+        {
+          "step": 200,
+          "metric": 0.9036697247706422,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9036697247706422,
+            "mean_nll": 0.2637010325566618,
+            "n_correct": 788
+          }
+        },
+        {
+          "step": 400,
+          "metric": 0.9231651376146789,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9231651376146789,
+            "mean_nll": 0.20849722534964937,
+            "n_correct": 805
+          }
+        },
+        {
+          "step": 600,
+          "metric": 0.9036697247706422,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9036697247706422,
+            "mean_nll": 0.2548884149264852,
+            "n_correct": 788
+          }
+        },
+        {
+          "step": 800,
+          "metric": 0.8555045871559633,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8555045871559633,
+            "mean_nll": 0.36992728761440025,
+            "n_correct": 746
+          }
+        },
+        {
+          "step": 1000,
+          "metric": 0.911697247706422,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.911697247706422,
+            "mean_nll": 0.2332006121447327,
+            "n_correct": 795
+          }
+        }
+      ]
+    },
+    "L5_s7": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.9254587155963303,
+      "mean_nll": 0.2096826840841442,
+      "n_correct": 807,
+      "selected_checkpoint_step": 1400,
+      "selected_by": "best_dev_metric",
+      "eval_history": [
+        {
+          "step": 200,
+          "metric": 0.9151376146788991,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9151376146788991,
+            "mean_nll": 0.2449068735362193,
+            "n_correct": 798
+          }
+        },
+        {
+          "step": 400,
+          "metric": 0.911697247706422,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.911697247706422,
+            "mean_nll": 0.2445096353393629,
+            "n_correct": 795
+          }
+        },
+        {
+          "step": 600,
+          "metric": 0.9071100917431193,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9071100917431193,
+            "mean_nll": 0.22009708294901278,
+            "n_correct": 791
+          }
+        },
+        {
+          "step": 800,
+          "metric": 0.9208715596330275,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9208715596330275,
+            "mean_nll": 0.22738854785304552,
+            "n_correct": 803
+          }
+        },
+        {
+          "step": 1000,
+          "metric": 0.8979357798165137,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8979357798165137,
+            "mean_nll": 0.25383649704926603,
+            "n_correct": 783
+          }
+        },
+        {
+          "step": 1200,
+          "metric": 0.8944954128440367,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8944954128440367,
+            "mean_nll": 0.26653149122491887,
+            "n_correct": 780
+          }
+        },
+        {
+          "step": 1400,
+          "metric": 0.9254587155963303,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9254587155963303,
+            "mean_nll": 0.2096826840841442,
+            "n_correct": 807
+          }
+        },
+        {
+          "step": 1600,
+          "metric": 0.9048165137614679,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9048165137614679,
+            "mean_nll": 0.28768494957630786,
+            "n_correct": 789
+          }
+        },
+        {
+          "step": 1800,
+          "metric": 0.9002293577981652,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9002293577981652,
+            "mean_nll": 0.2763814559770287,
+            "n_correct": 785
+          }
+        },
+        {
+          "step": 2000,
+          "metric": 0.8830275229357798,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8830275229357798,
+            "mean_nll": 0.32285590832113126,
+            "n_correct": 770
+          }
+        }
+      ]
+    },
+    "L12_s7": {
+      "split": "dev",
+      "n": 872,
+      "accuracy": 0.9162844036697247,
+      "mean_nll": 0.2394520438729076,
+      "n_correct": 799,
+      "selected_checkpoint_step": 800,
+      "selected_by": "best_dev_metric",
+      "eval_history": [
+        {
+          "step": 200,
+          "metric": 0.911697247706422,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.911697247706422,
+            "mean_nll": 0.24978052670939252,
+            "n_correct": 795
+          }
+        },
+        {
+          "step": 400,
+          "metric": 0.9094036697247706,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9094036697247706,
+            "mean_nll": 0.24758316866985156,
+            "n_correct": 793
+          }
+        },
+        {
+          "step": 600,
+          "metric": 0.8795871559633027,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8795871559633027,
+            "mean_nll": 0.2873624596710599,
+            "n_correct": 767
+          }
+        },
+        {
+          "step": 800,
+          "metric": 0.9162844036697247,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.9162844036697247,
+            "mean_nll": 0.2394520438729076,
+            "n_correct": 799
+          }
+        },
+        {
+          "step": 1000,
+          "metric": 0.8979357798165137,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8979357798165137,
+            "mean_nll": 0.24237470438174152,
+            "n_correct": 783
+          }
+        },
+        {
+          "step": 1200,
+          "metric": 0.8807339449541285,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8807339449541285,
+            "mean_nll": 0.30562437824699856,
+            "n_correct": 768
+          }
+        },
+        {
+          "step": 1400,
+          "metric": 0.8692660550458715,
+          "evalres": {
+            "split": "dev",
+            "n": 872,
+            "accuracy": 0.8692660550458715,
+            "mean_nll": 0.2942882379807463,
+            "n_correct": 758
+          }
+        }
+      ]
+    }
+  }
+}

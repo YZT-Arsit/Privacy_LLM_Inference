@@ -1,0 +1,68 @@
+{
+  "experiment": "S3_logit_leakage",
+  "model": "Qwen2.5-0.5B",
+  "vocab": 151936,
+  "n_rows": 64,
+  "monomial_D_condition_number": 7.38889605337103,
+  "budget": {
+    "device": "cpu",
+    "seeds": [
+      0
+    ],
+    "note": "one real forward, closed-form metrics"
+  },
+  "schemes": {
+    "B0_plaintext": {
+      "value_multiset_max_abs_gap": 0.0,
+      "sorted_prob_KL_mean": 0.0,
+      "sorted_prob_KL_max": 0.0,
+      "confidence_maxprob_correlation": 1.0000001192092896,
+      "confidence_maxprob_mean_abs_diff": 0.0,
+      "entropy_mean_abs_diff": 0.0,
+      "top1_value_preserved_frac": 1.0
+    },
+    "B1_permutation_only": {
+      "value_multiset_max_abs_gap": 0.0,
+      "sorted_prob_KL_mean": 5.566965410253033e-05,
+      "sorted_prob_KL_max": 0.00014770840061828494,
+      "confidence_maxprob_correlation": 1.0000001192092896,
+      "confidence_maxprob_mean_abs_diff": 1.861737109720707e-05,
+      "entropy_mean_abs_diff": 0.00015665870159864426,
+      "top1_value_preserved_frac": 0.0
+    },
+    "B2_monomial": {
+      "value_multiset_max_abs_gap": 30.298532485961914,
+      "sorted_prob_KL_mean": 3.721492052078247,
+      "sorted_prob_KL_max": 9.00063705444336,
+      "confidence_maxprob_correlation": 0.00919503252953291,
+      "confidence_maxprob_mean_abs_diff": 0.5103418231010437,
+      "entropy_mean_abs_diff": 3.0440917015075684,
+      "top1_value_preserved_frac": 0.0
+    }
+  },
+  "interpretation": {
+    "permutation_only": "value multiset gap ~0 and confidence correlation ~1 => the EXACT confidence/uncertainty profile leaks (only token identities hidden by the unknown permutation).",
+    "monomial": "value multiset gap > 0, sorted-prob KL > 0, confidence correlation < 1 => the monomial D perturbs the distribution, reducing the exactly-preserved multiset/confidence leak.",
+    "leak_reduction": {
+      "multiset_gap_B1_to_B2": [
+        0.0,
+        30.298532485961914
+      ],
+      "confidence_corr_B1_to_B2": [
+        1.0000001192092896,
+        0.00919503252953291
+      ],
+      "sorted_prob_KL_B1_to_B2": [
+        5.566965410253033e-05,
+        3.721492052078247
+      ]
+    },
+    "scope": "both B1 and B2 hide token IDENTITY equally (same permutation); the design improvement is strictly in reducing distributional (multiset/confidence) leakage. We do NOT claim identity confidentiality from the logit mask alone."
+  },
+  "limitations": [
+    "The frozen shipped package uses permutation-only (D=I); B2 evaluates the proposed monomial D as a design option, not the currently-built default.",
+    "Monomial condition number is bounded (~7) to avoid bf16 overflow; larger D reduces leakage further but risks numerical range \u2014 a documented trade-off, not a free win.",
+    "An attacker with known-plaintext logit pairs could estimate D per column (D>0 diagonal is identifiable from ratios); monomial resists identity-free multiset reading, not a full known-plaintext attacker."
+  ],
+  "wall_sec": 5.6
+}

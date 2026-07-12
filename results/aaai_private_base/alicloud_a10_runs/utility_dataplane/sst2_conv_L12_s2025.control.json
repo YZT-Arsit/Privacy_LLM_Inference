@@ -1,0 +1,80 @@
+{
+  "run_id": "sst2_conv_L12_s2025-1783859335-0ee68a",
+  "session_key_hex": "e0f549e14eb6f2d14bd8b097124c0f331c74f918c44f43df102e9346f913e86d",
+  "tag": "sst2_conv_L12_s2025",
+  "control_wall_sec": 461.8,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 2025,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.9231651376146789,
+    "mean_nll": 0.20849722534964937,
+    "n_correct": 805,
+    "selected_checkpoint_step": 400,
+    "selected_by": "best_dev_metric",
+    "eval_history": [
+      {
+        "step": 200,
+        "metric": 0.9036697247706422,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9036697247706422,
+          "mean_nll": 0.2637010325566618,
+          "n_correct": 788
+        }
+      },
+      {
+        "step": 400,
+        "metric": 0.9231651376146789,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9231651376146789,
+          "mean_nll": 0.20849722534964937,
+          "n_correct": 805
+        }
+      },
+      {
+        "step": 600,
+        "metric": 0.9036697247706422,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9036697247706422,
+          "mean_nll": 0.2548884149264852,
+          "n_correct": 788
+        }
+      },
+      {
+        "step": 800,
+        "metric": 0.8555045871559633,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8555045871559633,
+          "mean_nll": 0.36992728761440025,
+          "n_correct": 746
+        }
+      },
+      {
+        "step": 1000,
+        "metric": 0.911697247706422,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.911697247706422,
+          "mean_nll": 0.2332006121447327,
+          "n_correct": 795
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "task": "SST-2",
+  "arms": {
+    "L0_base_floor_acc": 0.8853211009174312,
+    "L5_plaintext_fp32_ref_mean_acc": 0.9155,
+    "L12_protected_bf16_mean_acc": 0.9182
+  },
+  "per_seed": [
+    {
+      "seed": 1234,
+      "L5_acc": 0.9163,
+      "L12_acc": 0.9151,
+      "paired_L12_minus_L5": -0.0011,
+      "L5_nll": 0.2374,
+      "L12_nll": 0.2397
+    },
+    {
+      "seed": 2025,
+      "L5_acc": 0.9048,
+      "L12_acc": 0.9232,
+      "paired_L12_minus_L5": 0.0183,
+      "L5_nll": 0.2534,
+      "L12_nll": 0.2085
+    },
+    {
+      "seed": 7,
+      "L5_acc": 0.9255,
+      "L12_acc": 0.9163,
+      "paired_L12_minus_L5": -0.0092,
+      "L5_nll": 0.2097,
+      "L12_nll": 0.2395
+    }
+  ],
+  "paired_L12_minus_L5": {
+    "mean": 0.0027,
+    "sd": 0.0142,
+    "se": 0.0082,
+    "t_ci95_df2": [
+      -0.0325,
+      0.0378
+    ]
+  },
+  "equivalence_margin_acc": 0.01,
+  "decision": "EQUIVALENT_IN_MEAN: |mean paired diff|=0.0027 < 0.01 margin; L12 (protected bf16) shows no systematic degradation vs L5 (plaintext-equivalent fp32). Per-seed diffs range -0.0092..0.0183; with only 3 seeds the 95% CI [-0.0325, 0.0378] is wide and does not by itself establish strict TOST equivalence \u2014 reported honestly.",
+  "notes": [
+    "best-dev checkpoint selection + early stopping (patience 3) => seeds converge at different steps (sel 400-1400); within the frozen recipe.",
+    "per-example paired bootstrap over the 872 dev items requires raw per-example predictions, which these result JSONs do not store; seed-level paired stats reported instead.",
+    "L0 base floor 0.8853; both arms clear it by ~3 points."
+  ]
+}

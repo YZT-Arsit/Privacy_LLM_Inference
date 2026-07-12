@@ -1,0 +1,445 @@
+{
+  "experiment": "S4_gradient_inversion",
+  "model": "Qwen2.5-0.5B",
+  "threat_model": "from_scratch_private_base",
+  "targets": [
+    55011,
+    128590,
+    14063,
+    29885,
+    89958,
+    32118,
+    81680,
+    32201
+  ],
+  "budget": {
+    "optimizer": "LBFGS lr0.5 max_iter20",
+    "steps": 600,
+    "restarts": 3,
+    "adapter_rank": 8,
+    "device": "cpu",
+    "seeds": [
+      0,
+      5,
+      321
+    ]
+  },
+  "random_baseline_token_acc": 6.581718618365627e-06,
+  "random_baseline_embedding_cosine": "~0 (896-dim random)",
+  "positive_control_plaintext_b1": {
+    "batch": 1,
+    "masked": false,
+    "n": 8,
+    "token_recovery_acc": 0.625,
+    "mean_embedding_cosine": 0.2511498392080559,
+    "per_token": [
+      {
+        "token": 55011,
+        "label_true": 1,
+        "label_idlg": 0,
+        "recovered_token_exact": 0,
+        "row0_embedding_cosine": -0.9925
+      },
+      {
+        "token": 128590,
+        "label_true": 0,
+        "label_idlg": 0,
+        "recovered_token_exact": 1,
+        "row0_embedding_cosine": 0.9923
+      },
+      {
+        "token": 14063,
+        "label_true": 1,
+        "label_idlg": 1,
+        "recovered_token_exact": 1,
+        "row0_embedding_cosine": 0.998
+      },
+      {
+        "token": 29885,
+        "label_true": 1,
+        "label_idlg": 1,
+        "recovered_token_exact": 1,
+        "row0_embedding_cosine": 1.0
+      },
+      {
+        "token": 89958,
+        "label_true": 0,
+        "label_idlg": 1,
+        "recovered_token_exact": 0,
+        "row0_embedding_cosine": -0.9971
+      },
+      {
+        "token": 32118,
+        "label_true": 0,
+        "label_idlg": 1,
+        "recovered_token_exact": 0,
+        "row0_embedding_cosine": -0.9903
+      },
+      {
+        "token": 81680,
+        "label_true": 0,
+        "label_idlg": 0,
+        "recovered_token_exact": 1,
+        "row0_embedding_cosine": 0.9988
+      },
+      {
+        "token": 32201,
+        "label_true": 1,
+        "label_idlg": 1,
+        "recovered_token_exact": 1,
+        "row0_embedding_cosine": 1.0
+      }
+    ]
+  },
+  "masked_b1": {},
+  "basis_invariance": {
+    "max_gradmatch_loss_gap": 9.094947017729282e-13,
+    "tokens_agree_frac": 1.0,
+    "per_token": [
+      {
+        "token": 55011,
+        "gradmatch_loss_plain": 2072.4995036341857,
+        "gradmatch_loss_masked_conjugate": 2072.4995036341847,
+        "nn_token_plain": 11,
+        "nn_token_masked": 11,
+        "tokens_agree": true
+      },
+      {
+        "token": 128590,
+        "gradmatch_loss_plain": 0.0006623944071919162,
+        "gradmatch_loss_masked_conjugate": 0.0006623944071919136,
+        "nn_token_plain": 128590,
+        "nn_token_masked": 128590,
+        "tokens_agree": true
+      },
+      {
+        "token": 14063,
+        "gradmatch_loss_plain": 0.0033353468659219902,
+        "gradmatch_loss_masked_conjugate": 0.003335346865922016,
+        "nn_token_plain": 14063,
+        "nn_token_masked": 14063,
+        "tokens_agree": true
+      },
+      {
+        "token": 29885,
+        "gradmatch_loss_plain": 0.0001442448663838314,
+        "gradmatch_loss_masked_conjugate": 0.00014424486638383403,
+        "nn_token_plain": 29885,
+        "nn_token_masked": 29885,
+        "tokens_agree": true
+      },
+      {
+        "token": 89958,
+        "gradmatch_loss_plain": 1832.2241215081692,
+        "gradmatch_loss_masked_conjugate": 1832.2241215081697,
+        "nn_token_plain": 11,
+        "nn_token_masked": 11,
+        "tokens_agree": true
+      },
+      {
+        "token": 32118,
+        "gradmatch_loss_plain": 1902.9308863420786,
+        "gradmatch_loss_masked_conjugate": 1902.930886342078,
+        "nn_token_plain": 320,
+        "nn_token_masked": 320,
+        "tokens_agree": true
+      },
+      {
+        "token": 81680,
+        "gradmatch_loss_plain": 0.0017920639205787074,
+        "gradmatch_loss_masked_conjugate": 0.0017920639205787068,
+        "nn_token_plain": 81680,
+        "nn_token_masked": 81680,
+        "tokens_agree": true
+      },
+      {
+        "token": 32201,
+        "gradmatch_loss_plain": 6.227298786855003e-05,
+        "gradmatch_loss_masked_conjugate": 6.227298786855123e-05,
+        "nn_token_plain": 32201,
+        "nn_token_masked": 32201,
+        "tokens_agree": true
+      }
+    ],
+    "interpretation": "for every target the masked gradient-match loss equals the plaintext one and the masked NN recovers the same token => the orthogonal mask provides no additional protection against gradient inversion (transparent change of basis)."
+  },
+  "batch_sweep_masked": "identical_to_plaintext_by_basis_invariance (see basis_invariance)",
+  "batch_sweep_plaintext": [
+    {
+      "batch": 1,
+      "masked": false,
+      "n": 8,
+      "token_recovery_acc": 0.625,
+      "mean_embedding_cosine": 0.2521985226887986,
+      "per_token": [
+        {
+          "token": 55011,
+          "label_true": 1,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.9724
+        },
+        {
+          "token": 128590,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.9866
+        },
+        {
+          "token": 14063,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.9918
+        },
+        {
+          "token": 29885,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.9911
+        },
+        {
+          "token": 89958,
+          "label_true": 0,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.9934
+        },
+        {
+          "token": 32118,
+          "label_true": 0,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.981
+        },
+        {
+          "token": 81680,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.995
+        },
+        {
+          "token": 32201,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.9998
+        }
+      ]
+    },
+    {
+      "batch": 2,
+      "masked": false,
+      "n": 8,
+      "token_recovery_acc": 0.875,
+      "mean_embedding_cosine": 0.5303201141808827,
+      "per_token": [
+        {
+          "token": 55011,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.6019
+        },
+        {
+          "token": 128590,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.7593
+        },
+        {
+          "token": 14063,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.7267
+        },
+        {
+          "token": 29885,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.753
+        },
+        {
+          "token": 89958,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.735
+        },
+        {
+          "token": 32118,
+          "label_true": 0,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.7552
+        },
+        {
+          "token": 81680,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.724
+        },
+        {
+          "token": 32201,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.6978
+        }
+      ]
+    },
+    {
+      "batch": 4,
+      "masked": false,
+      "n": 8,
+      "token_recovery_acc": 0.25,
+      "mean_embedding_cosine": 0.15862432379914085,
+      "per_token": [
+        {
+          "token": 55011,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.525
+        },
+        {
+          "token": 128590,
+          "label_true": 0,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.5753
+        },
+        {
+          "token": 14063,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.2306
+        },
+        {
+          "token": 29885,
+          "label_true": 1,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.5587
+        },
+        {
+          "token": 89958,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.5751
+        },
+        {
+          "token": 32118,
+          "label_true": 0,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": -0.0281
+        },
+        {
+          "token": 81680,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.5384
+        },
+        {
+          "token": 32201,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 1,
+          "row0_embedding_cosine": 0.562
+        }
+      ]
+    },
+    {
+      "batch": 8,
+      "masked": false,
+      "n": 8,
+      "token_recovery_acc": 0.0,
+      "mean_embedding_cosine": 0.33183703360820416,
+      "per_token": [
+        {
+          "token": 55011,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.39
+        },
+        {
+          "token": 128590,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.4087
+        },
+        {
+          "token": 14063,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.2871
+        },
+        {
+          "token": 29885,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.3475
+        },
+        {
+          "token": 89958,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.4877
+        },
+        {
+          "token": 32118,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.2787
+        },
+        {
+          "token": 81680,
+          "label_true": 0,
+          "label_idlg": 0,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.4337
+        },
+        {
+          "token": 32201,
+          "label_true": 1,
+          "label_idlg": 1,
+          "recovered_token_exact": 0,
+          "row0_embedding_cosine": 0.0214
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Shallow batch-1 supervised head, not the full 24-layer LoRA stack; DLG is known not to converge on deep models / large batches, so batch-1 is the strongest (favourable-to-attacker) case.",
+    "Token recovery uses NN against the (masked) embedding table the attacker legitimately holds; this isolates the change-of-basis transparency, the key point.",
+    "The real protocol's per-step adapter gradients are computed on the untrusted GPU; this experiment argues the defense must be aggregation / non-exposure, and is scoped accordingly \u2014 we do NOT claim the mask defeats gradient inversion."
+  ],
+  "verdict": {
+    "plaintext_b1_mean_cosine": 0.2511498392080559,
+    "plaintext_b1_token_acc": 0.625,
+    "random_baseline_token_acc": 6.581718618365627e-06,
+    "masked_b1_mean_cosine": 0.2511498392080559,
+    "basis_invariance_max_gradmatch_loss_gap": 9.094947017729282e-13,
+    "basis_invariance_tokens_agree_frac": 1.0,
+    "finding": "the plaintext DLG solution, mapped through Nr, matches the MASKED gradients with an identical gradient-match loss and recovers the identical token via NN over E_tilde. Gradient inversion is therefore exactly as (in)effective in the masked basis as in plaintext \u2014 the orthogonal mask is a transparent change of basis. Privacy against gradient inversion comes from batch aggregation + not exposing per-example gradients, NOT from the mask.",
+    "aggregation_effect": "batch_sweep_plaintext: token recovery degrades as batch size grows."
+  },
+  "wall_sec": 172.3
+}

@@ -1,0 +1,102 @@
+{
+  "run_id": "sst2_conv_L12_s7-1783861193-c4b330",
+  "session_key_hex": "b1f241fbc2038fbd67475f3e4ba55a6b8531c97e895a3f78e31bd450705cd43e",
+  "tag": "sst2_conv_L12_s7",
+  "control_wall_sec": 637.8,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L12",
+  "seed": 7,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.9162844036697247,
+    "mean_nll": 0.2394520438729076,
+    "n_correct": 799,
+    "selected_checkpoint_step": 800,
+    "selected_by": "best_dev_metric",
+    "eval_history": [
+      {
+        "step": 200,
+        "metric": 0.911697247706422,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.911697247706422,
+          "mean_nll": 0.24978052670939252,
+          "n_correct": 795
+        }
+      },
+      {
+        "step": 400,
+        "metric": 0.9094036697247706,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9094036697247706,
+          "mean_nll": 0.24758316866985156,
+          "n_correct": 793
+        }
+      },
+      {
+        "step": 600,
+        "metric": 0.8795871559633027,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8795871559633027,
+          "mean_nll": 0.2873624596710599,
+          "n_correct": 767
+        }
+      },
+      {
+        "step": 800,
+        "metric": 0.9162844036697247,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9162844036697247,
+          "mean_nll": 0.2394520438729076,
+          "n_correct": 799
+        }
+      },
+      {
+        "step": 1000,
+        "metric": 0.8979357798165137,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8979357798165137,
+          "mean_nll": 0.24237470438174152,
+          "n_correct": 783
+        }
+      },
+      {
+        "step": 1200,
+        "metric": 0.8807339449541285,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8807339449541285,
+          "mean_nll": 0.30562437824699856,
+          "n_correct": 768
+        }
+      },
+      {
+        "step": 1400,
+        "metric": 0.8692660550458715,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8692660550458715,
+          "mean_nll": 0.2942882379807463,
+          "n_correct": 758
+        }
+      }
+    ]
+  }
+}

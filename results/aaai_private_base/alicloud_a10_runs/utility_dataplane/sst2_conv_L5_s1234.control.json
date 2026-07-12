@@ -1,0 +1,80 @@
+{
+  "run_id": "sst2_conv_L5_s1234-1783856982-e749f4",
+  "session_key_hex": "c8b307c665a2a4e02ba3e7e70273ce6437af85da747fc7b5bd310903d62a2e2e",
+  "tag": "sst2_conv_L5_s1234",
+  "control_wall_sec": 533.6,
+  "rc": 0,
+  "dataset": "sst2",
+  "task": "cls",
+  "profile": "L5",
+  "seed": 1234,
+  "eval_split": "dev",
+  "checkpoint": null,
+  "ledger_checkpoint": null,
+  "eval": {
+    "split": "dev",
+    "n": 872,
+    "accuracy": 0.9162844036697247,
+    "mean_nll": 0.2374358276981826,
+    "n_correct": 799,
+    "selected_checkpoint_step": 400,
+    "selected_by": "best_dev_metric",
+    "eval_history": [
+      {
+        "step": 200,
+        "metric": 0.8956422018348624,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8956422018348624,
+          "mean_nll": 0.2558826536213586,
+          "n_correct": 781
+        }
+      },
+      {
+        "step": 400,
+        "metric": 0.9162844036697247,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9162844036697247,
+          "mean_nll": 0.2374358276981826,
+          "n_correct": 799
+        }
+      },
+      {
+        "step": 600,
+        "metric": 0.9139908256880734,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.9139908256880734,
+          "mean_nll": 0.2283372220438008,
+          "n_correct": 797
+        }
+      },
+      {
+        "step": 800,
+        "metric": 0.8761467889908257,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8761467889908257,
+          "mean_nll": 0.29997612915317945,
+          "n_correct": 764
+        }
+      },
+      {
+        "step": 1000,
+        "metric": 0.8944954128440367,
+        "evalres": {
+          "split": "dev",
+          "n": 872,
+          "accuracy": 0.8944954128440367,
+          "mean_nll": 0.2774320518204925,
+          "n_correct": 780
+        }
+      }
+    ]
+  }
+}

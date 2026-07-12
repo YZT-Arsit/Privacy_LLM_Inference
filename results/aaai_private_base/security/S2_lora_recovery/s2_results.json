@@ -1,0 +1,103 @@
+{
+  "experiment": "S2_lora_recovery",
+  "model": "Qwen2.5-0.5B",
+  "threat_model": "from_scratch_private_base",
+  "budget": {
+    "svd": "one full SVD",
+    "optimization": "Adam lr5e-2 x600 steps",
+    "device": "cpu",
+    "seeds": [
+      0
+    ]
+  },
+  "cases": {
+    "ours_masked_adapter": {
+      "label": "ours_masked_adapter",
+      "shapes": {
+        "A": [
+          896,
+          16
+        ],
+        "B": [
+          16,
+          896
+        ],
+        "r": 16
+      },
+      "A1_svd": {
+        "recovers_masked_product_rel_err": 1.5689738024433097e-15,
+        "plaintext_dW_rel_err": 1.414751463039873,
+        "factor_A_alignment_vs_true": {
+          "subspace_alignment_mean_cos": 0.11012517485218348,
+          "subspace_alignment_min_cos": 0.0008671264267287148
+        },
+        "downstream_delta_vs_plaintext_dW": 1.4744479462489377,
+        "note": "SVD recovers the MASKED product exactly, but that equals Nout^-1 \u0394W Nin, not plaintext \u0394W; individual factors are non-identifiable (rotation)."
+      },
+      "A2_optimization": {
+        "recovers_masked_product_rel_err": 0.9742439301930288,
+        "best_plaintext_dW_rel_err": 1.0219121631974935,
+        "downstream_delta_vs_plaintext_dW": 1.019517143126724,
+        "note": "optimization converges to the masked product; unmasking requires the secret side masks."
+      },
+      "A3_functional": {
+        "masked_function_reproduction_rel_err": 0.0,
+        "plaintext_function_rel_err": 1.4147514630398728,
+        "note": "the masked function IS the deployment; reproducing it is not plaintext-adapter theft. Plaintext \u0394W rel-err stays high (masked)."
+      }
+    }
+  },
+  "positive_control": {
+    "plaintext_adapter": {
+      "label": "plaintext_adapter",
+      "shapes": {
+        "A": [
+          896,
+          16
+        ],
+        "B": [
+          16,
+          896
+        ],
+        "r": 16
+      },
+      "A1_svd": {
+        "recovers_masked_product_rel_err": 2.3821776096480896e-15,
+        "plaintext_dW_rel_err": 2.3821776096480896e-15,
+        "factor_A_alignment_vs_true": {
+          "subspace_alignment_mean_cos": 1.0,
+          "subspace_alignment_min_cos": 0.9999999999999996
+        },
+        "downstream_delta_vs_plaintext_dW": 2.5986736736237334e-15,
+        "note": "SVD recovers the MASKED product exactly, but that equals Nout^-1 \u0394W Nin, not plaintext \u0394W; individual factors are non-identifiable (rotation)."
+      },
+      "A2_optimization": {
+        "recovers_masked_product_rel_err": 0.9865351400248403,
+        "best_plaintext_dW_rel_err": 0.9865351400248403,
+        "downstream_delta_vs_plaintext_dW": 0.9882877071148145,
+        "note": "optimization converges to the masked product; unmasking requires the secret side masks."
+      },
+      "A3_functional": {
+        "masked_function_reproduction_rel_err": 0.0,
+        "plaintext_function_rel_err": 0.0,
+        "note": "the masked function IS the deployment; reproducing it is not plaintext-adapter theft. Plaintext \u0394W rel-err stays high (masked)."
+      }
+    }
+  },
+  "random_baseline": {
+    "plaintext_dW_rel_err": 123.19315470163247,
+    "downstream_delta_vs_plaintext_dW": 121.62539733157962
+  },
+  "limitations": [
+    "LoRA factorization is inherently non-unique (rotation), so 'recover A,B' is ill-posed even in plaintext; we measure the well-defined \u0394W and subspace alignment.",
+    "Protection of plaintext \u0394W rests on the secret orthogonal side masks; as in S1 these are linearly invertible given paired plaintext (masks-secrecy = TEE assumption), so the claim is scoped to an attacker without paired plaintext.",
+    "Downstream delta uses random plaintext inputs, not a task-specific eval; it measures functional distance of \u0394W, not end-task utility loss."
+  ],
+  "summary": {
+    "ours_plaintext_dW_rel_err_A1": 1.414751463039873,
+    "control_plaintext_dW_rel_err_A1": 2.3821776096480896e-15,
+    "random_plaintext_dW_rel_err": 123.19315470163247,
+    "verdict": "positive control recovers plaintext \u0394W (rel_err~0); ours leaves plaintext \u0394W at ~random rel_err \u2014 masked product recoverable, plaintext \u0394W not, without the secret side masks."
+  },
+  "wall_sec": 4.3
+}

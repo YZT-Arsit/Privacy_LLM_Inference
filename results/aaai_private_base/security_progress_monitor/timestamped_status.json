@@ -1,0 +1,363 @@
+[
+  {
+    "ts": "2026-07-12T12:03:30+00:00",
+    "main_experiment_healthy": true,
+    "driver_pids": [
+      "17593",
+      "17596"
+    ],
+    "orchestrator_pids": [
+      "18802"
+    ],
+    "gpu": "0 %, 6597 MiB, 23028 MiB, 39",
+    "remote_procs": "8    09:39:48  0.0  0.0 kworker/0:0H-events_highpri\n     23    09:39:48  0.0  0.0 kworker/1:0-events\n     24    09:39:48  0.0  0.0 kworker/1:0H-events_highpri\n     30    09:39:48  0.0  0.0 kworker/2:0H-events_highpri\n     36    09:39:48  0.0  0.0 kworker/3:0H-events_highpri\n     42    09:39:48  0.0  0.0 kworker/4:0H-events_highpri",
+    "remote_checkpoints": "",
+    "task_output_tail": [
+      "        }",
+      "      }",
+      "    ]",
+      "  }",
+      "}",
+      "[run] sst2_conv_L12_s1234 profile=L12 seed=1234 steps=12630 @ 20:00:47"
+    ],
+    "cells_present": [
+      "sst2_conv_L0",
+      "sst2_conv_L5_s1234"
+    ],
+    "cells": {
+      "sst2_conv_L0": {
+        "state": "present",
+        "steps_run": 0,
+        "acc": 0.8853211009174312,
+        "nll": 0.8760087408057047,
+        "sel_step": -1,
+        "mtime": "2026-07-12T19:49:35"
+      },
+      "sst2_conv_L5_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9162844036697247,
+        "nll": 0.2374358276981826,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:00:15"
+      },
+      "sst2_conv_L12_s1234": {
+        "state": "pending"
+      },
+      "sst2_conv_L5_s2025": {
+        "state": "pending"
+      },
+      "sst2_conv_L12_s2025": {
+        "state": "pending"
+      },
+      "sst2_conv_L5_s7": {
+        "state": "pending"
+      },
+      "sst2_conv_L12_s7": {
+        "state": "pending"
+      }
+    },
+    "note": "main experiment healthy, security experiments continue independently."
+  },
+  {
+    "ts": "2026-07-12T12:03:42+00:00",
+    "main_experiment_healthy": true,
+    "driver_pids": [
+      "17593",
+      "17596"
+    ],
+    "orchestrator_pids": [
+      "18802"
+    ],
+    "gpu": "29 %, 7201 MiB, 23028 MiB, 40",
+    "remote_procs": "8    09:39:59  0.0  0.0 kworker/0:0H-events_highpri\n     23    09:39:59  0.0  0.0 kworker/1:0-events\n     24    09:39:59  0.0  0.0 kworker/1:0H-events_highpri\n     30    09:39:59  0.0  0.0 kworker/2:0H-events_highpri\n     36    09:39:59  0.0  0.0 kworker/3:0H-events_highpri\n     42    09:39:59  0.0  0.0 kworker/4:0H-events_highpri",
+    "remote_checkpoints": "",
+    "task_output_tail": [
+      "        }",
+      "      }",
+      "    ]",
+      "  }",
+      "}",
+      "[run] sst2_conv_L12_s1234 profile=L12 seed=1234 steps=12630 @ 20:00:47"
+    ],
+    "cells_present": [
+      "sst2_conv_L0",
+      "sst2_conv_L5_s1234"
+    ],
+    "cells": {
+      "sst2_conv_L0": {
+        "state": "present",
+        "steps_run": 0,
+        "acc": 0.8853211009174312,
+        "nll": 0.8760087408057047,
+        "sel_step": -1,
+        "mtime": "2026-07-12T19:49:35"
+      },
+      "sst2_conv_L5_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9162844036697247,
+        "nll": 0.2374358276981826,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:00:15"
+      },
+      "sst2_conv_L12_s1234": {
+        "state": "pending"
+      },
+      "sst2_conv_L5_s2025": {
+        "state": "pending"
+      },
+      "sst2_conv_L12_s2025": {
+        "state": "pending"
+      },
+      "sst2_conv_L5_s7": {
+        "state": "pending"
+      },
+      "sst2_conv_L12_s7": {
+        "state": "pending"
+      }
+    },
+    "note": "main experiment healthy, security experiments continue independently."
+  },
+  {
+    "ts": "2026-07-12T12:33:45+00:00",
+    "main_experiment_healthy": true,
+    "driver_pids": [
+      "17593",
+      "17596"
+    ],
+    "orchestrator_pids": [
+      "21138"
+    ],
+    "gpu": "20 %, 6221 MiB, 23028 MiB, 44",
+    "remote_procs": "8    10:10:01  0.0  0.0 kworker/0:0H-events_highpri\n     23    10:10:01  0.0  0.0 kworker/1:0-events\n     24    10:10:01  0.0  0.0 kworker/1:0H-events_highpri\n     30    10:10:01  0.0  0.0 kworker/2:0H-events_highpri\n     36    10:10:01  0.0  0.0 kworker/3:0H-events_highpri\n     42    10:10:01  0.0  0.0 kworker/4:0H-events_highpri",
+    "remote_checkpoints": "",
+    "task_output_tail": [
+      "        }",
+      "      }",
+      "    ]",
+      "  }",
+      "}",
+      "[run] sst2_conv_L12_s2025 profile=L12 seed=2025 steps=12630 @ 20:28:55"
+    ],
+    "cells_present": [
+      "sst2_conv_L0",
+      "sst2_conv_L5_s1234",
+      "sst2_conv_L12_s1234",
+      "sst2_conv_L5_s2025"
+    ],
+    "cells": {
+      "sst2_conv_L0": {
+        "state": "present",
+        "steps_run": 0,
+        "acc": 0.8853211009174312,
+        "nll": 0.8760087408057047,
+        "sel_step": -1,
+        "mtime": "2026-07-12T19:49:35"
+      },
+      "sst2_conv_L5_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9162844036697247,
+        "nll": 0.2374358276981826,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:00:15"
+      },
+      "sst2_conv_L12_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9151376146788991,
+        "nll": 0.2396792232853557,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:10:17"
+      },
+      "sst2_conv_L5_s2025": {
+        "state": "present",
+        "steps_run": 1800,
+        "acc": 0.9048165137614679,
+        "nll": 0.2534260511945147,
+        "sel_step": 1200,
+        "mtime": "2026-07-12T20:28:17"
+      },
+      "sst2_conv_L12_s2025": {
+        "state": "pending"
+      },
+      "sst2_conv_L5_s7": {
+        "state": "pending"
+      },
+      "sst2_conv_L12_s7": {
+        "state": "pending"
+      }
+    },
+    "note": "main experiment healthy, security experiments continue independently."
+  },
+  {
+    "ts": "2026-07-12T13:03:48+00:00",
+    "main_experiment_healthy": true,
+    "driver_pids": [
+      "17593",
+      "17596"
+    ],
+    "orchestrator_pids": [
+      "23539"
+    ],
+    "gpu": "29 %, 7387 MiB, 23028 MiB, 43",
+    "remote_procs": "8    10:40:04  0.0  0.0 kworker/0:0H-events_highpri\n     23    10:40:04  0.0  0.0 kworker/1:0-events\n     24    10:40:04  0.0  0.0 kworker/1:0H-events_highpri\n     30    10:40:04  0.0  0.0 kworker/2:0H-events_highpri\n     36    10:40:04  0.0  0.0 kworker/3:0H-events_highpri\n     42    10:40:04  0.0  0.0 kworker/4:0H-events_highpri",
+    "remote_checkpoints": "",
+    "task_output_tail": [
+      "        }",
+      "      }",
+      "    ]",
+      "  }",
+      "}",
+      "[run] sst2_conv_L12_s7 profile=L12 seed=7 steps=12630 @ 20:59:53"
+    ],
+    "cells_present": [
+      "sst2_conv_L0",
+      "sst2_conv_L5_s1234",
+      "sst2_conv_L12_s1234",
+      "sst2_conv_L5_s2025",
+      "sst2_conv_L12_s2025",
+      "sst2_conv_L5_s7"
+    ],
+    "cells": {
+      "sst2_conv_L0": {
+        "state": "present",
+        "steps_run": 0,
+        "acc": 0.8853211009174312,
+        "nll": 0.8760087408057047,
+        "sel_step": -1,
+        "mtime": "2026-07-12T19:49:35"
+      },
+      "sst2_conv_L5_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9162844036697247,
+        "nll": 0.2374358276981826,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:00:15"
+      },
+      "sst2_conv_L12_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9151376146788991,
+        "nll": 0.2396792232853557,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:10:17"
+      },
+      "sst2_conv_L5_s2025": {
+        "state": "present",
+        "steps_run": 1800,
+        "acc": 0.9048165137614679,
+        "nll": 0.2534260511945147,
+        "sel_step": 1200,
+        "mtime": "2026-07-12T20:28:17"
+      },
+      "sst2_conv_L12_s2025": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9231651376146789,
+        "nll": 0.20849722534964937,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:38:30"
+      },
+      "sst2_conv_L5_s7": {
+        "state": "present",
+        "steps_run": 2000,
+        "acc": 0.9254587155963303,
+        "nll": 0.2096826840841442,
+        "sel_step": 1400,
+        "mtime": "2026-07-12T20:59:15"
+      },
+      "sst2_conv_L12_s7": {
+        "state": "pending"
+      }
+    },
+    "note": "main experiment healthy, security experiments continue independently."
+  },
+  {
+    "ts": "2026-07-12T13:15:00+00:00",
+    "main_experiment_healthy": false,
+    "driver_pids": [],
+    "orchestrator_pids": [],
+    "gpu": "0 %, 0 MiB, 23028 MiB, 29",
+    "remote_procs": "8    10:51:17  0.0  0.0 kworker/0:0H-events_highpri\n     23    10:51:17  0.0  0.0 kworker/1:0-events\n     24    10:51:17  0.0  0.0 kworker/1:0H-events_highpri\n     30    10:51:17  0.0  0.0 kworker/2:0H-events_highpri\n     36    10:51:17  0.0  0.0 kworker/3:0H-events_highpri\n     42    10:51:17  0.0  0.0 kworker/4:0H-events_highpri",
+    "remote_checkpoints": "",
+    "task_output_tail": [
+      "          \"n_correct\": 758",
+      "        }",
+      "      }",
+      "    ]",
+      "  }",
+      "}"
+    ],
+    "cells_present": [
+      "sst2_conv_L0",
+      "sst2_conv_L5_s1234",
+      "sst2_conv_L12_s1234",
+      "sst2_conv_L5_s2025",
+      "sst2_conv_L12_s2025",
+      "sst2_conv_L5_s7",
+      "sst2_conv_L12_s7"
+    ],
+    "cells": {
+      "sst2_conv_L0": {
+        "state": "present",
+        "steps_run": 0,
+        "acc": 0.8853211009174312,
+        "nll": 0.8760087408057047,
+        "sel_step": -1,
+        "mtime": "2026-07-12T19:49:35"
+      },
+      "sst2_conv_L5_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9162844036697247,
+        "nll": 0.2374358276981826,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:00:15"
+      },
+      "sst2_conv_L12_s1234": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9151376146788991,
+        "nll": 0.2396792232853557,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:10:17"
+      },
+      "sst2_conv_L5_s2025": {
+        "state": "present",
+        "steps_run": 1800,
+        "acc": 0.9048165137614679,
+        "nll": 0.2534260511945147,
+        "sel_step": 1200,
+        "mtime": "2026-07-12T20:28:17"
+      },
+      "sst2_conv_L12_s2025": {
+        "state": "present",
+        "steps_run": 1000,
+        "acc": 0.9231651376146789,
+        "nll": 0.20849722534964937,
+        "sel_step": 400,
+        "mtime": "2026-07-12T20:38:30"
+      },
+      "sst2_conv_L5_s7": {
+        "state": "present",
+        "steps_run": 2000,
+        "acc": 0.9254587155963303,
+        "nll": 0.2096826840841442,
+        "sel_step": 1400,
+        "mtime": "2026-07-12T20:59:15"
+      },
+      "sst2_conv_L12_s7": {
+        "state": "present",
+        "steps_run": 1400,
+        "acc": 0.9162844036697247,
+        "nll": 0.2394520438729076,
+        "sel_step": 800,
+        "mtime": "2026-07-12T21:12:51"
+      }
+    },
+    "note": "driver/orchestrator not detected locally; verify run state (read-only)."
+  }
+]

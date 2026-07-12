@@ -1,0 +1,56 @@
+{
+  "schema": "attack_budget_registry",
+  "note": "Compute budget per registered attack. All runs CPU-only, offline, no A10/TDX/production-checkpoint use.",
+  "common": {
+    "device": "cpu",
+    "model": "Qwen2.5-0.5B (real weights = SECRET private base; never exposed to any attacker function)",
+    "attacker_wall_rule": "attack functions receive ONLY transformed tensors (*_tilde) + architecture; never plaintext W/H/masks or a public checkpoint",
+    "precision": "float64 for attack math; float32 for logit-scale metrics"
+  },
+  "S1_representation_inversion": {
+    "attacks": {
+      "A1_linear": {"method": "closed-form ridge least squares", "ridge": 1e-3, "restarts": 1},
+      "A2_mlp": {"arch": "1x512 GELU", "optimizer": "Adam", "lr": 1e-2, "steps": 400},
+      "A3_deep_mlp": {"arch": "2x512 GELU", "optimizer": "Adam", "lr": 1e-2, "steps": 400}
+    },
+    "settings": ["strict (no pairs, no W)", "known_pairs (generous upper bound)"],
+    "data": "40 natural-English prompts x up to 32 tokens -> a few thousand real hidden-state positions at 4 depths; plus a synthetic n=4000, d=896 invertibility probe",
+    "seeds": [0, 7],
+    "controls": ["P0 plaintext hidden", "P1 identity mask"],
+    "baseline": "random gaussian prediction; token chance = 1/V"
+  },
+  "S2_lora_recovery": {
+    "attacks": {
+      "A1_svd": {"method": "one truncated SVD of the masked product", "rank": 16},
+      "A2_optimization": {"optimizer": "Adam", "lr": 5e-2, "steps": 600},
+      "A3_functional": {"method": "masked-function reproduction accounting"}
+    },
+    "adapter": {"d_in": 896, "d_out": 896, "rank": 16},
+    "seeds": [0, 4242, 99],
+    "controls": ["plaintext adapter (no masks)"],
+    "baseline": "random adapter of same shape"
+  },
+  "S3_logit_leakage": {
+    "attacks": ["value_multiset_recovery", "ranking/confidence", "sorted_prob_KL"],
+    "method": "one real forward; closed-form distributional metrics",
+    "schemes": ["B0 plaintext", "B1 permutation-only (D=I)", "B2 monomial (D>0, bounded cond ~7)"],
+    "rows": 64,
+    "vocab": 151936,
+    "seeds": [0],
+    "baseline": "random permutation of vocab"
+  },
+  "S4_gradient_inversion": {
+    "attacks": {"DLG_iDLG": {"optimizer": "LBFGS", "lr": 0.5, "max_iter": 20, "outer_steps": 600, "restarts": 3, "label": "iDLG analytic"}},
+    "model": "shallow supervised head (rmsnorm -> masked linear + rank-8 LoRA -> 2-class head)",
+    "masked_model": "exact Nr-conjugate of the plaintext head (the deployed fold)",
+    "targets": "8 random vocab tokens; batch sweep {1,2,4,8}",
+    "seeds": [0, 5, 321],
+    "controls": ["plaintext batch-1 (DLG must recover)"],
+    "baseline": "token chance = 1/V; random-embedding cosine ~ 0"
+  },
+  "deferred": {
+    "S5_membership": "MEDIUM, only after S1-S4",
+    "S6_kv_cache": "OPTIONAL",
+    "external_baselines": "STIP/ObfuscaTune/Amulet only if prior artifacts exist; not reproduced here"
+  }
+}

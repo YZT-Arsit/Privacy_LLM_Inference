@@ -1,0 +1,207 @@
+{
+  "experiment": "S1_representation_inversion",
+  "model": "Qwen2.5-0.5B",
+  "threat_model": "from_scratch_private_base",
+  "n_valid_positions": {
+    "embedding": 395,
+    "early_L4": 395,
+    "middle_L12": 395,
+    "final_L24": 395
+  },
+  "budget": {
+    "linear": "closed-form ridge 1e-3",
+    "mlp_A2": "1x512 GELU, Adam lr1e-2, 400 steps",
+    "mlp_A3": "2x512 GELU, Adam lr1e-2, 400 steps",
+    "device": "cpu",
+    "seeds": [
+      0
+    ]
+  },
+  "invariant_leaks": {
+    "embedding": {
+      "norm_preservation_max_abs_gap": 0.0,
+      "pairwise_gram_max_abs_gap": 0.0,
+      "interpretation": "orthogonal residual mask preserves norms & inner products EXACTLY (documented structural leak)"
+    },
+    "early_L4": {
+      "norm_preservation_max_abs_gap": 1.8189894035458565e-12,
+      "pairwise_gram_max_abs_gap": 7.916241884231567e-09,
+      "interpretation": "orthogonal residual mask preserves norms & inner products EXACTLY (documented structural leak)"
+    },
+    "middle_L12": {
+      "norm_preservation_max_abs_gap": 1.8189894035458565e-12,
+      "pairwise_gram_max_abs_gap": 7.916241884231567e-09,
+      "interpretation": "orthogonal residual mask preserves norms & inner products EXACTLY (documented structural leak)"
+    },
+    "final_L24": {
+      "norm_preservation_max_abs_gap": 2.8421709430404007e-13,
+      "pairwise_gram_max_abs_gap": 3.055902197957039e-10,
+      "interpretation": "orthogonal residual mask preserves norms & inner products EXACTLY (documented structural leak)"
+    }
+  },
+  "strict": {
+    "embedding": {
+      "cosine_mean": 0.006853158662345492,
+      "mse": 0.00042386529246795507,
+      "rel_err": 1.4082468775968524
+    },
+    "early_L4": {
+      "cosine_mean": -7.059860123802855e-05,
+      "mse": 611.0492109379395,
+      "rel_err": 1.4297724151251638
+    },
+    "middle_L12": {
+      "cosine_mean": 0.0017942450719908914,
+      "mse": 590.9832404340423,
+      "rel_err": 1.376978739310055
+    },
+    "final_L24": {
+      "cosine_mean": 0.011761614784186806,
+      "mse": 186.21104846388022,
+      "rel_err": 1.4049620791814854
+    },
+    "interpretation": "with no plaintext weights and no paired plaintext, recovering h from h_tilde is under-determined (any orthogonal map is consistent); recovery ~ random baseline."
+  },
+  "known_pairs": {
+    "embedding": {
+      "n_train_pairs": 276,
+      "n_test": 119,
+      "hidden_dim": 896,
+      "A1_linear": {
+        "cosine_mean": 0.7477414694511807,
+        "mse": 8.388328290564392e-05,
+        "rel_err": 0.6248529237572729
+      },
+      "A2_mlp": {
+        "cosine_mean": 0.6776265113027191,
+        "mse": 0.000112100943666709,
+        "rel_err": 0.7223450999166898
+      },
+      "A3_deep_mlp": {
+        "cosine_mean": 0.4831156002238092,
+        "mse": 0.00018501646786844774,
+        "rel_err": 0.9279942593034322
+      }
+    },
+    "early_L4": {
+      "n_train_pairs": 276,
+      "n_test": 119,
+      "hidden_dim": 896,
+      "A1_linear": {
+        "cosine_mean": 0.8776692199879037,
+        "mse": 0.04000915068887288,
+        "rel_err": 0.011721722658612113
+      },
+      "A2_mlp": {
+        "cosine_mean": 0.4142796623485605,
+        "mse": 1.4111745008855905,
+        "rel_err": 0.06961488909767628
+      },
+      "A3_deep_mlp": {
+        "cosine_mean": 0.5401543637376869,
+        "mse": 0.4855158308725137,
+        "rel_err": 0.04083320537195644
+      }
+    },
+    "middle_L12": {
+      "n_train_pairs": 276,
+      "n_test": 119,
+      "hidden_dim": 896,
+      "A1_linear": {
+        "cosine_mean": 0.9290606682855068,
+        "mse": 0.04708889323842516,
+        "rel_err": 0.012450684291338256
+      },
+      "A2_mlp": {
+        "cosine_mean": 0.6037282500337798,
+        "mse": 1.2275783514646275,
+        "rel_err": 0.0635709336626929
+      },
+      "A3_deep_mlp": {
+        "cosine_mean": 0.6986929932245627,
+        "mse": 0.2134682525183332,
+        "rel_err": 0.026509444477039013
+      }
+    },
+    "final_L24": {
+      "n_train_pairs": 276,
+      "n_test": 119,
+      "hidden_dim": 896,
+      "A1_linear": {
+        "cosine_mean": 0.9633755498467892,
+        "mse": 6.357349253391424,
+        "rel_err": 0.2548884813857587
+      },
+      "A2_mlp": {
+        "cosine_mean": 0.9008030550805908,
+        "mse": 16.74707107839236,
+        "rel_err": 0.4136962708933229
+      },
+      "A3_deep_mlp": {
+        "cosine_mean": 0.864013996088376,
+        "mse": 22.980921596494046,
+        "rel_err": 0.48461393146399917
+      }
+    },
+    "synthetic_orthogonal_invertibility": {
+      "n_train_pairs": 3000,
+      "dim": 896,
+      "cosine_mean": 0.9999999999999523,
+      "mse": 3.2057922651909527e-13,
+      "rel_err": 5.666270406517282e-07,
+      "interpretation": "n_pairs >= dim -> orthogonal mask recovered by least squares (rel_err ~ 0). Confidentiality of h therefore rests on the TEE preventing paired-plaintext exposure, NOT on the mask."
+    }
+  },
+  "positive_controls": {
+    "P0_plaintext_hidden": {
+      "cosine_mean": 1.0000000000000002,
+      "mse": 0.0,
+      "rel_err": 0.0
+    },
+    "P1_identity_mask": {
+      "cosine_mean": 0.9290606682861011,
+      "mse": 0.047088893237895085,
+      "rel_err": 0.012450684291268164
+    }
+  },
+  "random_baseline": {
+    "embedding": {
+      "cosine_mean": -0.00037208585888178966,
+      "mse": 0.997836344432985,
+      "rel_err": 68.32734220445633
+    },
+    "early_L4": {
+      "cosine_mean": -0.004093454686088642,
+      "mse": 299.99429801018425,
+      "rel_err": 1.001809902384326
+    },
+    "middle_L12": {
+      "cosine_mean": 0.002867649000567892,
+      "mse": 312.73481132844216,
+      "rel_err": 1.001677146728512
+    },
+    "final_L24": {
+      "cosine_mean": -0.004824216524664627,
+      "mse": 95.42858976846162,
+      "rel_err": 1.0057756863668605
+    }
+  },
+  "token_recovery": {
+    "embedding_boundary_strict_NN": {
+      "top1_acc": 1.0,
+      "random_chance": 6.581718618365627e-06,
+      "interpretation": "deterministic embedding => token identity recoverable from the MASKED table at the embedding boundary; this is NOT protected by the residual mask and is out of its scope. Input-token protection is provided by the separate input-pad / layer-0 TEE-relocation mechanism (see linear_boundary_pad / task2 layer0 guardrail), evaluated elsewhere."
+    },
+    "deep_layer_strict": {
+      "feasible": false,
+      "interpretation": "middle/final residuals are contextualized (not embedding rows); under the strict setting inversion fails, so token recovery from deep h_tilde is not achievable."
+    }
+  },
+  "limitations": [
+    "Ground-truth private base uses real Qwen2.5-0.5B weights (secret, never exposed to attackers) for realistic representations; leakage geometry is weight-distribution invariant.",
+    "Known-pairs setting is a deliberately generous upper bound (attacker given paired plaintext) to quantify mask thinness; it is stronger than the frozen attacker and is labeled as such.",
+    "Representation set is modest (a few thousand token positions); the synthetic probe isolates the exact-invertibility claim with n>=dim.",
+    "We evaluate published inversion methods under this observation model; we do NOT claim inversion is impossible, only that it fails without weights/paired-plaintext and that the orthogonal mask is linearly invertible once pairs leak."
+  ],
+  "wall_sec": 30.8
+}

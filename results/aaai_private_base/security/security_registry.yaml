@@ -1,0 +1,143 @@
+# AAAI private-base security evaluation registry (FROZEN threat model).
+# Goal (scoped): "Under the evaluated threat model and published attack
+# methodologies, the proposed private-base transformed model empirically resists
+# recovery of private weights, representations, LoRA adapters, gradients, and
+# inference artifacts." NOT a formal-security claim.
+#
+# Forbidden wording anywhere in this section: "impossible recovery", "zero leakage",
+# "mathematically secure", "information theoretically secure".
+# Allowed wording: "fails under evaluated attacks", "empirical resistance",
+# "consistent with threat model".
+
+threat_model:
+  status: frozen
+  scenario: from_scratch_private_base_model
+  model: Qwen2.5-0.5B
+  private_assets: [base_weights, transformed_weight_package, masks, lora_adapters,
+                   gradients, labels, optimizer_states]
+  attacker_knows: [architecture, public_hyperparameters, transformed_package,
+                   observable_tensors_exposed_by_protocol]
+  attacker_does_not_know: [plaintext_W, original_checkpoint, masks_and_inverses,
+                           tdx_secrets, trusted_optimizer_states]
+  hard_rules:
+    - attacker side never receives a public Qwen checkpoint as side information
+    - attacker side never receives plaintext W, plaintext H, or mask secrets
+    - private-base assumption must not be silently violated
+  ground_truth_note: >
+    The defender oracle uses the real Qwen2.5-0.5B weights as the SECRET base so
+    representations are realistic, but those weights are never exposed to any attack
+    function. The mask-concealment geometry under test is weight-distribution
+    invariant. Documented as a limitation.
+
+transform_recap:  # exactly reproduces scripts/gate0_build_private_package.py
+  residual_mask: "H_tilde = H @ Nr ; Nr = orthogonal_signed_perm(896, seed=9000), Nr Nr^T = I"
+  embedding: "E_tilde = E @ Nr"
+  attn_qk: "rope-commuting planar rotation B (per RoPE plane)"
+  attn_v: "signed-perm S per kv-head; o_proj folds S^{-1}"
+  swiglu: "shared permutation P (4864); down folds P^{-1}"
+  vocab: "monomial Pi ; permutation-only (D=I) baseline, proposed adds bounded-cond D"
+  documented_leaks:  # honestly recorded, NOT claimed away
+    - orthogonal masks preserve singular values / vector norms exactly
+    - orthogonal masks preserve pairwise inner products (Gram) exactly
+    - permutation masks preserve the value multiset
+    - attention scores Q_rope K_rope^T are exposed on the untrusted GPU (fingerprint leak)
+
+baselines:
+  B0: plaintext_model
+  B1: identity_or_no_mask
+  B2: random_orthogonal_mask
+  B3: ours_private_base_transform
+  external_papers_note: "STIP / ObfuscaTune / Amulet only if prior artifacts exist; do not invent implementations."
+
+experiments:
+  - id: S1
+    name: representation_inversion
+    priority: HIGH
+    target_leakage_surface: masked hidden / residual representations (h_tilde)
+    threat_assumption: attacker observes h_tilde, wants plaintext h and/or tokens
+    reference_papers:
+      - "Mahendran & Vedaldi, Understanding Deep Image Representations by Inverting Them, CVPR 2015"
+      - "Fredrikson et al., Model Inversion Attacks that Exploit Confidence Information, CCS 2015"
+    representations_collected: [embedding_output, early_residual, middle_residual, final_hidden]
+    attacks:
+      A1: linear_decoder
+      A2: mlp_inversion
+      A3: stronger_nonlinear_decoder
+    settings:
+      strict: attacker has ONLY h_tilde (no W, no paired plaintext) -> inversion infeasible; report invariant leaks
+      known_pairs: attacker granted K paired (h_tilde,h) examples (models a partial plaintext leak) -> leakage upper bound
+    metrics: [cosine_similarity, mse, relative_error, token_recovery_acc, topk_token_acc]
+    positive_controls: {P0: plaintext_hidden_state, P1: identity_mask}
+    baseline: random (chance token acc = 1/V; random-vector cosine)
+    output: security/S1_representation_inversion/
+
+  - id: S2
+    name: lora_adapter_recovery
+    priority: HIGH
+    target_leakage_surface: transformed LoRA adapters A_tilde, B_tilde
+    threat_assumption: attacker receives A_tilde,B_tilde; not A,B,masks,rank-mask U
+    reference_papers:
+      - "Hu et al., LoRA: Low-Rank Adaptation of Large Language Models, ICLR 2022"
+    attacks:
+      A1: svd_factor_recovery
+      A2: optimization_recovery_of_deltaW
+      A3: functional_adapter_stealing
+    metrics: [cosine_A, cosine_B, deltaW_relative_error, downstream_delta]
+    positive_control: plaintext_lora_adapter
+    baseline: random adapter of same shape
+    output: security/S2_lora_recovery/
+
+  - id: S3
+    name: logit_leakage
+    priority: HIGH
+    purpose: validate monomial logit masking design
+    compare: {B0: plaintext_logits, B1: permutation_only, B2: proposed_monomial}
+    attacks: [ranking_recovery, value_multiset_recovery, confidence_reconstruction]
+    metrics: [recovered_topk_tokens, kl_divergence, confidence_correlation]
+    reference_papers:
+      - "design_spec.md section F (monomial O(V) bounded-condition logit mask)"
+    baseline: random permutation of vocab
+    output: security/S3_logit_leakage/
+
+  - id: S4
+    name: gradient_inversion
+    priority: HIGH
+    target_leakage_surface: exposed (transformed) LoRA gradients
+    threat_assumption: attacker obtains per-step gradients; wants training samples
+    reference_papers:
+      - "Zhu et al., Deep Leakage from Gradients, NeurIPS 2019"
+      - "Zhao et al., iDLG: Improved Deep Leakage from Gradients, arXiv 2020"
+    compare: {B0: plaintext_lora_gradients, B1: transformed_gradients}
+    data: SST-2 first (GSM8K optional)
+    attack: DLG/iDLG-style optimization
+    recover: [input_embeddings, tokens]
+    metrics: [token_recovery, embedding_cosine, semantic_similarity]
+    positive_control: required (DLG must succeed on plaintext first)
+    baseline: random
+    output: security/S4_gradient_inversion/
+
+  - id: S5
+    name: membership_inference
+    priority: MEDIUM
+    status: only_after_S1_S4
+    reference_papers:
+      - "Shokri et al., Membership Inference Attacks Against Machine Learning Models, IEEE S&P 2017"
+    output: security/S5_membership/
+
+  - id: S6
+    name: kv_cache_leakage
+    priority: OPTIONAL
+    status: only_if_prior_complete
+    output: security/S6_kv_cache/
+
+scientific_requirements:
+  - every attack succeeds on its positive control first
+  - report attack budget (steps, restarts, params, wall)
+  - report random baseline
+  - report failure analysis
+  - report limitations
+  - store raw results (configs, seeds, metrics, hashes)
+resource_constraints:
+  - do not use the active A10 utility GPU or TDX training service or production checkpoints
+  - CPU only; cached artifacts only
+stop_condition: after S1-S4 complete, STOP (no 7B, no external baseline reproduction, no new training)

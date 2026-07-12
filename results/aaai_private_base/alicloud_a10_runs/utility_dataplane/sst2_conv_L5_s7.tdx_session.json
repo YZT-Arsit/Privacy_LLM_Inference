@@ -1,0 +1,51 @@
+{
+  "session_key_hex": "77d7f1853f3b37e22958d40f4a477adcf3959935046470b8f63a587b02498e22",
+  "run_id": "sst2_conv_L5_s7-1783859948-367873",
+  "labels": [
+    0
+  ],
+  "gamma_bundle": "/tmp/o1c_bundle.pt",
+  "vocab_seed": 8000,
+  "attest": false,
+  "attest_out": "/tmp/a10_attest",
+  "binding_manifest": {
+    "d4_run_id": "sst2_conv_L5_s7-1783859948-367873",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "seed": 7,
+    "optimizer_profile": "L5_adamw",
+    "execution_profile": "paper_safe",
+    "transport_profile": "direct_a10_tdx_private",
+    "compute_host": "alicloud_a10",
+    "data_plane_ip": "172.30.25.153",
+    "code_revision_or_worktree_hash": "9773d9c84cebec517cba8bc812338c51f114c95d",
+    "hmac_key_commitment": "7a9ee4b5a19396248b2ea61458b58899721784f52c0e70de5a12839b7e7173f2",
+    "nonce": "075825795ff77cf87ae66c6eb5db14cc",
+    "debug_false_required": true,
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "dataset_id": "sst2",
+    "task": "cls"
+  },
+  "counters_out": "/tmp/a10_batch_counters.json",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "ckpt_dir": "/tmp/l12_ckpt",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "service_hash": "59cd01c7b4dbc4b5f6bd99c9daa3cb0dcdb861b7926f1cecb6bcbbb550f313de",
+  "dataset_id": "sst2",
+  "task": "cls",
+  "template_hash": "fefaf51bda2578dd046691f9c44770ebb6101705734545c7b364829f53307ab4",
+  "label_schema_hash": "43c066d0c6f25e6d4fd6b25a4af4eb84aa74e422eb56f2ce54e78043cb37b851",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "batch_label_tables": {
+    "train": "/tmp/sst2_train_labels.pt",
+    "dev": "/tmp/sst2_dev_labels.pt"
+  },
+  "batch_schedules": {
+    "train": "/tmp/sst2_schedule_s7_pb16.json"
+  },
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
+}
