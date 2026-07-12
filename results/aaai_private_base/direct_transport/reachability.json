@@ -1,0 +1,23 @@
+{
+  "h800_to_tdx": {
+    "host": "39.96.4.252",
+    "icmp": "ok",
+    "icmp_rtt_ms_avg": 22.87,
+    "tcp_ports_open": [
+      22
+    ],
+    "tcp_ports_filtered": [
+      443,
+      8443,
+      9000,
+      12345,
+      50051
+    ],
+    "direct_ssh": "OK (ed25519 key ~/.ssh/h800_to_tdx authorized on TDX)",
+    "tdx_guest_visible_over_direct_ssh": true,
+    "proxy_vars": "none"
+  },
+  "transport_decision": "B_persistent_ssh_tunnel_forced_command_service",
+  "rationale": "only port 22 open H800->TDX; option A (direct app socket to new port) blocked by TDX inbound firewall; SSH(22) reachable at 22.9ms -> tunnel the app protocol over one persistent SSH channel; Mac out of data plane",
+  "mac_role_after": "control_plane_only (key authorization + attestation record); NO payload, NO per-step orchestration"
+}

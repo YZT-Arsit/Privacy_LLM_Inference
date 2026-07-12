@@ -1,0 +1,4 @@
+metric,value,unit,note
+icmp_rtt_avg,22.87,ms,5 pkts 0% loss
+ssh_exec_rt_multiplexed,65.1,ms,per SSH-exec round-trip (shell spawn overhead; persistent service avoids this)
+raw_tcp_rtt,22.9,ms,ICMP proxy for TCP RTT

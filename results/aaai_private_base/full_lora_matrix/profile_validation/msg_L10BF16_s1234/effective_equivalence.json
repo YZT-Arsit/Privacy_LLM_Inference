@@ -1,9 +1,9 @@
 {
-  "l1_ce_from_worker_effective": 0.38502195477485657,
+  "l1_ce_from_worker_effective": 0.2910391390323639,
   "seq_len": 42,
-  "effective_equivalence_top1_agreement": 0.976190447807312,
-  "effective_equivalence_next_logit_kl": 0.008146599866449833,
-  "effective_equivalence_max_abs": 4.0074968338012695,
-  "hf_plaintext_plus_effective_lora_ce": 0.36956697702407837,
-  "l1_vs_hf_ce_abs_diff": 0.015454977750778198
+  "effective_equivalence_top1_agreement": 1.0,
+  "effective_equivalence_next_logit_kl": 0.003201631596311927,
+  "effective_equivalence_max_abs": 4.159331798553467,
+  "hf_plaintext_plus_effective_lora_ce": 0.2787672281265259,
+  "l1_vs_hf_ce_abs_diff": 0.012271910905838013
 }

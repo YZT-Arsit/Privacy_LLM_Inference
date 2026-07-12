@@ -1,8 +1,8 @@
 {
   "mode": "backward",
-  "step": 0,
+  "step": 3,
   "profile": "o1c",
-  "backward_sec": 0.6875872611999512,
+  "backward_sec": 0.6667225360870361,
   "peak_vram_gb": 1.43,
   "lora_targets_connected": 168,
   "lora_targets_total": 168,
@@ -12,36 +12,36 @@
   "deferred_A_to_tdx": 120,
   "bf16_raw_A_numerics_layer0": {
     "q_proj": {
-      "max_abs": 0.00010919570922851562,
-      "min_abs_nonzero": 1.6298145055770874e-08,
+      "max_abs": 2.4318695068359375e-05,
+      "min_abs_nonzero": 6.803020369261503e-10,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
     },
     "k_proj": {
-      "max_abs": 0.0002593994140625,
-      "min_abs_nonzero": 9.720679372549057e-09,
+      "max_abs": 6.67572021484375e-05,
+      "min_abs_nonzero": 3.812601789832115e-09,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
     },
     "v_proj": {
-      "max_abs": 0.0028533935546875,
-      "min_abs_nonzero": 1.30385160446167e-07,
+      "max_abs": 0.0218505859375,
+      "min_abs_nonzero": 3.110617399215698e-07,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
     },
     "gate_proj": {
-      "max_abs": 0.000766754150390625,
-      "min_abs_nonzero": 1.9208528101444244e-09,
+      "max_abs": 0.00066375732421875,
+      "min_abs_nonzero": 1.0504663805477321e-10,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
     },
     "up_proj": {
-      "max_abs": 0.00098419189453125,
-      "min_abs_nonzero": 4.627509042620659e-09,
+      "max_abs": 0.00109100341796875,
+      "min_abs_nonzero": 6.548361852765083e-09,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
@@ -49,22 +49,22 @@
   },
   "raw_A_per_group_all_layers": {
     "qkv": {
-      "max_abs": 0.00384521484375,
-      "min_abs_nonzero": 7.389644451905042e-12,
+      "max_abs": 0.0218505859375,
+      "min_abs_nonzero": 4.547473508864641e-13,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
     },
     "gate_up": {
-      "max_abs": 0.00109100341796875,
-      "min_abs_nonzero": 4.8203219193965197e-11,
+      "max_abs": 0.00142669677734375,
+      "min_abs_nonzero": 7.503331289626658e-12,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false
     },
     "o_down": {
-      "max_abs": 0.0098876953125,
-      "min_abs_nonzero": 2.8421709430404007e-12,
+      "max_abs": 0.0289306640625,
+      "min_abs_nonzero": 2.7853275241795927e-12,
       "bf16_zeroed_fraction": 0.0,
       "bf16_overflow": 0,
       "nan_inf": false

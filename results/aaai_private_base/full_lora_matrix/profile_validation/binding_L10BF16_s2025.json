@@ -1,5 +1,5 @@
 {
-  "d4_run_id": "L10BF16-2025-1783814621-69beb811",
+  "d4_run_id": "L10BF16-2025-1783816959-15969e45",
   "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
   "worker_runtime_hash": "d866b855f00fb5e6b3af09025674d7faeba70fe15b5250788183ce69574ff0e0",
   "tdx_service_hash": "b30b47b9a8cb1d25fb0a8f734cccfb5c12157ca8872fc026a5f786e73f4ae2e4",
@@ -16,8 +16,8 @@
   "dataset_batch_manifest_hash": "7690d215fb26dd0b0a347d5c27995ce928e3b5e7f2d1b2e8f6331116958fdd57",
   "code_revision_or_worktree_hash": "a95b59f6c1d96f2ad4950220d93078218b81c607",
   "debug_false_required": true,
-  "nonce": "2681d246171ee9b2b7ff3c1b2235ade2",
-  "ephemeral_key_pub": "f6019ee9c68131d5009719b3b4c9ae61c3ee3ca8de75d418d6e9efcd3845219c",
+  "nonce": "dca2bc705f4e3f02513aa34c4b8177b5",
+  "ephemeral_key_pub": "398aa3d4ff205ceae9db13465b5e7a1e6461025417180f5d5498ded8c6fc6fd7",
   "profile": "L10_O1C_hybrid",
   "tdx_correction_service_hash": "4f8881bf08a577c5469b75270578ae9f57d31c9392fe2b07ec7ae2794627ad76",
   "correction_bundle_hash": "cc88dbb9120ab593733cd9a57a96397cec28ba698e7b3a7eb4840e879061b56f",
@@ -35,6 +35,6 @@
   ],
   "dtype": "bf16",
   "seed": 2025,
-  "worktree_diff_sha256": "403d0e496cb284bfbc2393dc304d51d9734a5f79c9ed88f8fa5c79f4ff9a9915",
+  "worktree_diff_sha256": "ac1959493dc30594a68e23c75e03d07107a73b06f8202fda885ed6ec23ce6567",
   "invocations_per_step_expected": 3
 }

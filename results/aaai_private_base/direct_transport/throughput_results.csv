@@ -1,0 +1,4 @@
+direction,size_mb,sec,mb_per_s
+up_h800_to_tdx,10,0.45,22.0
+up_h800_to_tdx,50,3.94,12.7
+down_tdx_to_h800,50,81.12,0.6
