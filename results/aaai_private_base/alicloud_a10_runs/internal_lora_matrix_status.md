@@ -1,54 +1,71 @@
-# Internal LoRA matrix — empirical closure status
+# Internal LoRA matrix — empirical closure status (L12 mixed-precision stage)
 
-**Status: `INTERNAL_LORA_MATRIX_PARTIAL`** · Nothing committed.
+**Status: `INTERNAL_LORA_MATRIX_PARTIAL`** · Nothing committed by me.
 
-Baseline bound to: HEAD `e475a59`, source-bundle `a4497a2d`, package root `bfd578b8` (pinned),
-checkpoint `88c14255`, TDX service hash in `baseline_freeze.json`. Data plane = A10↔TDX private VPC.
+Bound to: code HEAD `f96bd26` (+ uncommitted PHASE 1/2 edits), package root `bfd578b8`,
+checkpoint `88c14255`, TDX service hash recomputed in `l12_mixed/L12MIX_s*.tdx_session.json`.
+Data plane = A10 (172.30.25.154) ↔ TDX (172.30.25.153) private VPC.
 
-## Integrity correction (required)
-The prior "A10 vs H800 CE delta ≈ 0.008 within tolerance" was **NOT preregistered** — it is recorded
-as an **OBSERVED cross-platform difference** (bf16 sm_86 vs sm_90), not a pre-passed tolerance. The
-properly pre-passed algorithmic-correctness metric is effective-equivalence **top1 = 1.0** vs the A10
-plaintext model (fp32). See `baseline_freeze.json`.
+## COMPLETED THIS SESSION (real hardware artifacts, `results/.../alicloud_a10_runs/l12_mixed/`)
 
-## COMPLETED (real artifacts)
-- **PHASE 2 — L12 trusted AdamW protocol** (`tdx_adamw_protocol.py`, ops in `tdx_persistent_service.py`,
-  runner `a10_l12_runner.py`, orchestrator `gate0_a10_l12_orchestrator.py`):
-  - Enclave holds m, v, step, θ_plain for the **168 trusted factors** — A of {q,k,v,gate,up} + B of
-    {q,k} (γ-fed / non-monomial); **GPU-exact** monomial AdamW for the other 168 factors.
-  - **fp64 self-test** (`test_l12_adamw_protocol.py`): transform-err 0.0, fold round-trip 8.9e-16,
-    step-vs-reference 7.1e-15 over 5 steps → **exact**.
-  - Fold convention verified against the gram_inv ground truth (`gA_plain = gA_tilde·Nrᵀdiag(γ)`,
-    `A_tilde = A_plain·diag(γ)Nr`, `gram_inv = MᵀM`).
-- **PHASE 3 — L12 one-step hardware gate** on real A10 + real TDX (`L12_adamw_hardware_gate.json`):
-  - **fp32: effective-equivalence top1 = 1.0, next-logit KL = 5.8e-9, max_abs = 3.3e-4 → EXACT**
-    plaintext-equivalent AdamW. Real GPU fwd/bwd + real enclave AdamW (NOT an fp64 simulation).
-  - Counters: `adamw_init=1`, `adamw_step=1`, `trusted_target_state_missing=0`,
-    **`untrusted_moment_returns=0`**, `untrusted_gamma_returns=0`, auth/replay/forbidden=0;
-    attestation SUCCESS + debug=false (mr_td 8a56b29a).
-  - bf16: top1 0.905 — bf16 storage precision on the larger AdamW updates ⇒ **fp32 master weights
-    required for L12** (consistent with the prior known finding).
+### PHASE 1 — L12 mixed-precision design freeze + claim/registry correction
+- `l12_mixed_precision_design_freeze.json`: L12 = `trusted_adamw_fp32_master_bf16_compute`;
+  L12-N = `trusted_adamw_bf16_parameter_storage_negative_ablation` (top1 0.905, unstable — negative control only).
+- Claim language corrected: dropped "max_abs 3.3e-4 therefore exact" → **"algorithmically
+  plaintext-equivalent (optimizer-semantic) and numerically aligned in FP32"**. bitwise equality NOT claimed;
+  BF16-compute/FP32-master = to-be-validated (now validated, see below); pure-BF16 storage = unsupported.
+- Fold correction recorded: trusted A fold `M = diag(gamma)@Nr`, `gram_inv = M^T M = Nr^T diag(gamma^2) Nr`.
+- **Fold-fix audit**: the obsolete `diag(1/gamma)@Nr` (= `T_in^{-T}`) appears legitimately ONLY as the
+  self-consistent offline-proof convention in `full_matrix_equivalence.py` / `gate05_o1_optimizer_audit.py`
+  (valid as self-contained proofs; must NOT be cross-applied to the deployed package). Scanned all committed
+  `*.equiv.json` for the mis-scale signature (ce>5): **none** → `INVALIDATED_BY_FOLD_FIX = []`. The one
+  transient cross-convention diagnostic (ce 16.50) was fixed and never persisted.
 
-## MISSING (enumerated — not run this session; enabled on the validated fast path)
-| # | Cell | Status |
+### PHASE 2 — authoritative FP32 master-state flow + encrypted checkpoint/recovery
+- `tdx_adamw_protocol.py`: FP32 state dtype, monotonic `version`, run/package/adapter binding, AEAD
+  (SHA256-CTR + HMAC-SHA256, no external dep) `checkpoint()/restore()` with fail-closed on tamper / wrong
+  key / binding mismatch / version rollback. Self-test `test_l12_adamw_protocol.py`: transforms 1e-16,
+  5-step 3.5e-15, fp32 state 4.8e-7, **checkpoint restore exact (0.0), all 4 fail-closed cases hold**.
+- Service `tdx_persistent_service.py`: ops `checkpoint_adamw`/`restore_adamw`; new invariant counters.
+
+### PHASE 3 — one-step, 3 preregistered seeds (vs L5 plaintext-AdamW oracle)
+| seed | worst master rel A | worst master rel B | ΔW cos (q/k) | PASS |
+|---|---|---|---|---|
+| 1234 | 4.41e-9 | 1.58e-8 | 0.99999999999985 | ✓ |
+| 2025 | 2.17e-9 | 1.53e-8 | — | ✓ |
+| 7 | 2.70e-9 | 1.58e-8 | — | ✓ |
+
+120 A + 48 B trusted factors compared per seed; ~6 orders below the preregistered 5e-3 (fp32 fold round-off).
+
+### PHASE 4 — ten-step, 3 seeds
+worst master rel A = 6.63e-9 / 9.41e-9 / 8.67e-9; state version +1 per step (1..10), no rollback,
+missing=0, rt_match=true and finite every step.
+
+### PHASE 5 — fifty-step, 3 seeds + restart/rollback continuity
+- 50-step: ce 0.4454→~5e-5; **effective-equiv top1 = 1.0** (KL 3.0e-6 / 7.3e-7 / 6.3e-6); final version 50.
+- **Restart test (seed 1234)**: checkpoint at step 25 (enclave v26) → **fresh attestation** (verified,
+  debug_false) → restore after AEAD+run_id+package+adapter+version validation → continue to v50.
+  **worst adapter rel err restart-vs-uninterrupted = 0.0 (bit-identical)**; **live rollback rejected**.
+
+### PHASE 9 — performance / communication (50-step medians, private VPC)
+step 0.59s; A10↔TDX round-trips = ce_dlogits 0.24s + enclave_adamw 0.15s (~66% of step); 2 trusted logical
+invocations/step; GPU proof = on-host 100Hz logger caught peak 2753 MiB VRAM + util bursts to 72%.
+
+**Counters (all runs, incl. 50-step):** authoritative_state=TDX/FP32, runtime=BF16,
+runtime_copy_matches_master_transform=true, gpu_trusted_factor_optimizer_step=forbidden,
+untrusted_{m,v,fp32_master}_materializations=0, untrusted_moment/gamma_returns=0, silent_fallbacks=0,
+trusted_target_state_missing=0, auth/replay/forbidden=0. Consolidated: `L12_mixed_precision_gate_results.json`.
+
+## NOT RUN THIS SESSION (PARTIAL boundary — enumerated)
+| # | Cell | Why not run |
 |---|---|---|
-| 1 | L12 vs L5 plaintext AdamW, 10-step, 3 seeds, per-target m/v/ΔW comparison | NOT RUN |
-| 2 | 50-step 3-seed **L1/L2/L10** (SGD: plaintext / O1-A / O1-C) | NOT RUN (L10 1/10/50-step single-seed done previously) |
-| 3 | 50-step 3-seed **L3/L4/L11** (momentum) | NOT RUN (L11 10-step single-seed done previously) |
-| 4 | 50-step 3-seed **L5/L12** (AdamW) | NOT RUN (L12 1-step fp32-exact done) |
-| 5 | Real rank-mask ablation (off/fixed/every-step/every-10/per-session/negative-control) | NOT RUN |
-| 6 | Converged **SST-2** utility (L0/L5/L12, 3 seeds) | NOT RUN |
-| 7 | Converged **GSM8K** utility (L0/L5/L12, 3 seeds) | NOT RUN |
-| 8 | Timing/communication decomposition summary across profiles | PARTIAL (per-run timings recorded; no cross-profile summary) |
+| 6a | 50-step 3-seed **L1/L2/L10** (SGD) + **L3/L4/L11** (momentum) | SGD/momentum are linear-equivariant ⇒ masked==plaintext exactly (no enclave); L10/L11 exactness shown single-seed in prior stage. 3-seed 50-step + L1–L4 plaintext/O1-A baselines need dedicated SGD/momentum runners (not built this session). |
+| 6b | Rank-mask 10-step ablation (off/fixed/every-step/every-10/per-session/neg-control) | Needs runner support to refresh the orthogonal rank mask U mid-run + re-seed enclave state; not built. |
+| 7 | **SST-2** converged utility (L0/L5/L12, 3 seeds, official train/dev) | Real convergence on official data (multi-hour over cross-cloud CE path) + offline dataset provisioning on A10; not run. |
+| 8 | **GSM8K** converged utility (L0/L5/L12) | As above + generation eval; not run. |
 
-These are real training/eval runs (multi-hour) plus seed-plumbing for the L1–L5 profiles; they are
-**compute/scope items on a validated, non-network-blocked path**, not blocked by protocol or infra.
+These are compute/data-provisioning/runner-build items on a validated, non-network-blocked path — not
+blocked by the L12 protocol or infrastructure. The L12 mixed-precision protocol (the core novel claim)
+is fully validated on hardware at 1/10/50 steps × 3 seeds + restart + rollback.
 
-## Notes
-- The remaining runs require: (a) seed plumbing into `rank_masked_init` (currently one fixed init);
-  (b) wiring L1–L5 plaintext/O1-A profiles into the A10 orchestrator; (c) real SST-2/GSM8K data +
-  training loops; (d) `--dtype fp32` for L12 arms (bf16 loses AdamW-update precision).
-- Do NOT average away O1-A NaN/divergent cells (gate/up) when the 50-step matrix is run.
-- Light TDX secret hygiene done (session config + gamma bundle removed); package/env/forced-key
-  retained on A10/TDX for resumption. A10 + TDX left running — user decides on stop/release.
-- External-paper baselines / full security matrix / 7B: NOT started (correctly held for review).
+## Do NOT start (held for review): external-paper baselines, full security matrix, 7B.

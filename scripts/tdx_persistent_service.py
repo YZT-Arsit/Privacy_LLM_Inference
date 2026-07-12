@@ -141,7 +141,17 @@ def main():
                 "malformed_rejected": 0, "forbidden_key_rejected": 0,
                 "untrusted_gamma_returns": 0, "correction_missing_targets": -1,
                 "adamw_init_calls": 0, "adamw_step_calls": 0, "trusted_target_state_missing": -1,
-                "untrusted_moment_returns": 0}
+                "untrusted_moment_returns": 0,
+                # --- PHASE 2 authoritative FP32 master-state flow invariants ---
+                "authoritative_state_location": "TDX",
+                "authoritative_state_dtype": None,          # set to FP32 at init_adamw
+                "runtime_copy_dtype": "BF16",               # A10 casts re-folded fp32 -> bf16 runtime
+                "runtime_copy_matches_master_transform": None,  # verified each step (re-fold == master@M)
+                "gpu_trusted_factor_optimizer_step": "forbidden",
+                "untrusted_m_materializations": 0, "untrusted_v_materializations": 0,
+                "untrusted_fp32_master_materializations": 0, "silent_fallbacks": 0,
+                "adamw_checkpoint_calls": 0, "adamw_restore_calls": 0, "adamw_state_version": 0,
+                "checkpoint_restore_rejected": 0}
     fin = sys.stdin.buffer; fout = sys.stdout.buffer
     att = do_attestation(cfg, cfg.get("attest_out", "/tmp/direct_attest")) if cfg.get("attest") else {"attestation_skipped": True}
 
@@ -227,8 +237,13 @@ def main():
             from tdx_adamw_protocol import TrustedAdamW, TRUSTED_A, TRUSTED_B
             data = load_tensor(payload)
             hp = header.get("hparams", {})
+            _sdt = torch.float32 if hp.get("state_dtype", "fp32") == "fp32" else torch.float64
             tw = TrustedAdamW(gb, cfg["model_cfg"], lr=hp.get("lr", 1e-3), b1=hp.get("b1", 0.9),
-                              b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01))
+                              b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01),
+                              state_dtype=_sdt)
+            tw.set_binding(run_id=run_id, package_root_hash=cfg.get("package_root_hash", "unpinned"),
+                           adapter_id=hp.get("adapter_id", run_id))
+            counters["authoritative_state_dtype"] = "FP32" if _sdt == torch.float32 else "FP64"
             bad = False
             for k, t in data.get("A", {}).items():
                 l_str, proj = k.split(".", 1); l = int(l_str)
@@ -273,7 +288,13 @@ def main():
             counters["trusted_target_state_missing"] = missing
             if missing != 0:
                 write_frame(fout, {"op": "reject", "reason": "incomplete_trusted_set", "seq": seq}); continue
-            # return ONLY re-folded masked factors (never m/v/gamma/plaintext theta)
+            # Verify the re-folded runtime copy is EXACTLY master @ fold (regenerated from FP32 master,
+            # not an independently-tracked BF16 tensor). Cheap invariant on one representative factor.
+            _lp = next(iter(tw.stateA)); _foldM = tw.tinA[_lp][0]
+            _match = bool(torch.allclose(outA[f"{_lp[0]}.{_lp[1]}"], tw.stateA[_lp][0] @ _foldM, atol=0, rtol=0))
+            counters["runtime_copy_matches_master_transform"] = _match
+            counters["adamw_state_version"] = tw.version
+            # return ONLY re-folded masked factors (never m/v/gamma/plaintext theta), FP32 master image
             out = dump_tensor({"A": {k: v.to(torch.float32) for k, v in outA.items()},
                                "B": {k: v.to(torch.float32) for k, v in outB.items()}})
             counters["adamw_step_calls"] += 1; last_seq = seq
@@ -281,8 +302,57 @@ def main():
             write_frame(fout, {"op": "adamw_step_ack", "seq": resp_seq,
                                "hmac": mac(key, out, resp_seq, run_id, "adamw_step_ack"),
                                "updated_A": len(outA), "updated_B": len(outB), "missing": missing,
-                               "adam_t": tw.t, "compute_sec": time.time() - t0,
+                               "adam_t": tw.t, "state_version": tw.version,
+                               "runtime_copy_matches_master_transform": _match,
+                               "compute_sec": time.time() - t0,
                                "bytes_in": len(payload), "bytes_out": len(out)}, out)
+
+        elif op == "checkpoint_adamw":
+            # seal (theta_master_fp32, m, v, step, version, binding) with AEAD to a durable file.
+            tw = adamw["tw"]
+            if tw is None or not tw.state_present():
+                counters["checkpoint_restore_rejected"] += 1
+                write_frame(fout, {"op": "reject", "reason": "no_adamw_state", "seq": seq}); continue
+            blob = tw.checkpoint(session_key=key)
+            ckpt_dir = Path(cfg.get("ckpt_dir", "/tmp/l12_ckpt")); ckpt_dir.mkdir(parents=True, exist_ok=True)
+            ckpt_path = ckpt_dir / f"{run_id}.v{tw.version}.enc"
+            ckpt_path.write_bytes(blob)                      # durable state is ciphertext only
+            counters["adamw_checkpoint_calls"] += 1; last_seq = seq
+            resp_seq = seq + 1
+            write_frame(fout, {"op": "checkpoint_adamw_ack", "seq": resp_seq,
+                               "hmac": mac(key, b"", resp_seq, run_id, "checkpoint_adamw_ack"),
+                               "state_version": tw.version, "adam_t": tw.t,
+                               "ckpt_path": str(ckpt_path), "ckpt_bytes": len(blob),
+                               "durable_plaintext": False})
+
+        elif op == "restore_adamw":
+            # authenticated decrypt + binding + monotonic-version validation, then resume.
+            from tdx_adamw_protocol import TrustedAdamW
+            hp = header.get("hparams", {})
+            ckpt_path = Path(header.get("ckpt_path", ""))
+            if not ckpt_path.exists():
+                counters["checkpoint_restore_rejected"] += 1
+                write_frame(fout, {"op": "reject", "reason": "ckpt_missing", "seq": seq}); continue
+            _sdt = torch.float32 if hp.get("state_dtype", "fp32") == "fp32" else torch.float64
+            tw = TrustedAdamW(gb, cfg["model_cfg"], lr=hp.get("lr", 1e-3), b1=hp.get("b1", 0.9),
+                              b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01),
+                              state_dtype=_sdt)
+            try:
+                info = tw.restore(ckpt_path.read_bytes(), session_key=key,
+                                  expected_binding=header["expected_binding"],
+                                  min_version=int(header.get("min_version", 0)))
+            except Exception as e:
+                counters["checkpoint_restore_rejected"] += 1
+                write_frame(fout, {"op": "reject", "reason": f"restore_failed:{repr(e)[:80]}", "seq": seq}); continue
+            adamw["tw"] = tw
+            counters["adamw_restore_calls"] += 1; counters["adamw_state_version"] = tw.version
+            counters["trusted_target_state_missing"] = 0 if tw.state_present() else 1
+            counters["authoritative_state_dtype"] = "FP32" if _sdt == torch.float32 else "FP64"
+            last_seq = seq; resp_seq = seq + 1
+            write_frame(fout, {"op": "restore_adamw_ack", "seq": resp_seq,
+                               "hmac": mac(key, b"", resp_seq, run_id, "restore_adamw_ack"),
+                               "trusted_adamw_state_present": tw.state_present(),
+                               "restored_version": info["restored_version"], "restored_t": info["restored_t"]})
 
         else:
             counters["malformed_rejected"] += 1

@@ -1,0 +1,114 @@
+{
+  "profile_compared": "L12_mixed_bf16compute_fp32master  vs  L5_plaintext_adamw_reference (fp32)",
+  "seed": 1234,
+  "steps": 10,
+  "reference_construction": "INDEPENDENT plaintext-domain FP32 AdamW fed the REAL enclave gradients (A: g_tilde@M^T, B: Tout@g_tilde); verification oracle, not a substitute for the hardware L12 arm",
+  "trusted_A_per_step": 120,
+  "trusted_B_per_step": 48,
+  "worst_master_rel_err_A": 6.6314790512849015e-09,
+  "worst_master_rel_err_B": 1.7731005881348257e-08,
+  "worst_target": "20.up_proj",
+  "worst_step": 7,
+  "worst_deltaw_rel_qk": 1.0404717875286459e-07,
+  "worst_deltaw_cos_qk": 0.9999999999998472,
+  "per_step": [
+    {
+      "step": 0,
+      "adam_t": 1,
+      "max_master_rel_A": 4.406402269840038e-09,
+      "max_master_rel_B": 1.5816953309476365e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.684929630575975e-08,
+      "min_deltaw_cos_qk": 0.999999999999853
+    },
+    {
+      "step": 1,
+      "adam_t": 2,
+      "max_master_rel_A": 4.666251309040106e-09,
+      "max_master_rel_B": 1.5923673881652285e-08,
+      "median_master_rel_A": 1.2938803362061435e-09,
+      "max_deltaw_rel_qk": 1.0015112837339479e-07,
+      "min_deltaw_cos_qk": 0.9999999999998606
+    },
+    {
+      "step": 2,
+      "adam_t": 3,
+      "max_master_rel_A": 4.944982226028252e-09,
+      "max_master_rel_B": 1.6372314774793928e-08,
+      "median_master_rel_A": 1.968113672035088e-09,
+      "max_deltaw_rel_qk": 9.671483880563602e-08,
+      "min_deltaw_cos_qk": 0.9999999999998519
+    },
+    {
+      "step": 3,
+      "adam_t": 4,
+      "max_master_rel_A": 5.044408341039849e-09,
+      "max_master_rel_B": 1.7422821997715237e-08,
+      "median_master_rel_A": 2.277823485385966e-09,
+      "max_deltaw_rel_qk": 1.0129678316795117e-07,
+      "min_deltaw_cos_qk": 0.9999999999998499
+    },
+    {
+      "step": 4,
+      "adam_t": 5,
+      "max_master_rel_A": 5.379045975134167e-09,
+      "max_master_rel_B": 1.731157542983252e-08,
+      "median_master_rel_A": 2.6381197226754693e-09,
+      "max_deltaw_rel_qk": 9.832486781223905e-08,
+      "min_deltaw_cos_qk": 0.9999999999998563
+    },
+    {
+      "step": 5,
+      "adam_t": 6,
+      "max_master_rel_A": 5.842385211726584e-09,
+      "max_master_rel_B": 1.7276346573250465e-08,
+      "median_master_rel_A": 2.79884160292454e-09,
+      "max_deltaw_rel_qk": 1.0347910127155825e-07,
+      "min_deltaw_cos_qk": 0.9999999999998475
+    },
+    {
+      "step": 6,
+      "adam_t": 7,
+      "max_master_rel_A": 5.7956651797504724e-09,
+      "max_master_rel_B": 1.7724003619147956e-08,
+      "median_master_rel_A": 3.0103535220149524e-09,
+      "max_deltaw_rel_qk": 1.0404717875286459e-07,
+      "min_deltaw_cos_qk": 0.9999999999998535
+    },
+    {
+      "step": 7,
+      "adam_t": 8,
+      "max_master_rel_A": 6.6314790512849015e-09,
+      "max_master_rel_B": 1.7311922903157947e-08,
+      "median_master_rel_A": 3.12335513008577e-09,
+      "max_deltaw_rel_qk": 1.0116744818288865e-07,
+      "min_deltaw_cos_qk": 0.9999999999998583
+    },
+    {
+      "step": 8,
+      "adam_t": 9,
+      "max_master_rel_A": 6.596897792426218e-09,
+      "max_master_rel_B": 1.7731005881348257e-08,
+      "median_master_rel_A": 3.258932013139315e-09,
+      "max_deltaw_rel_qk": 1.0110102873096787e-07,
+      "min_deltaw_cos_qk": 0.9999999999998481
+    },
+    {
+      "step": 9,
+      "adam_t": 10,
+      "max_master_rel_A": 6.416379278783053e-09,
+      "max_master_rel_B": 1.7486937465480755e-08,
+      "median_master_rel_A": 3.320858033006857e-09,
+      "max_deltaw_rel_qk": 9.608802719100053e-08,
+      "min_deltaw_cos_qk": 0.9999999999998472
+    }
+  ],
+  "hardware_state_version_final": 10,
+  "runtime_copy_matches_master_transform_all": true,
+  "finite_all": true,
+  "PREREGISTERED": {
+    "master_rel_max": 0.005,
+    "deltaw_cos_min": 0.999
+  },
+  "PASS": true
+}

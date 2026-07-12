@@ -1,0 +1,62 @@
+{
+  "phase": "PHASE_1_L12_mixed_precision_design_freeze",
+  "frozen_before_execution": true,
+  "code_head_binding": "f96bd26b8e6bac0868ee3cbcc0d1c417b0352043",
+  "prior_baseline_head": "e475a597d25bfb21b25e1f1b7bf064f0d58dd501",
+  "note_head": "user committed the L12 protocol work as f96bd26 (baseline_freeze.json recorded e475a59 as committed_by_me=false); all PHASE 2+ runs bind f96bd26 + package_root bfd578b8 + checkpoint 88c14255.",
+  "L12_final_mixed_precision_design": {
+    "model_forward_backward_activations": "BF16",
+    "gpu_runtime_lora_copies": "BF16 where used by kernels",
+    "authoritative_lora_master_parameters_trusted_factors": "FP32 inside TDX",
+    "adamw_first_moment_m": "FP32 inside TDX",
+    "adamw_second_moment_v": "FP32 inside TDX",
+    "adamw_step_bias_correction_state": "inside TDX",
+    "updates_computed_from": "FP32 master state",
+    "bf16_runtime_copies": "regenerated from updated FP32 master parameters each step",
+    "invariant": "no BF16 tensor may become the authoritative AdamW state",
+    "gpu_exact_monomial_factors": {
+      "note": "A of {o,down} + B of {o,down,v,gate,up} run AdamW on-GPU (monomial transform commutes with AdamW).",
+      "master_dtype": "FP32 (GPU-resident master + FP32 m,v); BF16 runtime copy regenerated from FP32 master; no BF16 authoritative state"
+    }
+  },
+  "profiles": {
+    "L12": "trusted_adamw_fp32_master_bf16_compute",
+    "L12-N": "trusted_adamw_bf16_parameter_storage_negative_ablation"
+  },
+  "L12-N_negative_ablation_record": {
+    "definition": "pure BF16 storage of trusted AdamW parameter/state (failed profile) — retained ONLY as a precision negative control, never the main profile",
+    "observed_one_step_top1": 0.9047619104385376,
+    "observed_next_logit_kl": 0.04866936057806015,
+    "verdict": "unstable / insufficient precision",
+    "source_artifact": "A10_L12_bf16_1step.equiv.json",
+    "do_not_use_as_main_profile": true
+  },
+  "claim_language_frozen": {
+    "exact_arithmetic_optimizer_semantic_equivalence": "supported (fp64 self-test 7.1e-15; algebraic un-fold->AdamW->re-fold is optimizer-semantically identical to plaintext AdamW)",
+    "fp32_hardware_numerical_agreement": "supported (uniform-FP32 one-step: top1 1.0, next-logit KL 5.8e-9)",
+    "bf16_compute_with_fp32_master_state": "TO BE VALIDATED (PHASE 3 mixed-precision one-step, three seeds) — NOT yet claimed",
+    "pure_bf16_adamw_parameter_state_storage": "unsupported (L12-N, top1 0.905)",
+    "bitwise_equality": "not claimed",
+    "corrected_statement": "the prior 'max_abs 3.3e-4 therefore exact' phrasing is REPLACED by: 'algorithmically plaintext-equivalent (optimizer-semantic) and numerically aligned in FP32'. max_abs is a numerical-agreement metric, not a proof of bitwise exactness."
+  },
+  "fold_correction_recorded": {
+    "trusted_A_factor_fold": "M = diag(gamma) @ Nr   (A_tilde = A_plain @ M)   [DEPLOYED package convention]",
+    "grad_metric": "gA_plain = gA_tilde @ M^T = gA_tilde @ Nr^T diag(gamma)",
+    "unfold_inverse": "A_plain = A_tilde @ M^-1 = A_tilde @ Nr^T diag(1/gamma)",
+    "gram_inv": "gram_inv = M^T M = Nr^T diag(gamma^2) Nr",
+    "gamma_sources": "ga = input_layernorm weight (q,k,v); gm = post_attention_layernorm weight (gate,up)",
+    "B_factor": "B_tilde = Tout^T @ B_plain ; Tout = block_diag(rope_rot(hd,1000+l)); orthogonal (no gamma)"
+  },
+  "fold_fix_audit": {
+    "obsolete_convention": "diag(1/gamma) @ Nr  (== T_in^{-T} = Tin_iT), used as a FORWARD fold",
+    "where_obsolete_convention_legitimately_appears": [
+      "scripts/full_matrix_equivalence.py: Tin_iT = T_in^{-T}; A_tilde = A0 @ Tin_iT (SELF-CONSISTENT offline proof — builds its own W_tilde = T_out^T @ W @ Tin_iT, so its 3.8e-13 exactness holds WITHIN its convention)",
+      "scripts/gate05_o1_optimizer_audit.py: same self-consistent Tin_iT convention"
+    ],
+    "numerical_relationship_verified": "Tin_iT == diag(1/gamma) @ Nr (True); deployed M == diag(gamma) @ Nr (True); the two differ by gamma vs 1/gamma on the diagonal; gram_inv = M^T M = Nr^T diag(gamma^2) Nr (True)",
+    "determination": "The offline exactness proofs are NOT invalidated as self-contained proofs (they never touch the deployed package numerically). They MUST NOT be cross-applied to the deployed package. The ONE place the two conventions were wrongly crossed was a transient L12 enclave diagnostic (equiv hf_ce=16.50) which was FIXED (tdx_adamw_protocol.py now uses diag(gamma)) and NEVER persisted as an artifact.",
+    "persisted_artifact_scan": "scanned all results/aaai_private_base/alicloud_a10_runs/*.equiv.json for l1_ce_from_worker_effective > 5 (the diag(1/gamma) mis-scale signature): NONE found. No on-disk artifact is INVALIDATED_BY_FOLD_FIX.",
+    "current_enclave_code_correct": "scripts/tdx_adamw_protocol.py foldM = diag(g) @ Nr (line 79), gradMT = Nr^T diag(g) (line 80), unfoldMinv = Nr^T diag(1/g) (line 81) — deployed convention; diag(1/g) appears ONLY as the legitimate inverse (unfold), never as the forward fold."
+  },
+  "INVALIDATED_BY_FOLD_FIX": []
+}

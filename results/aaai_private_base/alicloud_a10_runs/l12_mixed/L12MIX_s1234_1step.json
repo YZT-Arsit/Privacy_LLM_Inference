@@ -1,0 +1,38 @@
+{
+  "run_id": "L12MIX_s1234_1step-1783836161-8d62d9",
+  "profile": "L12_mixed_bf16compute_fp32master",
+  "seed": 1234,
+  "compute_dtype": "bf16",
+  "master_dtype": "fp32",
+  "transport_profile": "direct_a10_tdx_private",
+  "steps_run": 1,
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "2dd5bb6f052cc446973a79553cf1709c69999c87da7e035714f399c65623ba9cedb7c872de9089841af90470adb45f5b5f5366fff9ae89716997c63fecfeac12",
+    "session_setup_once": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "trajectory": [
+    {
+      "step": 0,
+      "ce": 0.4453800618648529,
+      "trusted_A": 120,
+      "trusted_B": 48,
+      "adamw_updated_A": 120,
+      "adamw_updated_B": 48,
+      "adam_t": 1,
+      "state_version": 1,
+      "runtime_copy_matches_master_transform": true,
+      "missing": 0,
+      "finite": true,
+      "net_ce": 0.27438807487487793,
+      "net_adamw": 0.15887784957885742,
+      "wall": 0.9651708602905273
+    }
+  ]
+}

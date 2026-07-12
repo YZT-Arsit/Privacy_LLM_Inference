@@ -1,0 +1,9 @@
+{
+  "attestation_verified": true,
+  "overall_appraisal_result": "SUCCESS",
+  "reportdata_bound": true,
+  "debug_false": true,
+  "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+  "report_data": "2ad574d6648f1b8c3654b61bd81a3420495b1b5011186deda880cc3d10cb2407fade09b120707db04c3479e5b74534672610a8dcd97a2fa3561c4c6f73d95a7d",
+  "session_setup_once": true
+}

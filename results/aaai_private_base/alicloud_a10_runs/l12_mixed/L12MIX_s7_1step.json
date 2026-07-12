@@ -1,0 +1,32 @@
+{
+  "run_id": "L12MIX_s7_1step-1783836532-ec7fdd",
+  "profile": "L12_mixed_bf16compute_fp32master",
+  "seed": 7,
+  "compute_dtype": "bf16",
+  "master_dtype": "fp32",
+  "transport_profile": "direct_a10_tdx_private",
+  "steps_run": 1,
+  "attestation": {
+    "attestation_skipped": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "trajectory": [
+    {
+      "step": 0,
+      "ce": 0.45038414001464844,
+      "trusted_A": 120,
+      "trusted_B": 48,
+      "adamw_updated_A": 120,
+      "adamw_updated_B": 48,
+      "adam_t": 1,
+      "state_version": 1,
+      "runtime_copy_matches_master_transform": true,
+      "missing": 0,
+      "finite": true,
+      "net_ce": 0.2747986316680908,
+      "net_adamw": 0.1535944938659668,
+      "wall": 0.9610943794250488
+    }
+  ]
+}

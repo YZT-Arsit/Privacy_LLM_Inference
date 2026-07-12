@@ -1,0 +1,33 @@
+{
+  "profile_compared": "L12_mixed_bf16compute_fp32master  vs  L5_plaintext_adamw_reference (fp32)",
+  "seed": 2025,
+  "steps": 1,
+  "reference_construction": "INDEPENDENT plaintext-domain FP32 AdamW fed the REAL enclave gradients (A: g_tilde@M^T, B: Tout@g_tilde); verification oracle, not a substitute for the hardware L12 arm",
+  "trusted_A_per_step": 120,
+  "trusted_B_per_step": 48,
+  "worst_master_rel_err_A": 2.1740828535258103e-09,
+  "worst_master_rel_err_B": 1.5326503894162667e-08,
+  "worst_target": "17.k_proj",
+  "worst_step": 0,
+  "worst_deltaw_rel_qk": 9.953658253325942e-08,
+  "worst_deltaw_cos_qk": 0.9999999999998435,
+  "per_step": [
+    {
+      "step": 0,
+      "adam_t": 1,
+      "max_master_rel_A": 2.1740828535258103e-09,
+      "max_master_rel_B": 1.5326503894162667e-08,
+      "median_master_rel_A": 0.0,
+      "max_deltaw_rel_qk": 9.953658253325942e-08,
+      "min_deltaw_cos_qk": 0.9999999999998435
+    }
+  ],
+  "hardware_state_version_final": 1,
+  "runtime_copy_matches_master_transform_all": true,
+  "finite_all": true,
+  "PREREGISTERED": {
+    "master_rel_max": 0.005,
+    "deltaw_cos_min": 0.999
+  },
+  "PASS": true
+}

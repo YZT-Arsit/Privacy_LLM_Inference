@@ -1,0 +1,53 @@
+{
+  "amends": "results/aaai_private_base/empirical_matrix_closure/registry.json",
+  "does_not_overwrite_history": true,
+  "code_head": "f96bd26b8e6bac0868ee3cbcc0d1c417b0352043",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "checkpoint_sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+  "transport_profile": "direct_a10_tdx_private_vpc",
+  "profile_clarifications": {
+    "L5": "plaintext_lora_adamw — reference for L12; MUST use identical mixed precision (BF16 fwd/bwd, FP32 LoRA master, FP32 AdamW m/v, identical loss scaling, wd, init, batches)",
+    "L12": "trusted_adamw_fp32_master_bf16_compute (MAIN L12 profile)",
+    "L12-N": "trusted_adamw_bf16_parameter_storage_negative_ablation (unstable, top1=0.905; retained as precision negative control, never main)"
+  },
+  "seeds_preregistered": [1234, 2025, 7],
+  "shared_config_inherited_from_registry": {
+    "lr": 0.001, "b1": 0.9, "b2": 0.999, "eps": 1e-08, "wd": 0.01,
+    "rank": 8, "alpha": 16, "seq_len": 42, "grad_clip": 1.0, "scheduler": "constant",
+    "lora_init": "rank_masked_orthogonal_U seed 7000+l*10+idx (deterministic; seed argument varies batch/data order only, NOT init unless registered)"
+  },
+  "PREREGISTERED_PASS_CRITERIA": {
+    "note": "recorded BEFORE inspecting any mixed-precision result, per instruction. Comparison is ALWAYS L12(BF16-compute/FP32-master) vs L5(plaintext, IDENTICAL BF16-compute/FP32-master) — never vs pure-FP32 or pure-BF16.",
+    "phase3_one_step": {
+      "next_logit_kl_max": 1e-3,
+      "top1_agreement_min": 0.98,
+      "master_param_rel_err_max": 5e-3,
+      "m_rel_err_max": 5e-3,
+      "v_rel_err_max": 5e-3,
+      "deltaW_cosine_min": 0.999,
+      "finite_required": true,
+      "rationale": "BF16 fwd/bwd injects ~1e-3 relative activation/gradient noise IDENTICALLY into both L5 and L12; residual L12-vs-L5 disagreement beyond this band would indicate a protocol (not precision) defect. Both arms share the SAME bf16 gradient, so the trusted un-fold->FP32-AdamW->re-fold path must track the plaintext FP32-AdamW to within re-fold round-off (~bf16 eps on the re-folded runtime copy)."
+    },
+    "phase4_ten_step": {
+      "per_step_state_version_increment": "exactly 1",
+      "rollback_detected": 0,
+      "cumulative_master_param_rel_err_max": 1e-2,
+      "cumulative_kl_max": 2e-3,
+      "top1_min": 0.97,
+      "nan_inf": 0,
+      "trusted_target_state_missing": 0,
+      "stale_or_replayed_accepted": 0
+    },
+    "phase5_fifty_step": {
+      "final_kl_max": 5e-3,
+      "final_top1_min": 0.95,
+      "master_state_drift_rel_max": 2e-2,
+      "restart_test_required": true,
+      "restart_continuity": "post-restart trajectory must match uninterrupted reference within phase4 per-step band"
+    }
+  },
+  "invalidation_conditions": {
+    "offline_fp64_substitution": "any L12 hardware cell that substitutes an offline FP64/plaintext optimizer simulation for the real A10 GPU fwd/bwd + real TDX enclave AdamW is INVALID",
+    "wrong_reference": "comparing L12 mixed-precision against a pure-FP32 or pure-BF16 reference and calling it equivalent is INVALID"
+  }
+}

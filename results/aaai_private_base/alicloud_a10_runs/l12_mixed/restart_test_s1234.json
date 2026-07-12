@@ -1,0 +1,12 @@
+{
+  "seed": 1234,
+  "total_steps": 50,
+  "checkpoint_at": 25,
+  "enclave_version_at_ckpt": 26,
+  "worst_adapter_rel_err_restart_vs_uninterrupted": 0.0,
+  "worst_target": null,
+  "restart_continuity_PASS": true,
+  "live_rollback_rejected": true,
+  "fresh_attestation_each_session": true,
+  "restore_gated_on": "AEAD auth + run_id + package_root + adapter_id + monotonic version"
+}

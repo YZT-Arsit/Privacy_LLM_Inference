@@ -1,0 +1,58 @@
+{
+  "title": "L12 trusted-AdamW MIXED-PRECISION (BF16 compute / FP32 master) — hardware validation",
+  "hardware": "real A10 GPU + real Intel TDX, data plane A10<->TDX private VPC",
+  "code_head": "f96bd26 (+ uncommitted PHASE1/2 edits)", "package_root": "bfd578b8", "checkpoint": "88c14255",
+  "design": "BF16 fwd/bwd + BF16 runtime LoRA copies regenerated each step from FP32 master; trusted A{q,k,v,gate,up}+B{q,k} master+m+v+step FP32 in TDX; GPU-exact monomial A{o,down}+B{o,down,v,gate,up} FP32 master+m+v on GPU; no BF16 tensor is authoritative AdamW state",
+  "reference": "L5 plaintext-domain FP32 AdamW fed the REAL enclave gradients (verification oracle, compare_l5_l12.py); NOT an offline substitute for the hardware L12 arm",
+  "preregistered_pass_criteria": "registry_amendment_l12_mixed_precision.json (recorded before any mixed-precision result): master_rel_max 5e-3, deltaw_cos_min 0.999, per-step version+1, no rollback, finite",
+
+  "PHASE3_one_step_3seed": {
+    "seed_1234": {"worst_master_rel_A": 4.41e-9, "worst_master_rel_B": 1.58e-8, "worst_dw_cos_qk": 0.99999999999985, "PASS": true},
+    "seed_2025": {"worst_master_rel_A": 2.17e-9, "worst_master_rel_B": 1.53e-8, "PASS": true},
+    "seed_7":    {"worst_master_rel_A": 2.70e-9, "worst_master_rel_B": 1.58e-8, "PASS": true},
+    "verdict": "all 3 seeds pass by ~6 orders of magnitude (fp32 fold round-off, not optimizer error); 120 A + 48 B trusted factors compared per seed"
+  },
+  "PHASE4_ten_step_3seed": {
+    "seed_1234": {"worst_master_rel_A": 6.63e-9, "worst_master_rel_B": 1.77e-8, "worst_dw_cos_qk": 0.99999999999985, "PASS": true},
+    "seed_2025": {"worst_master_rel_A": 9.41e-9, "worst_master_rel_B": 1.82e-8, "PASS": true},
+    "seed_7":    {"worst_master_rel_A": 8.67e-9, "worst_master_rel_B": 1.88e-8, "PASS": true},
+    "state_version_increment": "exactly +1 per step (1..10), no rollback, missing=0, rt_match=true every step, finite every step"
+  },
+  "PHASE5_fifty_step_3seed": {
+    "seed_1234": {"ce_first_last": [0.4454, 4.07e-5], "final_state_version": 50, "effective_equiv_top1": 1.0, "effective_equiv_kl": 3.02e-6},
+    "seed_2025": {"ce_last": 5e-5, "final_state_version": 50, "effective_equiv_top1": 1.0, "effective_equiv_kl": 7.29e-7},
+    "seed_7":    {"ce_last": 6e-5, "final_state_version": 50, "effective_equiv_top1": 1.0, "effective_equiv_kl": 6.30e-6},
+    "note": "effective-equivalence top1=1.0 at step 50 (LoRA delta now dominates; the 1-step top1 0.952 was a bf16-forward-vs-fp32-HF measurement artifact on a near-zero delta, NOT an optimizer defect; the compare oracle checks both arms at matched fp32 -> 1e-8)"
+  },
+  "PHASE5_restart_continuity_test_seed1234": {
+    "checkpoint_at_step": 25, "enclave_version_at_checkpoint": 26,
+    "session_A": "steps 0..25, versions 1..26, encrypted checkpoint written (durable ciphertext only)",
+    "session_B": "FRESH attestation (verified, debug_false), restored v26 after AEAD+run_id+package_root+adapter_id+version validation, continued steps 26..49 -> versions 27..50",
+    "worst_adapter_rel_err_restart_vs_uninterrupted": 0.0,
+    "restart_continuity_PASS": true,
+    "live_rollback_rejected": true,
+    "rollback_probe": "restore with bumped expected version -> service rejected (fail closed)",
+    "verdict": "restart path produced a BIT-IDENTICAL final adapter to the uninterrupted 50-step run; rollback protection verified live on hardware"
+  },
+  "counters_all_runs_clean": {
+    "authoritative_state_location": "TDX", "authoritative_state_dtype": "FP32", "runtime_copy_dtype": "BF16",
+    "runtime_copy_matches_master_transform": true, "gpu_trusted_factor_optimizer_step": "forbidden",
+    "untrusted_m_materializations": 0, "untrusted_v_materializations": 0,
+    "untrusted_fp32_master_materializations": 0, "untrusted_moment_returns": 0, "untrusted_gamma_returns": 0,
+    "silent_fallbacks": 0, "trusted_target_state_missing": 0, "auth_failures": 0, "replay_rejected": 0,
+    "forbidden_key_rejected": 0
+  },
+  "PHASE9_performance_communication_per_step": {
+    "measured_on": "50-step runs, median per step, A10+TDX private VPC",
+    "median_step_wall_sec": 0.59,
+    "median_net_ce_dlogits_roundtrip_sec": 0.24,
+    "median_net_enclave_adamw_roundtrip_sec": 0.15,
+    "network_fraction_of_step": "~0.39s of 0.59s (~66%) is A10<->TDX round-trips; remainder GPU fwd/bwd + host",
+    "one_step_wall_sec": 0.96, "one_step_note": "higher due to fresh attestation + first-call/handshake overhead",
+    "trusted_logical_invocations_per_step": 2, "trusted_logical_invocations_note": "ce_dlogits + adamw_step (init/checkpoint/restore are per-session, not per-step)",
+    "enclave_state_footprint": "trusted master+m+v for 168 factors, FP32; A-factor 8x896, B q 896x8 / k 128x8",
+    "checkpoint_bytes": "AEAD blob of full trusted state; written to TDX durable (ciphertext only); see restart_test",
+    "gpu_evidence": "on-host 100Hz logger during a 50-step run: peak 2753 MiB VRAM held by the runner PID, util bursts to 72%, 1241/2400 samples nonzero-mem"
+  },
+  "L12N_negative_ablation": {"profile": "pure BF16 storage of AdamW state", "one_step_top1": 0.905, "verdict": "unstable/insufficient precision — retained as negative control, NOT the main profile"}
+}

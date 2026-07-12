@@ -1,0 +1,22 @@
+{
+  "stage": "L12_mixed_precision_hardware_validation",
+  "status": "INTERNAL_LORA_MATRIX_PARTIAL",
+  "completed": [
+    "PHASE1_design_freeze+claim/registry+fold_audit",
+    "PHASE2_fp32_master+AEAD_checkpoint/restore",
+    "PHASE3_1step_3seed",
+    "PHASE4_10step_3seed",
+    "PHASE5_50step_3seed+restart+rollback",
+    "PHASE9_perf/comms"
+  ],
+  "not_run": [
+    "PHASE6_SGD/momentum_3seed_matrix+rank_mask_ablation",
+    "PHASE7_SST2_converged",
+    "PHASE8_GSM8K_converged"
+  ],
+  "artifact_count": 77,
+  "committed_by_me": false,
+  "tdx_cleanup": "gamma_bundle+session_config+checkpoint_state+attest_temp removed; no service/listener",
+  "a10_cleanup": "session_config+gpu_state+gpulog+tlogs+logits removed; GPU idle; package/env/forced-key retained",
+  "hosts": "A10 172.30.25.154 + TDX 172.30.25.153 left running (user decides stop/release)"
+}
