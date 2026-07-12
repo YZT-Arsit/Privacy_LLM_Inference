@@ -118,6 +118,16 @@ def orthogonal_signed_perm(n, seed, dtype=DT):
     return N
 
 
+def rank_refresh_R(rank, seed, kind="signed_perm", dtype=DT):
+    """Rank-space refresh matrix R (rank x rank). kind='signed_perm' -> monomial (AdamW-v exact);
+    kind='dense' -> dense orthogonal (SGD/momentum ok; AdamW-v NOT exact -> reconstruction)."""
+    if kind == "signed_perm":
+        return orthogonal_signed_perm(rank, seed, dtype)
+    g = torch.Generator().manual_seed(int(seed))
+    Q, _ = torch.linalg.qr(torch.randn(rank, rank, generator=g, dtype=dtype))
+    return Q
+
+
 def rope_rot(hd, seed, dtype=DT):
     half = hd // 2
     g = torch.Generator().manual_seed(int(seed))
@@ -242,6 +252,38 @@ class TrustedAdamW:
         if missing == 0:
             self.version += 1        # monotonic: one successful step == one version bump
         return outA, outB, missing
+
+    def rebase(self, R, mode="signed_perm"):
+        """Rank-basis refresh U_old->U_new applied to trusted plaintext state (R = U_new @ U_old^T,
+        rank x rank). A_new = R @ A_old ; B_new = B_old @ R^T -> effective DeltaW invariant (R orthogonal).
+        Optimizer-state transport (classification):
+          * theta master + first-moment m: LINEAR -> R @ m / m @ R^T for ANY invertible R (SGD/momentum/adam m).
+          * AdamW second moment v (ELEMENTWISE g^2): transports EXACTLY only for a SIGNED-PERMUTATION R
+            (then v is a pure row/col permutation of v_old). For a DENSE R the elementwise v cannot be
+            transported exactly -> reconstruct (zeroed here; Class D trusted reconstruction).
+        Rank refresh acts on the RANK dim; it commutes with the gamma fold (input dim) -> applying R to
+        plaintext master is consistent with the masked re-fold."""
+        R = R.to(self.sdt); RT = R.T
+        Pabs = R.abs()                                  # |R| = permutation matrix iff R is signed-perm
+        is_signed_perm = mode == "signed_perm"
+        params_only = mode == "params_only"             # NEGATIVE CONTROL: theta rebased, moments NOT
+        for k in list(self.stateA):
+            A, m, v = self.stateA[k]
+            A = R @ A
+            if not params_only:
+                m = R @ m
+                v = (Pabs @ v) if is_signed_perm else torch.zeros_like(v)
+            self.stateA[k] = [A, m, v]
+        for k in list(self.stateB):
+            B, m, v = self.stateB[k]
+            B = B @ RT
+            if not params_only:
+                m = m @ RT
+                v = (v @ Pabs.T) if is_signed_perm else torch.zeros_like(v)
+            self.stateB[k] = [B, m, v]
+        self.version += 1
+        return {"rebased_factors": len(self.stateA) + len(self.stateB), "mode": mode,
+                "v_transport": "exact_permutation" if is_signed_perm else "reconstructed_zero"}
 
     def state_present(self):
         return len(self.stateA) == self.L * len(TRUSTED_A) and len(self.stateB) == self.L * len(TRUSTED_B)

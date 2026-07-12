@@ -1,0 +1,25 @@
+{
+  "title": "PHASE 2 — rank-basis refresh + state re-basing: derivation, classification, implementation",
+  "derivation": {
+    "factorization": "masked LoRA A_t = U @ A0 (rank x in), B_t = B0 @ U^T (out x rank); effective dW = scale*B_t@A_t = scale*B0@A0 (U orthogonal cancels)",
+    "refresh": "U_old -> U_new  =>  R = U_new @ U_old^T (rank x rank, orthogonal). A_new = R @ A_old ; B_new = B_old @ R^T -> effective dW INVARIANT.",
+    "commutes_with_gamma_fold": "R acts on the RANK dim; the gamma fold M acts on the INPUT dim -> they commute, so applying R to the plaintext master is consistent with the masked re-fold."
+  },
+  "classification_A_to_E": {
+    "A_preserves_SGD": "ANY invertible R (SGD linear-equivariant): rebase theta only.",
+    "B_preserves_momentum": "ANY invertible R: rebase theta + first-moment buffer (m -> R@m / m@R^T).",
+    "C_preserves_elementwise_AdamW": "SIGNED-PERMUTATION / monomial R ONLY. Then g^2 is a pure permutation of g_old^2, so v transports EXACTLY as v_new = |R|-permutation of v_old.",
+    "D_requires_trusted_reconstruction": "DENSE orthogonal R for AdamW: elementwise v CANNOT be transported exactly -> v must be reconstructed/re-initialized in the trusted enclave (implemented as v<-0).",
+    "E_invalid": "claiming a dense R preserves AdamW v exactly; or a non-invertible R (loses rank information)."
+  },
+  "main_exact_AdamW_refresh_family": "signed permutation / monomial R (Class C) — used for the exact profile.",
+  "local_algebra_validation_fp64": {
+    "signed_perm": {"effective_dW_invariance_at_refresh": 6.66e-16, "v_permutation_exactness": 0.0},
+    "dense": {"effective_dW_invariance_at_refresh": 1.55e-15, "v_reconstructed_to_zero_max_abs_v": 0.0}
+  },
+  "implementation": {
+    "enclave": "TrustedAdamW.rebase(R, mode) in scripts/tdx_adamw_protocol.py (modes: signed_perm exact / dense reconstruct-v / params_only NEGATIVE-CONTROL theta-only); service op rebase_adamw; version increments.",
+    "runner": "scripts/a10_mixed_runner.py --refresh-every/--refresh-mode/--refresh-kind/--refresh-inconsistent: rebases GPU-exact factor master+moments locally + sends R to enclave for trusted-state rebase (consistent U_old->U_new).",
+    "updates_consistently": ["A/B runtime", "FP32 master", "SGD state (none)", "momentum buffer (m)", "AdamW m (linear)", "AdamW v (signed-perm exact / dense reconstruct)", "trusted TDX-held state", "version binding"]
+  }
+}

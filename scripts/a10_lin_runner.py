@@ -48,7 +48,9 @@ def main():
     ap.add_argument("--key", required=True); ap.add_argument("--service-cmd", required=True)
     ap.add_argument("--out", required=True); ap.add_argument("--adapter-id", default="")
     ap.add_argument("--log-transport", default="")
+    ap.add_argument("--log-layers", default="")   # e.g. "0,11,23" -> log only these layers (small tlog)
     a = ap.parse_args()
+    log_layers = set(int(x) for x in a.log_layers.split(",")) if a.log_layers else None
     CDT = torch.bfloat16; MDT = torch.float32
     sess = json.loads(Path(a.session).read_text())
     key = bytes.fromhex(sess["session_key_hex"]); run_id = sess["run_id"]
@@ -118,13 +120,13 @@ def main():
                     master[(l, proj)][0] = A2; buf[f"A.{l}.{proj}"] = bA
                 elif gA is not None and a_enc:
                     gt = gA.to(MDT).cpu(); gA_tr[f"{l}.{proj}"] = gt
-                    if a.log_transport: slog["gA_tilde"][f"{l}.{proj}"] = gt.clone()
+                    if a.log_transport and (log_layers is None or l in log_layers): slog["gA_tilde"][f"{l}.{proj}"] = gt.clone()
                 if gB is not None and not b_enc:
                     B2, bB = gpu_step(B, gB.to(MDT), buf[f"B.{l}.{proj}"], a.optimizer, a.lr, a.mom)
                     master[(l, proj)][1] = B2; buf[f"B.{l}.{proj}"] = bB
                 elif gB is not None and b_enc:
                     gt = gB.to(MDT).cpu(); gB_tr[f"{l}.{proj}"] = gt
-                    if a.log_transport: slog["gB_tilde"][f"{l}.{proj}"] = gt.clone()
+                    if a.log_transport and (log_layers is None or l in log_layers): slog["gB_tilde"][f"{l}.{proj}"] = gt.clone()
         torch.cuda.synchronize()
         net2 = 0.0
         if ENC:
@@ -136,10 +138,10 @@ def main():
             with torch.no_grad():
                 for k, val in upd.get("A", {}).items():
                     l, proj = int(k.split(".")[0]), k.split(".", 1)[1]; master[(l, proj)][0] = val.to(dev, MDT)
-                    if a.log_transport: slog["refoldA"][k] = val.clone()
+                    if a.log_transport and (log_layers is None or l in log_layers): slog["refoldA"][k] = val.clone()
                 for k, val in upd.get("B", {}).items():
                     l, proj = int(k.split(".")[0]), k.split(".", 1)[1]; master[(l, proj)][1] = val.to(dev, MDT)
-                    if a.log_transport: slog["refoldB"][k] = val.clone()
+                    if a.log_transport and (log_layers is None or l in log_layers): slog["refoldB"][k] = val.clone()
             ver = srh.get("state_version")
         else:
             ver = None

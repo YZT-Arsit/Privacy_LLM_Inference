@@ -1,0 +1,15 @@
+{
+  "title": "PHASE 1 — momentum divergence audit (existing L3/L4/L11 artifacts + through-divergence oracle)",
+  "finding_seed_dependent_shared_instability": {
+    "L11_o1c_momentum_ce": {"s1234": "0.445->3.83 (diverges, onset ~step 22)", "s2025": "0.449->5.47 (diverges ~step 15)", "s7": "0.450->0.285 (STABLE; transient peak step 18)"},
+    "L4_o1a_momentum_ce":  {"s1234": "0.445->0.002 (STABLE)", "s2025": "0.449->0.007 (STABLE)", "s7": "0.450->3.65 (diverges ~step 20)"},
+    "interpretation": "divergence is SEED-DEPENDENT and hits BOTH profiles (L11 diverges for 1234/2025, stable for 7; L4 diverges for 7, stable for 1234/2025). This is a shared chaotic single-batch instability at effective LR ~1e-2 (lr=1e-3/mom=0.9), NOT an L11-only or protocol-specific failure. All runs finite (no NaN)."
+  },
+  "through_divergence_oracle_L11_o1c_50step": {
+    "seed_1234": {"worst_master_rel_A_over_50_steps": 0.0, "worst_master_rel_B": 2.38e-8, "note": "master rel err = 0.0 EVERY step incl. divergence region (steps 20-30, ce up to 8.3)"},
+    "seed_7":    {"worst_master_rel_A_over_50_steps": 0.0, "worst_master_rel_B": 2.56e-8},
+    "verdict": "L11 (O1-C protected) stays BIT-EXACT to the plaintext-equivalent reference (L3) THROUGH the divergence -> the protected optimizer protocol remains equivalent; the divergence is a shared plaintext-trajectory hyperparameter instability, not a protected-protocol defect."
+  },
+  "L4_o1a_approximation_before_divergence": "L4 (O1-A naive) follows a DIFFERENT trajectory (its gamma-fed-A approximation error perturbs the path); at these hypers that perturbation tips a different seed set into/out of divergence — consistent with chaotic sensitivity, not a correctness ordering.",
+  "conclusion": "supported by artifacts: optimizer protocol equivalent; preregistered single-batch hyperparameter unstable. Registered matrix NOT retuned/overwritten; a stable-hyperparameter sanity run may be added separately as a secondary diagnostic (not done this stage)."
+}

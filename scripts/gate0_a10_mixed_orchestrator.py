@@ -51,6 +51,9 @@ def main():
     ap.add_argument("--reuse-run-id", default="")     # for restart test: keep run_id + session key
     ap.add_argument("--reuse-key", default="")
     ap.add_argument("--skip-compare", action="store_true")  # long runs: skip giant per-step tlog pull+compare
+    ap.add_argument("--refresh-every", type=int, default=0)
+    ap.add_argument("--refresh-mode", default="signed_perm"); ap.add_argument("--refresh-kind", default="signed_perm")
+    ap.add_argument("--refresh-inconsistent", action="store_true")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
 
@@ -101,6 +104,10 @@ def main():
     tlog_remote = f"{RA10}/results/aaai_private_base/alicloud_a10_runs/l12_mixed/{tag}.tlog.pt"
     a10(f"mkdir -p {RA10}/results/aaai_private_base/alicloud_a10_runs/l12_mixed")
     extra = ""
+    if args.refresh_every > 0:
+        extra += (f" --refresh-every {args.refresh_every} --refresh-mode {args.refresh_mode} "
+                  f"--refresh-kind {args.refresh_kind}")
+        if args.refresh_inconsistent: extra += " --refresh-inconsistent"
     if args.checkpoint_at >= 0: extra += f" --checkpoint-at {args.checkpoint_at}"
     if args.restore_first:
         extra += f" --restore-first --ckpt-path {args.ckpt_path} --expected-binding '{args.expected_binding}'"

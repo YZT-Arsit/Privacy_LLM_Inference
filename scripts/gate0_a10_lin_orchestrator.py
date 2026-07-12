@@ -23,6 +23,7 @@ def main():
     ap.add_argument("--profile", default="o1c", choices=["o1c", "o1a"])
     ap.add_argument("--run-tag", required=True); ap.add_argument("--attest", action="store_true")
     ap.add_argument("--skip-compare", action="store_true")
+    ap.add_argument("--log-layers", default="")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     tag = f"{args.run_tag}_s{args.seed}_{args.steps}step"
@@ -64,6 +65,7 @@ def main():
     tlog_remote = f"{RA10}/results/aaai_private_base/alicloud_a10_runs/l1_l11_matrix/{tag}.tlog.pt"
     M.a10(f"mkdir -p {RA10}/results/aaai_private_base/alicloud_a10_runs/l1_l11_matrix")
     logt = "" if args.skip_compare else f" --log-transport {tlog_remote}"
+    if args.log_layers and not args.skip_compare: logt += f" --log-layers {args.log_layers}"
     cmd = (f"cd {RA10} && {ENV_A10} {PY_A10} scripts/a10_lin_runner.py "
            f"--session /tmp/direct_session_a10.json --steps {args.steps} --seq-len {args.seq_len} "
            f"--lr {args.lr} --seed {args.seed} --optimizer {args.optimizer} --mom {args.mom} "

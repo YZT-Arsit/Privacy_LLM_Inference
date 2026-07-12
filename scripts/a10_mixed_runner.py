@@ -58,6 +58,10 @@ def main():
     ap.add_argument("--ckpt-path", default=""); ap.add_argument("--expected-binding", default="")
     ap.add_argument("--adapter-id", default="")
     ap.add_argument("--gpu-state-path", default="")   # local durable state for GPU-exact factors (restart)
+    ap.add_argument("--refresh-every", type=int, default=0)     # rank-mask refresh cadence (0=off)
+    ap.add_argument("--refresh-mode", default="signed_perm", choices=["signed_perm", "dense", "params_only"])
+    ap.add_argument("--refresh-kind", default="signed_perm", choices=["signed_perm", "dense"])
+    ap.add_argument("--refresh-inconsistent", action="store_true")  # R6 neg-control: rebase A but not B
     ap.add_argument("--log-transport", default="")               # per-step masked-grad + refold log for the oracle
     a = ap.parse_args()
     # MIXED PRECISION: compute dtype = bf16 (activations, runtime copies); master dtype = fp32
@@ -191,6 +195,41 @@ def main():
                       "runtime_copy_matches_master_transform": srh.get("runtime_copy_matches_master_transform"),
                       "missing": srh["missing"], "finite": finite, "net_ce": net1, "net_adamw": net2,
                       "wall": time.time() - ts})
+        # ---- rank-mask refresh (R2/R3/R4/R5/R6 ablation): rebase GPU factors + enclave state ----
+        if a.refresh_every > 0 and (step + 1) % a.refresh_every == 0:
+            from tdx_adamw_protocol import rank_refresh_R
+            R = rank_refresh_R(next(iter(master.values()))[0].shape[0], 3000 + step, a.refresh_kind).to(dev, MDT)
+            RT = R.T; Pabs = R.abs()
+            vt = a.refresh_mode  # signed_perm|dense|params_only
+            with torch.no_grad():
+                for (l, proj) in master:
+                    if proj in TRUSTED_A or proj in TRUSTED_B:      # trusted: enclave rebases moments
+                        master[(l, proj)][0] = R @ master[(l, proj)][0]      # A runtime -> R@A
+                        if not a.refresh_inconsistent:
+                            master[(l, proj)][1] = master[(l, proj)][1] @ RT  # B runtime -> B@R^T
+                        continue
+                    # GPU-exact factors: rebase master + moments here (A: R@ ; B: @R^T)
+                    master[(l, proj)][0] = R @ master[(l, proj)][0]
+                    master[(l, proj)][1] = master[(l, proj)][1] @ RT
+                    if f"A.{l}.{proj}" in gm_:
+                        m, v = gm_[f"A.{l}.{proj}"]
+                        if vt != "params_only":
+                            m = R @ m; v = (Pabs @ v) if vt == "signed_perm" else torch.zeros_like(v)
+                        gm_[f"A.{l}.{proj}"] = [m, v]
+                    if f"B.{l}.{proj}" in gm_:
+                        m, v = gm_[f"B.{l}.{proj}"]
+                        if vt != "params_only":
+                            m = m @ RT; v = (v @ Pabs.T) if vt == "signed_perm" else torch.zeros_like(v)
+                        gm_[f"B.{l}.{proj}"] = [m, v]
+            # rebase the enclave trusted state
+            rseq = last_seq + 1; rpay = dump_tensor({"R": R.float().cpu()})
+            rrh, _, _ = ch.request({"op": "rebase_adamw", "seq": rseq, "run_id": run_id, "mode": vt,
+                                    "hmac": mac(key, rpay, rseq, run_id, "rebase_adamw")}, rpay)
+            if rrh.get("op") != "rebase_adamw_ack":
+                raise TransportError(f"rebase failed: {rrh}")
+            last_seq = rrh["seq"]
+            steps[-1]["refresh"] = {"mode": vt, "kind": a.refresh_kind, "inconsistent": a.refresh_inconsistent,
+                                    "enclave_version": rrh["state_version"], "v_transport": rrh.get("v_transport")}
         if a.log_transport: tlog.append(slog)
         print(json.dumps({"step": step, "ce": round(ce, 5), "trA": len(gA_tr), "trB": len(gB_tr),
                           "ver": srh.get("state_version"), "rt_match": srh.get("runtime_copy_matches_master_transform"),

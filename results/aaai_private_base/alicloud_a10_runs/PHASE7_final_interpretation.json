@@ -1,0 +1,40 @@
+{
+  "title": "PHASE 7 — final internal interpretation (categories kept SEPARATE; none used as evidence for another)",
+  "A_algebraic_correctness": {
+    "L10_SGD": "O1-C plaintext-exact (10-step per-target oracle worst_master_A=0.0, dW cos 1-2e-13)",
+    "L11_momentum": "O1-C plaintext-exact (oracle 0.0; bit-exact THROUGH training divergence, 50-step both seeds)",
+    "L12_AdamW": "fp64 self-test 7e-15; deployed-convention transforms verified vs gram_inv"
+  },
+  "B_short_horizon_numerical_equivalence": {
+    "L12_one_step_3seed": "master rel A 2-4e-9, B ~1.6e-8",
+    "L12_ten_step_3seed": "master rel A 6-9e-9",
+    "L12_fifty_step_3seed": "effective top1=1.0, KL ~1e-6 (stable AdamW regime)",
+    "L10_L11_ten_step": "per-target oracle master 0.0"
+  },
+  "C_approximation_failure": {
+    "L2_O1A_SGD": "diverges: median ~2-3% / max ~25% effective-dW relerr vs O1-C on gamma-fed targets",
+    "L4_O1A_momentum": "different (approximation-perturbed) trajectory; chaotic seed-dependent divergence",
+    "rank_refresh_R5_params_only": "degraded convergence (0.0078 vs 0.0037) + 80% adapter drift",
+    "rank_refresh_R6_inconsistent": "erratic/broken loss + 131% adapter divergence",
+    "pure_BF16_AdamW_storage_L12N": "top1 0.905 (insufficient precision)"
+  },
+  "D_converged_task_utility": {
+    "SST2": "NOT RUN (batched training data plane not built)",
+    "GSM8K": "NOT RUN (batched training data plane + generation loop not built)"
+  },
+  "E_systems_cost": {
+    "per_step_wall_s": {"L10_sgd": 0.534, "L11_mom": 0.536, "L12_adamw": 0.587},
+    "network_fraction": "~0.67-0.70 (ce_dlogits ~0.24s + trusted step ~0.14s)",
+    "trusted_logical_invocations_per_step": {"O1C_and_L12": 2, "O1A": 1},
+    "enclave_state_footprint": "trusted master(+m,v or buffer) FP32 for 168 factors",
+    "checkpoint_restart_overhead": "ChaCha20-Poly1305 seal; restart continuity bit-identical (0.0)",
+    "rank_refresh_overhead": "1 rebase_adamw round-trip per refresh event + local GPU factor/moment rebase"
+  },
+  "explicit_non_conflations": [
+    "optimizer-semantic equivalence (A) is NOT held-out utility (D)",
+    "top1 equivalence (B) is NOT bitwise equality",
+    "a shared unstable plaintext trajectory (L11/L4 momentum) is NOT a protected-protocol failure (proven: master rel err 0.0 through divergence)",
+    "effective-equivalence-vs-HF checks FOLD consistency, NOT training-trajectory correctness (so the rank-refresh ablation uses loss-continuity + effective-dW-vs-baseline, not effective-equiv-vs-HF)",
+    "overlapping CIs would NOT be an equivalence test (deferred with utility)"
+  ]
+}

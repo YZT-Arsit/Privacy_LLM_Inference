@@ -1,0 +1,27 @@
+{
+  "title": "PHASE 3 — rank-mask refresh hardware ablation (real A10 + real TDX, L12 AdamW, signed-perm valid family)",
+  "seed": 1234, "steps": 10, "optimizer": "adamw", "refresh_R": "signed permutation (Class C, AdamW-v exact)",
+  "profiles_run": ["R1_baseline (no refresh)", "R2 refresh-every-1", "R3 refresh-every-5", "R5 params_only (neg-control)", "R6 inconsistent A-not-B (neg-control)"],
+  "loss_continuity_ce": {
+    "R1_baseline": [0.4454,1.1374,0.6478,0.4763,0.0932,0.0121,0.0029,0.005,0.0018,0.0037],
+    "R2_refresh_every1": [0.4454,1.1374,0.6141,0.3718,0.0299,0.0074,0.0041,0.0016,0.0015,0.0009],
+    "R3_refresh_every5": [0.4454,1.1374,0.6478,0.4763,0.0932,0.0121,0.0032,0.0026,0.0022,0.0009],
+    "R5_params_only": [0.4454,1.1374,0.6513,0.4437,0.0124,0.0069,0.0041,0.005,0.0061,0.0078],
+    "R6_inconsistent": [0.4454,0.3052,0.539,0.1109,0.1349,0.0746,0.7136,0.3314,0.2348,0.1607]
+  },
+  "effective_dW_relerr_vs_R1_baseline": {
+    "R2_refresh_every1": {"max": 0.936, "median": 0.243, "note": "inflated by bf16-forward-noise amplification over 10 basis changes"},
+    "R3_refresh_every5": {"max": 0.919, "median": 0.032, "note": "2 refreshes -> near bf16 floor; correct refresh preserves"},
+    "R5_params_only": {"max": 0.937, "median": 0.797, "note": "moments left in old basis -> real drift"},
+    "R6_inconsistent": {"max": 1.811, "median": 1.314, "note": "A rebased, B not -> effective dW changes at each refresh -> broken"}
+  },
+  "verdict": {
+    "R1_baseline": "reference; all finite",
+    "R2_R3_correct_signed_perm": "PRESERVE the trajectory — loss continuity maintained, converge to <= baseline loss (R2 0.0009, R3 0.0009 vs R1 0.0037); R3 effective adapter near bf16 floor (3% median). Correct state transport works.",
+    "R5_params_only_NEG": "measurably DRIFTS — degraded convergence (0.0078) + 80% median adapter drift (moments not rebased).",
+    "R6_inconsistent_NEG": "BREAKS — erratic non-monotone loss (jump to 0.71 at step 6, final 0.16) + 131% median adapter divergence (effective dW not preserved).",
+    "all_finite": true
+  },
+  "classification_confirmed_on_hardware": "signed-permutation R (Class C) refresh with correct optimizer-state transport preserves the AdamW trajectory; breaking the moment transport (R5) or the effective-dW preservation (R6) measurably fails. Not claimed exact from algebra alone — real artifacts.",
+  "NOT_run_this_stage": ["R0 rank-mask-disabled", "R4 per-session refresh", "SGD/momentum refresh variants (Class A/B: any invertible R works; a10_lin_runner refresh hook not added — the EASY case; AdamW signed-perm is the HARD case that motivates Class C and IS validated here)"]
+}

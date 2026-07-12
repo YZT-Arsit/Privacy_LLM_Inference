@@ -310,6 +310,19 @@ def main():
                                "compute_sec": time.time() - t0,
                                "bytes_in": len(payload), "bytes_out": len(out)}, out)
 
+        elif op == "rebase_adamw":
+            # rank-basis refresh applied to trusted plaintext state (A_new=R@A, B_new=B@R^T + moments).
+            tw = adamw["tw"]
+            if tw is None or not tw.state_present():
+                write_frame(fout, {"op": "reject", "reason": "no_adamw_state", "seq": seq}); continue
+            R = load_tensor(payload)["R"]; mode = header.get("mode", "signed_perm")
+            info = tw.rebase(R, mode=mode)
+            counters["adamw_rebase_calls"] = counters.get("adamw_rebase_calls", 0) + 1
+            counters["adamw_state_version"] = tw.version; last_seq = seq; resp_seq = seq + 1
+            write_frame(fout, {"op": "rebase_adamw_ack", "seq": resp_seq,
+                               "hmac": mac(key, b"", resp_seq, run_id, "rebase_adamw_ack"),
+                               "state_version": tw.version, **info})
+
         elif op == "checkpoint_adamw":
             # seal (theta_master_fp32, m, v, step, version, binding) with AEAD to a durable file.
             tw = adamw["tw"]
