@@ -85,6 +85,7 @@ that the proxy loads Qwen weights.
     registry = json.dumps(registry_json(), indent=2, sort_keys=True) + "\n"
     write_new_or_same(out / "views/view_registry.json", registry)
     write_new_or_same(out / "views/allowed_fields.json", registry)
+    write_new_or_same(out / "views/field_allowlists.json", registry)
     schemas = {
         "schema_version": "1.0",
         "record_type": "object",
@@ -105,15 +106,30 @@ that the proxy loads Qwen weights.
 Access is default-deny and checked both when records are constructed and when a
 field is read. Live model/oracle objects are rejected.
 """)
-    tracked = subprocess.run(
-        ["git", "ls-files"], cwd=REPO, check=True, text=True, capture_output=True
-    ).stdout.splitlines()
-    hashes = []
-    for rel in tracked:
-        p = REPO / rel
-        if p.is_file():
-            hashes.append(f"{sha256(p)}  {rel}")
-    write_new_or_same(out / "source_hashes_before.sha256", "\n".join(hashes) + "\n")
+    write_new_or_same(out / "views/audit.md", """# View-enforcement audit
+
+- Every attacker-facing record requires an explicit `V0`, `V1`, `V2`, or `V3`.
+- Construction rejects keys outside the exact allowlist; field reads are checked again.
+- V0 rejects logits, timing, hidden states, attention, package tensors, and gradients.
+- V2 rejects plaintext weights/adapters, labels, references, raw evaluator inputs,
+  mask/inverse/gamma/rank/TDX secrets, and live model/oracle objects.
+- Corpus manifests bind ordered deterministic sample IDs, file hashes, byte sizes,
+  and record counts; a changed frozen manifest is rejected rather than overwritten.
+- V3 is restricted to trusted positive controls and is not mixed into primary V2 results.
+
+The enforcement test result is recorded separately in `enforcement_tests.json`.
+""")
+    source_snapshot = out / "source_hashes_before.sha256"
+    if not source_snapshot.exists():
+        tracked = subprocess.run(
+            ["git", "ls-files"], cwd=REPO, check=True, text=True, capture_output=True
+        ).stdout.splitlines()
+        hashes = []
+        for rel in tracked:
+            p = REPO / rel
+            if p.is_file():
+                hashes.append(f"{sha256(p)}  {rel}")
+        write_new_or_same(source_snapshot, "\n".join(hashes) + "\n")
     write_new_or_same(out / "final_status.md", """# Final status
 
 `AUTHORIZED_SECURITY_EVALUATION_PARTIAL`

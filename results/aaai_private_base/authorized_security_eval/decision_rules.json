@@ -1,0 +1,20 @@
+{
+  "schema": "authorized_security_preregistered_margins",
+  "version": "1.0",
+  "frozen_before_primary_aggregate_results": true,
+  "confidence_level": 0.95,
+  "bootstrap_resamples": 10000,
+  "direction": "V2_minus_V0",
+  "pass_rule": "upper_confidence_bound_lte_margin",
+  "margins": {
+    "surrogate_bleu_points": 2.0,
+    "surrogate_chrf_points": 2.0,
+    "surrogate_rouge_l_points": 2.0,
+    "surrogate_token_agreement_absolute": 0.02,
+    "mia_roc_auc_absolute": 0.03,
+    "mia_tpr_at_1pct_fpr_absolute": 0.02,
+    "mia_tpr_at_0_1pct_fpr_absolute": 0.01,
+    "input_token_reconstruction_absolute": 0.02,
+    "input_link_auc_absolute": 0.03
+  }
+}

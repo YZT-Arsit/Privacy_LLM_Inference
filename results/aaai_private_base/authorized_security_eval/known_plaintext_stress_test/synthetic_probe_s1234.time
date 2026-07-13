@@ -1,0 +1,21 @@
+/Users/Hoshino/Desktop/privacy_llm_obfuscation/.venv/lib/python3.13/site-packages/torch/_subclasses/functional_tensor.py:368: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /Users/runner/work/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:84.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+Traceback (most recent call last):
+  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/attacks/synthetic_alignment_probe.py", line 255, in <module>
+    main()
+    ~~~~^^
+  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/attacks/synthetic_alignment_probe.py", line 247, in main
+    r = run(mask, args.dim, args.vocab, args.tokens, pad,
+            args.families, args.seed)
+  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/attacks/synthetic_alignment_probe.py", line 219, in run
+    A_hat, gram_res = recover_input_mask_als(Ws, Wt)   # ~ N_in^{-1} (=N_in^T)
+                      ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/attacks/synthetic_alignment_probe.py", line 152, in recover_input_mask_als
+    A_new = _procrustes(A - lr * (A @ skew))
+  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/attacks/synthetic_alignment_probe.py", line 106, in _procrustes
+    U, _, Vh = torch.linalg.svd(M)
+               ~~~~~~~~~~~~~~~~^^^
+torch._C._LinAlgError: linalg.svd: The algorithm failed to converge because the input matrix is ill-conditioned or has too many repeated singular values (error code: 1).
+real 16.03
+user 10.09
+sys 0.37

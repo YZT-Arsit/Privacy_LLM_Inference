@@ -1,0 +1,10 @@
+{
+  "exact_private_train_prompt_overlap": 0,
+  "private_train_split_sha256": "417874fc79fa6056f4d7122d65ebf9e67e3b9cb68547aea95a39726c6c1f1cbc",
+  "query_pool_sha256": "4695388ceac5690f0ecbb80a09b3257b66d41e982480481dfea02cf1a9cbecf0",
+  "records": 500,
+  "references_included": false,
+  "schema": "authorized_security_query_pool",
+  "source_generation_input_sha256": "dffadc4c6dc538663999572ea2a65b82b254b850289571c77aced7732cc627cb",
+  "version": "1.0"
+}

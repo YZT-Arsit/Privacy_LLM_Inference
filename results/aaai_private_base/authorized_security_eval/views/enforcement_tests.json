@@ -1,0 +1,245 @@
+{
+  "all_fail_closed": true,
+  "controls": [
+    {
+      "error": "V0 rejects fields outside its allowlist: ['plaintext_weights']",
+      "field": "plaintext_weights",
+      "name": "V0_rejects_plaintext_weights",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['plaintext_adapter']",
+      "field": "plaintext_adapter",
+      "name": "V0_rejects_plaintext_adapter",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['reference']",
+      "field": "reference",
+      "name": "V0_rejects_reference",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['labels']",
+      "field": "labels",
+      "name": "V0_rejects_labels",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['model']",
+      "field": "model",
+      "name": "V0_rejects_model",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['oracle']",
+      "field": "oracle",
+      "name": "V0_rejects_oracle",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V1 rejects fields outside its allowlist: ['plaintext_weights']",
+      "field": "plaintext_weights",
+      "name": "V1_rejects_plaintext_weights",
+      "status": "rejected_ok",
+      "view": "V1"
+    },
+    {
+      "error": "V1 rejects fields outside its allowlist: ['plaintext_adapter']",
+      "field": "plaintext_adapter",
+      "name": "V1_rejects_plaintext_adapter",
+      "status": "rejected_ok",
+      "view": "V1"
+    },
+    {
+      "error": "V1 rejects fields outside its allowlist: ['reference']",
+      "field": "reference",
+      "name": "V1_rejects_reference",
+      "status": "rejected_ok",
+      "view": "V1"
+    },
+    {
+      "error": "V1 rejects fields outside its allowlist: ['labels']",
+      "field": "labels",
+      "name": "V1_rejects_labels",
+      "status": "rejected_ok",
+      "view": "V1"
+    },
+    {
+      "error": "V1 rejects fields outside its allowlist: ['model']",
+      "field": "model",
+      "name": "V1_rejects_model",
+      "status": "rejected_ok",
+      "view": "V1"
+    },
+    {
+      "error": "V1 rejects fields outside its allowlist: ['oracle']",
+      "field": "oracle",
+      "name": "V1_rejects_oracle",
+      "status": "rejected_ok",
+      "view": "V1"
+    },
+    {
+      "error": "V2 rejects fields outside its allowlist: ['plaintext_weights']",
+      "field": "plaintext_weights",
+      "name": "V2_rejects_plaintext_weights",
+      "status": "rejected_ok",
+      "view": "V2"
+    },
+    {
+      "error": "V2 rejects fields outside its allowlist: ['plaintext_adapter']",
+      "field": "plaintext_adapter",
+      "name": "V2_rejects_plaintext_adapter",
+      "status": "rejected_ok",
+      "view": "V2"
+    },
+    {
+      "error": "V2 rejects fields outside its allowlist: ['reference']",
+      "field": "reference",
+      "name": "V2_rejects_reference",
+      "status": "rejected_ok",
+      "view": "V2"
+    },
+    {
+      "error": "V2 rejects fields outside its allowlist: ['labels']",
+      "field": "labels",
+      "name": "V2_rejects_labels",
+      "status": "rejected_ok",
+      "view": "V2"
+    },
+    {
+      "error": "V2 rejects fields outside its allowlist: ['model']",
+      "field": "model",
+      "name": "V2_rejects_model",
+      "status": "rejected_ok",
+      "view": "V2"
+    },
+    {
+      "error": "V2 rejects fields outside its allowlist: ['oracle']",
+      "field": "oracle",
+      "name": "V2_rejects_oracle",
+      "status": "rejected_ok",
+      "view": "V2"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['attention_scores']",
+      "field": "attention_scores",
+      "name": "V0_rejects_attention_scores",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['masked_dlogits']",
+      "field": "masked_dlogits",
+      "name": "V0_rejects_masked_dlogits",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['masked_k']",
+      "field": "masked_k",
+      "name": "V0_rejects_masked_k",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['masked_kv_cache']",
+      "field": "masked_kv_cache",
+      "name": "V0_rejects_masked_kv_cache",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['masked_logits']",
+      "field": "masked_logits",
+      "name": "V0_rejects_masked_logits",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['masked_q']",
+      "field": "masked_q",
+      "name": "V0_rejects_masked_q",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['masked_v']",
+      "field": "masked_v",
+      "name": "V0_rejects_masked_v",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['package_metadata']",
+      "field": "package_metadata",
+      "name": "V0_rejects_package_metadata",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['protocol_transcript']",
+      "field": "protocol_transcript",
+      "name": "V0_rejects_protocol_transcript",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['tensor_shapes']",
+      "field": "tensor_shapes",
+      "name": "V0_rejects_tensor_shapes",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['transformed_adapter']",
+      "field": "transformed_adapter",
+      "name": "V0_rejects_transformed_adapter",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['transformed_base']",
+      "field": "transformed_base",
+      "name": "V0_rejects_transformed_base",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['transformed_gradients']",
+      "field": "transformed_gradients",
+      "name": "V0_rejects_transformed_gradients",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['transformed_hidden']",
+      "field": "transformed_hidden",
+      "name": "V0_rejects_transformed_hidden",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "V0 rejects fields outside its allowlist: ['transformed_optimizer_state']",
+      "field": "transformed_optimizer_state",
+      "name": "V0_rejects_transformed_optimizer_state",
+      "status": "rejected_ok",
+      "view": "V0"
+    },
+    {
+      "error": "'AUTO' is not a valid View",
+      "name": "implicit_AUTO_view",
+      "status": "rejected_ok"
+    }
+  ],
+  "passed": 34,
+  "schema": "authorized_security_view_negative_tests",
+  "total": 34,
+  "version": "1.0"
+}

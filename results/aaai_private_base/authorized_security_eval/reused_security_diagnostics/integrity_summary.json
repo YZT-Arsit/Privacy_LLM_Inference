@@ -1,0 +1,6 @@
+{
+  "artifacts": 6,
+  "all_sidecars_match": true,
+  "not_primary_evidence": true,
+  "reason": "legacy B-label semantics conflict with authorized V0/V2 definitions"
+}
