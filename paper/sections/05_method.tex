@@ -1,71 +1,427 @@
 % ===========================================================================
-% METHOD --- argument skeleton (skill S9 implementation-correspondence). The
-% task requires NINE separated subsections. Present idealized constructions as
-% "idealized" and separately note implementation deviations. Use "we implement"
-% only for implemented+tested paths; "we propose"/"we prototype" otherwise.
-% Every algorithm must match the actual execution order in src/pllo/**.
+% METHOD --- execution-protocol specification.
+% This section defines how the trusted controller and untrusted accelerator
+% execute inference and LoRA adaptation.
 % ===========================================================================
+
+% The local TeX installation used by this artifact does not provide the
+% algorithm/algorithmic packages. This small, package-free environment retains
+% AAAI's two-column layout and gives the pseudocode an independent counter.
+\newcounter{methodalgorithm}
+\newenvironment{methodalgorithm}[1]{%
+  \par\medskip
+  \refstepcounter{methodalgorithm}%
+  \small\hrule\vspace{3pt}
+  \noindent\textbf{Algorithm \themethodalgorithm: #1}\par\vspace{3pt}
+}{%
+  \vspace{3pt}\hrule
+  \par\medskip
+}
+
 \section{Method}
 \label{sec:method}
 
-% CENTRAL QUESTION: How does the trusted component + untrusted accelerator jointly
-% execute (and adapt) a public/private-weight decoder LLM on transformed tensors
-% while preserving the computation?
+\subsection{System Overview}
+\label{subsec:method-overview}
 
-% ---- 5.1 System overview ---------------------------------------------------
-% Data plane: sample masks -> mask -> accelerator matmul -> trusted recover.
-% Impl: src/pllo/tee/{simulated_runtime,process_runtime}.py (EMULATION, CPU;
-% no real enclave), wrappers/*generation_wrapper.py. \evid{C-BND-01}
-% Fig: figures/ (system overview). \TODO{port fig_system_overview.tex}
+The execution has two administrative phases and two operating modes. During
+offline preparation, the model provider installs the private parameters
+$\params$ in the trusted controller $\ctrl$. The controller samples the masks
+needed by the configured call schedule, validates every projection boundary,
+and records the execution order. In online operation, $\ctrl$ constructs the
+transformed operands for each call and alternates between trusted operators over
+plaintext transients and calls to the untrusted accelerator $\acc$ over tensors
+in $\Sobs$. In inference mode, one prompt prefill is followed by one-token
+decode calls until generation terminates. In adaptation mode, the same masked
+linear interface is extended with separate, rank-padded LoRA factors; gradient
+recovery and the optimizer interface remain in $\ctrl$.
 
-% ---- 5.2 Threat model & trusted boundary (pointer to Sec~\ref{sec:threat}) --
-% Boundary-call accounting is an OP-COUNT proxy, not latency (src/pllo/
-% experiments/trusted_boundary_accounting.py). \evid{C-EFF-BND}
+The trusted controller owns the token embedding lookup, all masks and inverse
+masks, pads, recovery maps, normalization gains, plaintext residual state,
+plaintext attention projections after recovery, recovered logits, token
+selection, the plaintext LoRA factors, recovered adapter gradients, and
+optimizer state. The accelerator owns no plaintext model or runtime state. It
+stores the transformed base projections, transformed LoRA factors when active,
+and the session's masked key/value cache, and it evaluates the requested dense
+linear algebra and the compatible attention and activation kernels. A boundary
+call sends only the transformed operands and public shapes needed for that
+call; its response is a transformed tensor that $\ctrl$ either recovers or
+passes to a subsequent compatible accelerator operation.
 
-% ---- 5.3 Linear & residual transformations --------------------------------
-% Right-action masks N_in,N_out (invertible) + boundary additive pad T:
-%   Xt=(X-T)N_in ; Wt=N_in^{-1} W N_out ; Yt = Xt Wt + T W N_out + b N_out = Y N_out.
-% Impl: src/pllo/ops/linear.py, deployment/linear_boundary_pad.py. \evid{C-COR-01}
-% \risk{Objects differ: N invertible here vs orthogonal for norm/attention -- state per layer.}
+\begin{figure*}[t]
+\centering
+\fbox{\begin{minipage}{0.94\textwidth}
+\centering
+\textbf{Offline preparation}\quad
+$\params,(\Amat,\Bmat),\maskset\in\ctrl$
+$\longrightarrow$
+$\{\text{validated shapes, call order, fresh schedule}\}$ in $\ctrl$
 
-% ---- 5.4 Attention, RoPE, GQA/MQA, KV-cache --------------------------------
-% QK invariance requires N_Q N_K^T = I (per head, block-diagonal, no cross-head
-% mixing); V mask absorbed by o_proj. RoPE commutes ONLY with 2x2-block masks on
-% adjacent RoPE pairs; the WIRED path uses post-RoPE masking. GQA ties q-mask to
-% key-mask inverse-transpose per group. KV-cache mask MUST be FIXED within a
-% session. Impl: ops/{attention,rope,gqa_attention}.py, cache/kv_cache.py.
-% \evid{C-COR-02,03,04,05}
-% \risk{design.md "fresh masks per token" contradicts KV-mask-fixed restriction (CF-COR-KV).}
+\vspace{5pt}
+$\usr:x$
+$\longrightarrow$
+$\boxed{\ctrl:\ \text{embed, normalize, mask/pad}}$
+$\longrightarrow$
+$\boxed{\acc:\ \text{masked linear/attention/activation}}$
+$\longrightarrow$
+$\boxed{\ctrl:\ \text{recover, residual update, logits, token}}$
 
-% ---- 5.5 Nonlinear handling ------------------------------------------------
-% Islands: pointwise activation -> permutation P; SwiGLU -> PAIRED permutation;
-% RMSNorm -> orthogonal (gain must be folded; vector-gamma does NOT commute);
-% LayerNorm -> mean-preserving orthogonal. Modes in deployment/folded_nonlinear.py:
-%  current (nonlinear runs TRUSTED-SIDE), trusted_shortcut (name is misleading:
-%  runs ON accelerator, Amulet lift), compatible_right_multiply. \evid{C-COR-06,07,08}
-% \risk{Do NOT present `current` correctness as accelerator-side nonlinear execution.}
-% \risk{Wired generation path runs RMSNorm as trusted recompute (trusted_fallback_with_repad).}
+\vspace{5pt}
+Prefill initializes $\{\Kt,\Vt\}_{\ell=1}^{L}$; each decode call appends one
+masked key/value row per layer and returns one recovered next-token decision.
+LoRA adaptation replaces a delegated linear call by a base branch plus the
+separate $\At\Bt$ branch, followed by masked backward and a trusted update.
+\end{minipage}}
+\caption{Overview placeholder for the execution lifecycle. The final artwork
+will replace this boxed protocol sketch without changing the depicted boundary
+or message order.}
+\label{fig:method-overview}
+\end{figure*}
 
-% ---- 5.6 Autoregressive generation ----------------------------------------
-% Trusted-side recovery of logits then GREEDY argmax (only greedy is implemented
-% + validated). Impl: wrappers/*_generation_wrapper.py (argmax). \evid{C-COR-GEN}
-% \risk{Sampling/top-k/top-p/beam asserted in design but NOT validated (unsupported).}
+\begin{methodalgorithm}{High-level controller--accelerator execution}
+\label{alg:method-overview}
+\textbf{Inputs:} private token sequence $x$; private parameters $\params$;
+optional private adapter $(\Amat,\Bmat)$; public architecture $\arch$.\par
+\textbf{Outputs:} generated token sequence, or updated private adapter.\par
+\textbf{Trusted state:} $\params,\maskset,\Tpad,\Recover$; optional adapter and
+optimizer state; plaintext residuals, logits, and gradients.\par
+\textbf{Accelerator state:} transformed operators and optional transformed
+adapter factors; masked KV cache; current transformed activations.\par
+\textbf{Communication:} calls labelled \textsc{Send} and \textsc{Return}.\par
+\begin{enumerate}
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+\item $\ctrl$ installs the private model and optional adapter, validates the
+call plan, and initializes its fresh-mask schedule.
+\item $\ctrl$ embeds the prompt, performs the trusted boundary operations, and
+\textsc{Send}s the first transformed activation.
+\item $\acc$ executes the masked prefill and \textsc{Return}s transformed
+layer outputs and masked cache entries as requested.
+\item $\ctrl$ recovers the final logits and selects the next token.
+\item While generation continues, repeat the one-token boundary sequence,
+reusing the session KV masks and appending to the masked cache.
+\item If adapting, execute masked forward and backward calls, recover the
+adapter gradients in $\ctrl$, update the private factors, and refresh their
+transformed images.
+\item Erase pass-local plaintexts and return only the selected output.
+\end{enumerate}
+\end{methodalgorithm}
 
-% ---- 5.7 LoRA adaptation ---------------------------------------------------
-% Masked forward: At=N_in^{-1} A U, Bt=U^{-1} B N_out, Yt += (alpha/r) T A B N_out.
-% Rank-space mixer notation MUST be unified (U vs M vs R across ledgers -- see
-% notation.md). Rank padding A_pad B_pad = A B; TRUE rank hidden from shape,
-% PADDED rank r_pad visible. Impl: ops/lora.py, lora_rank_padding.py. \evid{C-LORA-FWD,C-LORA-RANK}
+Figure~\ref{fig:method-overview} shows the lifecycle, and
+Algorithm~\ref{alg:method-overview} fixes its message order. The remaining
+subsections specify each step.
 
-% ---- 5.8 Optimizer treatment ----------------------------------------------
-% Masked backward Gt=G N_out^{-T}; recover dA,dB trusted-side; loss+optimizer
-% stay trusted. SGD/momentum: exact under masks. AdamW: dense-mask UNSUPPORTED
-% (raises DenseMaskedAdamWUnsupported) -- reconciled with Gate-0.5 "O1-C" trusted
-% correction which IS exact; O1-B exact but paper-unsafe (leaks RMSNorm-gain
-% spectrum). Impl: ops/lora_backward.py, experiments/unified_masked_training.py.
-% \evid{C-OPT-SGD,C-OPT-ADAMW} \risk{T15 vs Gate-0.5 O1-C reconciliation must be explicit.}
+\subsection{Runtime Protocol}
+\label{subsec:runtime-protocol}
 
-% ---- 5.9 Runtime lifecycle -------------------------------------------------
-% Mask sampling -> per-call boundary crossings -> session KV binding -> audit.
-% \TODO{Describe execution_profile.py paper_safe gating.}
-\TODO{Author Method after threat-model framing resolved; separate idealized construction from wired implementation for RMSNorm and nonlinear modes.}
+\paragraph{Offline phase.}
+For every linear map with private weight
+$\W\in\mathbb{R}^{\dinX\times\doutX}$, $\ctrl$ records its input and output
+dimensions and the mask family required by the surrounding operators. It
+validates the attention head grouping, RoPE layout, cache layout, normalization
+locations, and residual order. For each adapted projection it creates the
+rank-padded controller representation and initializes its private optimizer
+state. It may precompute a trusted schedule of distinct call-local mask and pad
+material; this schedule remains inside $\ctrl$. No plaintext or transformed
+model operand is installed on $\acc$ in this phase.
+
+\paragraph{Runtime phase.}
+The user supplies token identifiers to $\ctrl$. The controller performs the
+embedding lookup and holds the resulting plaintext hidden state $\X$. At every
+delegated linear boundary, $\ctrl$ samples a fresh $\Nin$, $\Nout$, and
+$\Tpad$ for the call, or consumes the corresponding precomputed trusted
+schedule entry. It constructs $\Wt=\Nin^{-1}\W\Nout$, the transformed bias,
+and $\Ct=\Tpad\W\Nout$, then sends these operands with
+$\Xt=(\X-\Tpad)\Nin$. The accelerator evaluates the requested multiplication,
+adds the transformed bias and compensation, and returns $\Yt$. The controller
+applies $\Recover$ when the next operator is trusted; when the next operation
+accepts the same transformed basis, $\Yt$ remains on the accelerator until that
+operation finishes. Call-local transformed operands are released after their
+consumer finishes.
+
+\paragraph{Communication and boundary crossings.}
+A standard linear call has one controller-to-accelerator message containing
+$\Xt,\Wt,\bias\Nout,\Ct$ and public shape metadata, followed by one
+accelerator-to-controller message containing $\Yt$. Attention uses the same
+messages for the $Q$, $K$, $V$, and output projections; the accelerator
+additionally retains $\Kt$ and $\Vt$ between calls. A nonlinear boundary returns the current masked
+activation to $\ctrl$, which recovers it, applies the trusted operator, and
+starts the next linear call with a new mask and pad. Final masked logits cross
+from $\acc$ to $\ctrl$ once per prefill or decode call; selected tokens do not
+form an accelerator request.
+
+\paragraph{Freshness schedule.}
+Boundary masks, rank mixers, and additive pads are fresh for each delegated
+call. A decode schedule may precompute these call-local secrets inside
+$\ctrl$; each schedule entry is consumed once. The key and value masks
+$\NK,\NV$ are different: they are sampled once per generation session and per
+layer, then held fixed through prefill and every decode append. The query mask
+is derived from the corresponding key mask for each query head. Termination
+destroys the cache masks and all unused call-local schedule entries. A new
+generation session samples a new set.
+
+\paragraph{Tensor ownership.}
+The private parameters, masks and inverses, raw pads, plaintext residuals,
+recovered $Q/K/V$, recovered logits, adapter factors, real-rank gradients, and
+optimizer state are controller-owned. The transformed base and adapter
+operators, $\Xt$, intermediate masked activation branches, $\Yt$, and masked
+KV cache are accelerator-held. Architecture, tensor shapes, sequence and cache
+lengths, and $\rpad$ are public metadata. Compensation tensors are produced by
+$\ctrl$ and consumed by $\acc$; they are not recovery state. The recovery maps
+and inverse masks are never installed on $\acc$.
+
+\subsection{Linear Execution}
+\label{subsec:linear-execution}
+
+Consider one single-sequence linear call in row-vector convention. Its
+controller input is $\X\in\mathbb{R}^{n\times\dinX}$, its private weight is
+$\W\in\mathbb{R}^{\dinX\times\doutX}$, its optional public bias is
+$\bias\in\mathbb{R}^{\doutX}$, and its plaintext output slot is
+$\Y\in\mathbb{R}^{n\times\doutX}$. Batched execution applies the same maps to
+each batch item. The controller samples
+$\Nin,\Nin^{-1}\in\mathbb{R}^{\dinX\times\dinX}$,
+$\Nout,\Nout^{-1}\in\mathbb{R}^{\doutX\times\doutX}$, and
+$\Tpad\in\mathbb{R}^{n\times\dinX}$. Each mask is invertible; operator-specific
+boundaries may restrict it to an orthogonal or permutation family.
+
+The controller constructs the right-action input and transformed operator
+\begin{align}
+\Xt&=(\X-\Tpad)\Nin
+      \in\mathbb{R}^{n\times\dinX},\\
+\Wt&=\Nin^{-1}\W\Nout
+      \in\mathbb{R}^{\dinX\times\doutX},
+\label{eq:method-linear-transform}
+\end{align}
+together with
+$\bias\Nout\in\mathbb{R}^{\doutX}$ and the compensation
+\begin{equation}
+\Ct=\Tpad\W\Nout\in\mathbb{R}^{n\times\doutX}.
+\label{eq:method-linear-compensation}
+\end{equation}
+For a broadcast pad, the implementation sends
+$\Tpad\Nin\in\mathbb{R}^{\dinX}$ and
+$\Ct\in\mathbb{R}^{\doutX}$ and broadcasts both over the $n$ rows. The pad is
+local to this linear boundary and is compensated before its output is consumed
+by RoPE, softmax, normalization, or an activation.
+
+The accelerator receives or references only the four transformed operands and
+computes
+\begin{equation}
+\Yt=\Xt\Wt+\bias\Nout+\Ct
+\in\mathbb{R}^{n\times\doutX}.
+\label{eq:method-linear-accelerator}
+\end{equation}
+If the result returns to a trusted operator, $\ctrl$ applies
+\begin{equation}
+\Recover(\Yt)=\Yt\Nout^{-1}
+\in\mathbb{R}^{n\times\doutX}.
+\label{eq:method-linear-recovery}
+\end{equation}
+If the next accelerator operator is defined in the $\Nout$ basis, $\Yt$ stays
+on $\acc$ and that operator's input fold uses $\Nout^{-1}$ directly. Thus
+$\ctrl$ owns $\X,\W,\Tpad,\Nin^{\pm1},\Nout^{\pm1},\Recover$, while $\acc$
+owns the runtime copies of $\Xt,\Wt,\bias\Nout,\Ct,\Yt$.
+
+\subsection{Attention Execution}
+\label{subsec:attention-execution}
+
+At layer $\ell$, the normalized input has shape
+$\X\in\mathbb{R}^{n\times d}$. The four private projection matrices are
+$\W_Q\in\mathbb{R}^{d\times h d_h}$,
+$\W_K\in\mathbb{R}^{d\times h_{kv}d_h}$,
+$\W_V\in\mathbb{R}^{d\times h_{kv}d_h}$, and
+$\W_O\in\mathbb{R}^{h d_h\times d}$. Each projection first uses the linear
+protocol of Section~\ref{subsec:linear-execution}. Its recovered outputs are
+reshaped into per-head matrices
+$\Qmat\in\mathbb{R}^{n\times d_h}$ for each of the $h$ query heads and
+$\K,\Vmat\in\mathbb{R}^{n\times d_h}$ for each of the $h_{kv}$ key/value
+heads.
+
+The wired path applies $\RoPE$ to the recovered $\Qmat$ and $\K$ inside
+$\ctrl$, using the public absolute token positions. The controller then
+right-multiplies each rotated query by
+$\NQ\in\mathbb{R}^{d_h\times d_h}$ and each rotated key by
+$\NK\in\mathbb{R}^{d_h\times d_h}$, with
+$\NQ\NK^{\mathsf T}=\mathbf{I}_{d_h}$. Values are right-multiplied by
+$\NV\in\mathbb{R}^{d_h\times d_h}$. The resulting
+$\Qt,\Kt,\Vt\in\mathbb{R}^{n\times d_h}$ are accelerator tensors.
+
+For grouped-query attention, each key/value head is shared by exactly
+$h/h_{kv}$ query heads. The controller installs one $\NK$ and one $\NV$ for
+that shared key/value head and derives the query mask of every query head in
+the group from the same $\NK$. Multi-query attention is the case
+$h_{kv}=1$; all query heads use the one session key mask through their derived
+query masks. No mask mixes distinct attention heads.
+
+During prefill, $\acc$ appends the rotated masked keys and masked values to an
+initially empty per-layer cache. The cache tensors have shape
+$\Kt,\Vt\in\mathbb{R}^{n\times d_h}$ per key/value head. The accelerator
+repeats each cached key/value head across its query-head group, forms the
+$n\times n$ score matrix for each query head, applies the causal bias and
+softmax, and multiplies the resulting $n\times n$ probability matrix by the
+repeated $\Vt\in\mathbb{R}^{n\times d_h}$. The $h$ outputs are concatenated
+into an $n\times h d_h$ matrix, and the output projection maps it to an
+$n\times d$ transformed residual update. The controller recovers that update
+before the residual addition in the wired path.
+
+During decode position $t$, the query, new key, and new value each have one
+token row. The accelerator appends the new
+$\Kt,\Vt\in\mathbb{R}^{1\times d_h}$ to the existing
+$t\times d_h$ per-head cache, yielding $(t+1)\times d_h$ cache matrices. It
+forms a $1\times(t+1)$ score row, applies softmax over the cache-length axis,
+and produces a $1\times d_h$ value aggregate. The same session $\NK$ and
+$\NV$ are used for every append; call-local linear masks and pads are freshly
+sampled for the projections. The output projection, residual update, following
+normalization, and LM head then execute in the same order as prefill.
+
+\subsection{Nonlinear Execution}
+\label{subsec:nonlinear-execution}
+
+The wired trusted-boundary path executes embedding lookup, RMSNorm (including
+the private gain $\rmsgain$), final normalization, RoPE, recovery, residual
+addition, logit recovery, and token selection inside $\ctrl$. Before either
+normalization in a decoder block, $\ctrl$ recovers the current hidden state,
+applies the normalization to obtain a plaintext transient, and starts the next
+$Q/K/V$ or MLP projection boundary with a fresh input mask and additive pad.
+After the attention output projection returns, $\ctrl$ recovers its
+$n\times d$ output and adds it to the controller-held residual. It repeats the
+same sequence for the MLP output.
+
+The attention softmax and value aggregation execute on $\acc$ over the masked
+$Q/K/V$ representation described above. The SwiGLU activation also executes on
+$\acc$: $\ctrl$ chooses one channel permutation $\Perm$ for both the gate and
+up projections, and their accelerator outputs are
+$n\times m$ matrices in that shared permuted basis. The accelerator applies
+$\SiLU$ to the gate branch, multiplies it elementwise with the up branch, and
+uses a down projection whose input fold contains $\Perm^{-1}$. GELU and ReLU
+operators, when selected by the model architecture, use the same permutation
+boundary. Additive pads are compensated at the preceding linear outputs and
+are not carried into any activation or normalization core.
+
+Plaintext activations produced inside $\ctrl$ are pass-local. A trusted
+nonlinear call consumes the recovered input, produces the next plaintext
+transient, and releases only the newly masked input of the following linear
+boundary. Accelerator-side activations remain in their operator-compatible
+permutation or attention basis until their folded output projection returns a
+transformed residual update.
+
+\subsection{LoRA Adaptation}
+\label{subsec:lora-adaptation}
+
+For an adapted projection, $\ctrl$ owns
+$\Amat\in\mathbb{R}^{\dinX\times\rtrue}$ and
+$\Bmat\in\mathbb{R}^{\rtrue\times\doutX}$. It first constructs
+$\Apad\in\mathbb{R}^{\dinX\times\rpad}$ and
+$\Bpad\in\mathbb{R}^{\rpad\times\doutX}$, with the real factors occupying
+the first $\rtrue$ columns and rows. The remaining blocks are either a random
+down block paired with a zero up block, or pairs
+$[\Adummy,\Adummy]$ and $[\Bdummy;-\Bdummy]$. The scaling used by all forward
+and backward calls is $\alpha/\rtrue$; padding does not change this
+denominator.
+
+For one call, $\ctrl$ samples
+$\Umix,\Umix^{-1}\in\mathbb{R}^{\rpad\times\rpad}$ and constructs
+\begin{align}
+\At&=\Nin^{-1}\Apad\Umix
+     \in\mathbb{R}^{\dinX\times\rpad},\\
+\Bt&=\Umix^{-1}\Bpad\Nout
+     \in\mathbb{R}^{\rpad\times\doutX}.
+\label{eq:method-lora-factors}
+\end{align}
+The accelerator evaluates the base and adapter branches without merging their
+factor representation:
+\begin{equation}
+\Yt=\Xt\Wt+
+\frac{\alpha}{\rtrue}(\Xt\At)\Bt+
+\bias\Nout+\Ct,
+\label{eq:method-lora-forward}
+\end{equation}
+where $\Xt\At\in\mathbb{R}^{n\times\rpad}$,
+$(\Xt\At)\Bt\in\mathbb{R}^{n\times\doutX}$, and $\Ct$ contains the base and
+adapter pad compensations. The factors remain separate accelerator operands
+throughout the adaptation call.
+
+For backward execution, $\ctrl$ holds the upstream gradient
+$\Gmat\in\mathbb{R}^{n\times\doutX}$ and sends
+$\Gt=\Gmat\Nout^{-\mathsf T}\in\mathbb{R}^{n\times\doutX}$. The accelerator
+computes
+\begin{align}
+d\At &=\frac{\alpha}{\rtrue}\Xt^{\mathsf T}
+       (\Gt\Bt^{\mathsf T})
+       \in\mathbb{R}^{\dinX\times\rpad},\\
+d\Bt &=\frac{\alpha}{\rtrue}(\Xt\At)^{\mathsf T}\Gt
+       \in\mathbb{R}^{\rpad\times\doutX}.
+\label{eq:method-lora-backward}
+\end{align}
+It returns these two masked gradients. The controller maps them to the padded
+factor coordinates as
+\begin{align}
+d\Apad &=\Nin^{-\mathsf T}d\At\Umix^{\mathsf T}
+          \in\mathbb{R}^{\dinX\times\rpad},\\
+d\Bpad &=\Umix^{-\mathsf T}d\Bt\Nout^{\mathsf T}
+          \in\mathbb{R}^{\rpad\times\doutX},
+\label{eq:method-lora-gradient-recovery}
+\end{align}
+and adds the controller-computed pad-gradient compensation when $\Tpad$ was
+used. It extracts the first $\rtrue$ columns of $d\Apad$ and the first
+$\rtrue$ rows of $d\Bpad$ as $d\Amat$ and $d\Bmat$.
+
+The optimizer interface accepts the controller-owned factors, their recovered
+real-rank gradients, and controller-owned optimizer state. SGD or momentum may
+instead consume the corresponding masked factors and masked buffers when all
+participating masks use the supported orthogonal family. Coordinatewise
+second-moment optimizers use the trusted interface: $\ctrl$ updates the
+plaintext factors and optimizer state, constructs fresh padded factors and
+rank masks, and sends their new transformed images to $\acc$. A training step
+therefore transitions from private factors, to transformed forward state, to
+transformed backward state, back to private gradients and optimizer state, and
+finally to refreshed transformed factors. At training termination, $\ctrl$
+retains the real-rank adapter and erases the pass-local padded and transformed
+states.
+
+\subsection{Unified Execution Lifecycle}
+\label{subsec:unified-lifecycle}
+
+Algorithm~\ref{alg:unified-lifecycle} is the implementation reference joining
+initialization, prefill, decode, and optional LoRA training. A deployment may
+invoke only inference or only adaptation, but it keeps the same ownership and
+boundary rules.
+
+\begin{methodalgorithm}{Unified inference and LoRA-adaptation lifecycle}
+\label{alg:unified-lifecycle}
+\textbf{Inputs:} private $x$ and $\params$; public $\arch$; optional private
+training data and $(\Amat,\Bmat)$.\par
+\textbf{Outputs:} generated tokens and/or updated private $(\Amat,\Bmat)$.\par
+\textbf{Trusted state:} $\params,\maskset,\Tpad,\Recover$; plaintext hidden
+state; session cache masks; recovered logits; optional gradients and optimizer
+state.\par
+\textbf{Accelerator state:} $\Wt$ and optional $\At,\Bt$; current $\Xt,\Yt$;
+per-layer $\Kt,\Vt$.\par
+\textbf{Communication:} \textsc{Send} denotes $\ctrl\rightarrow\acc$ and
+\textsc{Return} denotes $\acc\rightarrow\ctrl$.\par
+\begin{enumerate}
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+\item \textbf{Initialize:} $\ctrl$ installs $\params$ and optional adapter;
+samples session $\NK,\NV$; validates the call plan; and prepares the call-local
+mask/pad schedule. It sends only public session metadata to $\acc$.
+\item \textbf{Prefill:} $\ctrl$ embeds $x$. For $\ell=1,\ldots,L$, execute
+trusted normalization, masked $Q/K/V$ projections, trusted RoPE and head
+masking, accelerator attention, masked output projection, trusted residual
+update, masked MLP, and trusted residual update.
+\item $\acc$ stores the resulting $\Kt,\Vt$ for every layer. It executes the
+masked LM head and \textsc{Return}s masked logits. $\ctrl$ recovers logits and
+selects one token.
+\item \textbf{Decode:} while the stopping rule is false, $\ctrl$ embeds only
+the selected token; repeat Step 2 with one new row, appending that row to each
+masked cache; recover logits and select the next token.
+\item \textbf{Adapt, if requested:} for each training step and adapted linear,
+$\ctrl$ prepares $\Xt,\Wt,\At,\Bt,\Ct$ and \textsc{Send}s them; $\acc$
+\textsc{Return}s $\Yt$. $\ctrl$ evaluates the trusted loss and constructs
+$\Gt$.
+\item \textsc{Send} $\Xt,\At,\Bt,\Gt$; $\acc$ computes and
+\textsc{Return}s $d\At,d\Bt$. $\ctrl$ recovers $d\Amat,d\Bmat$, updates the
+private factors and optimizer state, and refreshes the accelerator images.
+\item \textbf{Terminate:} erase plaintext pass state, call-local masks and pads,
+session cache masks, and the masked KV cache; retain only the requested output
+tokens and/or updated private adapter.
+\end{enumerate}
+\end{methodalgorithm}

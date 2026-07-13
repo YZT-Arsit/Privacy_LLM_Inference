@@ -1,0 +1,14 @@
+[Unit]
+Description=Audit G2 protected LoRA progress on A10
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/pllo_pb
+ExecStart=/usr/bin/python3 /root/pllo_pb/scripts/generative_lora/server_progress_audit.py --driver-pid 8058 --worker-pid 8060 --total-steps 750 --log /root/pllo_pb/g2_e2e_L12_s1234_full.log --out-dir /root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full --tdx-private-ip 172.30.25.153 --gpu-samples 60 --sample-interval 1
+Nice=10
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

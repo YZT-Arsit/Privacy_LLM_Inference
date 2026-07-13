@@ -16,7 +16,16 @@
       "output_path": "/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.json",
       "log_path": "/root/pllo_pb/g2_e2e_L12_s1234_full.log",
       "status": "running",
-      "last_heartbeat": "2026-07-13T17:08:56+08:00",
+      "last_heartbeat": "2026-07-13T17:27:02+08:00",
+      "last_observed_step": 42,
+      "monitoring": {
+        "server_side_timer": "g2-progress-audit.timer",
+        "interval": "30 minutes",
+        "next_server_audit": "2026-07-13T17:55:08+08:00",
+        "remote_latest": "/root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full/latest.json",
+        "remote_history": "/root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full/audit.jsonl",
+        "persistent_without_mac": true
+      },
       "resume_command": "Not safely resumable until an authenticated optimizer+GPU-state checkpoint is emitted; preserve PID 8058."
     }
   ]

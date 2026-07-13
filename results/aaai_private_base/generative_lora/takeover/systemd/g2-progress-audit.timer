@@ -1,0 +1,12 @@
+[Unit]
+Description=Run G2 protected LoRA audit every 30 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=30min
+AccuracySec=30s
+Persistent=true
+Unit=g2-progress-audit.service
+
+[Install]
+WantedBy=timers.target
