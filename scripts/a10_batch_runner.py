@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--time-profile", default="")   # write per-component p50/p95/% over the run
     ap.add_argument("--batched-forward", action="store_true")  # one padded batched forward vs per-example loop
     ap.add_argument("--verify-batched", action="store_true")   # step0: compare batched vs per-example sup logits
+    ap.add_argument("--require-attestation", action="store_true",  # PHASE 1.1: fail-closed if attested session invalid
+                    help="refuse optimizer init / any training-eval step unless the enclave's attested session verified")
     a = ap.parse_args()
     CDT = torch.float32 if a.profile == "L5" else torch.bfloat16
     MDT = torch.float32
@@ -116,6 +118,17 @@ def main():
     ch = TDXChannel(a.key, a.tdx, a.service_cmd)
     hs, _, _ = ch.request({"op": "handshake"}, timeout=360.0)
     attestation = hs.get("attestation", {})
+    # ---- PHASE 1.1: attestation MUST gate execution on the A10 side too. If attestation is
+    # required (explicitly, or the enclave reports an attested session that did NOT verify), the
+    # runner refuses to init the optimizer or run ANY training/eval step. Fail-closed, before
+    # init_adamw / ce_batch / adamw_step are ever issued. Do not merely log.
+    _att_verified = attestation.get("attestation_verified")
+    _att_skipped = bool(attestation.get("attestation_skipped", False))
+    _att_session_valid = bool(hs.get("attested_session_valid", _att_verified))
+    _att_required = bool(getattr(a, "require_attestation", False)) or (not _att_skipped and _att_verified is not None)
+    if _att_required and not _att_session_valid:
+        raise TransportError("attestation_gate: invalid attested session -> no optimizer init, "
+                             "no training/eval step (fail-closed)")
     last_seq = -1
 
     def desc_for(split, task, epoch, gbi, opt_step, micro, sample_ids, sup_counts, seq_shape, aw):
@@ -181,6 +194,14 @@ def main():
 
     MAX_ROWS = 256   # cap supervised rows per ce_batch frame so the CPU-only TDX guest keeps up
 
+    # PHASE 1.4: honest dlogits instrumentation. The A10 does NOT observe plaintext labels or a
+    # scalar loss tensor, but it DOES materialize transient masked dlogits (on the compute device)
+    # for backward. These counters make that explicit; dlogits are per-step, not persisted, not logged.
+    dlog_instr = {"a10_cpu_dlogits_materialized": 0, "a10_gpu_dlogits_materialized": 0,
+                  "dlogits_dtype": None, "dlogits_shape": None, "dlogits_bytes": 0,
+                  "dlogits_lifetime_us": None, "dlogits_persisted": False, "dlogits_logged": False,
+                  "device": str(dev)}
+
     def send_ce(cat, desc_base, op="ce_batch"):
         """Send supervised logits (chunked for clm) -> (ce_mean, dlog_full, nll_sum, net). The clm
         gradient uses a full-batch denominator so summing chunk dlogits == the mean-reduction gradient."""
@@ -210,6 +231,13 @@ def main():
                 _t = time.perf_counter()
                 dlog_full[r0:r1] = load_tensor(rpl).to(dev, CDT); ce_sum += rh["ce_loss"]
                 t_ser += time.perf_counter() - _t
+                # instrument the transient masked-dlogits materialization (honest accounting)
+                _gpu = str(dev).startswith("cuda")
+                dlog_instr["a10_gpu_dlogits_materialized" if _gpu else "a10_cpu_dlogits_materialized"] += 1
+                dlog_instr["dlogits_dtype"] = str(CDT)
+                dlog_instr["dlogits_shape"] = list(dlog_full.shape)
+                dlog_instr["dlogits_bytes"] = int(dlog_full.numel() * dlog_full.element_size())
+                dlog_instr["dlogits_lifetime_us"] = int((time.perf_counter() - _t) * 1e6)  # transient (per step)
             else:
                 nll_sum += rh.get("sum_nll", 0.0)
         ce_mean = ce_sum if a.task == "cls" else (ce_sum / max(rows, 1))
@@ -483,6 +511,15 @@ def main():
         "attestation": attestation, "fail_closed_all_pass": all(x["passed"] for x in fc),
         "package_root_hash_matches": root == EXPECTED_ROOT_HASH, "eval": evalres,
         "batched_forward": bool(a.batched_forward), "verify_batched": verify_batched,
+        # PHASE 1.1 / 1.3 / 1.4 honesty fields
+        "attestation_gated_execution": bool(getattr(a, "require_attestation", False)) or
+            (not attestation.get("attestation_skipped", False) and attestation.get("attestation_verified") is not None),
+        "hmac_scope": "channel_integrity_replay_detection_vs_third_party_under_honest_but_curious_accelerator",
+        "hmac_proves_request_from_honest_a10": False,
+        "dlogits_instrumentation": dlog_instr,
+        "dlogits_honest_statement": ("The A10 does not observe plaintext labels or scalar loss, but consumes "
+                                     "transient masked dlogits (per step, on the compute device) for backward "
+                                     "propagation; dlogits are not persisted or logged."),
         "trajectory": steps}, indent=2))
     print(json.dumps({"done": True, "profile": a.profile, "steps": len(steps), "eval": evalres}))
 

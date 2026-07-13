@@ -1,0 +1,35 @@
+# PHASE 2 — two frozen LoRA optimization profiles (do NOT conflate them).
+
+profile_E:
+  name: EXACT_REFERENCE_L12
+  status: existing (unchanged this stage)
+  optimizer_semantics: standard_plaintext_coordinate_adamw   # SGD/Momentum/AdamW canonical
+  authoritative_state: FP32 master + required m/v IN TDX
+  gpu_receives: masked runtime factors (re-folded from the FP32 master each step)
+  plaintext_trajectory_equivalence: true      # exact / numerically-aligned vs plaintext oracle
+  trusted_optimizer_state: high (master + m + v for all trusted factors)
+  communication: higher (grad up + re-folded factors down per step)
+  purpose: [exactness, compatibility, theorem_validation, correctness_reference]
+  NOT: "the universally optimal deployment profile"
+
+profile_N:
+  name: NATIVE_TRANSFORMED_ADAMW
+  status: NEW (experimental this stage)
+  optimizer_semantics: native_transformed_coordinate_adamw
+  definition: >
+    LoRA parameters are optimized DIRECTLY in the transformed/folded coordinates; AdamW m/v
+    states remain in those coordinates on the GPU. The base transformed package is unchanged and
+    the resulting adapter is valid for the transformed inference runtime.
+  plaintext_trajectory_equivalence: false     # does NOT claim stepwise equivalence to plaintext AdamW
+  inference_compatible_adapter: true
+  gpu_runs_native_adamw_for: all LoRA factors where technically possible
+  tdx_retains_only: [private_labels_targets, CE_and_dlogits_boundary, session_bindings_ledger,
+                     optional_keys_refresh_metadata]
+  tdx_does_NOT_retain: [plaintext_lora_master, adamw_m, adamw_v]     # for Profile N
+  trusted_optimizer_state: low (no plaintext master / m / v in TDX)
+  forbidden_claims: [exact_standard_adamw, mathematically_equivalent_to_plaintext_adamw,
+                     more_secure_unless_measured, minimal_tdx_path, malicious_gpu_integrity]
+
+shared:
+  threat_model: frozen honest-but-curious accelerator + private base weights behind TDX (unchanged)
+  base_transformed_package: unchanged for both profiles

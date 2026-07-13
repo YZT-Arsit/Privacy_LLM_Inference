@@ -1,0 +1,16 @@
+{
+  "schema": "lifecycle_gate",
+  "sequence": "transformed_base_generation -> protected_LoRA_training -> export_transformed_adapter -> fresh_inference_process -> generation_with_adapted_model",
+  "cells": {
+    "adapter_export_masked_only": {"status": "PASS_LOCAL", "evidence": "adapter_handoff.py + test_adapter_handoff.py 10/10; masked A/B only, no plaintext master/m/v"},
+    "adapter_manifest_binding": {"status": "PASS_LOCAL", "evidence": "manifest binds base-root/model/tokenizer/targets/rank/alpha/transform-version/optimizer-state-version/run_id/tensor-hashes"},
+    "generation_loader_compatibility_gates": {"status": "PASS_LOCAL", "evidence": "exact base-package-hash + model/target/rank/transform-version + min optimizer-state-version + per-tensor hash"},
+    "negative_controls_fail_closed": {"status": "PASS_LOCAL", "evidence": "wrong package/rank/target-map/modified-tensor/modified-manifest/wrong-transform/stale-version all rejected"},
+    "fresh_process_post_training_generation_on_hardware": {"status": "DEFERRED_HARDWARE", "reason": "requires live A10 GPU + Intel TDX end-to-end run of Profile N through the real training runner then a NEW inference process; not executed this session"},
+    "post_training_generation_vs_trusted_reference": {"status": "DEFERRED_HARDWARE", "reason": "needs the fresh-process hardware run above"},
+    "generation_restart_from_durable_adapter": {"status": "PARTIAL", "reason": "loader supports durable-artifact restart (tested); full restart across a real inference process = hardware-deferred"},
+    "no_plaintext_base_or_adapter_or_optimizer_in_inference_worker": {"status": "ENFORCED_BY_DESIGN_LOCAL", "evidence": "loader refuses plaintext/optimizer-state adapters; base-package hash pinned; not yet re-verified on live worker"}
+  },
+  "overall": "PARTIAL",
+  "note": "Adapter export + loader + fail-closed negative controls are implemented and locally tested; the fresh-process end-to-end lifecycle on live A10+TDX is deferred (hardware)."
+}

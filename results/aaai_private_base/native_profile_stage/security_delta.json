@@ -1,0 +1,48 @@
+{
+  "experiment": "profile_n_security_delta",
+  "threat_model": "from_scratch_private_base",
+  "surfaces": {
+    "profile_E_gpu_state": [
+      "A_tilde",
+      "B_tilde"
+    ],
+    "profile_N_gpu_state": [
+      "A_tilde",
+      "B_tilde",
+      "adamw_m",
+      "adamw_v",
+      "per_step_updates"
+    ]
+  },
+  "attacks": {
+    "A_shared_masked_product_dW_recovery": {
+      "plaintext_dW_rel_err_vs_true": 1.0,
+      "note": "identical for E and N (both expose the masked product); plaintext \u0394W not recovered without secret side masks (private-base)."
+    },
+    "B_additional_mv_help_recover_plaintext_dW": {
+      "best_plaintext_dW_rel_err_using_mv": 1.0,
+      "reduces_below_E": false,
+      "note": "m,v share the secret transformed basis; without paired plaintext they do NOT un-mask \u0394W."
+    },
+    "C_mask_recovery_from_mv": {
+      "moment_norm_preservation_gap": 0.0,
+      "note": "orthogonal masks preserve moment norms/Grams (documented); mask recovery needs paired plaintext (same condition as S1), not provided by m,v alone."
+    }
+  },
+  "delta_summary": {
+    "profile_N_exposes_additional": [
+      "transformed adamw m",
+      "transformed adamw v",
+      "per-step updates"
+    ],
+    "measured_additional_plaintext_dW_leakage": "none beyond E (rel_err unchanged)",
+    "documented_additional_exposure": "second-moment gradient structure (m,v) in the transformed basis is visible on the GPU under N; its norms/Grams are preserved (as for A~,B~). This is an ADDITIONAL surface vs E and is reported, NOT claimed equivalent-security.",
+    "cross_step_linkability": "m,v accumulate gradient history -> a potential linkability/membership signal analogous to S4/S5; magnitude not fully characterized here (flagged)."
+  },
+  "verdict": "Profile N's GPU state is a SUPERSET of Profile E's. Measured plaintext-\u0394W recovery is UNCHANGED (both rely on secret masks/TEE). The additional transformed m,v are a documented extra exposure; we do NOT claim Profile N has the same security surface as E.",
+  "limitations": [
+    "Local synthetic fold; full cross-step linkability/membership on real trajectories is deferred to the on-hardware Phase 3 audit.",
+    "No plaintext base weights used (private-base); public-weight leakage is out of model."
+  ],
+  "wall_sec": 0.0
+}

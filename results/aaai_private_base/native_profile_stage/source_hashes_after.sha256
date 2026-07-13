@@ -1,0 +1,5 @@
+# source hashes AFTER this stage's edits (16-hex prefix); compare to source_hashes_before.sha256
+93f3feb744bf7796  scripts/tdx_persistent_service.py
+63a7572735b285ee  scripts/a10_batch_runner.py
+34df6c2478fd0020  scripts/h800_direct_runner.py
+f482863642e56fa8  scripts/secure_tensor_frame.py

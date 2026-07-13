@@ -90,8 +90,24 @@ def dump_tensor(t):
 
 
 def mac(key, payload, seq, run_id, op):
+    # PHASE 1.3 (honest scope): `key` is the session HMAC key, SHARED WITH the A10. This MAC +
+    # monotonic `seq` give CHANNEL INTEGRITY and REPLAY DETECTION against third-party / network
+    # corruption under the frozen honest-but-curious accelerator model. It does NOT prove the
+    # request came from an *honest* A10, and does NOT provide malicious-GPU computation integrity
+    # (a malicious A10 holds the same key and can forge/alter requests). Do not claim otherwise.
     m = hashlib.sha256(payload).digest() + str(seq).encode() + run_id.encode() + op.encode()
     return hmac.new(key, m, hashlib.sha256).hexdigest()
+
+
+def attested_execution_allowed(att: dict, required: bool) -> bool:
+    """PHASE 1.1 gate predicate (pure, testable). Protected ops are allowed ONLY if attestation
+    is not required, OR it verified AND report-data is bound AND debug is not enabled. Any failure
+    (verification failed, reportdata mismatch, debug true) => not allowed => no execution."""
+    if not required:
+        return True
+    return (bool(att.get("attestation_verified"))
+            and att.get("reportdata_bound", att.get("attestation_verified")) is not False
+            and att.get("debug_false", True) is not False)
 
 
 def do_attestation(cfg, out_dir):
@@ -175,9 +191,36 @@ def main():
                 "untrusted_m_materializations": 0, "untrusted_v_materializations": 0,
                 "untrusted_fp32_master_materializations": 0, "silent_fallbacks": 0,
                 "adamw_checkpoint_calls": 0, "adamw_restore_calls": 0, "adamw_state_version": 0,
-                "checkpoint_restore_rejected": 0}
+                "checkpoint_restore_rejected": 0,
+                # --- PHASE 1.3: honest HMAC scope. The transport HMAC key is SHARED WITH the A10,
+                # so HMAC proves channel integrity + replay detection against third-party/network
+                # corruption under the frozen honest-but-curious accelerator model. It does NOT prove
+                # a request originates from an *honest* A10 and does NOT provide malicious-GPU
+                # computation integrity (a malicious A10 holding the key can forge/alter requests).
+                "hmac_scope": "channel_integrity_and_replay_detection_vs_third_party_under_honest_but_curious_accelerator",
+                "hmac_key_shared_with_a10": True,
+                "hmac_proves_request_from_honest_a10": False,
+                "hmac_provides_malicious_gpu_computation_integrity": False,
+                # --- PHASE 1.4: dlogits honesty. The A10 does not observe plaintext labels or scalar
+                # loss, but DOES consume transient masked dlogits for backward. (A10-side counters live
+                # in a10_batch_runner; here we record that the enclave emits masked dlogits by design.)
+                "tdx_emits_masked_dlogits": True, "tdx_emits_plaintext_labels": False,
+                "tdx_emits_scalar_loss_tensor": False}
     fin = sys.stdin.buffer; fout = sys.stdout.buffer
     att = do_attestation(cfg, cfg.get("attest_out", "/tmp/direct_attest")) if cfg.get("attest") else {"attestation_skipped": True}
+
+    # ---- PHASE 1.1: attestation MUST gate execution (do not merely log) ----
+    # If attestation was requested, every protected op (optimizer init/step, CE/dlogits, eval) is
+    # REFUSED unless verification succeeded AND the session bindings match. No optimizer state is
+    # ever created and no training/evaluation runs under an invalid attested session. Fail-closed.
+    _att_required = bool(cfg.get("attest"))
+    _att_ok = attested_execution_allowed(att, _att_required)
+    counters["attestation_required"] = _att_required
+    counters["attestation_verified"] = bool(att.get("attestation_verified"))
+    counters["attestation_gates_execution"] = True
+    counters["attestation_gate_refusals"] = 0
+    _PROTECTED_OPS = {"ce_dlogits", "correct", "init_adamw", "adamw_step", "rebase_adamw",
+                      "checkpoint_adamw", "restore_adamw", "ce_batch", "eval_batch"}
 
     while True:
         try:
@@ -197,7 +240,15 @@ def main():
             break
         if op == "handshake":
             write_frame(fout, {"op": "handshake_ack", "attestation": att, "counters": counters,
-                               "service": "tdx_persistent", "run_id": run_id})
+                               "service": "tdx_persistent", "run_id": run_id,
+                               "attestation_gates_execution": True, "attested_session_valid": _att_ok})
+            continue
+        # ---- PHASE 1.1: refuse ALL protected ops under an invalid attested session ----
+        if op in _PROTECTED_OPS and not _att_ok:
+            counters["attestation_gate_refusals"] += 1
+            write_frame(fout, {"op": "reject", "reason": "attestation_invalid_no_execution",
+                               "seq": header.get("seq", -1),
+                               "attestation_verified": bool(att.get("attestation_verified"))})
             continue
         # authenticated ops
         seq = header.get("seq", -1)

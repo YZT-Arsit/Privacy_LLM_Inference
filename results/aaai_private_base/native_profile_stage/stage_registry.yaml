@@ -1,0 +1,22 @@
+stage: native_profile_stage
+constraints: [do_not_commit, do_not_invalidate_frozen_artifacts, do_not_rerun_full_completed_matrix]
+baseline_head: 91941636b960c2a020f09480c912861ccad24f57
+files_changed:
+  modified_protocol_source:
+    - scripts/tdx_persistent_service.py    # 1.1 attestation gate + predicate; 1.3 HMAC counters/comment; 1.4 dlogits note
+    - scripts/a10_batch_runner.py          # 1.1 A10 attestation gate + --require-attestation; 1.4 dlogits instrumentation; honesty fields
+    - scripts/h800_direct_runner.py        # 1.3 HMAC scope comment
+  added_source:
+    - scripts/secure_tensor_frame.py               # 1.2 secure codec (no pickle) + validation
+    - scripts/test_secure_tensor_frame.py          # 1.2 negative tests (13/13)
+    - scripts/test_attestation_gate.py             # 1.1 negative gate (12/12)
+    - scripts/native_profile/phase0_freeze.py
+    - scripts/native_profile/profile_n_gate.py     # Profile N native transformed-coord AdamW + local gate
+    - scripts/native_profile/adapter_handoff.py    # Phase 4 export + loader
+    - scripts/native_profile/test_adapter_handoff.py  # Phase 4 negative controls (10/10)
+    - scripts/native_profile/security_delta.py     # Phase 3.3 local security-delta
+  added_artifacts:
+    - results/aaai_private_base/native_profile_stage/**
+hashes: {before: source_hashes_before.sha256, after: source_hashes_after.sha256}
+tests: {secure_tensor_frame: "13/13", attestation_gate: "12/12", adapter_handoff: "10/10"}
+committed: false

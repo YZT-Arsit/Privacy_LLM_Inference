@@ -83,6 +83,9 @@ def load_tensor(b):
 
 
 def mac(key, payload, seq, run_id, op):
+    # PHASE 1.3 (honest scope): `key` is shared with the A10. MAC + monotonic seq = channel
+    # integrity + replay detection vs third-party/network corruption under the honest-but-curious
+    # accelerator model. It does NOT prove honest-A10 origin nor malicious-GPU computation integrity.
     m = hashlib.sha256(payload).digest() + str(seq).encode() + run_id.encode() + op.encode()
     return hmac.new(key, m, hashlib.sha256).hexdigest()
 

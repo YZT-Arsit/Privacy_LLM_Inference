@@ -1,0 +1,117 @@
+{
+  "experiment": "profile_n_local_gate",
+  "note": "LOCAL synthetic gate; real-Qwen 1/10/50-step is Phase 3 (hardware, deferred)",
+  "d": 256,
+  "rank": 8,
+  "mask_family": "dense_orthogonal (primary)",
+  "labels": {
+    "profile_N_optimizer_semantics": "native_transformed_coordinate_adamw",
+    "profile_N_plaintext_trajectory_equivalence": false,
+    "profile_N_inference_compatible_adapter": true,
+    "profile_E_optimizer_semantics": "standard_plaintext_coordinate_adamw",
+    "profile_E_plaintext_trajectory_equivalence": true
+  },
+  "gates": {
+    "1_step": {
+      "plaintext": {
+        "final_loss": 0.6508545294108695,
+        "top1": 0.7890625,
+        "trusted_bytes": "n/a (no protection)"
+      },
+      "profile_E": {
+        "final_loss": 0.6508545294108695,
+        "top1": 0.7890625,
+        "trusted_bytes": 49152,
+        "dW_cosine_vs_plaintext": 1.0000000000000002,
+        "dW_rel_diff_vs_plaintext": 0.0,
+        "logits_KL_vs_plaintext": 0.0,
+        "late_loss_std": NaN
+      },
+      "profile_N": {
+        "final_loss": 0.6508545294108696,
+        "top1": 0.78125,
+        "trusted_bytes": 0,
+        "dW_cosine_vs_plaintext": 0.33530135800499217,
+        "dW_rel_diff_vs_plaintext": 1.133496100833332,
+        "dW_cosine_vs_target": -0.003452419282385796,
+        "logits_KL_vs_plaintext": 0.013450253189974046,
+        "top1_agreement_vs_plaintext": null,
+        "late_loss_std": NaN
+      }
+    },
+    "10_step": {
+      "plaintext": {
+        "final_loss": 0.01861148249727014,
+        "top1": 1.0,
+        "trusted_bytes": "n/a (no protection)"
+      },
+      "profile_E": {
+        "final_loss": 0.01861148249727014,
+        "top1": 1.0,
+        "trusted_bytes": 49152,
+        "dW_cosine_vs_plaintext": 0.9999999999999991,
+        "dW_rel_diff_vs_plaintext": 0.0,
+        "logits_KL_vs_plaintext": 0.0,
+        "late_loss_std": 0.015692967921495438
+      },
+      "profile_N": {
+        "final_loss": 0.01773412635495475,
+        "top1": 1.0,
+        "trusted_bytes": 0,
+        "dW_cosine_vs_plaintext": 0.5135235639495248,
+        "dW_rel_diff_vs_plaintext": 0.9860633936778203,
+        "dW_cosine_vs_target": 0.008297293296795072,
+        "logits_KL_vs_plaintext": 0.018386838227956188,
+        "top1_agreement_vs_plaintext": null,
+        "late_loss_std": 0.016398347914218903
+      }
+    },
+    "50_step": {
+      "plaintext": {
+        "final_loss": 1.713125606590507e-05,
+        "top1": 1.0,
+        "trusted_bytes": "n/a (no protection)"
+      },
+      "profile_E": {
+        "final_loss": 1.713125606590507e-05,
+        "top1": 1.0,
+        "trusted_bytes": 49152,
+        "dW_cosine_vs_plaintext": 1.0000000000000029,
+        "dW_rel_diff_vs_plaintext": 0.0,
+        "logits_KL_vs_plaintext": 0.0,
+        "late_loss_std": 4.586454451782629e-06
+      },
+      "profile_N": {
+        "final_loss": 2.1228088189131068e-05,
+        "top1": 1.0,
+        "trusted_bytes": 0,
+        "dW_cosine_vs_plaintext": 0.5342370780431391,
+        "dW_rel_diff_vs_plaintext": 0.962108725150404,
+        "dW_cosine_vs_target": 0.015435164826820303,
+        "logits_KL_vs_plaintext": 9.28544421169435e-05,
+        "top1_agreement_vs_plaintext": null,
+        "late_loss_std": 5.51926586922491e-06
+      }
+    }
+  },
+  "signed_permutation_equivariance": {
+    "N_dW_rel_diff_vs_plaintext": 1.2420302389084399e-15,
+    "note": "under a signed-permutation transform, native transformed AdamW == plaintext AdamW (per-element m/v are permutation/sign invariant); a DENSE transform (primary gate) breaks this."
+  },
+  "summary": {
+    "E_is_exact_vs_plaintext": true,
+    "N_trusted_bytes": 0,
+    "E_trusted_bytes": 49152,
+    "N_utility_top1": 1.0,
+    "plaintext_utility_top1": 1.0,
+    "N_final_loss": 2.1228088189131068e-05,
+    "plaintext_final_loss": 1.713125606590507e-05,
+    "reading": "Profile E reproduces plaintext EXACTLY (rel_diff ~0). Profile N follows a DIFFERENT trajectory (no plaintext-AdamW equivalence) but reaches comparable utility while keeping ZERO plaintext optimizer state in the TDX (trusted_bytes 0 vs E's master+m+v). This LOCAL synthetic gate demonstrates the trade-off; the real-Qwen 1/10/50-step + resource comparison is the deferred Phase 3 hardware gate."
+  },
+  "limitations": [
+    "LOCAL synthetic task (real-Qwen 1/10/50-step on A10+TDX is Phase 3, deferred/hardware).",
+    "Do NOT read Profile N's trajectory difference as failure \u2014 utility + stability are the criteria.",
+    "Security surface of Profile N (GPU-visible transformed m/v/A/B) is a SEPARATE audit (Phase 3.3); no equal-security claim is made here."
+  ],
+  "wall_sec": 0.2
+}
