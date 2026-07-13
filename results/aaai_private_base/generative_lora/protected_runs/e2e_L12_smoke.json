@@ -1,0 +1,107 @@
+{
+  "run_id": "e2e_L12_smoke-1783930551-ead222",
+  "profile": "L12",
+  "task": "clm",
+  "dataset_id": "e2e_nlg",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0002,
+  "schedule_hash": "818e2c072a939b9d93e9949f018c39d51a8f67cc6472e8f889a5a842eb0f9a94",
+  "steps_run": 5,
+  "start_step": 0,
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "a3c16b2f2bd242c73f088ee580a3a2a62c05bf6cba9fe77f3d1324604396cbd617716ae3cf487527b7940239f4ed06b84eac1f31336bacaf37cdad61fe51acf1",
+    "session_setup_once": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": null,
+  "batched_forward": false,
+  "verify_batched": null,
+  "attestation_gated_execution": true,
+  "hmac_scope": "channel_integrity_replay_detection_vs_third_party_under_honest_but_curious_accelerator",
+  "hmac_proves_request_from_honest_a10": false,
+  "dlogits_instrumentation": {
+    "a10_cpu_dlogits_materialized": 0,
+    "a10_gpu_dlogits_materialized": 10,
+    "dlogits_dtype": "torch.bfloat16",
+    "dlogits_shape": [
+      377,
+      151936
+    ],
+    "dlogits_bytes": 114559744,
+    "dlogits_lifetime_us": 22515,
+    "dlogits_persisted": false,
+    "dlogits_logged": false,
+    "device": "cuda"
+  },
+  "dlogits_honest_statement": "The A10 does not observe plaintext labels or scalar loss, but consumes transient masked dlogits (per step, on the compute device) for backward propagation; dlogits are not persisted or logged.",
+  "trajectory": [
+    {
+      "gbi": 0,
+      "opt_step": 0,
+      "ce": 1.58873876953125,
+      "n": 16,
+      "sup_total": 375,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 23.440189361572266,
+      "net_adamw": 0.15230584144592285,
+      "wall": 25.924
+    },
+    {
+      "gbi": 1,
+      "opt_step": 1,
+      "ce": 1.6971439333175016,
+      "n": 16,
+      "sup_total": 403,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 23.77392268180847,
+      "net_adamw": 0.13874053955078125,
+      "wall": 25.882
+    },
+    {
+      "gbi": 2,
+      "opt_step": 2,
+      "ce": 1.5932817787959659,
+      "n": 16,
+      "sup_total": 464,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 31.152052402496338,
+      "net_adamw": 0.14348673820495605,
+      "wall": 33.371
+    },
+    {
+      "gbi": 3,
+      "opt_step": 3,
+      "ce": 1.2968843521610383,
+      "n": 16,
+      "sup_total": 434,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 27.255521535873413,
+      "net_adamw": 0.17388129234313965,
+      "wall": 29.447
+    },
+    {
+      "gbi": 4,
+      "opt_step": 4,
+      "ce": 1.410105009610204,
+      "n": 16,
+      "sup_total": 377,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 21.42738699913025,
+      "net_adamw": 0.1366567611694336,
+      "wall": 23.517
+    }
+  ]
+}

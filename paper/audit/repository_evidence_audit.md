@@ -11,16 +11,19 @@ This document classifies evidence as **supported / proxy-only / projected / unsu
 
 ## 0. TOP-LEVEL CONFLICTS (stop-conditions — do NOT write around these)
 
-### CF-1 (CRITICAL): Public-base vs private-base threat model
-- **Task objective** specifies **public** base weights.
-- **Repo's newest drafts** (`paper_draft/threat_model_revision_patch.md`, 2026-07-10, "applied … Not committed"; `system_and_threat_model.md`; `introduction.md`; `limitations.md` item 13) have **repositioned to a PRIVATE-base model** ("only masked `W_tilde` crosses the boundary"). `results/aaai_private_base/` + `results/private_base_unified/` are a whole real-Qwen/TDX **private-base** experiment suite.
-- **Older audits** (`reviewer_risk_audit.*`, `novelty_positioning_review.md`, recommendation NOV-02) still use **public-weight** wording and are flagged **superseded**.
-- **Why it is decisive:** it changes the protected-asset set, the novelty argument, AND the entire security verdict (see CF-2). **Requires an author decision before Sections 4/5/7 can be authored.**
+### CF-1 (✅ RESOLVED 2026-07-13): Canonical deployment = PRIVATE-BASE weights
+- **Resolution:** the canonical deployment model is **PRIVATE-base**. Base weights are proprietary/private; only the masked weight `W̃ = N_in⁻¹ W N_out` ever crosses to the untrusted GPU/host. Base-weight confidentiality is a **mask-secrecy proxy claim, not formal**. Authority: `paper_draft/system_and_threat_model.md`, `paper_draft/threat_model_revision_patch.md`, `results/aaai_private_base/security/security_registry.yaml` (`scenario=from_scratch_private_base_model`). Full classification in `audit/threat_model_reconciliation.md`.
+- **Three registers (keep strictly separate; never collapse):**
+  1. **Canonical deployment (default):** base weights private; attacker sees only the transformed package → evaluated by the private-base **S1–S6** suite.
+  2. **Open-source evaluation proxy:** Qwen/Llama stand in for an unavailable proprietary checkpoint; their public availability is an **evaluation artifact, not a deployment assumption**.
+  3. **Checkpoint-leak worst-case ablation:** attacker *granted* the plaintext checkpoint (the 98.5% break, CF-2) — a stress test, **NOT** the default.
+- **Superseded** (public-weight wording, do not action): `docs/paper_draft/{00_paper_positioning,01_introduction,02_system_and_threat_model}.md`; `paper_draft/{reviewer_risk_audit.*,novelty_positioning_review.md,threat_model_review.md,revision_plan.md}`; recommendation **NOV-02 is INVERTED**.
+- **Consequence:** protected-asset set now includes base weights; novelty is re-argued (our threat model joins ObfuscaTune/STIP's **dual-sided** family — see ledger C-BASE-OBF). Remaining work is *propagating* this into Sections 4/5/7 prose (pending; sections not yet edited).
 
-### CF-2 (CRITICAL): The security story inverts on CF-1
-- Under **public-base**: structured OR dense masks provide **no token-level privacy** — 4 independent attacks recover **~98.5%** of tokens on **real Qwen2.5-7B** (`results/attacks/FINDINGS.md`), backed by an **impossibility argument** (`results/attacks/THREAT_MODEL_AND_THEORY.md` §2). Privacy is carried by the **layer-0 TEE relocation (k=1)** + gradient aggregation, NOT the algebra.
-- Under **private-base**: masks "empirically resist" (S1 strict cos 0.0018, S6 masked-transfer top-1 0.003) — but ONLY because the attacker is denied the checkpoint (`results/aaai_private_base/security/security_registry.yaml` hard rule); rests on TEE/aggregation, not information destruction.
-- The two regimes assume opposite attacker knowledge and **must not both be cited as "our security result."**
+### CF-2 (✅ RESOLVED via CF-1): the paper's security result is the default private-base register ONLY
+- **Register 1 — canonical default (private-base), the paper's security result:** masks empirically resist (S1 strict cos 0.0018, S6 masked-transfer top-1 0.003) because the attacker is denied the checkpoint (`security_registry.yaml` hard rule); confidentiality rests on mask-secrecy proxy + TEE/aggregation, not information destruction. Proxy-evaluated, not formal.
+- **Register 3 — checkpoint-leak / public-weight ablation: ⛔ OUT OF PAPER SCOPE (archived).** The 98.5% real-Qwen-7B break, the post-disclosure impossibility argument, and the layer-0 TEE relocation all live here. **They are removed from the paper's argument** (see `audit/out_of_scope_checkpoint_review.md`; ledger archived-appendix). Artifacts stay in `results/attacks/*` as repository documentation; the paper does not cite them.
+- **The paper presents ONE threat model.** Do not reintroduce register 3 into any section, figure, or table.
 
 ### CF-3: Optimizer locus prose vs artifact (two architectures conflated)
 - `design.md §5.8` prose: "optimizer step (SGD or AdamW) performed entirely on the trusted side."
@@ -90,7 +93,7 @@ Five distinct lineages. **Never merge; never let one borrow another's authority.
 
 ## 3. WHAT IS PROXY-ONLY
 
-- All **security/leakage** results carry `formal_security_claim=false` / `security_profile="proxy-evaluated, not formal"`. The only non-proxy security-adjacent theorem is the **impossibility** result (which says masks *cannot* hide token identity).
+- All **in-scope security/leakage** results carry `formal_security_claim=false` / `security_profile="proxy-evaluated, not formal"`. (The post-disclosure impossibility theorem is **out of paper scope** — archived, register 3.)
 - Attack "resistance" verdicts (S1–S6, unified matrix, timing 0.5124 under proxy-equalized) are **proxy_evaluated** under specific attacker configs.
 - Rank-hiding *security* is **proxy_evaluated** (true-rank spectral inference `needs_more_evaluation`, NOT "low"); a "high" gradient-side rank leak at r=8 is likely a `seq_len=8` saturation artifact (reported uncaveated — flag).
 - Timing side-channel numbers are `wall_time_source=projected_from_op_counts, implemented=False`.
@@ -122,7 +125,7 @@ U1 formal/cryptographic/semantic/DP security · U2 real-TEE/GPU wall-time · U3 
 
 Correctness: `outputs/intermediate/{static_correctness,rope_gqa_probe,kv_cache_correctness,norm_experiments,nonlinear_island_experiments,generation_correctness,modern_decoder_generation_correctness}.json`, `outputs/_cpu_validation/eval_full_layer_0_5b_realprompts*.json`, `src/pllo/ops/*`, `tests/*`.
 LoRA/opt: `outputs/lora/*`, `outputs/masked_gradient_lora_training.*`, `results/private_base_unified/o1_optimizer/*`, `results/aaai_private_base/gate05_o1/*`, `results/real_qwen_tdx_audit/qwen05b/sgd_mode/*`, `paper_results/csv/lora_training_summary.csv`.
-Security: `results/attacks/{FINDINGS.md,THREAT_MODEL_AND_THEORY.md,ours_gram/,ours_pad/,*_qwen7b.json}`, `results/aaai_private_base/security/S{1..6}/*`, `outputs/paper_security/*`, `outputs/attacks/*`.
+Security (IN SCOPE — default private-base): `results/aaai_private_base/security/S{1..6}/*`, `outputs/paper_security/*` (default rows), `outputs/attacks/*` (default rows). Security (ARCHIVED — register 3, NOT cited by paper): `results/attacks/{FINDINGS.md,THREAT_MODEL_AND_THEORY.md,ours_gram/,ours_pad/,*_qwen7b.json,task2_layer0_guardrail_result.json}`.
 Perf/TEE: `results/aaai_private_base/system_comparison/system_comparison.md`, `results/baselines/obfuscatune_latency_h800.json`, `outputs/intermediate/workload_profile.json`, `paper_results/csv/{measured_runtime,workload_summary,ours_runtime_api_validation}.csv`, `results/real_qwen_tdx_audit/tdx_instance/gate2_real_tdx/*`, `results/real_qwen_tdx_audit/qwen05b/{claims.md,sgd_mode/*}`, `results/aaai_private_base/alicloud_a10_runs/utility_dataplane/PHASE_profiling_gate.json`, `results/aaai_private_base/gpu_execution_audit/audit_summary.json`.
 Baselines: `papers/{STIP-NDSS,ObfuscaTune-AAAI,Arrow,Permutation,PIA,BRE,EDNN攻击}.pdf`, `outputs/baseline_audit/*`, `outputs/baselines/direct_prior_work_comparison.*`, `results/baselines/{conjformer/,BASELINES.md}`, `docs/baseline_audit_obfuscatune_stip.md`.
 Drafts/audits: `docs/{PAPER_EVALUATION_MAP,PAPER_THEORY_OUTLINE}.md`, `outputs/stage_7_6_claims_consistency.*`, `outputs/paper/paper_claims_audit_v2.md`, `paper_draft/{claims_mapping,reviewer_risk_audit,unsafe_wording_review,*}.md`, `results/aaai_private_base/claim_experiment_map.md`.

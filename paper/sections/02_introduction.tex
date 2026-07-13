@@ -1,28 +1,30 @@
 % ===========================================================================
 % INTRODUCTION --- argument skeleton (write body after Method + Evaluation).
-% Follows the introduction protocol (skill S13): problem -> why public weights
-% do not remove private assets -> gap -> tension -> method -> contributions ->
-% evidence summary -> limitation boundary. Contribution bullets must be atomic
-% and each independently defensible; do NOT fuse a proven construction with an
-% unproven security implication.
+% Follows the introduction protocol (skill S13): problem -> why a proprietary
+% model on an untrusted accelerator exposes BOTH weights and runtime assets ->
+% gap -> tension -> method -> contributions -> evidence summary -> limitation
+% boundary. Contribution bullets must be atomic and each independently
+% defensible; do NOT fuse a proven construction with an unproven security
+% implication. SCOPE: canonical PRIVATE-base only; no public-weight framing.
 % ===========================================================================
 \section{Introduction}
 \label{sec:intro}
 
 % ---- CENTRAL QUESTION -------------------------------------------------------
-% Can a deployment serve a PUBLIC-weight LLM (and adapt it via LoRA) on an
-% UNTRUSTED accelerator so that private inputs, intermediate states, KV-cache,
-% and LoRA adapters/gradients are not exposed in cleartext to the accelerator,
-% while preserving the model's computation at acceptable cost -- and exactly
-% which of those protections can we actually substantiate?
+% Can a provider serve and privately fine-tune a PROPRIETARY foundation model on
+% an UNTRUSTED accelerator so that the base weights AND the user's runtime assets
+% (inputs, intermediate states, KV-cache, LoRA adapters/gradients) are not
+% exposed in cleartext, while preserving the model's computation at acceptable
+% cost -- and exactly which of those protections can we actually substantiate?
 
 % ---- ARGUMENT PLAN (fill prose last) ---------------------------------------
-% (1) Deployment problem: public base weights (Llama/Qwen) are downloadable, but
-%     the *runtime* assets are private: user prompts, activations, KV-cache,
-%     and privately fine-tuned LoRA adapters + their training data/gradients.
-% (2) Public weights do NOT eliminate private runtime assets: activation-
-%     inversion / embedding-inversion / alignment attacks recover inputs from
-%     exposed activations; gradients leak training data. \citeneeded{activation inversion (EIA)}\citeneeded{deep leakage from gradients}
+% (1) Deployment problem: a provider wants to run/personalize a PROPRIETARY model
+%     on rented (untrusted) accelerators. Both the checkpoint W and the runtime
+%     assets (prompts, activations, KV-cache, private LoRA adapters + training
+%     data/gradients) are confidential; only masked forms may cross the boundary.
+% (2) Naive offload exposes everything: activation-inversion / embedding-inversion
+%     / alignment attacks recover inputs from exposed activations, and gradients
+%     leak training data; dispatching plaintext W leaks the model. \citeneeded{activation inversion (EIA)}\citeneeded{deep leakage from gradients}
 % (3) Gap: cryptographic private inference (FHE/MPC) is exact but expensive on
 %     nonlinearities; TEE-only execution wastes the accelerator; prior
 %     obfuscation (STIP/ObfuscaTune/Amulet-style) targets different asset sets,
@@ -37,17 +39,18 @@
 %     ops, recovery, sampling, and auditing (Section~\ref{sec:method}).
 %
 % ---- CONTRIBUTIONS (atomic; each maps to ledger IDs -- keep in sync) --------
-% C1. A masked-execution construction for public-weight decoder LLMs whose
-%     linear, attention (incl. RoPE/GQA/MQA), and KV-cache steps are
-%     ALGEBRAICALLY correctness-preserving under stated invertibility/tying
-%     conditions.                          -> ledger C-COR-01..06
+% C1. A masked-execution construction for a PRIVATE (proprietary) decoder LLM --
+%     only masked weights W_tilde cross the boundary -- whose linear, attention
+%     (incl. RoPE/GQA/MQA), and KV-cache steps are ALGEBRAICALLY correctness-
+%     preserving under stated invertibility/tying conditions. -> ledger C-COR-01..08, C-THREAT-*
 % C2. A LoRA forward/backward masking scheme that preserves the adapter update
 %     for SGD-type optimizers, with an explicit optimizer-compatibility
 %     boundary.                            -> ledger C-LORA-*, C-OPT-*
 % C3. A leakage characterization that states precisely which invariants remain
 %     visible (permutation-invariant statistics, norms, padded rank, shapes),
-%     plus an EMPIRICAL attack evaluation under a stated attacker model -- NOT a
-%     cryptographic security proof.        -> ledger C-SEC-*
+%     plus an EMPIRICAL attack evaluation under the DEFAULT private-base attacker
+%     (checkpoint-denied) -- PROXY-evaluated, NOT a cryptographic security proof.
+%                                          -> ledger C-SEC-LEAK/PIINV/S1..S6/TIMING
 % C4. A cost characterization separating measured wall-clock (CPU emulation) and
 %     trusted-boundary-call accounting / operation-count projections; and a
 %     real-model functional validation (Qwen2.5-0.5B, CPU, float32, greedy).
@@ -69,6 +72,9 @@
 %
 % ---- REVIEWER RISKS ---------------------------------------------------------
 % \risk{Overclaiming security from algebraic correctness.}
-% \risk{Novelty vs STIP/ObfuscaTune/Amulet must be crisp on asset set + TCB.}
-% \risk{"Public-weight" framing must not imply nothing is secret.}
+% \risk{Novelty vs STIP/ObfuscaTune/Amulet must be crisp on coverage (generative
+%   LLM + LoRA training + accelerator-side masked path); we share their dual-sided
+%   (weights + data) threat family, so novelty is NOT "we also protect weights".}
+% \risk{Security contribution is PROXY-ONLY (default attacker); do not imply a
+%   formal or worst-case guarantee. Checkpoint-leak material is out of scope.}
 \TODO{Write Introduction prose after Method and Evaluation stabilize; import calibrated numbers from claim\_ledger.md only.}

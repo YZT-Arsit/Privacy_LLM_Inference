@@ -8,13 +8,37 @@ Authoritative symbol table for the paper. Every symbol lists **dimensions**, **o
 
 ---
 
+## 0. Entities, sets, and architecture constants (Problem/Threat section)
+
+| Symbol (macro) | Meaning | Kind | Public/Private |
+|---|---|---|---|
+| `𝓟` (`\prov`) | model provider — owns the proprietary checkpoint | party | — |
+| `𝓤` (`\usr`) | user — owns the prompt / private context | party | — |
+| `𝓛` (`\loraown`) | LoRA owner — owns the adapter + private fine-tuning data | party | — |
+| `𝓒` (`\ctrl`) | trusted controller — the trusted domain | party | — |
+| `𝓖` (`\acc`) | untrusted accelerator | party | — |
+| `𝓐` (`\adv`) | adversary (= honest-but-curious `𝓖` + any observer of `τ`) | party | — |
+| `θ` (`\params`) | proprietary parameter set: projection weights `{W}` + norm gains `{γ}` | parameters | **private** |
+| `γ` (`\rmsgain`) | RMSNorm/LayerNorm gains (part of `θ`) | vector per norm | **private** |
+| `Ω` (`\maskset`) | mask family drawn per call/session: `{N_in,N_out,N_Q,N_K,N_V,R,P,U}` | secret randomness | **private** |
+| `Φ` (`\arch`) | public architecture tuple `(L,d,h,h_kv,d_h,m,V)` | constants | public |
+| `L,d,h,h_kv,d_h,m,V` | #layers, model dim, #query heads, #KV heads, head dim, FFN dim, vocab | constants | public |
+| `x`, `n` | input token sequence and its length `n` | input / scalar | value private; `n` public |
+| `𝕊` (`\Ssec`) | secret-resident set (never leaves `𝓒`): `θ,Ω,T,(A,B)`, optimizer state, `Rec` | set | private |
+| `𝕋` (`\Stra`) | transient-plaintext set (materialized in `𝓒`, erased after a pass): `X,Q,K,V,`logits`,G,dA,dB` | set | private |
+| `𝕆` (`\Sobs`) | observable set (crosses to `𝓖`): `X̃,W̃,Ã,B̃,K̃,Ṽ,Ỹ` | set | masked (allowed) |
+| `ℙ` (`\Spub`) | public set: `Φ`, biases `b`, chat template, shapes, `n`, cache length, `r_pad`, output tokens/length | set | public |
+| `τ` (`\transcript`) | accelerator transcript = the sequence of `𝕆` tensors + `ℙ` metadata that `𝓖` observes | adversary view | observable |
+
+**Collision note:** the base glyph `P` appears as three distinct objects in three fonts — permutation `P` (`\Perm`, bold), public set `ℙ` (`\Spub`, blackboard), provider `𝓟` (`\prov`, calligraphic). Similarly `T`: pad `T` (`\Tpad`, bold) vs transient set `𝕋` (`\Stra`, blackboard); `G`: gradient `G` (`\Gmat`, bold) vs accelerator `𝓖` (`\acc`, calligraphic). Fonts disambiguate; never mix.
+
 ## 1. Symbol table
 
 | Symbol (macro) | Meaning | Dimensions | Public/Private | Side |
 |---|---|---|---|---|
 | `X` (`\X`) | plaintext hidden state / input activation to a Linear | `[T,d_in]` (or `[B,T,d_in]`) | private | trusted (accelerator sees `X̃`) |
 | `X̃` (`\Xt`) | masked hidden state `=(X−T)N_in` | `[T,d_in]` | masked (allowed leakage) | accelerator-visible |
-| `W` (`\W`) | base weight | `[d_in,d_out]` | **public OR private — see CF-1** | trusted |
+| `W` (`\W`) | base weight | `[d_in,d_out]` | **private (proprietary); only `W̃` crosses** (canonical, CF-1 resolved) | trusted |
 | `W̃` (`\Wt`) | masked weight `=N_in⁻¹WN_out` | `[d_in,d_out]` | masked | accelerator-visible |
 | `b` | bias | `[d_out]` | public | trusted |
 | `Y` (`\Y`) | plaintext Linear output `XW+b` | `[T,d_out]` | private | trusted |

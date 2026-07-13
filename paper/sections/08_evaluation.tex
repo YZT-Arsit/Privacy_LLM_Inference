@@ -19,12 +19,13 @@
 % -> C-COR-01..08, C-COR-GEN. GREEDY only; synthetic + tiny-HF + real Qwen-0.5B
 % CPU. \risk{EVA-01: append "synthetic/tiny-HF/CPU" scope to each result line.}
 
-% ---- RQ2: Which input/activation/cache signals stay recoverable? ------------
-% -> C-SEC-7B-*, C-SEC-S1..S6, C-SEC-LEAK-*. Report public-base 98.5% break and
-% private-base proxy verdicts SEPARATELY with attacker knowledge stated.
+% ---- RQ2: Which input/activation/cache signals stay recoverable under the ----
+% DEFAULT (checkpoint-denied) attacker? -> C-SEC-S1..S6, C-SEC-UNIFIED (default
+% rows), C-SEC-TIMING. Report proxy verdicts with attacker knowledge stated.
+% \risk{ONE attacker model -- checkpoint-leak/public-weight rows are OUT OF SCOPE.}
 
 % ---- RQ3: Which invariants remain visible despite masking/padding? ---------
-% -> C-SEC-PIINV, C-SEC-IMPOSS, C-LORA-RANK. norms/Gram/multiset/spectrum/logits/
+% -> C-SEC-LEAK, C-SEC-PIINV, C-LORA-RANK. norms/Gram/multiset/spectrum/logits/
 % r_pad. Boundary-call reduction (op-count): 36->16->4 per the accounting proxy.
 
 % ---- RQ4: Does LoRA transform preserve forward/backward/optimizer updates? --

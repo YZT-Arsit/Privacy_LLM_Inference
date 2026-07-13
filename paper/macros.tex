@@ -9,12 +9,13 @@
 % link-embedding package. Do NOT add \usepackage{hyperref} or \usepackage{cleveref}.
 
 % ---------------------------------------------------------------------------
-% Plain tensors (public model weights are public; activations are private --
-% see notation.md for the per-symbol ownership/visibility table).
+% Plain tensors. CANONICAL threat model = PRIVATE-base: base weights W are
+% proprietary/private (only the masked \Wt crosses to the untrusted GPU);
+% activations are private. See notation.md for the per-symbol ownership table.
 % ---------------------------------------------------------------------------
 \newcommand{\X}{\mathbf{X}}          % plaintext hidden state / input activation
 \newcommand{\Y}{\mathbf{Y}}          % plaintext output activation
-\newcommand{\W}{\mathbf{W}}          % public weight matrix
+\newcommand{\W}{\mathbf{W}}          % base weight matrix (private/proprietary; only masked \Wt crosses)
 \newcommand{\Z}{\mathbf{Z}}          % generic intermediate
 \newcommand{\Amat}{\mathbf{A}}       % LoRA down-projection (r x d_in)
 \newcommand{\Bmat}{\mathbf{B}}       % LoRA up-projection (d_out x r)
@@ -22,6 +23,7 @@
 \providecommand{\K}{}\renewcommand{\K}{\mathbf{K}}  % attention keys (guarded: \K may be undefined in some classes)
 \newcommand{\Vmat}{\mathbf{V}}       % attention values
 \newcommand{\Gmat}{\mathbf{G}}       % gradient
+\newcommand{\bias}{\mathbf{b}}       % bias (public, where present)
 
 % ---------------------------------------------------------------------------
 % Mask / permutation / pad family. These objects are NOT interchangeable;
@@ -76,6 +78,28 @@
 \newcommand{\KV}{\mathrm{KV}}
 \newcommand{\LoRA}{\mathrm{LoRA}}
 \newcommand{\Recover}{\mathsf{Rec}}  % trusted recovery function
+
+% ---------------------------------------------------------------------------
+% Entities, sets, and the accelerator transcript (Problem/Threat section).
+% Parties are calligraphic; partition sets are blackboard-bold; tensors stay
+% bold. See notation.md for the collision note (calligraphic vs bold vs
+% blackboard letters that share a base glyph, e.g. P / P / P).
+% ---------------------------------------------------------------------------
+\newcommand{\prov}{\mathcal{P}}      % model provider (owns the proprietary checkpoint)
+\newcommand{\usr}{\mathcal{U}}       % user (owns the prompt / private context)
+\newcommand{\loraown}{\mathcal{L}}   % LoRA owner (adapter + private fine-tuning data)
+\newcommand{\ctrl}{\mathcal{C}}      % trusted controller (trusted domain)
+\newcommand{\acc}{\mathcal{G}}       % untrusted accelerator
+\newcommand{\adv}{\mathcal{A}}       % adversary
+\newcommand{\params}{\boldsymbol{\theta}} % proprietary parameter set
+\newcommand{\rmsgain}{\boldsymbol{\gamma}} % RMSNorm / LayerNorm gains (part of \params)
+\newcommand{\maskset}{\Omega}        % mask family drawn per call/session
+\newcommand{\Ssec}{\mathbb{S}}       % secret-resident tensors (never leave \ctrl)
+\newcommand{\Stra}{\mathbb{T}}       % transient plaintext tensors (erased after a pass)
+\newcommand{\Sobs}{\mathbb{O}}       % observable (boundary-crossing) tensors
+\newcommand{\Spub}{\mathbb{P}}       % public information
+\newcommand{\transcript}{\tau}       % accelerator transcript (the adversary's view)
+\newcommand{\arch}{\Phi}             % public architecture tuple
 
 % ---------------------------------------------------------------------------
 % Scalars / dimensions.

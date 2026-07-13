@@ -21,8 +21,10 @@
 % U8 Compromised-TEE out of scope; integrity is probabilistic spot-check only.
 % U9 Sequence length, batch/tensor shapes, output tokens+length VISIBLE. \evid{C-SEC-LEAK-*}
 % U10 Correctness validated for GREEDY decoding only. \evid{C-COR-GEN}
-% U11 Masks provide NO token-level privacy under public-base model (empirical
-%    98.5% break + impossibility); privacy carried by layer-0 TEE + aggregation.
+% U11 Security is PROXY-EVALUATED ONLY (default private-base attacker); no formal,
+%    cryptographic, or worst-case guarantee. Residual invariants (norms/Gram/
+%    multiset/spectrum/attention-logits/r_pad) remain VISIBLE -- not exploitable
+%    into token recovery without the checkpoint, but not hidden. \evid{C-SEC-LEAK, C-SEC-S1..S6}
 % U12 Under private-base model, base-weight confidentiality is a mask-secrecy
 %    PROXY claim, not proven. \evid{C-THREAT-02}
 % U13 RMSNorm/vector-gamma: orthogonal island fails unless gain folded; wired

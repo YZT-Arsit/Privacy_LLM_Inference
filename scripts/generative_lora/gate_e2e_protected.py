@@ -127,46 +127,53 @@ def main():
               "lr": args.lr, "max_steps": args.max_steps, "attest": bool(args.attest),
               "endpoints": {"a10_pub": A10_PUB, "tdx_pub": TDX, "tdx_priv": TDX_PRIV}}
 
-    # ---------------- TRAIN (protected) ----------------
-    if not args.skip_train:
-        train_data = f"{DATA}/e2e_train_a10.pt"; sched_a10 = f"{DATA}/e2e_schedule_s{args.seed}.json"
-        cmd = (f"cd {RA10} && {ENV_A10} {PY_A10} scripts/a10_batch_runner.py "
-               f"--session /tmp/e2e_session_a10.json --profile {args.profile} --task clm "
-               f"--dataset-id e2e_nlg --train-split train --eval-split validation --eval-max 0 "
-               f"--train-data {train_data} --schedule {sched_a10} --max-steps {args.max_steps} "
-               f"--lr {args.lr} --seed {args.seed} --max-seq 256 "
-               f"--template-hash {tmpl_hash} --tokenizer-hash {TOK_HASH} --label-schema-hash {lsch_hash} "
-               f"--tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx --service-cmd \"{service_cmd}\" "
-               f"--out {out_json} --adapter-id {run_id}"
-               + (" --require-attestation" if args.attest else ""))
-        print(f"[train] {tag} profile={args.profile} steps={args.max_steps} lr={args.lr}; A10<->TDX PRIVATE {TDX_PRIV}")
-        t0 = time.time(); rc, o, e = a10(cmd, timeout=args.timeout); wall = time.time() - t0
-        print(o[-1500:] if o else "", "\n[train stderr]", e[-1500:] if rc != 0 else "")
-        result["train"] = {"rc": rc, "wall_sec": round(wall, 1)}
-        pull_a10(out_json, str(OUT / f"{tag}.json"))
-        pull_a10(adapter_remote, str(OUT / f"{tag}.adapter.pt"))
-        pull_tdx("/tmp/e2e_batch_counters.json", str(OUT / f"{tag}.tdx_counters.json"))
-        if args.attest:
-            pull_tdx("/tmp/e2e_attest/session_attestation.json", str(OUT / f"{tag}.attestation.json"))
-        if rc != 0:
-            (OUT / f"{tag}.result.json").write_text(json.dumps(result, indent=2)); print("TRAIN FAILED"); return
-    adapter_use = args.adapter_path or adapter_remote
-
-    # ---------------- PROTECTED GENERATION ----------------
+    # ---------------- build robust A10-side nohup driver (survives control-master drops) ----------------
+    train_data = f"{DATA}/e2e_train_a10.pt"; sched_a10 = f"{DATA}/e2e_schedule_s{args.seed}.json"
     gen_out = f"{RA10}/results/aaai_private_base/generative_lora/generations/g2_protected_{tag}.jsonl"
-    a10(f"mkdir -p {RA10}/results/aaai_private_base/generative_lora/generations")
-    gcmd = (f"cd {RA10} && {ENV_A10} {PY_A10} scripts/generative_lora/protected_generate.py "
-            f"--session /tmp/e2e_session_a10.json --tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx "
-            f"--service-cmd \"{service_cmd}\" --adapter {adapter_use} --tok /root/genlora_tok "
-            f"--gen-in {DATA}/{args.gen_in} --gen-out {gen_out} --gen-max {args.gen_max} "
-            f"--max-new {args.max_new} --cell G2_protected_{args.profile} --dtype fp32"
-            + (" --require-attestation" if args.attest else ""))
-    print(f"[protected-gen] {tag} gen_max={args.gen_max}")
-    t0 = time.time(); rc, o, e = a10(gcmd, timeout=args.timeout); wall = time.time() - t0
-    print(o[-1500:] if o else "", "\n[gen stderr]", e[-1500:] if rc != 0 else "")
-    result["protected_gen"] = {"rc": rc, "wall_sec": round(wall, 1)}
+    adapter_use = args.adapter_path or adapter_remote
+    req = " --require-attestation" if args.attest else ""
+    train_line = "" if args.skip_train else (
+        f"{ENV_A10} {PY_A10} scripts/a10_batch_runner.py --session /tmp/e2e_session_a10.json "
+        f"--profile {args.profile} --task clm --dataset-id e2e_nlg --train-split train "
+        f"--eval-split validation --eval-max 0 --train-data {train_data} --schedule {sched_a10} "
+        f"--max-steps {args.max_steps} --lr {args.lr} --seed {args.seed} --max-seq 256 "
+        f"--template-hash {tmpl_hash} --tokenizer-hash {TOK_HASH} --label-schema-hash {lsch_hash} "
+        f"--tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx --service-cmd \"{service_cmd}\" "
+        f"--out {out_json} --adapter-id {run_id}{req} || {{ echo G2_TRAIN_FAILED; exit 1; }}")
+    gen_line = (
+        f"{ENV_A10} {PY_A10} scripts/generative_lora/protected_generate.py --session /tmp/e2e_session_a10.json "
+        f"--tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx --service-cmd \"{service_cmd}\" "
+        f"--adapter {adapter_use} --tok /root/genlora_tok --gen-in {DATA}/{args.gen_in} --gen-out {gen_out} "
+        f"--gen-max {args.gen_max} --max-new {args.max_new} --cell G2_protected_{args.profile} --dtype fp32{req} "
+        f"|| {{ echo G2_GEN_FAILED; exit 1; }}")
+    driver = ("#!/bin/bash\nset -e\ncd " + RA10 + "\n"
+              "mkdir -p results/aaai_private_base/generative_lora/generations\n"
+              + (train_line + "\n" if train_line else "")
+              + gen_line + "\necho G2_ALL_DONE\n")
+    dpath = OUT / f"{tag}.driver.sh"; dpath.write_text(driver)
+    push_a10(str(dpath), f"{RA10}/g2_driver_{tag}.sh")
+    logf = f"{RA10}/g2_{tag}.log"
+    a10(f"nohup bash {RA10}/g2_driver_{tag}.sh > {logf} 2>&1 &", timeout=60)
+    print(f"[g2] launched nohup driver for {tag}; polling {logf}")
+
+    # poll until G2_ALL_DONE / *_FAILED (robust to master drops: reconnect + re-poll)
+    import subprocess as _sp
+    t0 = time.time(); done = False
+    while time.time() - t0 < args.timeout:
+        rc, o, _ = sh(f"ssh -S {CM_A10} {A10_PUB} 'tail -3 {logf} 2>/dev/null; "
+                      f"grep -qE \"G2_ALL_DONE|G2_TRAIN_FAILED|G2_GEN_FAILED\" {logf} && echo POLL_DONE'", timeout=60)
+        if "POLL_DONE" in o:
+            done = True; print(o.strip()[-500:]); break
+        time.sleep(20)
+    result["g2_wall_sec"] = round(time.time() - t0, 1); result["completed"] = done
+    # pull everything produced
+    pull_a10(out_json, str(OUT / f"{tag}.json"))
+    pull_a10(adapter_remote, str(OUT / f"{tag}.adapter.pt"))
     pull_a10(gen_out, str(GL / f"generations/g2_protected_{tag}.jsonl"))
     pull_a10(gen_out + ".profile.json", str(GL / f"generations/g2_protected_{tag}.jsonl.profile.json"))
+    pull_tdx("/tmp/e2e_batch_counters.json", str(OUT / f"{tag}.tdx_counters.json"))
+    if args.attest:
+        pull_tdx("/tmp/e2e_attest/session_attestation.json", str(OUT / f"{tag}.attestation.json"))
     (OUT / f"{tag}.result.json").write_text(json.dumps(result, indent=2))
     print(json.dumps(result, indent=2))
 

@@ -1,75 +1,213 @@
 % ===========================================================================
-% PROBLEM FORMULATION AND THREAT MODEL --- argument skeleton.
-% Follows the threat-model protocol (skill S7): state public vs protected
-% assets, trusted vs untrusted parties, attacker observations/capabilities,
-% visibility of every quantity, mask freshness, collusion, excluded attacks.
-% Do NOT claim confidentiality for any invariant that remains visible.
-%
-% >>> CENTRAL UNRESOLVED DECISION (STOP-CONDITION, skill S19) <<<
-% The task objective specifies PUBLIC base weights. However, the repository's
-% NEWEST drafts (paper_draft/threat_model_revision_patch.md, 2026-07-10,
-% "applied ... Not committed"; system_and_threat_model.md; introduction.md;
-% limitations.md item 13) have REPOSITIONED to a PRIVATE-base-weight model
-% ("only the masked W_tilde crosses the boundary"), and results/aaai_private_base/
-% + results/private_base_unified/ contain a real-Qwen/TDX PRIVATE-base experiment
-% suite. The older audits (reviewer_risk_audit, novelty_positioning_review,
-% NOV-02) still use PUBLIC-weight wording and are flagged superseded.
-% => These two framings change the protected-asset set, the novelty argument,
-%    and several claims. This section must NOT silently pick one. Resolve with
-%    the authors before authoring prose. See claim_ledger.md (C-THREAT-*) and
-%    audit/repository_evidence_audit.md (Conflict CF-1).
+% PROBLEM FORMULATION AND THREAT MODEL --- authored section (specification).
+% Canonical PRIVATE-base threat model only. No attacks, no experiments, no
+% algorithm, no advantages, no related work. Every symbol is registered in
+% notation.md. See audit/out_of_scope_checkpoint_review.md for scope.
 % ===========================================================================
 \section{Problem Formulation and Threat Model}
 \label{sec:threat}
 
-% ---- CENTRAL QUESTION -------------------------------------------------------
-% What exactly must remain confidential when serving/adapting an LLM on an
-% untrusted accelerator, who holds what, what does the accelerator observe, and
-% which leakage is accepted by construction?
+We specify the deployment setting, the trust boundary, the adversary, the
+protection goals, and the assumptions we place outside our scope. This section
+is a specification: the construction that realizes it is given in the Method
+section, and all quantities are established in the Evaluation. Throughout,
+parties are written in calligraphic type, tensors in bold, and sets of tensors
+in blackboard type; all symbols are collected in the notation table.
 
-% ---- 4.1 Setting and parties ----------------------------------------------
-% - Trusted component (TEE-like, currently LOCALLY EMULATED on CPU -- NOT a real
-%   TEE in the evidence): holds secrets, masks, pads, selected nonlinear/boundary
-%   ops, recovery, sampling, auditing.            \evid{C-BND-01}
-% - Untrusted accelerator: observes transformed tensors + public metadata
-%   (shapes, sequence length, per-call timing proxy, output tokens).
-% \TODO{Decide base-weight visibility (see STOP-CONDITION above): is W public
-%   (task framing) or private/masked as W_tilde (repo's latest framing)?}
+\subsection{System Model}
+\label{subsec:system}
 
-% ---- 4.2 Protected assets (state per chosen framing) ----------------------
-% Common to both framings: user inputs X; selected intermediate states; KV-cache
-% contents; LoRA adapters A,B; private fine-tuning data; gradients dA,dB,G;
-% relevant optimizer state.
-% Private-base framing ADDS: base weights W (only W_tilde = N_in^{-1} W N_out
-% dispatched).                                     \evid{C-THREAT-02}
+\begin{definition}[Parties]
+The deployment involves five parties. The \emph{model provider} $\prov$ owns a
+proprietary foundation model with parameters $\params$. The \emph{user} $\usr$
+owns an input token sequence $x=(x_1,\dots,x_n)$ and any private context. The
+\emph{LoRA owner} $\loraown$ owns a low-rank adapter $(\Amat,\Bmat)$ and the
+private data on which it is fine-tuned; $\loraown$ may coincide with $\usr$ or
+$\prov$. The \emph{trusted controller} $\ctrl$ is a trusted execution domain.
+The \emph{untrusted accelerator} $\acc$ is an external compute device.
+\end{definition}
 
-% ---- 4.3 Attacker model ----------------------------------------------------
-% \TODO{State: white/grey/black-box; known-plaintext access? single vs multi-
-%   query; mask reuse vs freshness (boundary masks fresh per call; KV mask FIXED
-%   within a session -- see C-COR-05 restriction); collusion; hardware/side-
-%   channel assumptions (OUT OF SCOPE -- no HW side-channel evaluated).}
-% Enumerate the STRONGER out-of-scope attackers explicitly (THR-03): large-scale
-% learned inverters, white-box-weight inverters, HW side-channels, multi-tenant
-% trace correlation.
+The model is a decoder-only Transformer $M_{\params}$ with public architecture
+$\arch=(L,d,h,h_{kv},d_h,m,V)$: $L$ layers, model width $d$, $h$ query heads and
+$h_{kv}$ key/value heads of dimension $d_h$, feed-forward width $m$, and
+vocabulary size $V$. The architecture $\arch$ and the token embedding /
+untying convention are public. The parameters
+$\params=\{\W^{(\ell)}_{\bullet},\rmsgain^{(\ell)}\}_{\ell=1}^{L}$ --- the
+per-projection weights $\W$ and the normalization gains $\rmsgain$ --- are
+\emph{private and proprietary} and constitute intellectual property of $\prov$.
+Where a projection carries a bias, the bias $\bias$ is a public constant.
 
-% ---- 4.4 Allowed leakage (visible by construction; do NOT claim hidden) ----
-% - tensor shapes, per-layer dims; SEQUENCE LENGTH (promote to its own bullet,
-%   THR-01); batch shape; output tokens + output length; per-call timing proxy.
-% - permutation-invariant statistics (row norms, sorted values, quantiles),
-%   norms, Gram-derived quantities inside nonlinear islands.  \evid{C-SEC-LEAK-*}
-% - PADDED LoRA rank r_pad is visible (only TRUE rank r is removed from shape).
-%   \evid{C-LORA-RANK} \risk{SEC-03: standardize "true rank hidden / padded rank visible".}
+\begin{definition}[Deployment]
+\label{def:deployment}
+$\ctrl$ holds $\params$, the adapter $(\Amat,\Bmat)$, and all secret randomness,
+and is the only party that ever materializes plaintext runtime tensors. $\acc$
+performs the bulk dense linear algebra on \emph{transformed} operands supplied by
+$\ctrl$ and returns transformed results. The two communicate over a single
+logical $\ctrl$--$\acc$ interface. A computation (one forward pass for inference,
+or one forward--backward--update step for adaptation) is expressed as an
+alternation of trusted operations inside $\ctrl$ and delegated linear operations
+on $\acc$.
+\end{definition}
 
-% ---- 4.5 Trusted/untrusted boundary (integrity + availability scope) -------
-% \TODO{State integrity model (probabilistic spot-check only), availability out
-%   of scope, compromised-TEE out of scope (U8).}
+\subsection{Trust Boundary}
+\label{subsec:boundary}
 
-% ---- 4.6 Explicit non-claims ----------------------------------------------
-% No cryptographic / semantic / indistinguishability security. No real-TEE or
-% GPU side-channel guarantee. \evid{C-NONCLAIM-*}
+Let the \emph{runtime state} of a computation be the collection of all tensors it
+produces. The trust boundary partitions this state into four disjoint sets.
 
-% ---- REVIEWER RISKS --------------------------------------------------------
-% \risk{THR-01 seq-len leak; THR-02 "emulated not real TEE" must appear in every
-%   figure caption; THR-03 name stronger out-of-scope attackers; base-weight
-%   framing conflict CF-1.}
-\TODO{Author this section FIRST among substantive sections, after the base-weight framing is resolved with the authors.}
+\begin{definition}[Trust partition]
+\label{def:partition}
+The runtime state is partitioned as $\Ssec \sqcup \Stra \sqcup \Sobs$, together
+with public information $\Spub$:
+\begin{itemize}
+\item \textbf{Secret-resident} $\Ssec$: tensors that \emph{never} leave $\ctrl$.
+  $\Ssec=\{\params,\ \maskset,\ \Tpad,\ (\Amat,\Bmat),\ \text{optimizer state},\
+  \Recover\}$, where the mask family
+  $\maskset=\{\Nin,\Nout,\NQ,\NK,\NV,\Rmask,\Perm,\Umix\}$ is drawn freshly per
+  call (boundary and rank masks) or per session (the key/value masks
+  $\NK,\NV$), $\Tpad$ is the one-time additive pad, and $\Recover$ is the trusted
+  recovery map. These are \emph{permanently secret}.
+\item \textbf{Transient plaintext} $\Stra$: tensors materialized inside $\ctrl$
+  during a pass and erased afterward; they never cross the boundary.
+  $\Stra=\{\X,\ \Qmat,\K,\Vmat,\ \text{pre-sampling logits},\ \Gmat,\ d\Amat,\
+  d\Bmat\}$, where $\X$ denotes the plaintext hidden states, $\Qmat,\K,\Vmat$ the
+  attention projections, and $\Gmat,d\Amat,d\Bmat$ the upstream and adapter
+  gradients.
+\item \textbf{Observable} $\Sobs$: the transformed images that cross to $\acc$.
+  $\Sobs=\{\Xt,\Wt,\At,\Bt,\Kt,\Vt,\Yt\}$, with
+  $\Xt=(\X-\Tpad)\Nin$, $\Wt=\Nin^{-1}\W\Nout$, $\At=\Nin^{-1}\Amat\Umix$,
+  $\Bt=\Umix^{-1}\Bmat\Nout$, $\Kt=\K\NK$, $\Vt=\Vmat\NV$, and
+  $\Yt=\Y\Nout$ (masked layer output). Cache entries are stored in their masked
+  form $\Kt,\Vt$.
+\item \textbf{Public} $\Spub$: information known a priori or disclosed by
+  construction: the architecture $\arch$, biases $\bias$, the fixed chat
+  template, tensor and batch shapes, the sequence length $n$, the key/value
+  cache length, the padded LoRA rank $\rpad$, and the returned output tokens and
+  their count.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Transcript]
+\label{def:transcript}
+The \emph{accelerator transcript} $\transcript$ is the sequence of observable
+tensors in $\Sobs$ together with the public metadata in $\Spub$ that $\acc$ sees
+across a session, along with the sequence of linear operations $\acc$ is
+instructed to compute. $\transcript$ is the entire view available outside
+$\ctrl$.
+\end{definition}
+
+Thus a tensor is \emph{permanently secret} iff it lies in $\Ssec$, \emph{transient}
+iff it lies in $\Stra$, and \emph{observable} iff it lies in $\Sobs$ or is part
+of the public metadata; the true base weights $\W\in\params$ never appear in
+$\transcript$, only their masked image $\Wt$.
+
+\subsection{Threat Model}
+\label{subsec:attacker}
+
+\begin{definition}[Adversary]
+\label{def:adversary}
+The adversary $\adv$ is the untrusted accelerator $\acc$, together with any party
+that observes the transcript $\transcript$. $\adv$ is \emph{honest-but-curious}:
+it executes the delegated linear operations faithfully but may attempt to infer
+protected information from $\transcript$.
+\end{definition}
+
+We characterize $\adv$ along four axes, which we keep explicitly distinct.
+\begin{itemize}
+\item \textbf{Passive observation.} $\adv$ reads the full transcript
+  $\transcript$ and may apply unbounded offline computation to it, but does not
+  alter the delegated computation. The confidentiality goals below are stated
+  against a passive $\adv$.
+\item \textbf{Chosen-input capability.} $\adv$ does not choose $\usr$'s inputs;
+  it observes only the transcripts of inputs presented to the system. As a
+  strictly stronger reference point we also define a \emph{bounded known-pairs}
+  relaxation, in which $\adv$ is granted $K$ plaintext--transcript pairs
+  $\{(\X_i,\Xt_i)\}_{i=1}^{K}$; this relaxation never grants $\params$ or
+  $\maskset$.
+\item \textbf{Model-execution observation.} $\adv$ observes the computation graph
+  it is asked to evaluate over masked operands---i.e., the operation sequence,
+  the shapes of every operand in $\Sobs$, and coarse per-call metadata such as
+  the number of boundary crossings.
+\item \textbf{Multi-query observation.} $\adv$ may store $\transcript$ and
+  correlate observations across an unbounded number of calls and sessions. Mask
+  freshness bounds cross-call linkage: boundary masks are redrawn per call, while
+  the key/value masks are fixed within a session and independent across sessions.
+\end{itemize}
+
+\begin{definition}[Adversary knowledge and limits]
+\label{def:knowledge}
+$\adv$ knows the public information $\Spub$, the transformed package
+$\{\Wt,\At,\Bt\}$, and the delegated operation sequence. $\adv$ does \emph{not}
+obtain the plaintext parameters $\params$, the masks $\maskset$ or their inverses,
+the pad $\Tpad$, any transient tensor in $\Stra$, or the plaintext adapter
+$(\Amat,\Bmat)$, and cannot read the internal state of $\ctrl$.
+\end{definition}
+
+\subsection{Security Objectives}
+\label{subsec:objectives}
+
+We state the protection goals as objectives $O_1$--$O_7$, each defined relative to
+the partition of Definition~\ref{def:partition} and the adversary of
+Definition~\ref{def:adversary}. We separate correctness from confidentiality and never
+conflate the two.
+
+\begin{description}
+\item[$O_1$ Correctness.] For every input, the value returned by $\ctrl$ equals
+  that of the plaintext model $M_{\params}$: applying the recovery map
+  $\Recover$ to the delegated masked execution reproduces the pre-sampling
+  logits of $M_{\params}$, and hence its output token sequence under a fixed
+  decoding rule. The precise numerical sense of this equality is stated in the
+  Correctness section.
+\item[$O_2$ Confidentiality.] For each protected asset
+  $a\in\Ssec\cup\Stra$, the ability of $\adv$ to recover $a$ from the transcript
+  $\transcript$ is no greater than from the public information $\Spub$ alone;
+  equivalently, $\transcript$ confers no advantage beyond the leakage already
+  admitted by $\Sobs$ and $\Spub$. We instantiate $O_2$ per asset:
+  \emph{input} confidentiality of $x$ and $\X$; \emph{weight} confidentiality of
+  $\params$; \emph{adapter} confidentiality of $(\Amat,\Bmat)$;
+  \emph{gradient} confidentiality of $\Gmat,d\Amat,d\Bmat$ and the fine-tuning
+  data; and \emph{cache} confidentiality of the values $\K,\Vmat$. We do not
+  target cryptographic or semantic indistinguishability; $O_2$ is a
+  non-recoverability goal under the stated adversary, and the extent to which it
+  is met is established in the security analysis.
+\item[$O_3$ Integrity.] $\ctrl$ can detect, with bounded failure probability, any
+  deviation of $\acc$ from the specified linear computation.
+\item[$O_4$ Availability.] Availability is \emph{not} a protection goal; it is
+  named here only to delimit scope.
+\item[$O_5$ Training privacy.] $O_2$ holds throughout the adaptation loop for the
+  training-time assets: the fine-tuning data, the gradients
+  $\Gmat,d\Amat,d\Bmat$, the adapter $(\Amat,\Bmat)$, and the optimizer state.
+\item[$O_6$ Runtime privacy.] $O_2$ holds throughout inference for the runtime
+  assets: the prompt $x$, the hidden states $\X$, and the cache values
+  $\K,\Vmat$.
+\item[$O_7$ Generation privacy.] Over the course of decoding, $\acc$ learns no
+  more than the admitted leakage: the pre-sampling logits and the sampled token
+  identities are transient or secret with respect to $\acc$, whereas the output
+  length is admitted public information. The output tokens are disclosed to
+  $\usr$ by definition, never to $\acc$.
+\end{description}
+
+\subsection{Out-of-Scope Assumptions}
+\label{subsec:scope}
+
+The following are assumptions delimiting the model; we state them without
+argument.
+\begin{itemize}
+\item[$A_1$] The trusted controller $\ctrl$ is uncompromised: the confidentiality
+  and integrity of its internal state ($\Ssec,\Stra$) hold. A malicious, leaky,
+  or faulty controller is out of scope.
+\item[$A_2$] The proprietary checkpoint $\params$ is never disclosed in plaintext
+  to $\adv$; checkpoint-disclosure and public-weight settings are out of scope.
+\item[$A_3$] Micro-architectural and physical side channels---fine-grained
+  timing, power, electromagnetic emanation, cache and page-fault patterns, and
+  resource contention---are out of scope; only the coarse per-call metadata of
+  Definition~\ref{def:knowledge} is modeled.
+\item[$A_4$] Physical attacks on the host are out of scope.
+\item[$A_5$] Availability and denial-of-service are out of scope.
+\item[$A_6$] Collusion that grants $\adv$ the plaintext parameters, the masks, or
+  an unbounded set of plaintext--transcript pairs is out of scope; the bounded
+  known-pairs relaxation of Section~\ref{subsec:attacker} is the only admitted
+  leakage of this kind.
+\item[$A_7$] For confidentiality, $\adv$ is honest-but-curious; an actively
+  deviating accelerator is addressed only to the extent of objective $O_3$.
+\end{itemize}

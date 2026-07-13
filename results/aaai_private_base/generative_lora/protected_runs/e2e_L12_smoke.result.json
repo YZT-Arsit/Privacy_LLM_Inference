@@ -1,0 +1,16 @@
+{
+  "tag": "e2e_L12_smoke",
+  "run_id": "e2e_L12_smoke-1783930551-ead222",
+  "profile": "L12",
+  "seed": 1234,
+  "lr": 0.0002,
+  "max_steps": 5,
+  "attest": true,
+  "endpoints": {
+    "a10_pub": "root@39.107.123.173",
+    "tdx_pub": "root@39.96.43.122",
+    "tdx_priv": "172.30.25.153"
+  },
+  "g2_wall_sec": 167.1,
+  "completed": true
+}

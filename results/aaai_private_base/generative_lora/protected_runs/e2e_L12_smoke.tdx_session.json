@@ -1,0 +1,50 @@
+{
+  "session_key_hex": "dcf9f9db6e22a7b3b767f882c77f7945090ae86d853589b1695a11ca3169a5f2",
+  "run_id": "e2e_L12_smoke-1783930551-ead222",
+  "labels": [
+    0
+  ],
+  "gamma_bundle": "/tmp/o1c_bundle.pt",
+  "vocab_seed": 8000,
+  "attest": true,
+  "attest_out": "/tmp/e2e_attest",
+  "binding_manifest": {
+    "d4_run_id": "e2e_L12_smoke-1783930551-ead222",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "seed": 1234,
+    "optimizer_profile": "L12_adamw",
+    "execution_profile": "paper_safe",
+    "transport_profile": "direct_a10_tdx_private",
+    "compute_host": "alicloud_a10",
+    "data_plane_ip": "172.30.25.153",
+    "code_revision_or_worktree_hash": "9773d9c84cebec517cba8bc812338c51f114c95d",
+    "hmac_key_commitment": "47946236a0a530359919800d2a98f92e35fe17da63bc28f882e085a2970eb136",
+    "nonce": "0e41adeefa3ff5294c5680361f32c4c7",
+    "debug_false_required": true,
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "dataset_id": "e2e_nlg",
+    "task": "clm"
+  },
+  "counters_out": "/tmp/e2e_batch_counters.json",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "ckpt_dir": "/tmp/l12_ckpt_e2e",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "service_hash": "da88516428079dd899152a8797d0d7fe516bea1be1168290aeee5ad7b299ae2e",
+  "dataset_id": "e2e_nlg",
+  "task": "clm",
+  "template_hash": "e9b15b3b089a7a2e38f8589a6b4be4ef45eee4bf6e65fe64a7ec8bfefcd7c537",
+  "label_schema_hash": "de4f75df52e95dac17ddb6dca5dc6422f590203f7ddabc88e57ecfbd8f80076e",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "batch_label_tables": {
+    "train": "/tmp/e2e_train_labels.pt"
+  },
+  "batch_schedules": {
+    "train": "/tmp/e2e_schedule_s1234.json"
+  },
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
+}
