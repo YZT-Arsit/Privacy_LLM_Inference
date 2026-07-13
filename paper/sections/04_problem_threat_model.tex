@@ -1,0 +1,75 @@
+% ===========================================================================
+% PROBLEM FORMULATION AND THREAT MODEL --- argument skeleton.
+% Follows the threat-model protocol (skill S7): state public vs protected
+% assets, trusted vs untrusted parties, attacker observations/capabilities,
+% visibility of every quantity, mask freshness, collusion, excluded attacks.
+% Do NOT claim confidentiality for any invariant that remains visible.
+%
+% >>> CENTRAL UNRESOLVED DECISION (STOP-CONDITION, skill S19) <<<
+% The task objective specifies PUBLIC base weights. However, the repository's
+% NEWEST drafts (paper_draft/threat_model_revision_patch.md, 2026-07-10,
+% "applied ... Not committed"; system_and_threat_model.md; introduction.md;
+% limitations.md item 13) have REPOSITIONED to a PRIVATE-base-weight model
+% ("only the masked W_tilde crosses the boundary"), and results/aaai_private_base/
+% + results/private_base_unified/ contain a real-Qwen/TDX PRIVATE-base experiment
+% suite. The older audits (reviewer_risk_audit, novelty_positioning_review,
+% NOV-02) still use PUBLIC-weight wording and are flagged superseded.
+% => These two framings change the protected-asset set, the novelty argument,
+%    and several claims. This section must NOT silently pick one. Resolve with
+%    the authors before authoring prose. See claim_ledger.md (C-THREAT-*) and
+%    audit/repository_evidence_audit.md (Conflict CF-1).
+% ===========================================================================
+\section{Problem Formulation and Threat Model}
+\label{sec:threat}
+
+% ---- CENTRAL QUESTION -------------------------------------------------------
+% What exactly must remain confidential when serving/adapting an LLM on an
+% untrusted accelerator, who holds what, what does the accelerator observe, and
+% which leakage is accepted by construction?
+
+% ---- 4.1 Setting and parties ----------------------------------------------
+% - Trusted component (TEE-like, currently LOCALLY EMULATED on CPU -- NOT a real
+%   TEE in the evidence): holds secrets, masks, pads, selected nonlinear/boundary
+%   ops, recovery, sampling, auditing.            \evid{C-BND-01}
+% - Untrusted accelerator: observes transformed tensors + public metadata
+%   (shapes, sequence length, per-call timing proxy, output tokens).
+% \TODO{Decide base-weight visibility (see STOP-CONDITION above): is W public
+%   (task framing) or private/masked as W_tilde (repo's latest framing)?}
+
+% ---- 4.2 Protected assets (state per chosen framing) ----------------------
+% Common to both framings: user inputs X; selected intermediate states; KV-cache
+% contents; LoRA adapters A,B; private fine-tuning data; gradients dA,dB,G;
+% relevant optimizer state.
+% Private-base framing ADDS: base weights W (only W_tilde = N_in^{-1} W N_out
+% dispatched).                                     \evid{C-THREAT-02}
+
+% ---- 4.3 Attacker model ----------------------------------------------------
+% \TODO{State: white/grey/black-box; known-plaintext access? single vs multi-
+%   query; mask reuse vs freshness (boundary masks fresh per call; KV mask FIXED
+%   within a session -- see C-COR-05 restriction); collusion; hardware/side-
+%   channel assumptions (OUT OF SCOPE -- no HW side-channel evaluated).}
+% Enumerate the STRONGER out-of-scope attackers explicitly (THR-03): large-scale
+% learned inverters, white-box-weight inverters, HW side-channels, multi-tenant
+% trace correlation.
+
+% ---- 4.4 Allowed leakage (visible by construction; do NOT claim hidden) ----
+% - tensor shapes, per-layer dims; SEQUENCE LENGTH (promote to its own bullet,
+%   THR-01); batch shape; output tokens + output length; per-call timing proxy.
+% - permutation-invariant statistics (row norms, sorted values, quantiles),
+%   norms, Gram-derived quantities inside nonlinear islands.  \evid{C-SEC-LEAK-*}
+% - PADDED LoRA rank r_pad is visible (only TRUE rank r is removed from shape).
+%   \evid{C-LORA-RANK} \risk{SEC-03: standardize "true rank hidden / padded rank visible".}
+
+% ---- 4.5 Trusted/untrusted boundary (integrity + availability scope) -------
+% \TODO{State integrity model (probabilistic spot-check only), availability out
+%   of scope, compromised-TEE out of scope (U8).}
+
+% ---- 4.6 Explicit non-claims ----------------------------------------------
+% No cryptographic / semantic / indistinguishability security. No real-TEE or
+% GPU side-channel guarantee. \evid{C-NONCLAIM-*}
+
+% ---- REVIEWER RISKS --------------------------------------------------------
+% \risk{THR-01 seq-len leak; THR-02 "emulated not real TEE" must appear in every
+%   figure caption; THR-03 name stronger out-of-scope attackers; base-weight
+%   framing conflict CF-1.}
+\TODO{Author this section FIRST among substantive sections, after the base-weight framing is resolved with the authors.}

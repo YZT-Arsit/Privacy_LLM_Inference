@@ -1,0 +1,31 @@
+% ===========================================================================
+% ABSTRACT --- WRITE LAST (per aaai-paper-writing skill S12: do not write the
+% abstract first). This file currently holds ONLY a drafting plan. No polished
+% abstract may be generated until the claim ledger and evaluation are stable.
+% ===========================================================================
+%
+% CENTRAL MESSAGE (one paragraph, to be written last):
+%   Setting: public base LLM weights, private inputs / KV-cache / LoRA adapters;
+%   an untrusted accelerator does the heavy linear algebra on transformed
+%   tensors while a small trusted component holds secrets and selected
+%   nonlinear/boundary operations.
+%
+% CONTENT GATE: the abstract may state ONLY claims that already appear in
+% claim_ledger.md with a status of at least algebraically_proven,
+% experimentally_validated, or measured_real_system, and using the SAME
+% calibrated wording as the body.
+%
+% PLAN (fill after ledger + evaluation stabilize):
+%  - 1 sentence: deployment problem (public weights do NOT remove private
+%    runtime assets).                                   \evid{TODO ledger IDs}
+%  - 1 sentence: what we build (obfuscated execution + trusted boundary).
+%  - 1 sentence: correctness result (algebraic + numerically verified scope).
+%  - 1 sentence: leakage/security result, CALIBRATED (what is hidden vs what
+%    provably remains visible: permutation-invariant statistics, norms, ...).
+%  - 1 sentence: LoRA training result + optimizer scope.
+%  - 1 sentence: cost result, with measured-vs-projected clearly separated.
+%  - 1 sentence: explicit non-claims (no cryptographic/semantic security
+%    claim; not a hardware side-channel result).
+%
+% \TODO{Write abstract after Phases: method stable, evaluation stable, ledger frozen.}
+\TODO{Abstract deferred by design. Do not populate until claim\_ledger.md is frozen and evaluation numbers are final.}

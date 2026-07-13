@@ -1,0 +1,37 @@
+% ===========================================================================
+% LIMITATIONS AND BROADER IMPACT --- argument skeleton. Keep ALL limitations
+% first-class; do NOT remove any to improve presentation. Import from
+% paper_draft/limitations.md (15 first-class items) after reconciliation.
+% ===========================================================================
+\section{Limitations and Broader Impact}
+\label{sec:limitations}
+
+% CENTRAL QUESTION: What does this work NOT establish?
+
+% ---- Core limitations (each maps to a ledger non-claim) --------------------
+% U1 No formal/cryptographic/semantic/DP/indistinguishability security. \evid{C-NONCLAIM-01}
+% U2 No real-TEE / real-GPU wall-clock; costs are CPU emulation + op-count
+%    projection; "CPU-TEE" table rows use host CPU as a TDX proxy. \evid{C-EFF-*}
+% U3 No hardware side-channel evaluation. \evid{C-NONCLAIM-03}
+% U4 No full production Qwen/LLaMA fine-tune; largest real model Qwen-0.5B
+%    (feasibility loop; base weights PLAINTEXT on GPU there). \evid{C-REAL-*}
+% U5 No PEFT/DeepSpeed/vLLM/FlashAttention integration.
+% U6 PADDED LoRA rank r_pad is VISIBLE (only true rank removed from shape).
+% U7 Loss/optimizer stay trusted-side (or GPU-masked SGD only). \evid{C-OPT-*}
+% U8 Compromised-TEE out of scope; integrity is probabilistic spot-check only.
+% U9 Sequence length, batch/tensor shapes, output tokens+length VISIBLE. \evid{C-SEC-LEAK-*}
+% U10 Correctness validated for GREEDY decoding only. \evid{C-COR-GEN}
+% U11 Masks provide NO token-level privacy under public-base model (empirical
+%    98.5% break + impossibility); privacy carried by layer-0 TEE + aggregation.
+% U12 Under private-base model, base-weight confidentiality is a mask-secrecy
+%    PROXY claim, not proven. \evid{C-THREAT-02}
+% U13 RMSNorm/vector-gamma: orthogonal island fails unless gain folded; wired
+%    path uses trusted recompute. Adapter merging intentionally unsupported.
+% U14 Real TDX attestation genuine (v5 quote, chain-verified) BUT mr_td NOT
+%    policy-pinned (allow_any_mr_td). \evid{C-REAL-ATTEST}
+% U15 GPU-masked AdamW impossible by construction; bf16 AdamW breaks (top1 0.905).
+
+% ---- Broader impact --------------------------------------------------------
+% \TODO{Dual-use note: obfuscated inference could aid both privacy and evasion;
+%   state defensive framing. Environmental cost of trusted round-trips.}
+\TODO{Import the 15 limitations verbatim from paper\_draft/limitations.md after ledger reconciliation.}

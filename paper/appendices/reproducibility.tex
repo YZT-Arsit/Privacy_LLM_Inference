@@ -1,0 +1,15 @@
+% ===========================================================================
+% APPENDIX D: REPRODUCIBILITY --- skeleton. Environment, seeds, artifact
+% manifests, and the evidence-lineage map so numbers are traceable.
+% ===========================================================================
+\section{Reproducibility}
+\label{app:repro}
+
+% - Environments: CPU-emulation host (fp64/fp32); H800 PCIe (bf16); A10 (sm_86)+
+%   Intel TDX guest; real Qwen2.5-0.5B; synthetic random-weight Qwen-shaped tensors.
+% - Seeds: seed_manifest.json (declared {1234,2025,7}); FLAG where the 3-seed
+%   matrix is deferred/single-run (A10 aggregate, H800 latency JSON).
+% - Artifact manifest: paper_results/csv/artifact_inventory.csv; results/INDEX.md.
+% - Evidence lineage L1-L5 table (Sec~\ref{sec:eval}) with measured-vs-projected.
+% - Attestation records: results/real_qwen_tdx_audit/**/gate*_*.json (v5 quotes).
+\TODO{Assemble manifest table; note allow\_any\_mr\_td and empty failed\_run\_registry.jsonl.}

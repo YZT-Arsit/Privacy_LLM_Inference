@@ -1,0 +1,63 @@
+% references.bib --- bibliography for the AAAI paper.
+%
+% VERIFICATION POLICY (per aaai-paper-writing skill + task constraints):
+%   * No entry is added unless its bibliographic metadata has been verified
+%     from the original paper or an authoritative index.
+%   * Section skeletons use \citeneeded{...} (a loud red placeholder) rather
+%     than \cite{...}. An entry is only cited from prose AFTER it is verified
+%     and its status in audit/citation_inventory.md is marked "verified".
+%   * The entries below are canonical works reused from the prior draft
+%     bibliography (../paper_draft/latex/refs.bib). They are STAGED here and
+%     still tracked in citation_inventory.md; exact venue/pages for a few are
+%     flagged there as "confirm" before use.
+%   * The fabricated "amulet2024todo" placeholder from the prior draft is
+%     deliberately NOT carried over. Amulet is tracked in citation_inventory.md
+%     until its exact citation is confirmed.
+%
+% ============================================================================
+% Transformer / LLM foundations
+% ============================================================================
+@inproceedings{vaswani2017attention,
+  author    = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin},
+  title     = {Attention Is All You Need},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2017}
+}
+@article{su2021roformer,
+  author  = {Jianlin Su and Yu Lu and Shengfeng Pan and Bo Wen and Yunfeng Liu},
+  title   = {{RoFormer}: Enhanced Transformer with Rotary Position Embedding},
+  journal = {arXiv preprint arXiv:2104.09864},
+  year    = {2021}
+}
+@article{ainslie2023gqa,
+  author  = {Joshua Ainslie and James Lee-Thorp and Michiel de Jong and Yury Zemlyanskiy and Federico Lebr{\'o}n and Sumit Sanghai},
+  title   = {{GQA}: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints},
+  journal = {arXiv preprint arXiv:2305.13245},
+  year    = {2023}
+}
+@article{zhang2019rmsnorm,
+  author  = {Biao Zhang and Rico Sennrich},
+  title   = {Root Mean Square Layer Normalization},
+  journal = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year    = {2019}
+}
+
+% ============================================================================
+% LoRA / parameter-efficient adaptation
+% ============================================================================
+@inproceedings{hu2022lora,
+  author    = {Edward J. Hu and Yelong Shen and Phillip Wallis and Zeyuan Allen-Zhu and Yuanzhi Li and Shean Wang and Lu Wang and Weizhu Chen},
+  title     = {{LoRA}: Low-Rank Adaptation of Large Language Models},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2022}
+}
+
+% ============================================================================
+% TEE-assisted ML inference (baseline family; confirm venues in inventory)
+% ============================================================================
+@inproceedings{tramer2019slalom,
+  author    = {Florian Tram{\`e}r and Dan Boneh},
+  title     = {{Slalom}: Fast, Verifiable and Private Execution of Neural Networks in Trusted Hardware},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}

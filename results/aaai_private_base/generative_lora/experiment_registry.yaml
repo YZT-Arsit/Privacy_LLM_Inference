@@ -1,0 +1,43 @@
+# Phase 0 — experiment registry for the Real Generative LoRA stage.
+# Status vocabulary: planned | in_progress | done_real | done_diagnostic | blocked | n/a
+# NOTHING is marked done_real until it has script + raw output + manifest + source hash + hw profile.
+
+stage: real_generative_lora
+frozen_do_not_touch:
+  - results/aaai_private_base/private_package/gpu_package   # transformed base package (root bfd578b8)
+  - results/aaai_private_base/security                      # S1-S6 frozen
+  - results/aaai_private_base/native_profile_stage          # Profile E/N gates
+  - results/aaai_private_base/full_lora_matrix              # L12 O1-C gates
+
+dataset:
+  chosen: e2e_nlg
+  reason: >
+    Phase-1 first priority. Official split (train 42061 / val 4672 / test 4693) loads via the
+    HF auto-converted parquet (revision refs/convert/parquet); structured meaning_representation ->
+    human_reference; BLEU/ROUGE-L/chrF computable locally; lower task-floor risk on 0.5B than GSM8K.
+  fallback: knkarthick/samsum (loads: 14731/818/819) if E2E turns out task-floor on 0.5B.
+  status: selected
+
+cells:
+  G0_base:            {desc: "Qwen2.5-0.5B no LoRA, greedy gen", hardware: "real GPU A10 (plaintext ckpt)", status: planned}
+  G1_plaintext_lora:  {desc: "plaintext-coord LoRA, standard AdamW", hardware: "real GPU A10 (plaintext ckpt)", status: planned}
+  G2_exact_protected: {desc: "exact protected LoRA (Profile E) + protected gen", hardware: "real GPU A10 + real TDX", status: planned, paper_facing: true}
+  G3_native_transformed: {desc: "native transformed-coord LoRA (Profile N)", hardware: "real GPU A10 + real TDX", status: planned, note: "run only if Profile N wired into live runner; else N/A"}
+
+deliverables:
+  phase0_freeze:        done_real       # baseline_manifest.json + source_hashes_before.sha256 + this file + code_path_audit.md
+  phase2_data_pipeline: planned
+  phase3_model_cells:   planned
+  phase4_train_config:  planned
+  phase5_generation:    planned
+  phase6_metrics:       planned
+  phase7_handoff:       planned
+  phase8_target_ablation: planned
+  phase10_cost:         planned
+  phase11_security:     planned
+  phase12_tables:       planned
+
+to_build_before_protected_run:
+  - protected autoregressive greedy decode (A10 KV-cached forward + TDX unmask-argmax boundary)
+  - plaintext LoRA reference trainer+generator (A10 GPU, plain torch)
+  - sync current repo code (runner 63a7572 + tdx service + secure_tensor_frame) to A10/TDX

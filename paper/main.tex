@@ -1,0 +1,84 @@
+% main.tex --- AAAI 2027 submission top-level file for the paper
+% "Leakage-Aware Obfuscated Execution for Public-Weight LLM Inference and
+%  LoRA Adaptation" (working title).
+%
+% Built on the OFFICIAL AAAI 2027 author kit (aaai2027.sty / aaai2027.bst),
+% copied UNMODIFIED into this directory. Do NOT edit the style files.
+% Compile order: pdflatex main && bibtex main && pdflatex main && pdflatex main
+%
+% STATUS: verified structural skeleton + argument plan. Section bodies are
+% argument scaffolds with explicit TODO/CITATION-NEEDED markers, not final
+% prose. Per the aaai-paper-writing skill, the abstract and conclusion are
+% written LAST; they currently hold only a plan.
+
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage[submission]{aaai2027}  % DO NOT CHANGE THIS
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
+\setlength{\pdfpagewidth}{8.5in} % DO NOT CHANGE THIS
+\setlength{\pdfpageheight}{11in} % DO NOT CHANGE THIS
+
+% Recommended by the AAAI kit for algorithms and tables.
+% NOTE: algorithm/algorithmic are commented out until an algorithm environment is
+% actually added (and are absent from the minimal local TeX tree). Restore both
+% when Method/appendix algorithms are written -- they ARE AAAI-recommended.
+% \usepackage{algorithm}
+% \usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+% xcolor is used only by the drafting-aid macros (\TODO, \citeneeded, ...).
+% It is NOT on the AAAI forbidden-package list. Remove the drafting macros and
+% this package for camera-ready if desired.
+\usepackage{xcolor}
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{2} % number sections/subsections while drafting.
+
+\input{macros}
+
+\title{Leakage-Aware Obfuscated Execution for Public-Weight LLM Inference and LoRA Adaptation}
+\author{Anonymous Submission}
+\affiliations{Paper \# / AAAI 2027 Submission}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/01_abstract}
+\end{abstract}
+
+\input{sections/02_introduction}
+\input{sections/03_related_work}
+\input{sections/04_problem_threat_model}
+\input{sections/05_method}
+\input{sections/06_correctness}
+\input{sections/07_security_analysis}
+\input{sections/08_evaluation}
+\input{sections/09_limitations}
+\input{sections/10_conclusion}
+
+% ---------------------------------------------------------------------------
+% Bibliography. Skeleton sections use \citeneeded{...} rather than \cite{...}
+% until each entry is verified (audit/citation_inventory.md) and promoted into
+% references.bib. \nocite{*} is intentionally NOT used.
+% ---------------------------------------------------------------------------
+\bibliographystyle{aaai2027}
+\bibliography{references}
+
+\appendix
+\input{appendices/proofs}
+\input{appendices/implementation_correspondence}
+\input{appendices/attack_details}
+\input{appendices/reproducibility}
+
+\end{document}

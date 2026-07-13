@@ -1,0 +1,63 @@
+% ===========================================================================
+% LEAKAGE AND SECURITY ANALYSIS --- argument skeleton (skill S8 leakage half +
+% S7 attack protocol). FOUR separated parts: observable invariants, formal
+% leakage statements, empirical attacks, non-claims. NEVER infer security from
+% correctness. NEVER infer value hiding from coordinate hiding. A setup-blocked
+% attack is NOT a defeated attack. Every artifact carries formal_security_claim=false.
+% ===========================================================================
+\section{Leakage and Security Analysis}
+\label{sec:security}
+
+% >>> CENTRAL FINDING THAT DRIVES THIS SECTION (must be stated honestly) <<<
+% Under the PUBLIC-base threat model, structured OR dense masks provide NO
+% token-level input privacy: 4 independent attacks recover ~98.5% of tokens on
+% real Qwen2.5-7B, and an impossibility argument shows structure-preserving
+% zero-crossing obfuscation cannot hide token identity. Privacy is carried by
+% the LAYER-0 TEE RELOCATION (k=1), plus aggregation/non-exposure for gradients.
+% Under the PRIVATE-base model, masks "resist" ONLY because the attacker lacks
+% the checkpoint -- resting on TEE/aggregation, not the algebra.
+% => the base-weight framing (Sec~\ref{sec:threat}, Conflict CF-1) decides this
+% entire section. \evid{C-SEC-PUBLIC-BREAK, C-SEC-PRIVATE-PROXY}
+
+% CENTRAL QUESTION: Which input/activation/cache/adapter signals remain
+% recoverable, under which stated attacker, and what is provably NOT hidden?
+
+% ---- 7.1 Functional-correctness recap (pointer only) ----------------------
+
+% ---- 7.2 Observable invariants (leaked BY CONSTRUCTION) -------------------
+% \evid{C-SEC-LEAK-*} Per-token norm (gap 0..1e-12); pairwise/cross Gram (~1e-9..
+% 1e-15, corr 1.0); coordinate value-multiset (sorted MSE 0.0); singular spectrum
+% / rank; attention logits Q K^T (exact); confidence/entropy multiset (perm-only);
+% shapes; seq length; decode-step + boundary-call timing. Right-mask cancels but
+% SHARED input mask N_in is attackable via left self-Gram W~W~^T.
+
+% ---- 7.3 Formal leakage statements (what is provable) ---------------------
+% Permutation-invariant statistics theorem (row norms/sorted/quantiles invariant
+% under column permutation) -- algebraically_proven + experimentally_validated.
+% Impossibility (norm leakage) -- analytically_estimated, scoped. \evid{C-SEC-PIINV, C-SEC-IMPOSS}
+
+% ---- 7.4 Empirical attacks (state full config per attack; skill S7) --------
+% For EACH: attacker knowledge, input, target secret, objective, #samples, init,
+% stopping, metric, threshold, seed policy, box-level. Report:
+%  (a) PUBLIC-base real Qwen-7B (experimentally_validated, real GPU):
+%      Gram-inversion perm-recovery 1.0 -> token top-1 98.5%; pad-peel H_cos 1.0;
+%      attention-logit fingerprint top-1 98.5% (GPT-2 100%, Llama-1B 99.8%);
+%      CONJFORMER-suite A1b 98.59%, A2 norm 98.45%. Layer-0 TEE relocation (k=1)
+%      => user-content recovery 0.08% ~ random.  \evid{C-SEC-7B-*}
+%  (b) PRIVATE-base S1-S6 real Qwen-0.5B secret-oracle (proxy_evaluated/CPU):
+%      S1 strict cos 0.0018 (but known-pairs 0.929, synthetic exact 5.7e-7);
+%      S2 masked-product SVD 1.6e-15 / plaintext-dW rel 1.41 (uninformative);
+%      S4 DLG basis-invariant (mask transparent; defense=aggregation); S5 MIA
+%      AUC 0.61; S6 KV top-1 0.54 plaintext / 0.536 masked-adapted.  \evid{C-SEC-S1..S6}
+%  (c) Unified matrix (toy/CPU synthetic): KPA 0.68->0.0 (fresh pad), nn-inversion
+%      1.0->0.0, multiset-leak 1.0/1.0/0/0, frequency 1.0 across ALL incl ours.
+% \risk{Do NOT report setup-blocked (bre_backward, arrowmatch, nonlinear-backward
+%   not_implemented, synthetic-fallback) as defeated attacks.}
+% \risk{Do NOT report a strawman/null attack (zeros(dW), assume-no-mask) as security.}
+% \risk{SEC-01: "bounded" reads as a proved bound; say "measured accuracy near random".}
+% \risk{SEC-02: report absolute AUC baselines (0.963 -> 0.500).}
+
+% ---- 7.5 Non-claims / formal boundary -------------------------------------
+% \evid{C-NONCLAIM-*} No cryptographic/semantic/DP/indistinguishability claim;
+% no HW side-channel; compromised-TEE out of scope; output tokens+length visible.
+\TODO{Author after threat-model framing resolved; this section's verdicts flip on it.}

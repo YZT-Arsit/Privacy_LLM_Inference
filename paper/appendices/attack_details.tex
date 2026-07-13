@@ -1,0 +1,30 @@
+% ===========================================================================
+% APPENDIX C: ATTACK DETAILS --- skeleton (skill S7 hyperparameters). One block
+% per evaluated attack with the full configuration table. Clearly separate:
+% executed attacks, setup-blocked attacks (NOT defeated), and strawman/null
+% attacks (NOT security evidence).
+% ===========================================================================
+\section{Attack Details}
+\label{app:attacks}
+
+% For each attack: attacker knowledge; input; target secret; objective; #samples;
+% init; stopping; metric; success threshold; seed policy; box-level; environment.
+%
+% Executed (report configs):
+%  - Gram-inversion (real Qwen-7B, H800): 140 projections, 1-NN diagonal match.
+%  - Pad-peel (real 7B): cross-module joint, H_cos.
+%  - Attention-logit fingerprint (real 7B/GPT-2/Llama-1B): 784-dim, 20k candidates.
+%  - CONJFORMER suite A1a/A1b/A2/A3 (real 7B).
+%  - S1-S6 (real Qwen-0.5B secret oracle, CPU): ridge/MLP/SVD/DLG-LBFGS/Shokri-MIA/KV.
+%  - Unified matrix (toy/CPU): KPA lstsq, nn-inversion, multiset, frequency, EIA, BRE-fwd.
+%  - Layer-0 TEE relocation ablation (k=1 necessary & sufficient).
+%
+% Setup-blocked (MUST NOT be reported as defeated):
+%  - bre_bisr_backward (needs split-FT gradients); arrowmatch (worst-case only);
+%    nonlinear masked backward (not_implemented); real-activation synthetic fallback.
+%
+% Strawman/null (MUST NOT be reported as security):
+%  - private-weights adapter extraction sets dW_est=zeros then reports success=False;
+%    naive "assume-no-mask" extraction; A3 naive Gram-diagonal (stronger graph
+%    matching untried).
+\TODO{Populate from results/attacks/, outputs/attacks/, results/aaai\_private\_base/security/; cite attack\_result\_schema.md.}

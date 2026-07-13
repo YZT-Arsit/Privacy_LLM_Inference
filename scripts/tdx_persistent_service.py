@@ -220,7 +220,7 @@ def main():
     counters["attestation_gates_execution"] = True
     counters["attestation_gate_refusals"] = 0
     _PROTECTED_OPS = {"ce_dlogits", "correct", "init_adamw", "adamw_step", "rebase_adamw",
-                      "checkpoint_adamw", "restore_adamw", "ce_batch", "eval_batch"}
+                      "checkpoint_adamw", "restore_adamw", "ce_batch", "eval_batch", "decode_argmax"}
 
     while True:
         try:
@@ -287,6 +287,32 @@ def main():
                                "hmac": mac(key, out, resp_seq, run_id, "ce_dlogits_ack"),
                                "ce_loss": float(loss), "compute_sec": time.time() - t0,
                                "bytes_in": len(payload), "bytes_out": len(out)}, out)
+
+        elif op == "decode_argmax":
+            # PROTECTED GENERATION boundary. The A10 sends masked-domain argmax indices; the enclave
+            # maps each through the SECRET inverse vocab permutation (seed vocab_seed, never on the GPU)
+            # to a true token id. The vocab mask is a pure permutation, so argmax_j(masked)=j maps to
+            # true_token = perm_inv[j] == argmax over the plaintext-domain logits. No plaintext logits,
+            # labels, scalar loss, or the permutation itself ever cross to the GPU. The returned tokens
+            # ARE the public generated output. Payload is JSON (NOT torch.load) -> no pickle surface.
+            try:
+                req = json.loads(payload.decode()); idx = req["idx"]; Vq = int(req.get("V", 0))
+            except Exception:
+                write_frame(fout, {"op": "reject", "reason": "decode_malformed", "seq": seq}); continue
+            if not isinstance(idx, list) or len(idx) == 0 or len(idx) > 4096:
+                write_frame(fout, {"op": "reject", "reason": "decode_bad_idx", "seq": seq}); continue
+            if perm is None:
+                if Vq <= 0:
+                    write_frame(fout, {"op": "reject", "reason": "decode_no_vocab_size", "seq": seq}); continue
+                perm, perm_inv = vocab_perm(Vq, cfg.get("vocab_seed", 8000))
+            Vn = int(perm_inv.shape[0])
+            if any((not isinstance(j, int)) or j < 0 or j >= Vn for j in idx):
+                write_frame(fout, {"op": "reject", "reason": "decode_idx_range", "seq": seq}); continue
+            tokens = [int(perm_inv[j]) for j in idx]
+            counters["decode_calls"] = counters.get("decode_calls", 0) + len(idx); last_seq = seq
+            out = json.dumps({"tokens": tokens}).encode(); resp_seq = seq + 1
+            write_frame(fout, {"op": "decode_ack", "seq": resp_seq,
+                               "hmac": mac(key, out, resp_seq, run_id, "decode_ack"), "n": len(tokens)}, out)
 
         elif op == "correct":
             t0 = time.time()

@@ -1,0 +1,61 @@
+% ===========================================================================
+% EVALUATION --- argument skeleton (skill S10). Organize by RESEARCH QUESTION,
+% not by script. Each RQ: hypothesis, systems/baselines, model/dataset, HW/SW
+% env, config, repetitions/seeds, metric, aggregation, result, interpretation,
+% threats to validity. Separate measured wall-time from op-count projections.
+% Name the exact numerator+denominator+HW+workload+boundary for every ratio.
+% ===========================================================================
+\section{Evaluation}
+\label{sec:eval}
+
+% ---- Evidence-lineage guard (do NOT merge; skill prohibited-behavior) -------
+% L1 CPU-emulation micro-bench (fp64, tiny) | L2 op-count PROJECTION (tiny-gpt2)
+% | L3 H800 latency on RANDOM-weight Qwen-shaped tensors ("CPU-TEE"=host CPU,
+% NOT a TEE) | L4 real A10+TDX LoRA training (measured per-step + PROJECTED
+% totals) | L5 real H800+Qwen-0.5B+real TDX attestation (Gate2 synthetic; Gate3
+% TDX-side stubbed in the GPU audit). \evid{C-EFF-LINEAGE}
+
+% ---- RQ1: Does transformed inference preserve computation & generation? -----
+% -> C-COR-01..08, C-COR-GEN. GREEDY only; synthetic + tiny-HF + real Qwen-0.5B
+% CPU. \risk{EVA-01: append "synthetic/tiny-HF/CPU" scope to each result line.}
+
+% ---- RQ2: Which input/activation/cache signals stay recoverable? ------------
+% -> C-SEC-7B-*, C-SEC-S1..S6, C-SEC-LEAK-*. Report public-base 98.5% break and
+% private-base proxy verdicts SEPARATELY with attacker knowledge stated.
+
+% ---- RQ3: Which invariants remain visible despite masking/padding? ---------
+% -> C-SEC-PIINV, C-SEC-IMPOSS, C-LORA-RANK. norms/Gram/multiset/spectrum/logits/
+% r_pad. Boundary-call reduction (op-count): 36->16->4 per the accounting proxy.
+
+% ---- RQ4: Does LoRA transform preserve forward/backward/optimizer updates? --
+% -> C-LORA-FWD, C-LORA-BWD, C-OPT-SGD, C-OPT-ADAMW. State fp64-synthetic vs real
+% bf16 (ΔW rel 3.6%, top1 1.0). SGD/momentum exact (orthogonal); GPU-masked AdamW
+% UNSUPPORTED; trusted O1-C AdamW exact (fp32; bf16 top1 0.905). Gamma-fold makes
+% q/k/v/gate/up non-orthogonal => O1-C hybrid. \risk{state single-step vs multi-step.}
+
+% ---- RQ5: End-to-end and component-level performance costs? ----------------
+% -> C-EFF-*. SEPARATE latency/prefill/decode/throughput/trusted-time/comm/memory.
+% CPU-emulation ms (measured_local_emulation, is_real_tee_wall_time=false);
+% op-count PROJECTION column (NOT latency); H800 slowdown table 1.00x GPU-TEE /
+% 2.4-3.0x host-CPU-proxy vs plaintext SAME random-weight model; A10+TDX per-step
+% measured + projected 10.33h total. \risk{RUN-02: prefix every ms "local-emulation".}
+% \risk{"~9x per token" UNDERSPECIFIED -- artifacts give 39.6 ms local +71 ms tunnel,
+%   3.66 tok/s prototype; do not cite "9x" without num/denom/HW/workload/boundary.}
+% \risk{Do NOT present op-count projection as measured wall time; CPU-TEE != TEE.}
+
+% ---- RQ6: Fair comparison with plaintext and adapted baselines? ------------
+% -> C-BASE-*. LABEL each: direct reproduction (CONJFORMER, real 7B), adapted
+% reproduction (STIP fp64 numeric; ObfuscaTune simulator), primitive-level
+% (Slalom/DarKnight/Amulet CPU toy), cost-model-only (Gazelle/Delphi/SecureML/
+% MiniONN, no runtime). \risk{BAS-01: ours=full-system vs theirs=primitive is the
+%   top reject risk -- frame as primitive comparison + different threat model.}
+% \risk{Arrow is an ATTACK paper (USENIX Sec 2025), NOT an unavailable defense.}
+
+% ---- RQ7 (retain only if evidenced): security-efficiency trade-offs of ------
+% alternative nonlinear handling (current trusted vs Amulet accelerator island
+% vs lookup cost proxy). -> C-EFF-NONLIN. \TODO{confirm evidence sufficiency.}
+
+% ---- Tables/figures: reuse paper_results/latex/*.tex + figures/ ------------
+% \TODO{Port + relabel measured_runtime, workload_summary, direct_prior_work,
+%   security_proxy tables with explicit lineage + scope captions.}
+\TODO{Author after lineage-labeled tables regenerated; keep RQ verdicts tied to ledger IDs.}

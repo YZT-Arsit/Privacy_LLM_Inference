@@ -1,0 +1,74 @@
+% ===========================================================================
+% INTRODUCTION --- argument skeleton (write body after Method + Evaluation).
+% Follows the introduction protocol (skill S13): problem -> why public weights
+% do not remove private assets -> gap -> tension -> method -> contributions ->
+% evidence summary -> limitation boundary. Contribution bullets must be atomic
+% and each independently defensible; do NOT fuse a proven construction with an
+% unproven security implication.
+% ===========================================================================
+\section{Introduction}
+\label{sec:intro}
+
+% ---- CENTRAL QUESTION -------------------------------------------------------
+% Can a deployment serve a PUBLIC-weight LLM (and adapt it via LoRA) on an
+% UNTRUSTED accelerator so that private inputs, intermediate states, KV-cache,
+% and LoRA adapters/gradients are not exposed in cleartext to the accelerator,
+% while preserving the model's computation at acceptable cost -- and exactly
+% which of those protections can we actually substantiate?
+
+% ---- ARGUMENT PLAN (fill prose last) ---------------------------------------
+% (1) Deployment problem: public base weights (Llama/Qwen) are downloadable, but
+%     the *runtime* assets are private: user prompts, activations, KV-cache,
+%     and privately fine-tuned LoRA adapters + their training data/gradients.
+% (2) Public weights do NOT eliminate private runtime assets: activation-
+%     inversion / embedding-inversion / alignment attacks recover inputs from
+%     exposed activations; gradients leak training data. \citeneeded{activation inversion (EIA)}\citeneeded{deep leakage from gradients}
+% (3) Gap: cryptographic private inference (FHE/MPC) is exact but expensive on
+%     nonlinearities; TEE-only execution wastes the accelerator; prior
+%     obfuscation (STIP/ObfuscaTune/Amulet-style) targets different asset sets,
+%     TCBs, nonlinear handling, and mostly non-autoregressive or non-training
+%     settings. \citeneeded{STIP}\citeneeded{ObfuscaTune}\citeneeded{Amulet}\citeneeded{Slalom}
+% (4) Central tension: masking that is cheap and linear-algebra-friendly leaves
+%     algebraic INVARIANTS visible (norms, Gram, permutation-invariant stats);
+%     hiding those requires either trusted nonlinear work or heavier crypto.
+% (5) High-level method: right-action masks + boundary additive pads let the
+%     untrusted accelerator do the heavy linear algebra on transformed tensors;
+%     a small trusted component holds secrets, does selected nonlinear/boundary
+%     ops, recovery, sampling, and auditing (Section~\ref{sec:method}).
+%
+% ---- CONTRIBUTIONS (atomic; each maps to ledger IDs -- keep in sync) --------
+% C1. A masked-execution construction for public-weight decoder LLMs whose
+%     linear, attention (incl. RoPE/GQA/MQA), and KV-cache steps are
+%     ALGEBRAICALLY correctness-preserving under stated invertibility/tying
+%     conditions.                          -> ledger C-COR-01..06
+% C2. A LoRA forward/backward masking scheme that preserves the adapter update
+%     for SGD-type optimizers, with an explicit optimizer-compatibility
+%     boundary.                            -> ledger C-LORA-*, C-OPT-*
+% C3. A leakage characterization that states precisely which invariants remain
+%     visible (permutation-invariant statistics, norms, padded rank, shapes),
+%     plus an EMPIRICAL attack evaluation under a stated attacker model -- NOT a
+%     cryptographic security proof.        -> ledger C-SEC-*
+% C4. A cost characterization separating measured wall-clock (CPU emulation) and
+%     trusted-boundary-call accounting / operation-count projections; and a
+%     real-model functional validation (Qwen2.5-0.5B, CPU, float32, greedy).
+%                                          -> ledger C-EFF-*, C-REAL-*
+%
+% Each bullet above is deliberately split so that "correctness" claims never
+% silently import a "security" claim (skill S13).
+%
+% ---- EVIDENCE SUMMARY (1 paragraph, calibrated) -----------------------------
+% \TODO{Summarize: algebraic proofs; float64 verification magnitudes; real-model
+%   greedy token-match=1.0 on Qwen-0.5B CPU; attack proxy outcomes; costs are
+%   CPU-emulation / projections, NOT GPU/TEE wall-clock.}
+%
+% ---- LIMITATION BOUNDARY (state up front) -----------------------------------
+% \TODO{State plainly: no cryptographic/semantic-indistinguishability claim; no
+%   real TEE/GPU deployment measured; correctness validated for GREEDY decoding
+%   only; RMSNorm currently uses trusted recompute in the wired path; padded
+%   rank is visible; norms/permutation-invariants leak.}
+%
+% ---- REVIEWER RISKS ---------------------------------------------------------
+% \risk{Overclaiming security from algebraic correctness.}
+% \risk{Novelty vs STIP/ObfuscaTune/Amulet must be crisp on asset set + TCB.}
+% \risk{"Public-weight" framing must not imply nothing is secret.}
+\TODO{Write Introduction prose after Method and Evaluation stabilize; import calibrated numbers from claim\_ledger.md only.}

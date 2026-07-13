@@ -1,0 +1,63 @@
+{
+  "artifacts": {
+    "e2e_schedule_s1234": {
+      "batches": 750,
+      "hash": "818e2c072a939b9d93e9949f018c39d51a8f67cc6472e8f889a5a842eb0f9a94",
+      "opt_steps": 750
+    },
+    "e2e_schedule_s2025": {
+      "batches": 750,
+      "hash": "7f4c2a930be8d17cec1520584f957308602cef92dd2d65d38f864c77517c4082",
+      "opt_steps": 750
+    },
+    "e2e_schedule_s7": {
+      "batches": 750,
+      "hash": "85073b38ecdff6920c96a483e3c1f0aa24aa2f8108a06c1d91d50d688b15dab6",
+      "opt_steps": 750
+    },
+    "e2e_test_gen": {
+      "sha256": "dffadc4c6dc538663999572ea2a65b82b254b850289571c77aced7732cc627cb",
+      "unique_mr": 500
+    },
+    "e2e_train_a10": {
+      "rows": 4000,
+      "sha256": "7e46d5bca17ca3d31e843f2c4709854fac311b73a02fb09c7e1e619f7ee38d07"
+    },
+    "e2e_train_labels": {
+      "rows": 4000,
+      "sha256": "a7883325ec7804712cc4d53f77f37d406aa77644f2e644aca40e5a211b9d481d"
+    },
+    "e2e_val_a10": {
+      "rows": 4672,
+      "sha256": "531949d82819f59a1d109c4e8066e0a4ff7e4e43cc10ec7735ca45c1400cbf72"
+    },
+    "e2e_val_gen": {
+      "sha256": "d529e7be3e494876ab61d295913dfa30c46a426718f8d93e80cb34ff3d3645ab",
+      "unique_mr": 300
+    },
+    "e2e_val_labels": {
+      "rows": 4672,
+      "sha256": "ae34765d71b976e73a9ca4c63147921db9c53237bc6d6daffd2309b508ba188a"
+    }
+  },
+  "batch_size": 16,
+  "dataset_config": "default",
+  "dataset_name": "e2e_nlg",
+  "epochs": 3,
+  "max_input_length": 128,
+  "max_target_length": 96,
+  "n_test_gen": 500,
+  "n_train": 4000,
+  "n_val_gen": 300,
+  "official_split_sizes": {
+    "test": 4693,
+    "train": 42061,
+    "validation": 4672
+  },
+  "prompt_template": "User:\nGenerate a natural-language description for the following restaurant attributes:\n{mr}\n\nAssistant:\n",
+  "random_seed": 20260713,
+  "source": "huggingface: e2e_nlg @ refs/convert/parquet",
+  "target_template": "{human_reference} <eos>",
+  "tokenizer_name": "Qwen2.5-0.5B",
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+}

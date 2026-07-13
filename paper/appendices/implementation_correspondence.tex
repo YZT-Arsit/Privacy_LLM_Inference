@@ -1,0 +1,29 @@
+% ===========================================================================
+% APPENDIX B: IMPLEMENTATION CORRESPONDENCE --- skeleton (skill S9). Map every
+% algorithmic component to its concrete implementation and flag deviations
+% between the idealized paper algorithm and the wired execution order.
+% ===========================================================================
+\section{Implementation Correspondence}
+\label{app:impl}
+
+% Table: component -> file:symbol -> test -> deviation-from-idealized.
+%  mask/pad gen ......... src/pllo/ops/linear.py, deployment/linear_boundary_pad.py
+%  linear ............... src/pllo/ops/linear.py
+%  attention/RoPE/GQA ... src/pllo/ops/{attention,rope,gqa_attention}.py
+%  KV-cache ............. src/pllo/cache/kv_cache.py
+%  nonlinear ............ src/pllo/deployment/folded_nonlinear.py (current=TRUSTED,
+%                         trusted_shortcut=ACCELERATOR [misleading name],
+%                         compatible_right_multiply)
+%  trusted boundary ..... src/pllo/tee/{simulated_runtime,process_runtime}.py (EMULATION)
+%  logits recovery + gen  src/pllo/wrappers/*_generation_wrapper.py (GREEDY argmax)
+%  LoRA fwd/bwd ......... src/pllo/ops/{lora,lora_backward,lora_rank_padding}.py
+%  optimizer ............ experiments/unified_masked_training.py, private_base_optimizer.py
+%  attestation .......... experiments/real_tdx_attestation.py (v5 quote; mr_td not pinned)
+%
+% KEY DEVIATIONS TO DOCUMENT (do not hide):
+%  - RMSNorm: idealized GPU orthogonal island vs wired trusted recompute.
+%  - Nonlinear "current" mode runs trusted-side, not on the accelerator.
+%  - Optimizer: design prose says trusted-side AdamW; config fail-closes to
+%    gpu_masked_sgd; two distinct architectures (Scheme A vs Scheme B).
+%  - Real Qwen-0.5B run keeps base weights plaintext on GPU (private-base NOT claimed).
+\TODO{Build the correspondence table; label each row implemented/prototyped/proposed.}

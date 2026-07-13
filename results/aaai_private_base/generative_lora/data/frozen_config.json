@@ -1,0 +1,11 @@
+{
+  "phase": "4_frozen_config",
+  "selected_by": "validation_bleu (pilot_sweep.json)",
+  "targets": "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj",
+  "rank": 8, "alpha": 16, "dtype_plaintext": "fp32", "dtype_protected_forward": "fp32",
+  "lr": 2e-4, "steps": 750, "epochs_equiv": 3, "batch_size": 16, "warmup": 0.03,
+  "weight_decay": 0.0, "grad_clip": 1.0, "schedule": "e2e_schedule_s{seed}.json",
+  "seeds_final": [1234, 2025, 7],
+  "val_bleu_at_selection": 69.51,
+  "note": "Frozen for G1/G2/G3. Protected G2 uses the SAME config; G2 seeds may be reduced for cost (documented). Do not tune protected separately."
+}

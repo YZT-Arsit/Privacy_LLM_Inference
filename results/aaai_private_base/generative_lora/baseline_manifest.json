@@ -1,0 +1,78 @@
+{
+  "code_sync_state": {
+    "a10_runner_sha256_16_ONHOST": "11f168fd9c9a6851",
+    "local_runner_sha256_16": "63a7572735b285ee",
+    "status": "A10 has STALE a10_batch_runner (pre Phase-1 attestation-gate/secure-frame). MUST sync current repo code to A10+TDX before any protected paper-facing run.",
+    "tokenizer_json_sha256_16": "c0382117ea329cdf"
+  },
+  "control_plane_runtime": {
+    "note": "The Mac orchestrates over SSH and computes text-metrics offline; it performs NO model forward/backward and holds NO mask secrets. Not a paper-facing compute path.",
+    "python": "3.13.12",
+    "role": "control_plane_only"
+  },
+  "created_unix": 1783924329.274525,
+  "current_adapter_format": "scripts/native_profile/adapter_handoff.py :: transformed_adapter_manifest v1.0 (safetensors A.l.proj/B.l.proj + manifest + per-tensor sha256 + provenance)",
+  "current_lora_target_set": "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj (trusted A-split {q,k,v,gate,up}, trusted B-split {q,k})",
+  "current_optimizer_profiles": {
+    "E": "EXACT_REFERENCE_L12 (FP32 master + trusted m/v in TDX; plaintext-equivalent)",
+    "N": "NATIVE_TRANSFORMED_ADAMW (transformed-coordinate m/v on GPU; NOT stepwise-plaintext-equivalent)",
+    "note": "see results/aaai_private_base/native_profile_stage/profiles_registry.yaml"
+  },
+  "git": {
+    "branch": "fix/folded-remote-repeat-debug-and-guards",
+    "dirty_files": [
+      "?? results/aaai_private_base/generative_lora/",
+      "?? scripts/generative_lora/"
+    ],
+    "head": "86da258c7e9973af8d449080bdaaf8242c498540"
+  },
+  "hardware": {
+    "a10": {
+      "category": "real GPU",
+      "cuda": "12.8",
+      "gpu": "NVIDIA A10 23028 MiB",
+      "host": "iZ2zeajy3dc0ssoyi2cf3vZ",
+      "private_ip": "172.30.25.154",
+      "public_ip": "39.107.123.173",
+      "python": "3.10.12",
+      "torch": "2.8.0+cu128"
+    },
+    "category_note": "Protected paper-facing cell (G2) = real GPU + real TDX. Text metrics = offline on Mac.",
+    "data_plane": "A10<->TDX over PRIVATE VPC 172.30.25.153 (RTT ~0.5ms); Mac is control-plane only",
+    "tdx": {
+      "category": "real Intel TDX",
+      "env": "/root/miniconda3/envs/tdx310",
+      "host": "iZ2zebdihkqll10ragqp0cZ",
+      "private_ip": "172.30.25.153",
+      "public_ip": "39.96.43.122",
+      "python": "3.10.20",
+      "tdx_guest_dev": "/dev/tdx_guest present",
+      "torch": "2.8.0+cpu"
+    }
+  },
+  "model": {
+    "checkpoint_dir_a10": "/root/qwen25_05b",
+    "model_safetensors_sha256_16": "88c142557820ccad",
+    "name": "Qwen2.5-0.5B",
+    "tokenizer_json_sha256_16": "c0382117ea329cdf"
+  },
+  "phase": "0_audit_and_freeze",
+  "source_hashes_before": {
+    "scripts/a10_batch_runner.py": "63a7572735b285eefdf28e13fd6026de44e2e4a88cddfcddaf7faf0eef089fa3",
+    "scripts/batch_dataplane.py": "48ab05a023a97933811833ada38e4581f33803d26842ca9da5f11459da771b68",
+    "scripts/gate0_a10_batch_orchestrator.py": "74ea78db1b090c5617ea55599018f182b5c3e94e71bfc30358545ac566b3a2be",
+    "scripts/gate0_a10_l12_orchestrator.py": "e907a9dec56705983a9b154a8e558b0a39e106c58cac7eb97adf3f3dc475da20",
+    "scripts/native_profile/adapter_handoff.py": "836d50f086f8503452a6fd5fea9e6830e432b09957a773939bb5e4b39ec8e928",
+    "scripts/native_profile/profile_n_gate.py": "b9b714a65847082080a1202777791d6eb02ef2c912f194a0be6290a119124b87",
+    "scripts/secure_tensor_frame.py": "f482863642e56fa84e1b02f422aca50b0691b66c25fc834dcd4a078f994869ef",
+    "scripts/tdx_persistent_service.py": "93f3feb744bf779684265a88d57aa817895f955a4709c1c93acdbd91d8b7ce0d"
+  },
+  "stage": "real_generative_lora",
+  "transformed_base_package": {
+    "artifact_count_manifest": 242,
+    "category": "frozen transformed base package (unchanged this stage)",
+    "dir": "results/aaai_private_base/private_package/gpu_package",
+    "files_on_disk": 246,
+    "frozen_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1"
+  }
+}

@@ -1,0 +1,58 @@
+% ===========================================================================
+% BACKGROUND AND RELATED WORK --- argument skeleton (skill S14).
+% Organize by TECHNICAL DISTINCTION, not one-paragraph-per-paper. For each
+% category state: protected assets, public/private weight assumption, TCB,
+% nonlinear handling, autoregressive support, training support, formal security
+% level, difference from this work. Do NOT use related work to make unsupported
+% novelty claims. ALL citations are \citeneeded until verified (see
+% audit/citation_inventory.md). Prior draft flagged its bib as placeholders.
+% ===========================================================================
+\section{Background and Related Work}
+\label{sec:related}
+
+% ---- CENTRAL QUESTION ------------------------------------------------------
+% Where does obfuscated-execution-for-public/private-weight generative LLMs sit
+% relative to TEE-offload, matrix obfuscation, crypto inference, and attacks?
+
+% ---- 3.0 Background (brief) ------------------------------------------------
+% Decoder-only Transformer, RoPE, GQA/MQA, RMSNorm/LayerNorm, SwiGLU, KV-cache,
+% LoRA. \citeneeded{Transformer}\citeneeded{RoPE}\citeneeded{GQA}\citeneeded{RMSNorm}\citeneeded{LoRA}
+
+% ---- 3.1 TEE-assisted NN inference / hybrid TEE+accelerator ----------------
+% Slalom (linear offload w/ verification), Graviton, TensorSCONE, Chiron.
+% Difference: those target CNNs / non-autoregressive; we target decoder LLM
+% generation + LoRA training with a masked accelerator path.
+% \citeneeded{Slalom}\citeneeded{Graviton}\citeneeded{TEE inference}
+% \TODO{Verify each venue/year from original papers (citation_inventory CI-*).}
+
+% ---- 3.2 Algebraic / secret linear-transform obfuscation -------------------
+% STIP, ObfuscaTune, Amulet-style right-mask nonlinear islands, permutation/
+% Arrow matrix obfuscation. TABLE: protected assets / public-vs-private weights
+% / TCB / nonlinear handling / autoregressive / training / formal level.
+% \citeneeded{STIP}\citeneeded{ObfuscaTune}\citeneeded{Amulet}\citeneeded{Arrow permutation}
+% Difference: \TODO{state crisply what is new vs Amulet -- NOV-01 reviewer risk;
+%   KV-append breaks left masks, dense masks don't commute with nonlinears,
+%   LoRA rank/gradient leakage. Must not read as "Amulet + LoRA".}
+
+% ---- 3.3 Cryptographic private inference (FHE / MPC / hybrid) ---------------
+% CryptoNets, GAZELLE, Delphi, SecureML, MiniONN, BumbleBee, CONJFORMER.
+% Position as COMPLEMENTARY (exact, stronger guarantees, higher nonlinear cost),
+% NOT replaced by our work. \citeneeded{BumbleBee}\citeneeded{CONJFORMER}\citeneeded{Delphi}
+
+% ---- 3.4 KV-cache privacy --------------------------------------------------
+% \citeneeded{KV-cache privacy} \TODO{find concrete references.}
+
+% ---- 3.5 Private / protected parameter-efficient fine-tuning ---------------
+% Protected LoRA training, split-learning gradient protection, DP-SGD.
+% \citeneeded{private LoRA training}\citeneeded{DP-SGD}
+
+% ---- 3.6 Attack & leakage analysis (motivation for our threat model) -------
+% Activation/embedding inversion (EIA), alignment/Procrustes, gradient leakage
+% (DLG/iDLG/GradInversion), membership inference, BRE, PIA. Present as the
+% attacker toolbox our leakage analysis is evaluated against.
+% \citeneeded{EIA}\citeneeded{DLG}\citeneeded{BRE}\citeneeded{PIA}\citeneeded{membership inference}
+
+% ---- REVIEWER RISKS --------------------------------------------------------
+% \risk{NOV-01/PWR-01: novelty vs Amulet + fair "different problem" framing.}
+% \risk{Entire prior-draft bibliography was placeholder -- verify every entry.}
+\TODO{Write related-work prose after citation\_inventory.md verification pass; use the comparison table as the backbone.}

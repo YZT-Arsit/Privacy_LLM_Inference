@@ -1,0 +1,39 @@
+{
+  "dataset": "e2e_nlg",
+  "eos": 151643,
+  "ignore_index": -100,
+  "max_input_len": 128,
+  "max_target_len": 96,
+  "official_split_sizes": {
+    "test": 4693,
+    "train": 42061,
+    "validation": 4672
+  },
+  "prompt_template": "User:\nGenerate a natural-language description for the following restaurant attributes:\n{mr}\n\nAssistant:\n",
+  "revision": "refs/convert/parquet",
+  "splits": {
+    "test": {
+      "cap_applied": true,
+      "gen_unique_mr": 500,
+      "mean_refs_per_mr": 7.45,
+      "total_unique_mr_available": 630
+    },
+    "train": {
+      "max_seq": 117,
+      "mean_seq": 71.1,
+      "mean_sup": 25.4,
+      "orig_indices_sha": "600e67b7419a207a820165d8b65a0c2894b75eab2d1701696fe20054810e83f7",
+      "rows": 4000,
+      "truncated": 0
+    },
+    "validation": {
+      "gen_unique_mr": 300,
+      "max_seq": 149,
+      "mean_seq": 76.7,
+      "rows_tf": 4672
+    }
+  },
+  "subset_seed": 20260713,
+  "target_template": "{human_reference} <eos>",
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+}

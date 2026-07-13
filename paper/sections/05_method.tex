@@ -1,0 +1,71 @@
+% ===========================================================================
+% METHOD --- argument skeleton (skill S9 implementation-correspondence). The
+% task requires NINE separated subsections. Present idealized constructions as
+% "idealized" and separately note implementation deviations. Use "we implement"
+% only for implemented+tested paths; "we propose"/"we prototype" otherwise.
+% Every algorithm must match the actual execution order in src/pllo/**.
+% ===========================================================================
+\section{Method}
+\label{sec:method}
+
+% CENTRAL QUESTION: How does the trusted component + untrusted accelerator jointly
+% execute (and adapt) a public/private-weight decoder LLM on transformed tensors
+% while preserving the computation?
+
+% ---- 5.1 System overview ---------------------------------------------------
+% Data plane: sample masks -> mask -> accelerator matmul -> trusted recover.
+% Impl: src/pllo/tee/{simulated_runtime,process_runtime}.py (EMULATION, CPU;
+% no real enclave), wrappers/*generation_wrapper.py. \evid{C-BND-01}
+% Fig: figures/ (system overview). \TODO{port fig_system_overview.tex}
+
+% ---- 5.2 Threat model & trusted boundary (pointer to Sec~\ref{sec:threat}) --
+% Boundary-call accounting is an OP-COUNT proxy, not latency (src/pllo/
+% experiments/trusted_boundary_accounting.py). \evid{C-EFF-BND}
+
+% ---- 5.3 Linear & residual transformations --------------------------------
+% Right-action masks N_in,N_out (invertible) + boundary additive pad T:
+%   Xt=(X-T)N_in ; Wt=N_in^{-1} W N_out ; Yt = Xt Wt + T W N_out + b N_out = Y N_out.
+% Impl: src/pllo/ops/linear.py, deployment/linear_boundary_pad.py. \evid{C-COR-01}
+% \risk{Objects differ: N invertible here vs orthogonal for norm/attention -- state per layer.}
+
+% ---- 5.4 Attention, RoPE, GQA/MQA, KV-cache --------------------------------
+% QK invariance requires N_Q N_K^T = I (per head, block-diagonal, no cross-head
+% mixing); V mask absorbed by o_proj. RoPE commutes ONLY with 2x2-block masks on
+% adjacent RoPE pairs; the WIRED path uses post-RoPE masking. GQA ties q-mask to
+% key-mask inverse-transpose per group. KV-cache mask MUST be FIXED within a
+% session. Impl: ops/{attention,rope,gqa_attention}.py, cache/kv_cache.py.
+% \evid{C-COR-02,03,04,05}
+% \risk{design.md "fresh masks per token" contradicts KV-mask-fixed restriction (CF-COR-KV).}
+
+% ---- 5.5 Nonlinear handling ------------------------------------------------
+% Islands: pointwise activation -> permutation P; SwiGLU -> PAIRED permutation;
+% RMSNorm -> orthogonal (gain must be folded; vector-gamma does NOT commute);
+% LayerNorm -> mean-preserving orthogonal. Modes in deployment/folded_nonlinear.py:
+%  current (nonlinear runs TRUSTED-SIDE), trusted_shortcut (name is misleading:
+%  runs ON accelerator, Amulet lift), compatible_right_multiply. \evid{C-COR-06,07,08}
+% \risk{Do NOT present `current` correctness as accelerator-side nonlinear execution.}
+% \risk{Wired generation path runs RMSNorm as trusted recompute (trusted_fallback_with_repad).}
+
+% ---- 5.6 Autoregressive generation ----------------------------------------
+% Trusted-side recovery of logits then GREEDY argmax (only greedy is implemented
+% + validated). Impl: wrappers/*_generation_wrapper.py (argmax). \evid{C-COR-GEN}
+% \risk{Sampling/top-k/top-p/beam asserted in design but NOT validated (unsupported).}
+
+% ---- 5.7 LoRA adaptation ---------------------------------------------------
+% Masked forward: At=N_in^{-1} A U, Bt=U^{-1} B N_out, Yt += (alpha/r) T A B N_out.
+% Rank-space mixer notation MUST be unified (U vs M vs R across ledgers -- see
+% notation.md). Rank padding A_pad B_pad = A B; TRUE rank hidden from shape,
+% PADDED rank r_pad visible. Impl: ops/lora.py, lora_rank_padding.py. \evid{C-LORA-FWD,C-LORA-RANK}
+
+% ---- 5.8 Optimizer treatment ----------------------------------------------
+% Masked backward Gt=G N_out^{-T}; recover dA,dB trusted-side; loss+optimizer
+% stay trusted. SGD/momentum: exact under masks. AdamW: dense-mask UNSUPPORTED
+% (raises DenseMaskedAdamWUnsupported) -- reconciled with Gate-0.5 "O1-C" trusted
+% correction which IS exact; O1-B exact but paper-unsafe (leaks RMSNorm-gain
+% spectrum). Impl: ops/lora_backward.py, experiments/unified_masked_training.py.
+% \evid{C-OPT-SGD,C-OPT-ADAMW} \risk{T15 vs Gate-0.5 O1-C reconciliation must be explicit.}
+
+% ---- 5.9 Runtime lifecycle -------------------------------------------------
+% Mask sampling -> per-call boundary crossings -> session KV binding -> audit.
+% \TODO{Describe execution_profile.py paper_safe gating.}
+\TODO{Author Method after threat-model framing resolved; separate idealized construction from wired implementation for RMSNorm and nonlinear modes.}
