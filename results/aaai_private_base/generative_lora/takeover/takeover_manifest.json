@@ -1,0 +1,60 @@
+{
+  "audit_time": "2026-07-13T17:01:32+08:00",
+  "stage": "real_generative_lora",
+  "branch": "fix/folded-remote-repeat-debug-and-guards",
+  "head": "55eb5c8d8d4719a46b393fa039dc1df635d24980",
+  "worktree_clean": true,
+  "active_experiment_jobs": 0,
+  "hosts": {
+    "a10": {
+      "public_ip": "39.107.123.173",
+      "hostname": "iZ2zeajy3dc0ssoyi2cf3vZ",
+      "gpu": "NVIDIA A10 23028 MiB",
+      "gpu_memory_used_mib": 0,
+      "gpu_util_percent": 0,
+      "deployment_root": "/root/pllo_pb",
+      "deployment_has_git_metadata": false
+    },
+    "tdx": {
+      "public_ip": "39.96.43.122",
+      "hostname": "iZ2zebdihkqll10ragqp0cZ",
+      "kernel": "5.10.134-19.3.al8.x86_64",
+      "tdx_guest_cpu_flag": true,
+      "tdx_guest_device": "/dev/tdx_guest",
+      "runtime_root": "/root/privacy_llm_obfuscation"
+    }
+  },
+  "frozen_bindings": {
+    "model_sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+    "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "transformed_base_package_root": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "dataset": "e2e_nlg",
+    "training_seed_primary": 1234,
+    "training_steps": 750,
+    "learning_rate": 0.0002,
+    "rank": 8,
+    "alpha": 16,
+    "targets": "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
+  },
+  "cells": {
+    "P0_dataset": "COMPLETE_VERIFIED",
+    "G0_base": "COMPLETE_VERIFIED",
+    "G1_plaintext_seed_1234": "COMPLETE_VERIFIED",
+    "G1_plaintext_seed_2025": "COMPLETE_VERIFIED",
+    "G1_plaintext_seed_7": "COMPLETE_VERIFIED",
+    "G2_smoke_5_steps": "COMPLETE_VERIFIED",
+    "G2_exact_protected_full": "PARTIAL",
+    "G2_fresh_process_handoff": "NOT_STARTED",
+    "G2_restart_subset": "NOT_STARTED",
+    "G3_native_transformed": "NOT_APPLICABLE",
+    "main_metrics": "NOT_STARTED",
+    "target_ablation": "NOT_STARTED",
+    "final_tables": "NOT_STARTED"
+  },
+  "risks": [
+    "G0/G1 remote raw artifacts and logs must be copied locally without altering the remote originals.",
+    "The frozen config says protected forward fp32 while the training runner currently hard-codes BF16 compute/runtime copies.",
+    "The smoke counters file was collected after a separate generation service and therefore contains decode counters but not training counters.",
+    "The A10 deployment is an rsync-style tree without git metadata; source identity must use file hashes plus local revision."
+  ]
+}

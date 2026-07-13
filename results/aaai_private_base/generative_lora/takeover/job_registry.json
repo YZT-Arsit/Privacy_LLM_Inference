@@ -1,0 +1,23 @@
+{
+  "audit_time": "2026-07-13T17:01:32+08:00",
+  "jobs": [
+    {
+      "job_id": "e2e_L12_s1234_full-1783933686-49d8be",
+      "phase": "G2_exact_protected_training_then_generation",
+      "command": "python3 scripts/generative_lora/gate_e2e_protected.py --profile L12 --seed 1234 --lr 0.0002 --max-steps 750 --gen-max 500 --max-new 96 --attest --run-tag e2e_L12_s1234_full --timeout 43200",
+      "host": "root@39.107.123.173",
+      "gpu": "NVIDIA A10 GPU 0",
+      "pid": 8058,
+      "worker_pid_at_launch": 8060,
+      "start_time": "2026-07-13T17:08:36+08:00",
+      "source_revision": "55eb5c8d8d4719a46b393fa039dc1df635d24980",
+      "source_bundle_hash": "6704b695735d01e4f8001d67590a81e256ec9e0f5930b430548a23474d859b24",
+      "config_hash": "frozen_config.json plus run binding; seed=1234, L12, lr=0.0002, steps=750",
+      "output_path": "/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.json",
+      "log_path": "/root/pllo_pb/g2_e2e_L12_s1234_full.log",
+      "status": "running",
+      "last_heartbeat": "2026-07-13T17:08:56+08:00",
+      "resume_command": "Not safely resumable until an authenticated optimizer+GPU-state checkpoint is emitted; preserve PID 8058."
+    }
+  ]
+}

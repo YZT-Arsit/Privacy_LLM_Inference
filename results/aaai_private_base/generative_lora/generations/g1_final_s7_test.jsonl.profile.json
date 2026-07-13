@@ -1,0 +1,18 @@
+{
+  "mode": "generate",
+  "cell": "G1_s7",
+  "n": 500,
+  "no_lora": false,
+  "adapter": "/root/pllo_pb/results/aaai_private_base/generative_lora/adapters/g1_final_s7",
+  "adapter_hash": "f313ea2900aa91e1",
+  "decoding": {
+    "strategy": "greedy",
+    "max_new_tokens": 96,
+    "eos": 151643
+  },
+  "total_new_tokens": 16615,
+  "wall_sec": 506.5,
+  "tokens_per_sec": 32.8,
+  "gpu": "NVIDIA A10",
+  "dtype": "fp32"
+}

@@ -1,0 +1,17 @@
+{
+  "mode": "train",
+  "ckpt": "/root/qwen25_05b",
+  "targets": "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj",
+  "rank": 8,
+  "alpha": 16,
+  "dtype": "fp32",
+  "lr": 0.0002,
+  "seed": 7,
+  "steps": 750,
+  "schedule": "e2e_schedule_s7.json",
+  "warmup": 0.03,
+  "final_loss": 1.2129406929016113,
+  "mean_last20": 1.0461706191301345,
+  "wall_sec": 319.9,
+  "adapter_dir": "/root/pllo_pb/results/aaai_private_base/generative_lora/adapters/g1_final_s7"
+}

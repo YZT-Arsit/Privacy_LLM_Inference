@@ -75,7 +75,20 @@ def main():
     run_id = f"{tag}-{int(time.time())}-{secrets.token_hex(3)}"
     session_key = secrets.token_bytes(32); nonce = secrets.token_hex(16)
     hmac_key_commitment = hashlib.sha256(session_key + bytes.fromhex(nonce)).hexdigest()
-    head = (REPO / "results/aaai_private_base/code_baseline_closure/head.txt").read_text().strip()
+    head = sh(f"git -C {REPO} rev-parse HEAD", timeout=60)[1].strip()
+    bound_sources = [
+        REPO / "scripts/a10_batch_runner.py",
+        REPO / "scripts/tdx_persistent_service.py",
+        REPO / "scripts/batch_dataplane.py",
+        REPO / "scripts/h800_unified_worker.py",
+        REPO / "scripts/h800_d4_worker.py",
+        REPO / "scripts/generative_lora/protected_generate.py",
+        REPO / "scripts/generative_lora/gate_e2e_protected.py",
+    ]
+    source_hashes = {str(p.relative_to(REPO)): hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in bound_sources}
+    source_bundle_hash = hashlib.sha256(
+        json.dumps(source_hashes, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     tmpl_hash = hashlib.sha256(E2E_TEMPLATE.encode()).hexdigest()
     lsch_hash = hashlib.sha256(LABEL_SCHEMA.encode()).hexdigest()
     svc_hash = hashlib.sha256((REPO / "scripts/tdx_persistent_service.py").read_bytes()).hexdigest()
@@ -99,7 +112,9 @@ def main():
     binding = {"d4_run_id": run_id, "package_root_hash": PKG_ROOT, "seed": args.seed,
                "optimizer_profile": f"{args.profile}_adamw", "execution_profile": "paper_safe",
                "transport_profile": "direct_a10_tdx_private", "compute_host": "alicloud_a10",
-               "data_plane_ip": TDX_PRIV, "code_revision_or_worktree_hash": head,
+               "data_plane_ip": TDX_PRIV, "source_revision": head,
+               "code_revision_or_worktree_hash": source_bundle_hash,
+               "source_hashes": source_hashes,
                "hmac_key_commitment": hmac_key_commitment, "nonce": nonce, "debug_false_required": True,
                "tokenizer_hash": TOK_HASH, "dataset_id": "e2e_nlg", "task": "clm"}
     tdx_sess = {"session_key_hex": session_key.hex(), "run_id": run_id, "labels": [0],
@@ -146,22 +161,38 @@ def main():
         f"--adapter {adapter_use} --tok /root/genlora_tok --gen-in {DATA}/{args.gen_in} --gen-out {gen_out} "
         f"--gen-max {args.gen_max} --max-new {args.max_new} --cell G2_protected_{args.profile} --dtype fp32{req} "
         f"|| {{ echo G2_GEN_FAILED; exit 1; }}")
+    freeze_train_counters = (
+        f"ssh -i /root/.ssh/a10_to_tdx -o BatchMode=yes root@{TDX_PRIV} "
+        "'cp /tmp/e2e_batch_counters.json /tmp/e2e_training_counters.frozen.json' "
+        "|| { echo G2_COUNTER_FREEZE_FAILED; exit 1; }")
     driver = ("#!/bin/bash\nset -e\ncd " + RA10 + "\n"
               "mkdir -p results/aaai_private_base/generative_lora/generations\n"
-              + (train_line + "\n" if train_line else "")
+              + (train_line + "\n" + freeze_train_counters + "\n" if train_line else "")
               + gen_line + "\necho G2_ALL_DONE\n")
     dpath = OUT / f"{tag}.driver.sh"; dpath.write_text(driver)
     push_a10(str(dpath), f"{RA10}/g2_driver_{tag}.sh")
     logf = f"{RA10}/g2_{tag}.log"
-    a10(f"nohup bash {RA10}/g2_driver_{tag}.sh > {logf} 2>&1 &", timeout=60)
-    print(f"[g2] launched nohup driver for {tag}; polling {logf}")
+    rc, launch_out, launch_err = a10(
+        f"nohup bash {RA10}/g2_driver_{tag}.sh > {logf} 2>&1 < /dev/null & echo $!", timeout=60)
+    if rc != 0 or not launch_out.strip().splitlines():
+        raise RuntimeError(f"failed to launch durable G2 driver: rc={rc} stderr={launch_err}")
+    remote_pid = int(launch_out.strip().splitlines()[-1])
+    launched = {
+        **result, "status": "running", "host": A10_PUB, "pid": remote_pid,
+        "log_path": logf, "driver_path": f"{RA10}/g2_driver_{tag}.sh",
+        "source_revision": head, "source_bundle_hash": source_bundle_hash,
+        "start_unix": time.time(),
+    }
+    (OUT / f"{tag}.launch.json").write_text(json.dumps(launched, indent=2))
+    print(f"[g2] launched nohup driver for {tag}, pid {remote_pid}; polling {logf}")
 
     # poll until G2_ALL_DONE / *_FAILED (robust to master drops: reconnect + re-poll)
     import subprocess as _sp
     t0 = time.time(); done = False
     while time.time() - t0 < args.timeout:
         rc, o, _ = sh(f"ssh -S {CM_A10} {A10_PUB} 'tail -3 {logf} 2>/dev/null; "
-                      f"grep -qE \"G2_ALL_DONE|G2_TRAIN_FAILED|G2_GEN_FAILED\" {logf} && echo POLL_DONE'", timeout=60)
+                      f"grep -qE \"G2_ALL_DONE|G2_TRAIN_FAILED|G2_GEN_FAILED|G2_COUNTER_FREEZE_FAILED\" "
+                      f"{logf} && echo POLL_DONE'", timeout=60)
         if "POLL_DONE" in o:
             done = True; print(o.strip()[-500:]); break
         time.sleep(20)
@@ -171,7 +202,10 @@ def main():
     pull_a10(adapter_remote, str(OUT / f"{tag}.adapter.pt"))
     pull_a10(gen_out, str(GL / f"generations/g2_protected_{tag}.jsonl"))
     pull_a10(gen_out + ".profile.json", str(GL / f"generations/g2_protected_{tag}.jsonl.profile.json"))
-    pull_tdx("/tmp/e2e_batch_counters.json", str(OUT / f"{tag}.tdx_counters.json"))
+    if not args.skip_train:
+        pull_tdx("/tmp/e2e_training_counters.frozen.json",
+                 str(OUT / f"{tag}.training_tdx_counters.json"))
+    pull_tdx("/tmp/e2e_batch_counters.json", str(OUT / f"{tag}.generation_tdx_counters.json"))
     if args.attest:
         pull_tdx("/tmp/e2e_attest/session_attestation.json", str(OUT / f"{tag}.attestation.json"))
     (OUT / f"{tag}.result.json").write_text(json.dumps(result, indent=2))

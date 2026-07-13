@@ -1,0 +1,15 @@
+=== G0 base test gen (500) ===
+[generate] done {"cell": "G0_base", "n": 500, "total_new_tokens": 17092, "wall_sec": 292.7, "tokens_per_sec": 58.4}
+=== G1 train seed 1234 (lr2e-4 750) ===
+[train] done {"final_loss": 0.9448547959327698, "mean_last20": 1.0233598887920379, "steps": 750, "wall_sec": 320.0}
+=== G1 gen seed 1234 test (500) ===
+[generate] done {"cell": "G1_s1234", "n": 500, "total_new_tokens": 16659, "wall_sec": 503.4, "tokens_per_sec": 33.1}
+=== G1 train seed 2025 (lr2e-4 750) ===
+[train] done {"final_loss": 1.136459469795227, "mean_last20": 0.9847200870513916, "steps": 750, "wall_sec": 320.8}
+=== G1 gen seed 2025 test (500) ===
+[generate] done {"cell": "G1_s2025", "n": 500, "total_new_tokens": 16529, "wall_sec": 512.2, "tokens_per_sec": 32.3}
+=== G1 train seed 7 (lr2e-4 750) ===
+[train] done {"final_loss": 1.2129406929016113, "mean_last20": 1.0461706191301345, "steps": 750, "wall_sec": 319.9}
+=== G1 gen seed 7 test (500) ===
+[generate] done {"cell": "G1_s7", "n": 500, "total_new_tokens": 16615, "wall_sec": 506.5, "tokens_per_sec": 32.8}
+ALL_PLAINTEXT_DONE

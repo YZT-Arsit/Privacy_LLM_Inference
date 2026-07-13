@@ -1,0 +1,60 @@
+{
+  "session_key_hex": "87b0834af3d1faa7db862fb6d1630857e5c229ce4e31c4b7886ddb74a42be4c2",
+  "run_id": "e2e_L12_s1234_full-1783933686-49d8be",
+  "labels": [
+    0
+  ],
+  "gamma_bundle": "/tmp/o1c_bundle.pt",
+  "vocab_seed": 8000,
+  "attest": true,
+  "attest_out": "/tmp/e2e_attest",
+  "binding_manifest": {
+    "d4_run_id": "e2e_L12_s1234_full-1783933686-49d8be",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "seed": 1234,
+    "optimizer_profile": "L12_adamw",
+    "execution_profile": "paper_safe",
+    "transport_profile": "direct_a10_tdx_private",
+    "compute_host": "alicloud_a10",
+    "data_plane_ip": "172.30.25.153",
+    "source_revision": "55eb5c8d8d4719a46b393fa039dc1df635d24980",
+    "code_revision_or_worktree_hash": "6704b695735d01e4f8001d67590a81e256ec9e0f5930b430548a23474d859b24",
+    "source_hashes": {
+      "scripts/a10_batch_runner.py": "63a7572735b285eefdf28e13fd6026de44e2e4a88cddfcddaf7faf0eef089fa3",
+      "scripts/tdx_persistent_service.py": "da88516428079dd899152a8797d0d7fe516bea1be1168290aeee5ad7b299ae2e",
+      "scripts/batch_dataplane.py": "48ab05a023a97933811833ada38e4581f33803d26842ca9da5f11459da771b68",
+      "scripts/h800_unified_worker.py": "cad194825df6f6057e4e5c1b28ec723329f9e5d97b52d1615bd8bf0c92b8d269",
+      "scripts/h800_d4_worker.py": "d06058efd44ec3ec895b41de57cfac73e0061087f0afae93820730882bfc2e70",
+      "scripts/generative_lora/protected_generate.py": "74f1fe96e39b851a180513507a3ad5a89ad62d97f7af2ab6b88323c8a419ccc4",
+      "scripts/generative_lora/gate_e2e_protected.py": "77870771094ef2757f07ee0d75ebd1ee3f0263745e4a182c0da7cfa18c2187cf"
+    },
+    "hmac_key_commitment": "b2b3a7e18ec574310746e5b478c223f4ccb281317f55a9ce820ed0a5eba907e2",
+    "nonce": "c2ce92f871b4ab29706c4168d9ebcfc1",
+    "debug_false_required": true,
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "dataset_id": "e2e_nlg",
+    "task": "clm"
+  },
+  "counters_out": "/tmp/e2e_batch_counters.json",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "ckpt_dir": "/tmp/l12_ckpt_e2e",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "service_hash": "da88516428079dd899152a8797d0d7fe516bea1be1168290aeee5ad7b299ae2e",
+  "dataset_id": "e2e_nlg",
+  "task": "clm",
+  "template_hash": "e9b15b3b089a7a2e38f8589a6b4be4ef45eee4bf6e65fe64a7ec8bfefcd7c537",
+  "label_schema_hash": "de4f75df52e95dac17ddb6dca5dc6422f590203f7ddabc88e57ecfbd8f80076e",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "batch_label_tables": {
+    "train": "/tmp/e2e_train_labels.pt"
+  },
+  "batch_schedules": {
+    "train": "/tmp/e2e_schedule_s1234.json"
+  },
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
+}
