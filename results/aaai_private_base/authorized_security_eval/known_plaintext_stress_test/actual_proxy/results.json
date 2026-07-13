@@ -1,0 +1,65 @@
+{
+  "schema": "known_plaintext_alignment_stress",
+  "version": "1.0",
+  "condition": "KNOWN_PLAINTEXT_STRESS_TEST",
+  "view": "V3",
+  "outside_primary_threat_model": true,
+  "plaintext_checkpoint_accessed": true,
+  "paired_weight_families": 9,
+  "pairs": [
+    {
+      "layer": 0,
+      "projection": "q_proj",
+      "tilde_sha256": "eb86ea255f070019486cacbd14051d79a056eae3b06dbdc46c7e512853a77d65"
+    },
+    {
+      "layer": 0,
+      "projection": "k_proj",
+      "tilde_sha256": "5f1e04fc606ef4bd484fc94f3f9bdb5323f140ce97c84edb95523b7c571812c7"
+    },
+    {
+      "layer": 0,
+      "projection": "v_proj",
+      "tilde_sha256": "7e479d22cedd8394c80ff35506d4d0157d6510de204688896f198fc93f782e6a"
+    },
+    {
+      "layer": 12,
+      "projection": "q_proj",
+      "tilde_sha256": "01fbf218853732da22d130f26925643290515a87f3df49fde1661fca101e7d22"
+    },
+    {
+      "layer": 12,
+      "projection": "k_proj",
+      "tilde_sha256": "a0024a084f8d52533652fceb99feb97ae50cb9d6c699fed3eeaaa9dfad84c49c"
+    },
+    {
+      "layer": 12,
+      "projection": "v_proj",
+      "tilde_sha256": "2ccd538c8e452a658bbfbbbd261ffdc182ea0e603bd588aac8eb55f6525792a3"
+    },
+    {
+      "layer": 23,
+      "projection": "q_proj",
+      "tilde_sha256": "b277b33b61b7586217ad05a14e8192852b397cf867f1d9b0071c39d9284b0139"
+    },
+    {
+      "layer": 23,
+      "projection": "k_proj",
+      "tilde_sha256": "4acc16657c91fbb208b60d74ba1a2ea1cce5ce37a6f0108ab5d7f06f2508ef49"
+    },
+    {
+      "layer": 23,
+      "projection": "v_proj",
+      "tilde_sha256": "8eb9a96ceb1d3d7108ce945932eaf01ef8fc9217f4544159fe7fb6e0061c67ae"
+    }
+  ],
+  "dimension": 896,
+  "unique_assignments": 896,
+  "permutation_accuracy": 1.0,
+  "sign_accuracy_up_to_global_flip": 1.0,
+  "basis_relative_error_up_to_global_flip": 0.0,
+  "gram_reconstruction_relative_error_mean": 1.1937539296963363e-08,
+  "gram_reconstruction_relative_error_max": 2.7713432804290262e-08,
+  "nearest_fingerprint_margin_mean": 0.3208915854378692,
+  "positive_control_pass": true
+}

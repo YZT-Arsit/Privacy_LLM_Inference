@@ -1,0 +1,23 @@
+{
+  "schema": "authorized_primary_alignment",
+  "version": "1.0",
+  "condition": "PRIMARY_PRIVATE_BASE_PROXY",
+  "view": "V2",
+  "plaintext_checkpoint_accessed": false,
+  "control": "S0 independently randomized same-shape tensors",
+  "trained_unrelated_model_available": false,
+  "package": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/private_package/gpu_package",
+  "layers": [
+    0,
+    12,
+    23
+  ],
+  "projections": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj"
+  ],
+  "seed": 1234,
+  "cells": 12
+}
