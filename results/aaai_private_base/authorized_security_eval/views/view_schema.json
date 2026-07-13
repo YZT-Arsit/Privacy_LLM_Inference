@@ -1,0 +1,72 @@
+{
+  "additionalProperties": false,
+  "per_view_properties": {
+    "V0": [
+      "final_label",
+      "output_text",
+      "output_token_ids",
+      "run_id",
+      "sample_id",
+      "split",
+      "task"
+    ],
+    "V1": [
+      "api_confidence",
+      "api_token_probabilities",
+      "final_label",
+      "output_text",
+      "output_token_ids",
+      "run_id",
+      "sample_id",
+      "split",
+      "task"
+    ],
+    "V2": [
+      "attention_scores",
+      "masked_dlogits",
+      "masked_k",
+      "masked_kv_cache",
+      "masked_logits",
+      "masked_q",
+      "masked_v",
+      "package_metadata",
+      "protocol_transcript",
+      "run_id",
+      "sample_id",
+      "split",
+      "task",
+      "tensor_shapes",
+      "transformed_adapter",
+      "transformed_base",
+      "transformed_gradients",
+      "transformed_hidden",
+      "transformed_optimizer_state"
+    ],
+    "V3": [
+      "attention_scores",
+      "final_label",
+      "hidden_states",
+      "input_text",
+      "input_token_ids",
+      "labels",
+      "logits",
+      "loss",
+      "output_text",
+      "output_token_ids",
+      "plaintext_adapter",
+      "plaintext_gradients",
+      "plaintext_lora_state",
+      "plaintext_weights",
+      "reference",
+      "run_id",
+      "sample_id",
+      "split",
+      "task"
+    ]
+  },
+  "record_type": "object",
+  "required_for_all_views": [
+    "sample_id"
+  ],
+  "schema_version": "1.0"
+}
