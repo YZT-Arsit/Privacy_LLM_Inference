@@ -1,0 +1,19 @@
+{
+  "schema": "artifact_resistance_evaluation_manifest",
+  "version": "1.0",
+  "researcher_owned_fixtures_only": true,
+  "conditions": [
+    "R0",
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5"
+  ],
+  "completed_conditions": [
+    "R4",
+    "R5"
+  ],
+  "active_external_targets": [],
+  "complete": false
+}

@@ -1,0 +1,54 @@
+=== fault-injection results ===
+  [PASS] handshake                    got op=handshake_ack reason=None
+  [PASS] bad_hmac                     got op=reject reason=auth
+  [PASS] valid_ce                     got op=ce_dlogits_ack reason=None
+  [PASS] replay                       got op=reject reason=replay
+  [PASS] forbidden_key                got op=reject reason=forbidden_key
+  [PASS] wrong_runid                  got op=reject reason=auth
+  [PASS] recover_after_faults         got op=ce_dlogits_ack reason=None
+  [PASS] truncated_frame_clean_exit   rc=0
+  [PASS] counters_consistent          {"ce_calls": 2, "correct_calls": 0, "auth_failures": 2, "replay_rejected": 1, "malformed_rejected": 0, "forbidden_key_rejected": 1, "untrusted_gamma_returns": 0, "correction_missing_targets": -1, "adamw_init_calls": 0, "adamw_step_calls": 0, "trusted_target_state_missing": -1, "untrusted_moment_returns": 0, "authoritative_state_location": "TDX", "authoritative_state_dtype": null, "runtime_copy_dtype": "BF16", "runtime_copy_matches_master_transform": null, "gpu_trusted_factor_optimizer_step": "forbidden", "untrusted_m_materializations": 0, "untrusted_v_materializations": 0, "untrusted_fp32_master_materializations": 0, "silent_fallbacks": 0, "adamw_checkpoint_calls": 0, "adamw_restore_calls": 0, "adamw_state_version": 0, "checkpoint_restore_rejected": 0, "hmac_scope": "channel_integrity_and_replay_detection_vs_third_party_under_honest_but_curious_accelerator", "hmac_key_shared_with_a10": true, "hmac_proves_request_from_honest_a10": false, "hmac_provides_malicious_gpu_computation_integrity": false, "tdx_emits_masked_dlogits": true, "tdx_emits_plaintext_labels": false, "tdx_emits_scalar_loss_tensor": false, "attestation_required": false, "attestation_verified": false, "attestation_gates_execution": true, "attestation_gate_refusals": 0}
+{
+  "all_pass": true,
+  "counters": {
+    "ce_calls": 2,
+    "correct_calls": 0,
+    "auth_failures": 2,
+    "replay_rejected": 1,
+    "malformed_rejected": 0,
+    "forbidden_key_rejected": 1,
+    "untrusted_gamma_returns": 0,
+    "correction_missing_targets": -1,
+    "adamw_init_calls": 0,
+    "adamw_step_calls": 0,
+    "trusted_target_state_missing": -1,
+    "untrusted_moment_returns": 0,
+    "authoritative_state_location": "TDX",
+    "authoritative_state_dtype": null,
+    "runtime_copy_dtype": "BF16",
+    "runtime_copy_matches_master_transform": null,
+    "gpu_trusted_factor_optimizer_step": "forbidden",
+    "untrusted_m_materializations": 0,
+    "untrusted_v_materializations": 0,
+    "untrusted_fp32_master_materializations": 0,
+    "silent_fallbacks": 0,
+    "adamw_checkpoint_calls": 0,
+    "adamw_restore_calls": 0,
+    "adamw_state_version": 0,
+    "checkpoint_restore_rejected": 0,
+    "hmac_scope": "channel_integrity_and_replay_detection_vs_third_party_under_honest_but_curious_accelerator",
+    "hmac_key_shared_with_a10": true,
+    "hmac_proves_request_from_honest_a10": false,
+    "hmac_provides_malicious_gpu_computation_integrity": false,
+    "tdx_emits_masked_dlogits": true,
+    "tdx_emits_plaintext_labels": false,
+    "tdx_emits_scalar_loss_tensor": false,
+    "attestation_required": false,
+    "attestation_verified": false,
+    "attestation_gates_execution": true,
+    "attestation_gate_refusals": 0
+  }
+}
+real 2.01
+user 2.30
+sys 4.10

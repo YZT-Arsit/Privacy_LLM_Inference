@@ -1,0 +1,11 @@
+[Unit]
+Description=Run pair-specific G2 progress audit every 30 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=30min
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

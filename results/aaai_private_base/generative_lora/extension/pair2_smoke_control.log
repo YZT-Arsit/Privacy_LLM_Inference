@@ -1,0 +1,22 @@
+[sync] pushed current code to A10 + TDX
+[g2] launched nohup driver for e2e_L12_pair2_smoke_s2025, pid 5064; polling /root/pllo_pb/g2_e2e_L12_pair2_smoke_s2025.log
+raise TransportError("attestation_gate: invalid attested session -> no optimizer init, "
+h800_direct_runner.TransportError: attestation_gate: invalid attested session -> no optimizer init, no training/eval step (fail-closed)
+G2_TRAIN_FAILED
+POLL_DONE
+{
+  "tag": "e2e_L12_pair2_smoke_s2025",
+  "run_id": "e2e_L12_pair2_smoke_s2025-1783973829-42d94b",
+  "profile": "L12",
+  "seed": 2025,
+  "lr": 0.0002,
+  "max_steps": 1,
+  "attest": true,
+  "endpoints": {
+    "a10_pub": "root@8.147.119.67",
+    "tdx_pub": "root@8.147.112.139",
+    "tdx_priv": "172.30.25.156"
+  },
+  "g2_wall_sec": 21.2,
+  "completed": true
+}

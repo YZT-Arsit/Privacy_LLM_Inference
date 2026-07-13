@@ -218,6 +218,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--driver-pid", type=int, default=8058)
     ap.add_argument("--worker-pid", type=int, default=8060)
+    ap.add_argument("--run-tag", default="e2e_L12_s1234_full")
+    ap.add_argument("--collect-completion", action="store_true",
+                    help="Collect the legacy seed-1234 completion bundle after G2_ALL_DONE")
     ap.add_argument("--total-steps", type=int, default=750)
     ap.add_argument("--log", required=True)
     ap.add_argument("--out-dir", required=True)
@@ -239,7 +242,7 @@ def main() -> None:
 
     record = {
         "timestamp": datetime.now(timezone.utc).astimezone().isoformat(),
-        "run_tag": "e2e_L12_s1234_full",
+        "run_tag": args.run_tag,
         "driver": process_snapshot(args.driver_pid),
         "worker": process_snapshot(args.worker_pid),
         "progress": parse_log(Path(args.log), args.total_steps),
@@ -259,7 +262,7 @@ def main() -> None:
 
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    if record["progress"]["terminal_marker"] == "G2_ALL_DONE":
+    if args.collect_completion and record["progress"]["terminal_marker"] == "G2_ALL_DONE":
         record["completion_collection"] = collect_completion(
             Path.cwd(), out, args.tdx_private_ip, args.tdx_key)
     atomic_json(out / "latest.json", record)

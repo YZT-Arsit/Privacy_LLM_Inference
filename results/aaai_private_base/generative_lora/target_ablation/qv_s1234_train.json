@@ -1,0 +1,17 @@
+{
+  "mode": "train",
+  "ckpt": "/root/qwen25_05b",
+  "targets": "q_proj,v_proj",
+  "rank": 8,
+  "alpha": 16,
+  "dtype": "fp32",
+  "lr": 0.0002,
+  "seed": 1234,
+  "steps": 750,
+  "schedule": "e2e_schedule_s1234.json",
+  "warmup": 0.03,
+  "final_loss": 1.088474988937378,
+  "mean_last20": 1.1785496562719344,
+  "wall_sec": 277.7,
+  "adapter_dir": "results/aaai_private_base/generative_lora/target_ablation/qv_s1234_adapter"
+}

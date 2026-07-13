@@ -1,0 +1,12 @@
+[Unit]
+Description=Audit G2 seed-7 progress on A10 pair1
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/pllo_pb
+ExecStart=/usr/bin/python3 /root/pllo_pb/scripts/generative_lora/server_progress_audit.py --run-tag e2e_L12_s7_extension --driver-pid 47293 --worker-pid 47295 --total-steps 750 --log /root/pllo_pb/g2_e2e_L12_s7_extension.log --out-dir /root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s7_extension --tdx-private-ip 172.30.25.153 --gpu-samples 12 --sample-interval 1
+Nice=10
+TimeoutStartSec=60
+

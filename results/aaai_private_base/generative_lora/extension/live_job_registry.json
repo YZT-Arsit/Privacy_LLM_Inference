@@ -1,0 +1,47 @@
+{
+  "schema": "dual_pair_live_job_registry",
+  "version": "1.0",
+  "updated_at": "2026-07-14T04:34:51+08:00",
+  "duplicate_execution_allowed": false,
+  "launch_guard": {
+    "checks": [
+      "local immutable/frozen manifest does not already mark the cell complete",
+      "neither A10 has an active process for the same run tag or scientific cell",
+      "the target A10 has no competing GPU workload",
+      "the target TDX has no service bound to a different active cell",
+      "the intended output path and run tag are unique"
+    ],
+    "latency_measurements_run_alone": true
+  },
+  "active_assignments": [
+    {
+      "pair": "pair1",
+      "a10_public": "39.107.123.173",
+      "tdx_public": "39.96.43.122",
+      "a10_private": "172.30.25.154",
+      "tdx_private": "172.30.25.153",
+      "cell": "G2_exact_protected_E2E_L12_seed7",
+      "run_tag": "e2e_L12_s7_extension",
+      "remote_driver_pid": 47293,
+      "status": "running",
+      "last_verified_step": 279,
+      "last_verified_finite": true
+    },
+    {
+      "pair": "pair2",
+      "a10_public": "8.147.119.67",
+      "tdx_public": "8.147.112.139",
+      "a10_private": "172.30.25.155",
+      "tdx_private": "172.30.25.156",
+      "cell": "G2_exact_protected_E2E_L12_seed2025",
+      "run_tag": "e2e_L12_s2025_extension",
+      "remote_driver_pid": 6252,
+      "status": "running",
+      "last_verified_step": 3,
+      "last_verified_finite": true
+    }
+  ],
+  "security_gpu_policy": "No security GPU corpus or surrogate job may start while both pairs are assigned to protected G2. CPU security analysis remains parallel.",
+  "frozen_artifacts_mutated": false,
+  "commits_created": false
+}

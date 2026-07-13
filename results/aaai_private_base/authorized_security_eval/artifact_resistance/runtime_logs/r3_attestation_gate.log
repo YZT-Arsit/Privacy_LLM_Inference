@@ -1,0 +1,17 @@
+  ok   TDX: not required -> allowed
+  ok   TDX: required + verified -> allowed
+  ok   TDX: required + NOT verified -> refused
+  ok   TDX: required + reportdata NOT bound -> refused
+  ok   TDX: required + debug TRUE -> refused
+  ok   TDX: required + attestation error -> refused
+  ok   A10: skipped attestation, no --require -> proceeds
+  ok   A10: enclave reports verified session -> proceeds
+  ok   A10: enclave reports INVALID session -> refuses (no init/step)
+  ok   A10: --require-attestation but session invalid -> refuses
+  ok   A10: --require-attestation but no attestation present -> refuses
+  ok   END-TO-END invalid attestation: TDX refuses AND A10 refuses
+
+[test_attestation_gate] PASS=12 FAIL=0
+real 0.65
+user 0.95
+sys 1.88

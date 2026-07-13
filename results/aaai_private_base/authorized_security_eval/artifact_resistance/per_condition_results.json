@@ -1,0 +1,73 @@
+{
+  "schema": "protected_artifact_misuse_resistance",
+  "version": "1.0",
+  "term": "protected artifact misuse-resistance evaluation",
+  "authorized_reference": {
+    "fresh_process_ok": true,
+    "rows": 500,
+    "token_agreement": 1.0,
+    "generation_agreement": 1.0,
+    "hash_agreement": true,
+    "attestation_A": true,
+    "attestation_B": true,
+    "transformed_base_only": true,
+    "transformed_adapter_only": true
+  },
+  "conditions": {
+    "R0": {
+      "status": "PENDING_MEASUREMENT",
+      "trusted_service": false,
+      "note": "package-only initialization/forward test not yet run"
+    },
+    "R1": {
+      "status": "PENDING_MEASUREMENT",
+      "gpu_runtime": true,
+      "note": "runtime-without-boundary forward test not yet run"
+    },
+    "R2": {
+      "status": "PENDING_MEASUREMENT",
+      "researcher_generated_inputs": true,
+      "note": "meaningful-output test without TDX-only mapping not yet run"
+    },
+    "R3": {
+      "status": "PENDING_MEASUREMENT",
+      "diagnostic_boundary_stub": true,
+      "note": "fail-closed local stub test not yet run"
+    },
+    "R4": {
+      "status": "COMPLETE_VERIFIED",
+      "different_session_binding": true,
+      "stale_adapter_version_rejected": true,
+      "runtime_fault_checks": {
+        "bad_hmac": true,
+        "replay": true,
+        "wrong_runid": true,
+        "recover_after_faults": true,
+        "counters_consistent": true
+      },
+      "note": "wrong run/session HMAC, replay, recovery, and counters passed"
+    },
+    "R5": {
+      "status": "COMPLETE_VERIFIED",
+      "all_mismatched_metadata_rejected": true,
+      "controls": {
+        "wrong_base_package": "rejected_ok",
+        "wrong_target_set": "rejected_ok",
+        "wrong_rank": "rejected_ok",
+        "wrong_transform_version": "rejected_ok",
+        "stale_version": "rejected_ok",
+        "modified_tensor": "rejected_ok",
+        "modified_manifest": "rejected_ok",
+        "missing_tensor": "rejected_ok",
+        "unexpected_optimizer_tensor": "rejected_ok"
+      }
+    }
+  },
+  "complete": false,
+  "source_hashes": {
+    "lifecycle_gate.json": "b53e9deec3f9ae1b458facf33e1caedd666bba610e75e77440ad4aeb98c8be01",
+    "negative_controls.json": "b481c35941f4e9c63519849caf0abb0f33b99b4e7a1e76321330b812f640d43b",
+    "restart_reproducibility.json": "c882e1651c75a3fa7c437b856dcc6bbf2dd7c46831e53b11087372e0ab9b78ab",
+    "r4_direct_transport_faults.log": "53a27ccc0b37b40940e922472274495a70e081cd18c76bf250b24f801efe755a"
+  }
+}

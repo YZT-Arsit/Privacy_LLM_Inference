@@ -1,0 +1,38 @@
+{
+  "cells": {
+    "ALL7": {
+      "BLEU": 63.98,
+      "chrF": 72.78,
+      "ROUGE_L": 61.4,
+      "invalid_rate_pct": 0.0,
+      "repetition_pct": 3.47,
+      "avg_len": 33.3,
+      "n": 500,
+      "METEOR": "unavailable_no_nltk",
+      "NIST": "unavailable_no_nltk"
+    },
+    "QV": {
+      "BLEU": 62.3,
+      "chrF": 68.99,
+      "ROUGE_L": 59.64,
+      "invalid_rate_pct": 0.0,
+      "repetition_pct": 2.59,
+      "avg_len": 30.6,
+      "n": 500,
+      "METEOR": "unavailable_no_nltk",
+      "NIST": "unavailable_no_nltk"
+    }
+  },
+  "paired_vs_ALL7": {
+    "QV": {
+      "mean_delta": -2.506,
+      "median_delta": -0.655,
+      "n": 500,
+      "n_better": 186,
+      "n_worse": 260
+    }
+  },
+  "has_nltk": false,
+  "baseline": "ALL7",
+  "metric_note": "E2E multi-reference; BLEU/chrF=sacrebleu, ROUGE-L=local LCS-F1."
+}

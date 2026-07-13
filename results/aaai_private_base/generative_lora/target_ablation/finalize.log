@@ -1,0 +1,24 @@
+{
+  "schema": "minimal_target_ablation_manifest",
+  "version": "1.0",
+  "seed": 1234,
+  "comparison": {
+    "T1": "q_proj+v_proj",
+    "T4": "all_seven_targets"
+  },
+  "all_seven_source": "frozen G1_s1234; not rerun",
+  "qv_run": "750-step plaintext training plus 500 direct generations",
+  "training_complete": true,
+  "generation_complete": true,
+  "metrics_complete": true,
+  "source_hashes": {
+    "results/aaai_private_base/generative_lora/target_ablation/qv_s1234_train.json": "17ef451e828e9e43b50ac56ac97399e1e98dcb2580ea7c3437e41387c74ff556",
+    "results/aaai_private_base/generative_lora/target_ablation/qv_s1234_test.jsonl": "63f207c3775e6814b190f17eb2c48444d4216c5d73791c31bf6c2c6255c44e1c",
+    "results/aaai_private_base/generative_lora/target_ablation/qv_s1234_test.jsonl.profile.json": "ca44a13de7f3eba26c9c23758931c9402c9a82f280305dcacb9f3d0755ad4322",
+    "results/aaai_private_base/generative_lora/target_ablation/qv_s1234_adapter/adapter_config.json": "60011b6707e5ab5233987cec2c2e76846f49cbc435db7f9dc8117832d0d59220",
+    "results/aaai_private_base/generative_lora/target_ablation/qv_s1234_adapter/adapter_model.safetensors": "09d7746f359d1238a40b851c69c03bbd168f4dcaf37e6d3ee5abd4cdd55e1550",
+    "results/aaai_private_base/generative_lora/target_ablation/metrics/aggregate_metrics.csv": "8347b57ea22134734f2cbfad435b878101a299a7c4221c835bf1ff48a81a3406",
+    "results/aaai_private_base/generative_lora/target_ablation/metrics/statistical_summary.json": "404fc38a1dd8178e10767a626005591606c87092351d6418f8ea624944dc0df0",
+    "results/aaai_private_base/generative_lora/target_ablation/metrics/per_example_metrics.jsonl": "ed496613ca384276933725770f6d4756ed842e822d73ef577b7a1b251104aa38"
+  }
+}
