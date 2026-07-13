@@ -1,0 +1,63 @@
+{
+  "all_expected_files_present": true,
+  "created_at": "2026-07-13T22:43:44.938607+08:00",
+  "files": {
+    "g2_driver_e2e_L12_s1234_full.sh": {
+      "exists": true,
+      "sha256": "2a7c71ffdffd0284fb40afe59270447453274443e695541716092ee31353aa6a",
+      "size_bytes": 2446
+    },
+    "g2_e2e_L12_s1234_full.log": {
+      "exists": true,
+      "sha256": "03cf312fcce7c59705717899f83bc1cc24160c2098953a6f3c797459968ad9b1",
+      "size_bytes": 52383
+    },
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s1234_full.jsonl": {
+      "exists": true,
+      "sha256": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31",
+      "size_bytes": 1010375
+    },
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s1234_full.jsonl.profile.json": {
+      "exists": true,
+      "sha256": "e28f3da694716405b86259e0ae394864d129e29519bbdbca30177478f292c8c6",
+      "size_bytes": 2093
+    },
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.adapter.pt": {
+      "exists": true,
+      "sha256": "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2",
+      "size_bytes": 17697857
+    },
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.generation_tdx_counters.json": {
+      "exists": true,
+      "sha256": "6d14040e22733c402da4d00f94ed3749e00fd8854485673a1866a53fd7bece8a",
+      "size_bytes": 1893
+    },
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.json": {
+      "exists": true,
+      "sha256": "513c5729b6f403430d65e06ed137d7b13a83a7ab9b94973b32ff1dc950565568",
+      "size_bytes": 204005
+    },
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.training_tdx_counters.json": {
+      "exists": true,
+      "sha256": "031bcbc0a1b5c56fd3f298a00397390d9e30400fd7c616e79c441c888b6927b1",
+      "size_bytes": 1899
+    }
+  },
+  "generation_json_valid": true,
+  "generation_rows": 500,
+  "run_tag": "e2e_L12_s1234_full",
+  "tdx_counter_collection": {
+    "generation": {
+      "collected": true,
+      "path": "/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.generation_tdx_counters.json",
+      "sha256": "6d14040e22733c402da4d00f94ed3749e00fd8854485673a1866a53fd7bece8a",
+      "size_bytes": 1893
+    },
+    "training": {
+      "collected": true,
+      "path": "/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.training_tdx_counters.json",
+      "sha256": "031bcbc0a1b5c56fd3f298a00397390d9e30400fd7c616e79c441c888b6927b1",
+      "size_bytes": 1899
+    }
+  }
+}

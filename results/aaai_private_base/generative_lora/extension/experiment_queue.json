@@ -1,0 +1,90 @@
+{
+  "schema": "extended_experiment_queue",
+  "single_gpu_policy": true,
+  "queue": [
+    {
+      "id": "restart_seed1234_B",
+      "purpose": "double fresh-process transformed-adapter closure",
+      "expected_gpu_hours": 0.11,
+      "expected_tdx_hours": 0.11,
+      "priority": 0,
+      "status": "running",
+      "dependency": "adapter_package_seed1234",
+      "required_artifacts": ["handoff/restart_B.jsonl", "handoff/restart_reproducibility.json"],
+      "stop_condition": "500 rows and exact A/B agreement",
+      "resume_command": "screen -r evidence_restart2"
+    },
+    {
+      "id": "target_T1_plain_s1234",
+      "purpose": "q_proj+v_proj quality-cost ablation",
+      "expected_gpu_hours": 0.3,
+      "expected_tdx_hours": 0.0,
+      "priority": 0,
+      "status": "queued_waiting_for_restart",
+      "dependency": "restart_seed1234_B",
+      "required_artifacts": ["target_ablation/qv_s1234_test.jsonl", "target_ablation/manifest.json"],
+      "stop_condition": "750 finite steps and 500 generations",
+      "resume_command": "screen -r evidence_ablation"
+    },
+    {
+      "id": "G2_L12_s7_extension",
+      "purpose": "protected multi-seed evidence",
+      "expected_gpu_hours": 5.6,
+      "expected_tdx_hours": 5.6,
+      "priority": 1,
+      "status": "pending",
+      "dependency": "target_T1_plain_s1234",
+      "required_artifacts": ["protected run", "adapter", "500 generations", "counters", "attestation", "manifest"],
+      "stop_condition": "750/750 finite and 500/500 direct protected generations",
+      "resume_command": "python3 scripts/generative_lora/gate_e2e_protected.py --profile L12 --seed 7 --lr 0.0002 --max-steps 750 --gen-max 500 --attest --run-tag e2e_L12_s7_extension --timeout 28800"
+    },
+    {
+      "id": "G2_L12_s2025_extension",
+      "purpose": "protected multi-seed evidence",
+      "expected_gpu_hours": 5.6,
+      "expected_tdx_hours": 5.6,
+      "priority": 1,
+      "status": "pending",
+      "dependency": "G2_L12_s7_extension",
+      "required_artifacts": ["protected run", "adapter", "500 generations", "counters", "attestation", "manifest"],
+      "stop_condition": "750/750 finite and 500/500 direct protected generations",
+      "resume_command": "python3 scripts/generative_lora/gate_e2e_protected.py --profile L12 --seed 2025 --lr 0.0002 --max-steps 750 --gen-max 500 --attest --run-tag e2e_L12_s2025_extension --timeout 28800"
+    },
+    {
+      "id": "G1_BF16_MATCHED_3SEED",
+      "purpose": "separate protection effect from BF16 runtime numerics",
+      "expected_gpu_hours": 1.0,
+      "expected_tdx_hours": 0.0,
+      "priority": 2,
+      "status": "pending_implementation_gate",
+      "dependency": "G2 multi-seed collection",
+      "required_artifacts": ["3 adapters", "3 generation files", "FP32-master audit", "metrics"],
+      "stop_condition": "all three finite with documented precision match/mismatches",
+      "resume_command": "python3 scripts/generative_lora/bf16_matched_lora.py --queue-all-seeds"
+    },
+    {
+      "id": "TARGET_MATRIX_REMAINDER",
+      "purpose": "T1-T4 plaintext/protected quality-cost Pareto",
+      "expected_gpu_hours": 17.5,
+      "expected_tdx_hours": 16.8,
+      "priority": 3,
+      "status": "pending",
+      "dependency": "precision-matched controls",
+      "required_artifacts": ["T2/T3 plaintext", "T1/T2/T3 protected", "common metrics"],
+      "stop_condition": "all non-reused cells complete and finite",
+      "resume_command": "python3 scripts/generative_lora/run_extended_target_queue.py --seed 1234"
+    },
+    {
+      "id": "OBFUSCATUNE_LORA_s1234",
+      "purpose": "highest-priority external LoRA baseline",
+      "expected_gpu_hours": 6.0,
+      "expected_tdx_hours": 6.0,
+      "priority": 4,
+      "status": "pending_fidelity_audit",
+      "dependency": "target matrix",
+      "required_artifacts": ["fidelity audit", "training", "generation", "handoff", "cost"],
+      "stop_condition": "validated faithful reimplementation or explicit blocked verdict",
+      "resume_command": "TBD after fidelity audit; do not launch an unvalidated approximation"
+    }
+  ]
+}

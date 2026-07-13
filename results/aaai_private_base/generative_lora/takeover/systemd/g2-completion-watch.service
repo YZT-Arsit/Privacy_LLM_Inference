@@ -1,0 +1,15 @@
+[Unit]
+Description=Collect G2 artifacts immediately on terminal marker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/pllo_pb
+ExecStart=/root/pllo_pb/scripts/generative_lora/server_completion_watch.sh
+Restart=on-failure
+RestartSec=10
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

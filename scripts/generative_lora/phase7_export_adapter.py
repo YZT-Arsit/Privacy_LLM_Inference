@@ -93,6 +93,24 @@ def main():
     except AdapterError:
         results["controls"]["missing_tensor"] = "rejected_ok"
 
+    # unexpected optimizer tensor: simulate a package whose blob and outer blob hash were
+    # recomputed after injecting optimizer state, while the signed manifest tensor registry
+    # remains unchanged. The loader must reject the unexpected tensor name/content.
+    d5 = a.out_dir + "_optimizer"; shutil.rmtree(d5, ignore_errors=True); shutil.copytree(a.out_dir, d5)
+    t = load_file(str(Path(d5) / "adapter_tensors.safetensors"))
+    t["optimizer.m"] = torch.zeros(1, dtype=torch.float32)
+    save_file(t, str(Path(d5) / "adapter_tensors.safetensors"))
+    hp = Path(d5) / "artifact_hashes.sha256"
+    blob_hash = hashlib.sha256((Path(d5) / "adapter_tensors.safetensors").read_bytes()).hexdigest()
+    lines = hp.read_text().splitlines()
+    hp.write_text("\n".join(
+        f"{blob_hash}  adapter_tensors.safetensors" if line.endswith("  adapter_tensors.safetensors") else line
+        for line in lines) + "\n")
+    try:
+        load_adapter_for_generation(d5, **good); results["controls"]["unexpected_optimizer_tensor"] = "FAIL_ACCEPTED"
+    except AdapterError:
+        results["controls"]["unexpected_optimizer_tensor"] = "rejected_ok"
+
     results["all_controls_fail_closed"] = all(v == "rejected_ok" for v in results["controls"].values())
     Path(a.neg_out).write_text(json.dumps(results, indent=2))
     print("[export] negative controls:", json.dumps(results["controls"]))

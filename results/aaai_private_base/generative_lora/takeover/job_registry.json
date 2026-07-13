@@ -15,18 +15,39 @@
       "config_hash": "frozen_config.json plus run binding; seed=1234, L12, lr=0.0002, steps=750",
       "output_path": "/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s1234_full.json",
       "log_path": "/root/pllo_pb/g2_e2e_L12_s1234_full.log",
-      "status": "running",
-      "last_heartbeat": "2026-07-13T17:27:02+08:00",
-      "last_observed_step": 42,
+      "status": "completed_verified",
+      "last_heartbeat": "2026-07-13T22:43:44+08:00",
+      "last_observed_step": 750,
+      "completed_at": "2026-07-13T22:43:36+08:00",
+      "terminal_marker": "G2_ALL_DONE",
+      "generation_rows": 500,
+      "completion_manifest_sha256": "8fcc155bf34c7c818573025bbfb856e7f7b859fd5ca960bae2ce23cbcef46612",
       "monitoring": {
         "server_side_timer": "g2-progress-audit.timer",
         "interval": "30 minutes",
-        "next_server_audit": "2026-07-13T17:55:08+08:00",
+        "next_server_audit": null,
         "remote_latest": "/root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full/latest.json",
         "remote_history": "/root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full/audit.jsonl",
-        "persistent_without_mac": true
+        "persistent_without_mac": true,
+        "final_timer_state": "disabled_inactive_after_verified_completion"
       },
-      "resume_command": "Not safely resumable until an authenticated optimizer+GPU-state checkpoint is emitted; preserve PID 8058."
+      "tdx_counter_collection": {
+        "forced_command_wrapper": "/root/privacy_llm_obfuscation/scripts/generative_lora/tdx_forced_command.sh",
+        "wrapper_sha256": "1d463f7ed8b3378cb47ea36ed395295da0ec8b97ad775b6ab2d28e5fb621210d",
+        "authorized_key_policy": "fixed trusted service plus one exact counter-freeze command; arbitrary shell remains forbidden",
+        "persistent_directory": "/root/privacy_llm_obfuscation/results/generative_lora_counters/e2e_L12_s1234_full",
+        "installed_at": "2026-07-13T18:59:00+08:00",
+        "existing_training_connection_restarted": false,
+        "completion_manifest_on_a10": "/root/pllo_pb/results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full/completion_manifest.json",
+        "completion_collector_sha256": "915e243368113754ba0efddf6f7a813a8a431aa0d0c8a640ebf0891cc1786ad3"
+        ,
+        "completion_watch_service": "g2-completion-watch.service",
+        "completion_watch_pid_at_install": 18373,
+        "completion_watch_sha256": "b7a27b3aa2efe48f08570639584ecf53f1e12d13c7079261b64b4eb243011b47",
+        "completion_poll_interval_seconds": 10,
+        "completion_watch_final_state": "disabled_inactive_after_verified_collection"
+      },
+      "resume_command": "Not applicable: run completed and all terminal artifacts were hash-verified."
     }
   ]
 }

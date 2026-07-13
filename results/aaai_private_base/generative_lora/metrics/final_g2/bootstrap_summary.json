@@ -1,0 +1,13 @@
+{
+  "comparison": "G2_L12_s1234 minus G1_s1234",
+  "statistic": "mean paired sentence-level sacreBLEU difference",
+  "n_paired": 500,
+  "observed_mean_delta": 0.41318,
+  "bootstrap_samples": 10000,
+  "bootstrap_seed": 1234,
+  "ci_method": "percentile",
+  "ci_level": 0.95,
+  "ci_low": -0.62764,
+  "ci_high": 1.4635,
+  "excludes_zero": false
+}

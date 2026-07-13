@@ -1,0 +1,2 @@
+Attack,Task,Query budget,Attacker initialization,B0 label-only,B1 output-rich,B2 transformed transcript,B3 plaintext white-box,B2-B0 difference,confidence interval,criterion pass/fail
+ALL_ATTACKS_NOT_RUN,NOT_RUN,NOT_RUN,NOT_RUN,NOT_RUN,NOT_RUN,NOT_RUN,NOT_RUN,NOT_AVAILABLE,NOT_AVAILABLE,FAIL_PHASE0_PROVENANCE

@@ -7,6 +7,7 @@ human-readable latest snapshot atomically.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -126,6 +127,93 @@ def atomic_json(path: Path, value: dict) -> None:
             os.unlink(name)
 
 
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def fetch_fixed_tdx_counter(private_ip: str, key: str, remote: str, local: Path) -> dict:
+    command = f"cat {remote}"
+    p = subprocess.run(
+        ["ssh", "-i", key, "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
+         f"root@{private_ip}", command],
+        capture_output=True, timeout=30, check=False)
+    if p.returncode != 0:
+        return {"collected": False, "error": p.stderr.decode("utf-8", "replace")[-500:]}
+    try:
+        json.loads(p.stdout)
+    except json.JSONDecodeError as exc:
+        return {"collected": False, "error": f"invalid_json:{exc}"}
+    local.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix=local.name + ".", dir=local.parent)
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(p.stdout)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(name, local)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+    return {"collected": True, "path": str(local), "sha256": sha256_file(local),
+            "size_bytes": local.stat().st_size}
+
+
+def collect_completion(repo: Path, out: Path, private_ip: str, key: str) -> dict:
+    gl = repo / "results/aaai_private_base/generative_lora"
+    counter_dir = gl / "protected_runs"
+    remote_root = "/root/privacy_llm_obfuscation/results/generative_lora_counters/e2e_L12_s1234_full"
+    counter_results = {
+        "training": fetch_fixed_tdx_counter(
+            private_ip, key, remote_root + "/training_tdx_counters.json",
+            counter_dir / "e2e_L12_s1234_full.training_tdx_counters.json"),
+        "generation": fetch_fixed_tdx_counter(
+            private_ip, key, remote_root + "/generation_tdx_counters.json",
+            counter_dir / "e2e_L12_s1234_full.generation_tdx_counters.json"),
+    }
+    expected = [
+        repo / "g2_e2e_L12_s1234_full.log",
+        repo / "g2_driver_e2e_L12_s1234_full.sh",
+        gl / "protected_runs/e2e_L12_s1234_full.json",
+        gl / "protected_runs/e2e_L12_s1234_full.adapter.pt",
+        gl / "protected_runs/e2e_L12_s1234_full.training_tdx_counters.json",
+        gl / "protected_runs/e2e_L12_s1234_full.generation_tdx_counters.json",
+        gl / "generations/g2_protected_e2e_L12_s1234_full.jsonl",
+        gl / "generations/g2_protected_e2e_L12_s1234_full.jsonl.profile.json",
+    ]
+    files = {}
+    for path in expected:
+        rel = str(path.relative_to(repo))
+        files[rel] = ({"exists": True, "size_bytes": path.stat().st_size,
+                       "sha256": sha256_file(path)} if path.is_file() else {"exists": False})
+    gen = gl / "generations/g2_protected_e2e_L12_s1234_full.jsonl"
+    generation_rows = None
+    generation_json_valid = False
+    if gen.is_file():
+        try:
+            generation_rows = sum(1 for line in gen.open() if json.loads(line))
+            generation_json_valid = True
+        except (json.JSONDecodeError, OSError):
+            pass
+    manifest = {
+        "created_at": datetime.now(timezone.utc).astimezone().isoformat(),
+        "run_tag": "e2e_L12_s1234_full",
+        "tdx_counter_collection": counter_results,
+        "files": files,
+        "generation_rows": generation_rows,
+        "generation_json_valid": generation_json_valid,
+        "all_expected_files_present": all(v["exists"] for v in files.values()),
+    }
+    target = out / "completion_manifest.json"
+    atomic_json(target, manifest)
+    (out / "completion_manifest.json.sha256").write_text(
+        f"{sha256_file(target)}  completion_manifest.json\n")
+    return manifest
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--driver-pid", type=int, default=8058)
@@ -134,6 +222,7 @@ def main() -> None:
     ap.add_argument("--log", required=True)
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--tdx-private-ip", default="172.30.25.153")
+    ap.add_argument("--tdx-key", default="/root/.ssh/a10_to_tdx")
     ap.add_argument("--gpu-samples", type=int, default=12)
     ap.add_argument("--sample-interval", type=float, default=1.0)
     args = ap.parse_args()
@@ -170,6 +259,9 @@ def main() -> None:
 
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    if record["progress"]["terminal_marker"] == "G2_ALL_DONE":
+        record["completion_collection"] = collect_completion(
+            Path.cwd(), out, args.tdx_private_ip, args.tdx_key)
     atomic_json(out / "latest.json", record)
     with (out / "audit.jsonl").open("a") as f:
         f.write(json.dumps(record, sort_keys=True) + "\n")

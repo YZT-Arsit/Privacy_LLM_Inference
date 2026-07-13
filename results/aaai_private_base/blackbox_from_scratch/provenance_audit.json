@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0",
+  "stage": "From-Scratch Private-Base Black-Box Security Evaluation",
+  "audit_time": "2026-07-13T23:07:44+08:00",
+  "repository": {
+    "remote": "https://github.com/YZT-Arsit/Privacy_LLM_Inference.git",
+    "branch": "fix/folded-remote-repeat-debug-and-guards",
+    "head": "a6376aec4650089e4e8e32bbf86e67dcff03fde4",
+    "commit_created": false
+  },
+  "requested_threat_model": "private backbone trained completely from scratch",
+  "verdict": "FROM_SCRATCH_CLAIM_UNSUPPORTED_PUBLIC_CHECKPOINT",
+  "from_scratch_supported": false,
+  "hard_stop_required": true,
+  "attack_execution_allowed": false,
+  "gpu_jobs_launched": 0,
+  "frozen_artifacts_overwritten": 0,
+  "selected_victim": {
+    "model_id": "Qwen2.5-0.5B",
+    "checkpoint_source": "Qwen/Qwen2.5-0.5B (HF), transferred from an H800 ModelScope cache",
+    "checkpoint_source_path_recorded": "root@connect.westb.seetacloud.com:/root/autodl-tmp/modelscope_cache/models/Qwen/Qwen2___5-0___5B",
+    "checkpoint_sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+    "checkpoint_size_bytes": 988097824,
+    "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fcfc3945713e96ce87539",
+    "config_sha256": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "transformed_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "architecture": {
+      "family": "Qwen2",
+      "hidden_size": 896,
+      "num_hidden_layers": 24,
+      "num_attention_heads": 14,
+      "num_key_value_heads": 2,
+      "intermediate_size": 4864,
+      "vocab_size": 151936,
+      "tie_word_embeddings": true
+    }
+  },
+  "required_provenance_checks": {
+    "initialization_provenance": {
+      "status": "FAIL_PUBLIC_CHECKPOINT",
+      "value": "pretrained Qwen/Qwen2.5-0.5B checkpoint",
+      "evidence": [
+        "results/aaai_private_base/experiment_registry.yaml:15-17",
+        "results/aaai_private_base/checkpoint/source_inventory.json:2-4",
+        "scripts/a10_env_setup.py:1-6"
+      ]
+    },
+    "backbone_training_code_hash": {
+      "status": "MISSING",
+      "value": null,
+      "reason": "No paper-facing private-backbone pretraining entrypoint was found. The authoritative code is a trusted package builder over an existing checkpoint, not from-scratch backbone training."
+    },
+    "initialization_seed_commitment": {
+      "status": "MISSING",
+      "value": null,
+      "reason": "Mask-generation and experiment seeds exist, but no commitment for private backbone initialization exists."
+    },
+    "private_pretraining_data_manifest_hash": {
+      "status": "MISSING",
+      "value": null,
+      "reason": "GSM8K/SST-2/E2E manifests cover downstream evaluation or LoRA data, not pretraining of the backbone."
+    },
+    "absence_of_public_checkpoint_loading": {
+      "status": "FAIL_CONTRADICTED",
+      "evidence": [
+        "scripts/gate0_build_private_package.py:94-98 directly hashes and loads model.safetensors",
+        "scripts/gate0_d3_operator_contract.py:92-96 uses AutoModelForCausalLM.from_pretrained",
+        "scripts/a10_env_setup.py:3-6 records downloading Qwen2.5-0.5B via ModelScope"
+      ]
+    },
+    "absence_of_weight_import": {
+      "status": "FAIL_CONTRADICTED",
+      "evidence": "scripts/gate0_build_private_package.py imports every plaintext tensor from the public checkpoint with safetensors.torch.load_file"
+    },
+    "tokenizer_provenance": {
+      "status": "PUBLIC_QWEN_TOKENIZER",
+      "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fcfc3945713e96ce87539",
+      "evidence": "results/aaai_private_base/experiment_registry.yaml:15-19"
+    },
+    "architecture_provenance": {
+      "status": "PUBLIC_QWEN2_ARCHITECTURE",
+      "evidence": "results/aaai_private_base/checkpoint/checkpoint_manifest.json"
+    },
+    "final_private_checkpoint_hash": {
+      "status": "HASH_PRESENT_BUT_NOT_PRIVATE_TRAINED",
+      "sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+      "reason": "This is the imported Qwen checkpoint hash, not the output of a recorded private from-scratch training run."
+    },
+    "transformed_package_root_hash": {
+      "status": "PRESENT",
+      "sha256": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1"
+    }
+  },
+  "repository_search": {
+    "scope": "scripts, configs, and results/aaai_private_base text-like .py/.sh/.md/.yaml/.json/.txt/.log files",
+    "raw_match_counts": {
+      "from_pretrained": 64,
+      "load_state_dict": 0,
+      "model.safetensors": 38,
+      "checkpoint_conversion": 0,
+      "public_model_initialization_literal": 0,
+      "warm_start_variants": 0,
+      "distill_variants": 25
+    },
+    "interpretation": "Counts are discovery aids, not proof by themselves. The decisive evidence is the frozen registry, source inventory, checkpoint binding, and direct package-builder/evaluator loading code. Tiny random Qwen constructors are diagnostic controls and are not the selected victim."
+  },
+  "threat_model_consistency": {
+    "registry_label": "from_scratch_private_base",
+    "actual_provenance": "public pretrained Qwen2.5-0.5B used as a stand-in/proxy",
+    "consistent": false,
+    "note": "Treating public weights as secret to the attacker is a private-checkpoint access assumption, not proof that the backbone was trained from scratch."
+  },
+  "stop_action": {
+    "action": "STOP_BEFORE_ATTACKS",
+    "reason": "The user-mandated Phase 0 rule requires stopping when the victim was initialized from a public checkpoint.",
+    "queues_not_started": [
+      "Q1_GPU_TRACE_COLLECTION",
+      "Q2_GPU_MODEL_STEALING",
+      "Q3_CPU_GPU_ATTACK_ANALYSIS"
+    ]
+  }
+}

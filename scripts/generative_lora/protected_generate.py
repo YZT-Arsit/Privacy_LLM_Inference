@@ -76,8 +76,8 @@ def main():
         model.lora = {}
         for name, t in res["tensors"].items():
             side, l, proj = name.split("."); l = int(l)
-            key = (l, proj); AB = list(model.lora.get(key, (None, None)))
-            AB[0 if side == "A" else 1] = t.to(dev, CDT); model.lora[key] = tuple(AB)
+            lora_key = (l, proj); AB = list(model.lora.get(lora_key, (None, None)))
+            AB[0 if side == "A" else 1] = t.to(dev, CDT); model.lora[lora_key] = tuple(AB)
         adapter_hash = sha16((Path(a.adapter_package) / "adapter_tensors.safetensors").read_bytes())
         adapter_source = f"verified_package:{a.adapter_package}"
         print(f"[protected_gen] loaded VERIFIED package {a.adapter_package} ({len(model.lora)} factors)", flush=True)
