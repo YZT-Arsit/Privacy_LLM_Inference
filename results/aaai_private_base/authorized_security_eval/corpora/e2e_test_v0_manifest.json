@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "bytes": 226205,
+      "path": "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/corpora/e2e_test_v0_s1234.jsonl",
+      "records": 500,
+      "sample_ids_sha256": "ac96cfd50ce875f0827264994e9799a4d101d8de5093784e6e6502ca69ab3be7",
+      "sha256": "2695408fa3536b36daf8a1a5da5b9ac3273824dbb4edb831ceba6f4bd3fe7de7",
+      "view": "V0"
+    }
+  ],
+  "ordered_sample_ids_match": null,
+  "schema": "authorized_security_immutable_corpus",
+  "split": "test",
+  "task": "e2e_nlg",
+  "version": "1.0"
+}

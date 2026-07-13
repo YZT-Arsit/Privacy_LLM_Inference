@@ -1,0 +1,18 @@
+{
+  "positive_load": true,
+  "factors": 336,
+  "no_plaintext": true,
+  "no_optimizer": true,
+  "controls": {
+    "wrong_base_package": "rejected_ok",
+    "wrong_target_set": "rejected_ok",
+    "wrong_rank": "rejected_ok",
+    "wrong_transform_version": "rejected_ok",
+    "stale_version": "rejected_ok",
+    "modified_tensor": "rejected_ok",
+    "modified_manifest": "rejected_ok",
+    "missing_tensor": "rejected_ok",
+    "unexpected_optimizer_tensor": "rejected_ok"
+  },
+  "all_controls_fail_closed": true
+}

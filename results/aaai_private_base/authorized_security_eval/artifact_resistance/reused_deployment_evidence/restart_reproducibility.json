@@ -1,0 +1,37 @@
+{
+  "schema": "fresh_process_restart_reproducibility",
+  "version": "1.0",
+  "process_A": {
+    "start_utc": "2026-07-13T15:51:59Z",
+    "end_utc": "2026-07-13T15:58:16Z",
+    "profile": "results/aaai_private_base/generative_lora/handoff/restart_A.jsonl.profile.json"
+  },
+  "process_B": {
+    "start_utc": "2026-07-13T15:58:16Z",
+    "end_utc": "2026-07-13T16:04:31Z",
+    "profile": "results/aaai_private_base/generative_lora/handoff/restart_B.jsonl.profile.json"
+  },
+  "training_processes_absent_before_launch": true,
+  "process_A_terminated_before_B": true,
+  "rows": 500,
+  "token_agreement": 1.0,
+  "generation_agreement": 1.0,
+  "output_hash_A": "b9f8e19d42e85beeda44760122aac9eba97908e0f5f311caca53347b80a652a8",
+  "output_hash_B": "b9f8e19d42e85beeda44760122aac9eba97908e0f5f311caca53347b80a652a8",
+  "hash_agreement": true,
+  "adapter_hash_A": "4011cc8cf7d8cb3a",
+  "adapter_hash_B": "4011cc8cf7d8cb3a",
+  "adapter_hash_agreement": true,
+  "package_hash_A": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "package_hash_B": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "package_hash_agreement": true,
+  "attestation_A": true,
+  "attestation_B": true,
+  "adapter_source_A": "verified_package:results/aaai_private_base/generative_lora/handoff/adapter_package_e2e_L12_s1234_full",
+  "adapter_source_B": "verified_package:results/aaai_private_base/generative_lora/handoff/adapter_package_e2e_L12_s1234_full",
+  "plaintext_checkpoint_loaded": false,
+  "optimizer_state_loaded": false,
+  "training_object_loaded": false,
+  "plaintext_adapter_loaded": false,
+  "fresh_process_ok": true
+}

@@ -1,0 +1,8 @@
+{
+  "fresh_process_ok": true,
+  "restart_report": "results/aaai_private_base/generative_lora/handoff/restart_reproducibility.json",
+  "transformed_base_only": true,
+  "transformed_adapter_only": true,
+  "no_plaintext_checkpoint_or_adapter": true,
+  "process_A_terminated_before_B": true
+}
