@@ -1,0 +1,9 @@
+cohort,variant,seeds,records_per_class,roc_auc_mean,roc_auc_std,advantage_mean,tpr_at_1pct_fpr_mean,tpr_at_0_1pct_fpr_mean
+raw_balanced,shape_only,3,500,0.7982041666666667,0.0061976600086913955,0.49000000000000005,0.03,0.024999999999999998
+raw_balanced,v2_no_attention,3,500,1.0,0.0,1.0,1.0,1.0
+raw_balanced,attention_only,3,500,1.0,0.0,1.0,1.0,1.0
+raw_balanced,v2_all,3,500,1.0,0.0,1.0,1.0,1.0
+exact_length_matched,shape_only,3,215,0.5038985036956913,0.01567108385091406,0.054263565891472854,0.0,0.0
+exact_length_matched,v2_no_attention,3,215,1.0,0.0,1.0,1.0,1.0
+exact_length_matched,attention_only,3,215,1.0,0.0,1.0,1.0,1.0
+exact_length_matched,v2_all,3,215,1.0,0.0,1.0,1.0,1.0

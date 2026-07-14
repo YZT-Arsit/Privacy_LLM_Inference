@@ -1,0 +1,251 @@
+{
+  "schema": "authorized_v2_mia_feature_audit",
+  "version": "1.0",
+  "verdict": "FAIL",
+  "cohort": "exact_length_matched",
+  "matching_seed": 20260714,
+  "records_per_class": 215,
+  "feature_count": 803,
+  "disjoint_range_feature_count": 446,
+  "all_features_available_in_both_collection_paths": true,
+  "member_sha256": "39129012a451a98bbd373c7e039bebc79a495a8f16ce58e85596b1e9186f3985",
+  "nonmember_sha256": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6",
+  "statistics": {
+    "std": "sample (ddof=1)",
+    "missing": "non-finite value",
+    "zero_rate_denominator": "finite observations",
+    "roc_auc": "raw member-higher and direction-free separability",
+    "mutual_information": "sklearn kNN estimator, nats, random_state=20260714"
+  },
+  "failed_rules": [
+    "source_file",
+    "member_label_or_split_identity"
+  ],
+  "family_summary": [
+    {
+      "tensor_family": "transformed_hidden",
+      "features": 25,
+      "layers": "0-23, final",
+      "transform_invariant": 25,
+      "runtime_metadata_derived": 0,
+      "available_in_both_paths": 25,
+      "disjoint_ranges": 23
+    },
+    {
+      "tensor_family": "masked_logits",
+      "features": 9,
+      "layers": "final",
+      "transform_invariant": 9,
+      "runtime_metadata_derived": 0,
+      "available_in_both_paths": 9,
+      "disjoint_ranges": 8
+    },
+    {
+      "tensor_family": "masked_q",
+      "features": 96,
+      "layers": "0-23",
+      "transform_invariant": 96,
+      "runtime_metadata_derived": 0,
+      "available_in_both_paths": 96,
+      "disjoint_ranges": 66
+    },
+    {
+      "tensor_family": "masked_k",
+      "features": 96,
+      "layers": "0-23",
+      "transform_invariant": 96,
+      "runtime_metadata_derived": 0,
+      "available_in_both_paths": 96,
+      "disjoint_ranges": 64
+    },
+    {
+      "tensor_family": "masked_v",
+      "features": 96,
+      "layers": "0-23",
+      "transform_invariant": 96,
+      "runtime_metadata_derived": 0,
+      "available_in_both_paths": 96,
+      "disjoint_ranges": 72
+    },
+    {
+      "tensor_family": "attention_scores",
+      "features": 480,
+      "layers": "0-23",
+      "transform_invariant": 480,
+      "runtime_metadata_derived": 0,
+      "available_in_both_paths": 480,
+      "disjoint_ranges": 213
+    },
+    {
+      "tensor_family": "tensor_shapes",
+      "features": 1,
+      "layers": "global",
+      "transform_invariant": 1,
+      "runtime_metadata_derived": 1,
+      "available_in_both_paths": 1,
+      "disjoint_ranges": 0
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "transformed_hidden.layer_00.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_01.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_02.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_03.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_04.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_05.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_06.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_07.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_08.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_09.last_l2",
+      "roc_auc_member_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_11.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_12.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_13.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_14.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_15.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_16.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_17.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_18.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_19.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_20.last_l2",
+      "roc_auc_member_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "mutual_information_nats": 0.6943113233361704,
+      "disjoint_ranges": true
+    }
+  ]
+}

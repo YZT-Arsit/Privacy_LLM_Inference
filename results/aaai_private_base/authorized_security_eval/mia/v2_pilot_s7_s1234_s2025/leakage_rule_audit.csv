@@ -1,0 +1,8 @@
+forbidden_signal,directly_selected,empirically_encoded,pass,evidence
+source_file,False,True,False,446 disjoint-range numerical features identify the aligned source cohort
+run_or_session_id,False,False,True,not selected; same run_id sets across paths=True
+checkpoint_id,False,False,True,not selected; identical package metadata across paths=True
+training_or_eval_mode,False,False,True,no training/eval-mode feature or field is selected
+step_or_epoch,False,False,True,no step/epoch feature or field is selected
+path_dependent_tensor_presence_flag,False,False,True,all 803 columns are available in both paths=True
+member_label_or_split_identity,False,True,False,446 features have disjoint member/nonmember ranges
