@@ -32,6 +32,7 @@ ENV_A10 = (f"PYTHONPATH={RA10}/src PB_PKG_DIR={RA10}/results/aaai_private_base/p
 DATA = f"{RA10}/results/aaai_private_base/generative_lora/data"
 E2E_TEMPLATE = "User:\nGenerate a natural-language description for the following restaurant attributes:\n{mr}\n\nAssistant:\n"
 LABEL_SCHEMA = "causal_lm_shifted_ignore_index_-100"
+ALL_TARGETS = "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
 
 
 def sh(cmd, timeout=7200):
@@ -59,6 +60,7 @@ def main():
     ap.add_argument("--profile", default="L12", choices=["L0", "L5", "L12"])
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--lr", type=float, default=1e-4)
+    ap.add_argument("--targets", default=ALL_TARGETS)
     ap.add_argument("--max-steps", type=int, default=250)
     ap.add_argument("--gen-in", default="e2e_test_gen.json")
     ap.add_argument("--gen-max", type=int, default=200)
@@ -70,6 +72,10 @@ def main():
     ap.add_argument("--sync-code", action="store_true")
     ap.add_argument("--timeout", type=int, default=10800)
     args = ap.parse_args()
+    targets = tuple(x.strip() for x in args.targets.split(",") if x.strip())
+    allowed_targets = set(ALL_TARGETS.split(","))
+    if not targets or len(set(targets)) != len(targets) or set(targets) - allowed_targets:
+        raise ValueError("--targets must be a non-empty duplicate-free subset of " + ALL_TARGETS)
     OUT.mkdir(parents=True, exist_ok=True)
     tag = args.run_tag or f"e2e_{args.profile}_s{args.seed}_st{args.max_steps}"
     run_id = f"{tag}-{int(time.time())}-{secrets.token_hex(3)}"
@@ -117,6 +123,7 @@ def main():
                "source_hashes": source_hashes,
                "hmac_key_commitment": hmac_key_commitment, "nonce": nonce, "debug_false_required": True,
                "tokenizer_hash": TOK_HASH, "dataset_id": "e2e_nlg", "task": "clm"}
+    binding["lora_targets"] = list(targets)
     tdx_sess = {"session_key_hex": session_key.hex(), "run_id": run_id, "labels": [0],
                 "gamma_bundle": "/tmp/o1c_bundle.pt", "vocab_seed": 8000,
                 "attest": bool(args.attest), "attest_out": "/tmp/e2e_attest",
@@ -124,6 +131,7 @@ def main():
                 "package_root_hash": PKG_ROOT, "ckpt_dir": "/tmp/l12_ckpt_e2e",
                 "model_config_hash": MODEL_CFG_HASH, "service_hash": svc_hash,
                 "dataset_id": "e2e_nlg", "task": "clm", "template_hash": tmpl_hash,
+                "lora_targets": list(targets),
                 "label_schema_hash": lsch_hash, "tokenizer_hash": TOK_HASH,
                 "batch_label_tables": {"train": rlt}, "batch_schedules": {"train": rsched},
                 "model_cfg": {"num_attention_heads": 14, "num_key_value_heads": 2,
@@ -140,6 +148,7 @@ def main():
     a10(f"mkdir -p {RA10}/results/aaai_private_base/generative_lora/protected_runs")
     result = {"tag": tag, "run_id": run_id, "profile": args.profile, "seed": args.seed,
               "lr": args.lr, "max_steps": args.max_steps, "attest": bool(args.attest),
+              "lora_targets": list(targets),
               "endpoints": {"a10_pub": A10_PUB, "tdx_pub": TDX, "tdx_priv": TDX_PRIV}}
 
     # ---------------- build robust A10-side nohup driver (survives control-master drops) ----------------
@@ -152,6 +161,7 @@ def main():
         f"--profile {args.profile} --task clm --dataset-id e2e_nlg --train-split train "
         f"--eval-split validation --eval-max 0 --train-data {train_data} --schedule {sched_a10} "
         f"--max-steps {args.max_steps} --lr {args.lr} --seed {args.seed} --max-seq 256 "
+        f"--targets {','.join(targets)} "
         f"--template-hash {tmpl_hash} --tokenizer-hash {TOK_HASH} --label-schema-hash {lsch_hash} "
         f"--tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx --service-cmd \"{service_cmd}\" "
         f"--out {out_json} --adapter-id {run_id}{req} || {{ echo G2_TRAIN_FAILED; exit 1; }}")

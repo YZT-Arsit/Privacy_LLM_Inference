@@ -1,0 +1,20 @@
+{
+  "tag": "e2e_T1_qv_s1234_smoke",
+  "run_id": "e2e_T1_qv_s1234_smoke-1783992794-ff36e6",
+  "profile": "L12",
+  "seed": 1234,
+  "lr": 0.0002,
+  "max_steps": 1,
+  "attest": true,
+  "lora_targets": [
+    "q_proj",
+    "v_proj"
+  ],
+  "endpoints": {
+    "a10_pub": "root@39.107.123.173",
+    "tdx_pub": "root@39.96.43.122",
+    "tdx_priv": "172.30.25.153"
+  },
+  "g2_wall_sec": 42.1,
+  "completed": true
+}

@@ -154,13 +154,20 @@ class TrustedAdamW:
     gb: gamma bundle {"ga":{l:tensor}, "gm":{l:tensor}, "nr_seed", "num_layers", "hidden"}.
     """
     def __init__(self, gb, cfg, lr, b1=0.9, b2=0.999, eps=1e-8, wd=0.01, state_dtype=DT,
-                 optimizer="adamw", mom=0.9):
+                 optimizer="adamw", mom=0.9, active_targets=None):
         self.optimizer = optimizer   # "adamw" | "sgd" | "momentum" (plaintext-domain optimizer in enclave)
         self.mom = mom               # momentum coefficient (used only when optimizer == "momentum")
         # state_dtype: authoritative master + m + v dtype. FP32 for the frozen mixed-precision
         # deployment profile; FP64 for the exactness self-test. Transforms are precomputed in the
         # SAME dtype so the un-fold->AdamW->re-fold pipeline is self-consistent at that precision.
         self.sdt = state_dtype
+        active = set(active_targets) if active_targets is not None else set(TRUSTED_A) | set(TRUSTED_B)
+        unknown = active - (set(TRUSTED_A) | set(TRUSTED_B) |
+                            {"o_proj", "down_proj"})
+        if unknown:
+            raise ValueError(f"unknown LoRA target(s): {sorted(unknown)}")
+        self.trusted_A = tuple(p for p in TRUSTED_A if p in active)
+        self.trusted_B = tuple(p for p in TRUSTED_B if p in active)
         self.L = gb["num_layers"]; H = gb["hidden"]
         self.nh = cfg["num_attention_heads"]; self.nkv = cfg["num_key_value_heads"]
         self.hd = H // self.nh
@@ -179,15 +186,17 @@ class TrustedAdamW:
         self.toutB = {}     # per (l,proj) -> Tout (Bq/Bk); B is orthogonal (no gamma), already correct
         for l in range(self.L):
             ga = gb["ga"][l].to(self.sdt); gm = gb["gm"][l].to(self.sdt)
-            for p in TRUSTED_A:
+            for p in self.trusted_A:
                 g = ga if p in ATTN else gm
                 foldM = torch.diag(g) @ Nr           # A_tilde = A_plain @ foldM
                 gradMT = NrT @ torch.diag(g)         # gA_plain = gA_tilde @ gradMT
                 unfoldMinv = NrT @ torch.diag(1.0 / g)  # A_plain = A_tilde @ unfoldMinv
                 self.tinA[(l, p)] = (foldM, gradMT, unfoldMinv)
             Bl = rope_rot(self.hd, 1000 + l).to(self.sdt)
-            self.toutB[(l, "q_proj")] = torch.block_diag(*([Bl] * self.nh))
-            self.toutB[(l, "k_proj")] = torch.block_diag(*([Bl] * self.nkv))
+            if "q_proj" in self.trusted_B:
+                self.toutB[(l, "q_proj")] = torch.block_diag(*([Bl] * self.nh))
+            if "k_proj" in self.trusted_B:
+                self.toutB[(l, "k_proj")] = torch.block_diag(*([Bl] * self.nkv))
         self.stateA = {}    # (l,proj) -> [theta_plain, m, v]
         self.stateB = {}
         self.t = 0
@@ -200,11 +209,11 @@ class TrustedAdamW:
 
     # ---- init: un-fold initial masked factors to plaintext, zero moments ----
     def init_factor(self, l, proj, A_tilde=None, B_tilde=None):
-        if A_tilde is not None and proj in TRUSTED_A:
+        if A_tilde is not None and proj in self.trusted_A:
             foldM, gradMT, unfoldMinv = self.tinA[(l, proj)]
             Ap = A_tilde.to(self.sdt) @ unfoldMinv    # A_plain = A_tilde @ M^-1
             self.stateA[(l, proj)] = [Ap, torch.zeros_like(Ap), torch.zeros_like(Ap)]
-        if B_tilde is not None and proj in TRUSTED_B:
+        if B_tilde is not None and proj in self.trusted_B:
             Tout = self.toutB[(l, proj)]
             # B_tilde = Tout.T @ B_plain  ->  B_plain = Tout @ B_tilde
             Bp = Tout @ B_tilde.to(self.sdt)
@@ -223,12 +232,12 @@ class TrustedAdamW:
     def step(self, gA_tilde: dict, gB_tilde: dict):
         self.t += 1
         outA, outB = {}, {}
-        expectedA = {(l, p) for l in range(self.L) for p in TRUSTED_A}
-        expectedB = {(l, p) for l in range(self.L) for p in TRUSTED_B}
+        expectedA = {(l, p) for l in range(self.L) for p in self.trusted_A}
+        expectedB = {(l, p) for l in range(self.L) for p in self.trusted_B}
         gotA = set(); gotB = set()
         for k, gt in gA_tilde.items():
             l, proj = int(k.split(".", 1)[0]), k.split(".", 1)[1]
-            if proj not in TRUSTED_A or (l, proj) not in self.stateA:
+            if proj not in self.trusted_A or (l, proj) not in self.stateA:
                 raise KeyError(f"stale/missing trusted A state {k}")
             foldM, gradMT, unfoldMinv = self.tinA[(l, proj)]
             gA_plain = gt.to(self.sdt) @ gradMT       # gA_plain = gA_tilde @ M^T
@@ -239,7 +248,7 @@ class TrustedAdamW:
             gotA.add((l, proj))
         for k, gt in gB_tilde.items():
             l, proj = int(k.split(".", 1)[0]), k.split(".", 1)[1]
-            if proj not in TRUSTED_B or (l, proj) not in self.stateB:
+            if proj not in self.trusted_B or (l, proj) not in self.stateB:
                 raise KeyError(f"stale/missing trusted B state {k}")
             Tout = self.toutB[(l, proj)]
             gB_plain = Tout @ gt.to(self.sdt)  # Tout_iT @ gBc, Tout_iT == Tout (orthogonal)
@@ -286,7 +295,8 @@ class TrustedAdamW:
                 "v_transport": "exact_permutation" if is_signed_perm else "reconstructed_zero"}
 
     def state_present(self):
-        return len(self.stateA) == self.L * len(TRUSTED_A) and len(self.stateB) == self.L * len(TRUSTED_B)
+        return (len(self.stateA) == self.L * len(self.trusted_A)
+                and len(self.stateB) == self.L * len(self.trusted_B))
 
     # ---- durable STANDARD-AEAD checkpoint / recovery (ChaCha20-Poly1305; multi-step restart continuity) ----
     def checkpoint(self, session_key: bytes) -> bytes:
@@ -302,7 +312,8 @@ class TrustedAdamW:
                     "stateB": {f"{l}.{p}": [x.cpu() for x in s] for (l, p), s in self.stateB.items()},
                     "t": self.t, "version": self.version, "checkpoint_seq": self.checkpoint_seq,
                     "hparams": [self.lr, self.b1, self.b2, self.eps, self.wd],
-                    "binding": self.binding, "sdt": str(self.sdt)}, buf)
+                    "binding": self.binding, "sdt": str(self.sdt),
+                    "trusted_A": list(self.trusted_A), "trusted_B": list(self.trusted_B)}, buf)
         aad = canonical_aad(self.binding, self.version, self.checkpoint_seq)
         return aead_seal_std(session_key, buf.getvalue(), aad, nonce_ledger=self.nonce_ledger)
 
@@ -325,6 +336,8 @@ class TrustedAdamW:
                        for k, s in d["stateA"].items()}
         self.stateB = {(int(k.split(".")[0]), k.split(".", 1)[1]): [x.to(self.sdt) for x in s]
                        for k, s in d["stateB"].items()}
+        self.trusted_A = tuple(d.get("trusted_A", sorted({p for _, p in self.stateA})))
+        self.trusted_B = tuple(d.get("trusted_B", sorted({p for _, p in self.stateB})))
         self.t = d["t"]; self.version = d["version"]; self.binding = b
         self.checkpoint_seq = d.get("checkpoint_seq", cseq)
         return {"restored_version": self.version, "restored_t": self.t, "restored_checkpoint_seq": self.checkpoint_seq}

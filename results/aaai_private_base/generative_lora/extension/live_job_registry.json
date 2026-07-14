@@ -1,7 +1,7 @@
 {
   "schema": "dual_pair_live_job_registry",
   "version": "1.0",
-  "updated_at": "2026-07-14T04:34:51+08:00",
+  "updated_at": "2026-07-14T09:36:12+08:00",
   "duplicate_execution_allowed": false,
   "launch_guard": {
     "checks": [
@@ -20,11 +20,11 @@
       "tdx_public": "39.96.43.122",
       "a10_private": "172.30.25.154",
       "tdx_private": "172.30.25.153",
-      "cell": "G2_exact_protected_E2E_L12_seed7",
-      "run_tag": "e2e_L12_s7_extension",
-      "remote_driver_pid": 47293,
+      "cell": "T1_qv_exact_protected_E2E_seed1234",
+      "run_tag": "e2e_T1_qv_s1234_protected",
+      "remote_driver_pid": 59219,
       "status": "running",
-      "last_verified_step": 279,
+      "last_verified_step": 1,
       "last_verified_finite": true
     },
     {
@@ -37,7 +37,7 @@
       "run_tag": "e2e_L12_s2025_extension",
       "remote_driver_pid": 6252,
       "status": "running",
-      "last_verified_step": 3,
+      "last_verified_step": 665,
       "last_verified_finite": true
     }
   ],

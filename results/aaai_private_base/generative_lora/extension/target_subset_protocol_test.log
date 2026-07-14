@@ -1,0 +1,56 @@
+{
+  "PASS": true,
+  "profiles": {
+    "T1": {
+      "targets": [
+        "q_proj",
+        "v_proj"
+      ],
+      "trusted_A_factors": 48,
+      "trusted_B_factors": 24,
+      "missing": 0,
+      "checkpoint_restore": true
+    },
+    "T2": {
+      "targets": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj"
+      ],
+      "trusted_A_factors": 72,
+      "trusted_B_factors": 48,
+      "missing": 0,
+      "checkpoint_restore": true
+    },
+    "T3": {
+      "targets": [
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "trusted_A_factors": 48,
+      "trusted_B_factors": 0,
+      "missing": 0,
+      "checkpoint_restore": true
+    },
+    "T4": {
+      "targets": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "trusted_A_factors": 120,
+      "trusted_B_factors": 48,
+      "missing": 0,
+      "checkpoint_restore": true
+    }
+  }
+}
+real 3.31
+user 4.85
+sys 2.82

@@ -1,0 +1,19 @@
+{
+  "cells": {
+    "G2_s7": {
+      "BLEU": 64.63,
+      "chrF": 72.16,
+      "ROUGE_L": 60.81,
+      "invalid_rate_pct": 0.0,
+      "repetition_pct": 2.94,
+      "avg_len": 32.1,
+      "n": 500,
+      "METEOR": "unavailable_no_nltk",
+      "NIST": "unavailable_no_nltk"
+    }
+  },
+  "paired_vs_G1_s7": {},
+  "has_nltk": false,
+  "baseline": "G1_s7",
+  "metric_note": "E2E multi-reference; BLEU/chrF=sacrebleu, ROUGE-L=local LCS-F1."
+}

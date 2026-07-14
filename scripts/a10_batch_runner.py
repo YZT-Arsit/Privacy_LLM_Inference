@@ -57,6 +57,8 @@ def main():
     ap.add_argument("--lr", type=float, default=5e-4); ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--template-hash", required=True); ap.add_argument("--tokenizer-hash", required=True)
     ap.add_argument("--label-schema-hash", required=True)
+    ap.add_argument("--targets", default=",".join(LORA_TARGETS),
+                    help="comma-separated LoRA target subset; default preserves the frozen all-seven profile")
     ap.add_argument("--out", required=True); ap.add_argument("--adapter-id", default="")
     ap.add_argument("--checkpoint-at", type=int, default=-1)
     ap.add_argument("--ledger-checkpoint-at", type=int, default=-1)
@@ -72,6 +74,12 @@ def main():
     ap.add_argument("--require-attestation", action="store_true",  # PHASE 1.1: fail-closed if attested session invalid
                     help="refuse optimizer init / any training-eval step unless the enclave's attested session verified")
     a = ap.parse_args()
+    active_targets = tuple(x.strip() for x in a.targets.split(",") if x.strip())
+    if not active_targets or len(set(active_targets)) != len(active_targets):
+        raise ValueError("--targets must be a non-empty duplicate-free list")
+    unknown_targets = set(active_targets) - set(LORA_TARGETS)
+    if unknown_targets:
+        raise ValueError(f"unknown LoRA target(s): {sorted(unknown_targets)}")
     CDT = torch.float32 if a.profile == "L5" else torch.bfloat16
     MDT = torch.float32
     b1, b2, eps, wd = 0.9, 0.999, 1e-8, 0.01
@@ -92,7 +100,7 @@ def main():
     train_lora = a.profile in ("L5", "L12")
     if train_lora:
         for l in range(model.L):
-            for proj in LORA_TARGETS:
+            for proj in active_targets:
                 W = loader.tensors[f"L{l}.{proj}.w"]
                 A, B = rank_masked_init(l, proj, W.shape[1], W.shape[0], seed_base=seed_base)
                 master[(l, proj)] = [A.to(dev, MDT), B.to(dev, MDT)]
@@ -507,6 +515,7 @@ def main():
     Path(a.out).write_text(json.dumps({
         "run_id": run_id, "profile": a.profile, "task": a.task, "dataset_id": a.dataset_id,
         "seed": a.seed, "compute_dtype": str(CDT), "master_dtype": "fp32", "lr": a.lr,
+        "lora_targets": list(active_targets),
         "schedule_hash": schedule_hash, "steps_run": len(steps), "start_step": a.start_step,
         "attestation": attestation, "fail_closed_all_pass": all(x["passed"] for x in fc),
         "package_root_hash_matches": root == EXPECTED_ROOT_HASH, "eval": evalres,

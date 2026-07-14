@@ -30,9 +30,19 @@
       "note": "meaningful-output test without TDX-only mapping not yet run"
     },
     "R3": {
-      "status": "PENDING_MEASUREMENT",
+      "status": "COMPLETE_VERIFIED",
       "diagnostic_boundary_stub": true,
-      "note": "fail-closed local stub test not yet run"
+      "runtime_gate_checks": {
+        "tdx_invalid_attestation_refused": true,
+        "tdx_debug_true_refused": true,
+        "a10_invalid_session_refused": true,
+        "end_to_end_refused": true,
+        "all_contract_checks_passed": true
+      },
+      "initialization_succeeds": false,
+      "internal_forward_starts": false,
+      "meaningful_final_output": false,
+      "note": "invalid local diagnostic boundary is refused before protected execution"
     },
     "R4": {
       "status": "COMPLETE_VERIFIED",
@@ -68,6 +78,7 @@
     "lifecycle_gate.json": "b53e9deec3f9ae1b458facf33e1caedd666bba610e75e77440ad4aeb98c8be01",
     "negative_controls.json": "b481c35941f4e9c63519849caf0abb0f33b99b4e7a1e76321330b812f640d43b",
     "restart_reproducibility.json": "c882e1651c75a3fa7c437b856dcc6bbf2dd7c46831e53b11087372e0ab9b78ab",
+    "r3_attestation_gate.log": "a0be3ab691a4d623db97588d94d81bbb34905f38bebb4ca8ac2cfe136ef54cf1",
     "r4_direct_transport_faults.log": "53a27ccc0b37b40940e922472274495a70e081cd18c76bf250b24f801efe755a"
   }
 }

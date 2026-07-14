@@ -349,7 +349,8 @@ def main():
             _sdt = torch.float32 if hp.get("state_dtype", "fp32") == "fp32" else torch.float64
             tw = TrustedAdamW(gb, cfg["model_cfg"], lr=hp.get("lr", 1e-3), b1=hp.get("b1", 0.9),
                               b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01),
-                              state_dtype=_sdt, optimizer=hp.get("optimizer", "adamw"), mom=hp.get("mom", 0.9))
+                              state_dtype=_sdt, optimizer=hp.get("optimizer", "adamw"), mom=hp.get("mom", 0.9),
+                              active_targets=cfg.get("lora_targets"))
             tw.set_binding(run_id=run_id, package_root_hash=cfg.get("package_root_hash", "unpinned"),
                            adapter_id=hp.get("adapter_id", run_id),
                            optimizer_profile=hp.get("optimizer_profile", "L12_adamw"),
@@ -359,12 +360,12 @@ def main():
             bad = False
             for k, t in data.get("A", {}).items():
                 l_str, proj = k.split(".", 1); l = int(l_str)
-                if proj not in TRUSTED_A or any(s in k for s in FORBIDDEN):
+                if proj not in tw.trusted_A or any(s in k for s in FORBIDDEN):
                     counters["forbidden_key_rejected"] += 1; bad = True; break
                 tw.init_factor(l, proj, A_tilde=t)
             for k, t in data.get("B", {}).items():
                 l_str, proj = k.split(".", 1); l = int(l_str)
-                if proj not in TRUSTED_B or any(s in k for s in FORBIDDEN):
+                if proj not in tw.trusted_B or any(s in k for s in FORBIDDEN):
                     counters["forbidden_key_rejected"] += 1; bad = True; break
                 tw.init_factor(l, proj, B_tilde=t)
             if bad:
@@ -402,8 +403,13 @@ def main():
                 write_frame(fout, {"op": "reject", "reason": "incomplete_trusted_set", "seq": seq}); continue
             # Verify the re-folded runtime copy is EXACTLY master @ fold (regenerated from FP32 master,
             # not an independently-tracked BF16 tensor). Cheap invariant on one representative factor.
-            _lp = next(iter(tw.stateA)); _foldM = tw.tinA[_lp][0]
-            _match = bool(torch.allclose(outA[f"{_lp[0]}.{_lp[1]}"], tw.stateA[_lp][0] @ _foldM, atol=0, rtol=0))
+            if tw.stateA:
+                _lp = next(iter(tw.stateA)); _foldM = tw.tinA[_lp][0]
+                _match = bool(torch.allclose(outA[f"{_lp[0]}.{_lp[1]}"],
+                                             tw.stateA[_lp][0] @ _foldM, atol=0, rtol=0))
+            else:
+                # A GPU-only target set has no trusted runtime factor to compare.
+                _match = True
             counters["runtime_copy_matches_master_transform"] = _match
             counters["adamw_state_version"] = tw.version
             # return ONLY re-folded masked factors (never m/v/gamma/plaintext theta), FP32 master image
@@ -463,7 +469,7 @@ def main():
             _sdt = torch.float32 if hp.get("state_dtype", "fp32") == "fp32" else torch.float64
             tw = TrustedAdamW(gb, cfg["model_cfg"], lr=hp.get("lr", 1e-3), b1=hp.get("b1", 0.9),
                               b2=hp.get("b2", 0.999), eps=hp.get("eps", 1e-8), wd=hp.get("wd", 0.01),
-                              state_dtype=_sdt)
+                              state_dtype=_sdt, active_targets=cfg.get("lora_targets"))
             try:
                 info = tw.restore(ckpt_path.read_bytes(), session_key=key,
                                   expected_binding=header["expected_binding"],

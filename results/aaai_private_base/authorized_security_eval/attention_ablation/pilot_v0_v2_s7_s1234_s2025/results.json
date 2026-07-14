@@ -1,0 +1,60 @@
+{
+  "schema": "authorized_attention_leakage_pilot",
+  "version": "1.0",
+  "manifest_sha256": "dfedb54ebd2a6fe7c8499933efa4e7223ab4dae8ec93660c6b0431134eb54191",
+  "queries_sha256": "dffadc4c6dc538663999572ea2a65b82b254b850289571c77aced7732cc627cb",
+  "seeds": [
+    7,
+    1234,
+    2025
+  ],
+  "records": 500,
+  "evaluator_labels_not_in_attack_views": true,
+  "increments": [
+    {
+      "task": "prompt_category",
+      "metric": "accuracy",
+      "v2_with_minus_without_attention": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0
+    },
+    {
+      "task": "prompt_category",
+      "metric": "macro_f1",
+      "v2_with_minus_without_attention": 0.0,
+      "ci95_low": 0.0,
+      "ci95_high": 0.0
+    },
+    {
+      "task": "sequence_length",
+      "metric": "mae_tokens",
+      "v2_with_minus_without_attention": -0.06841958780836367,
+      "ci95_low": -0.09742290971889386,
+      "ci95_high": -0.03941626589783348
+    },
+    {
+      "task": "sequence_length",
+      "metric": "exact_rounded",
+      "v2_with_minus_without_attention": 0.020000000000000018,
+      "ci95_low": -0.004841377117503307,
+      "ci95_high": 0.04484137711750334
+    },
+    {
+      "task": "sequence_length",
+      "metric": "within_1_token",
+      "v2_with_minus_without_attention": 0.001666666666666668,
+      "ci95_low": -0.005504421216249109,
+      "ci95_high": 0.008837754549582445
+    }
+  ],
+  "complete_tasks": [
+    "prompt_category",
+    "sequence_length"
+  ],
+  "pending_tasks": [
+    "phrase_token_relation",
+    "repeated_input_linking",
+    "membership",
+    "attention_assisted_surrogate_fidelity"
+  ]
+}

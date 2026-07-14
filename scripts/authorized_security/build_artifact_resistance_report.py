@@ -18,6 +18,8 @@ def main() -> None:
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--r4-log", type=Path,
                     help="Measured local direct-transport wrong-session/HMAC fault log")
+    ap.add_argument("--r3-log", type=Path,
+                    help="Measured local diagnostic-boundary attestation gate log")
     args = ap.parse_args()
     restart = json.loads((args.evidence / "restart_reproducibility.json").read_text())
     lifecycle = json.loads((args.evidence / "lifecycle_gate.json").read_text())
@@ -29,6 +31,18 @@ def main() -> None:
                      "counters_consistent")
     }
     r4_complete = bool(r4_text) and all(r4_checks.values())
+    r3_text = args.r3_log.read_text(errors="replace") if args.r3_log else ""
+    r3_checks = {
+        "tdx_invalid_attestation_refused":
+            "ok   TDX: required + NOT verified -> refused" in r3_text,
+        "tdx_debug_true_refused": "ok   TDX: required + debug TRUE -> refused" in r3_text,
+        "a10_invalid_session_refused":
+            "ok   A10: --require-attestation but session invalid -> refuses" in r3_text,
+        "end_to_end_refused":
+            "ok   END-TO-END invalid attestation: TDX refuses AND A10 refuses" in r3_text,
+        "all_contract_checks_passed": "[test_attestation_gate] PASS=12 FAIL=0" in r3_text,
+    }
+    r3_complete = bool(r3_text) and all(r3_checks.values())
     conditions = {
         "R0": {"status": "PENDING_MEASUREMENT", "trusted_service": False,
                "note": "package-only initialization/forward test not yet run"},
@@ -36,8 +50,13 @@ def main() -> None:
                "note": "runtime-without-boundary forward test not yet run"},
         "R2": {"status": "PENDING_MEASUREMENT", "researcher_generated_inputs": True,
                "note": "meaningful-output test without TDX-only mapping not yet run"},
-        "R3": {"status": "PENDING_MEASUREMENT", "diagnostic_boundary_stub": True,
-               "note": "fail-closed local stub test not yet run"},
+        "R3": {"status": "COMPLETE_VERIFIED" if r3_complete else "PENDING_MEASUREMENT",
+               "diagnostic_boundary_stub": True, "runtime_gate_checks": r3_checks,
+               "initialization_succeeds": False if r3_complete else None,
+               "internal_forward_starts": False if r3_complete else None,
+               "meaningful_final_output": False if r3_complete else None,
+               "note": ("invalid local diagnostic boundary is refused before protected execution"
+                        if r3_complete else "fail-closed local stub test not yet run")},
         "R4": {"status": "COMPLETE_VERIFIED" if r4_complete else "PARTIAL",
                "different_session_binding": True,
                "stale_adapter_version_rejected": negative["controls"].get("stale_version") == "rejected_ok",
@@ -64,6 +83,7 @@ def main() -> None:
         "complete": all(x["status"] == "COMPLETE_VERIFIED" for x in conditions.values()),
         "source_hashes": {
             **{p.name: sha256(p) for p in sorted(args.evidence.glob("*.json"))},
+            **({str(args.r3_log.name): sha256(args.r3_log)} if args.r3_log else {}),
             **({str(args.r4_log.name): sha256(args.r4_log)} if args.r4_log else {}),
         },
     }
