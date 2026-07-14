@@ -1,0 +1,10 @@
+date: illegal option -- -
+usage: date [-jnRu] [-I[date|hours|minutes|seconds|ns]] [-f input_fmt]
+            [ -z output_zone ] [-r filename|seconds] [-v[+|-]val[y|m|w|d|H|M|S]]
+            [[[[mm]dd]HH]MM[[cc]yy][.SS] | new_date] [+output_fmt]
+ scheduler_start pid=83062
+date: illegal option -- -
+usage: date [-jnRu] [-I[date|hours|minutes|seconds|ns]] [-f input_fmt]
+            [ -z output_zone ] [-r filename|seconds] [-v[+|-]val[y|m|w|d|H|M|S]]
+            [[[[mm]dd]HH]MM[[cc]yy][.SS] | new_date] [+output_fmt]
+2026-07-14T15:26:36+08:00 scheduler_start pid=83097

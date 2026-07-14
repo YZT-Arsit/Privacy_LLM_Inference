@@ -1,0 +1,443 @@
+{
+  "schema": "g1_g2_generation_metric_audit",
+  "version": "2.0",
+  "primary_metrics": [
+    "corpus_bleu",
+    "corpus_chrf",
+    "rouge_l"
+  ],
+  "rouge_l_definition": "Arithmetic mean over matched examples of 100 \u00d7 maximum whitespace-token LCS F1 across that example's references.",
+  "bootstrap": {
+    "replicates": 10000,
+    "method": "Resample matched sample IDs with replacement; recompute complete corpus BLEU/chrF from resampled sufficient statistics and all other aggregate metrics from the resampled examples."
+  },
+  "metric_software": {
+    "sacrebleu_version": "2.6.0",
+    "bleu_signature": "nrefs:45|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0",
+    "chrf_signature": "nrefs:45|case:mixed|eff:yes|nc:6|nw:0|space:no|version:2.6.0"
+  },
+  "seed_results": [
+    {
+      "seed": 7,
+      "matched_samples": 500,
+      "g1_path": "results/aaai_private_base/generative_lora/generations/g1_final_s7_test.jsonl",
+      "g1_sha256": "0cfef06b7ace081b71303ca05f7709deb6562b521803f5dc9d9cff9b034aeb17",
+      "g2_path": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s7_extension.jsonl",
+      "g2_sha256": "70a93b9d50d4cb67037a04f70e0cf9a608ff93f8a5b64dd095e06cae686c2aec",
+      "metrics": {
+        "corpus_bleu": {
+          "g1": 63.93412043235396,
+          "g2": 64.62955962184158,
+          "difference_g2_minus_g1": 0.6954391894876224,
+          "paired_bootstrap_ci95": [
+            -0.4212576739762038,
+            1.8046269695416166
+          ]
+        },
+        "corpus_chrf": {
+          "g1": 72.41341651669777,
+          "g2": 72.15772619771829,
+          "difference_g2_minus_g1": -0.25569031897947525,
+          "paired_bootstrap_ci95": [
+            -1.0298103100554428,
+            0.5454337323820851
+          ]
+        },
+        "mean_sentence_bleu": {
+          "g1": 62.83417833399691,
+          "g2": 62.72143865303203,
+          "difference_g2_minus_g1": -0.11273968096487863,
+          "paired_bootstrap_ci95": [
+            -1.219364559344294,
+            0.9687491683966828
+          ]
+        },
+        "mean_sentence_chrf": {
+          "g1": 72.63006497945653,
+          "g2": 72.20900982063263,
+          "difference_g2_minus_g1": -0.4210551588239042,
+          "paired_bootstrap_ci95": [
+            -1.1505194101429188,
+            0.2996988623881692
+          ]
+        },
+        "rouge_l": {
+          "g1": 61.31097758098251,
+          "g2": 60.81336745671143,
+          "difference_g2_minus_g1": -0.49761012427107687,
+          "paired_bootstrap_ci95": [
+            -1.4484874706644981,
+            0.45587522711167916
+          ]
+        },
+        "output_length": {
+          "g1": 33.23,
+          "g2": 32.112,
+          "difference_g2_minus_g1": -1.117999999999995,
+          "paired_bootstrap_ci95": [
+            -1.6360499999999998,
+            -0.604
+          ]
+        },
+        "invalid_rate": {
+          "g1": 0.0,
+          "g2": 0.0,
+          "difference_g2_minus_g1": 0.0,
+          "paired_bootstrap_ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "repetition_bigram_fraction": {
+          "g1": 3.0526000000000004,
+          "g2": 2.9442,
+          "difference_g2_minus_g1": -0.1084000000000005,
+          "paired_bootstrap_ci95": [
+            -0.4118049999999999,
+            0.19040000000000004
+          ]
+        },
+        "repeated_output_rate": {
+          "g1": 50.6,
+          "g2": 53.4,
+          "difference_g2_minus_g1": 2.799999999999997,
+          "paired_bootstrap_ci95": [
+            -1.8,
+            7.4
+          ]
+        }
+      }
+    },
+    {
+      "seed": 1234,
+      "matched_samples": 500,
+      "g1_path": "results/aaai_private_base/generative_lora/generations/g1_final_s1234_test.jsonl",
+      "g1_sha256": "ec5a432031dcbfed61152e6a1b8299bfc55704568342e7890b412f49e9b7c76b",
+      "g2_path": "results/aaai_private_base/offline_analysis/confound_controlled_20260714/source_cache/g2_protected_e2e_L12_s1234_full.jsonl",
+      "g2_sha256": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31",
+      "metrics": {
+        "corpus_bleu": {
+          "g1": 63.98207906355511,
+          "g2": 65.88447189569074,
+          "difference_g2_minus_g1": 1.9023928321356252,
+          "paired_bootstrap_ci95": [
+            0.650117087920486,
+            2.941914057263817
+          ]
+        },
+        "corpus_chrf": {
+          "g1": 72.78274834641049,
+          "g2": 70.55866631653622,
+          "difference_g2_minus_g1": -2.2240820298742676,
+          "paired_bootstrap_ci95": [
+            -3.00599655860106,
+            -1.423106042342006
+          ]
+        },
+        "mean_sentence_bleu": {
+          "g1": 62.92592355825709,
+          "g2": 63.33924515918702,
+          "difference_g2_minus_g1": 0.4133216009299332,
+          "paired_bootstrap_ci95": [
+            -0.6686769849870395,
+            1.4626644329664316
+          ]
+        },
+        "mean_sentence_chrf": {
+          "g1": 72.94143440163141,
+          "g2": 70.7953487923461,
+          "difference_g2_minus_g1": -2.146085609285308,
+          "paired_bootstrap_ci95": [
+            -2.8317601602594804,
+            -1.45558756400973
+          ]
+        },
+        "rouge_l": {
+          "g1": 61.403031405136545,
+          "g2": 61.9561007374207,
+          "difference_g2_minus_g1": 0.5530693322841529,
+          "paired_bootstrap_ci95": [
+            -0.2875597955440344,
+            1.4069691785725698
+          ]
+        },
+        "output_length": {
+          "g1": 33.318,
+          "g2": 30.388,
+          "difference_g2_minus_g1": -2.929999999999996,
+          "paired_bootstrap_ci95": [
+            -3.446,
+            -2.406
+          ]
+        },
+        "invalid_rate": {
+          "g1": 0.0,
+          "g2": 0.0,
+          "difference_g2_minus_g1": 0.0,
+          "paired_bootstrap_ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "repetition_bigram_fraction": {
+          "g1": 3.4688000000000003,
+          "g2": 2.7912000000000003,
+          "difference_g2_minus_g1": -0.6776,
+          "paired_bootstrap_ci95": [
+            -1.017005,
+            -0.34178500000000017
+          ]
+        },
+        "repeated_output_rate": {
+          "g1": 52.4,
+          "g2": 45.2,
+          "difference_g2_minus_g1": -7.199999999999996,
+          "paired_bootstrap_ci95": [
+            -11.6,
+            -2.6
+          ]
+        }
+      }
+    },
+    {
+      "seed": 2025,
+      "matched_samples": 500,
+      "g1_path": "results/aaai_private_base/generative_lora/generations/g1_final_s2025_test.jsonl",
+      "g1_sha256": "744d1758db59cff389fa618e8682ea412f076be646257ace296e33da392906f2",
+      "g2_path": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s2025_extension.jsonl",
+      "g2_sha256": "1c7c7a7a12fc9845a9635b1634e8aa5c4fc3a0aabb1185ccfd566770de89fede",
+      "metrics": {
+        "corpus_bleu": {
+          "g1": 64.31178961431235,
+          "g2": 63.162311544034566,
+          "difference_g2_minus_g1": -1.1494780702777803,
+          "paired_bootstrap_ci95": [
+            -2.476003365740991,
+            0.1709338272648047
+          ]
+        },
+        "corpus_chrf": {
+          "g1": 72.425076437311,
+          "g2": 71.2552595816497,
+          "difference_g2_minus_g1": -1.1698168556613098,
+          "paired_bootstrap_ci95": [
+            -2.0547572640163594,
+            -0.26387251400772843
+          ]
+        },
+        "mean_sentence_bleu": {
+          "g1": 63.17218989570653,
+          "g2": 61.63109721128513,
+          "difference_g2_minus_g1": -1.5410926844214003,
+          "paired_bootstrap_ci95": [
+            -2.756531547331104,
+            -0.3447865167822865
+          ]
+        },
+        "mean_sentence_chrf": {
+          "g1": 72.55476213588123,
+          "g2": 71.38624615817596,
+          "difference_g2_minus_g1": -1.168515977705269,
+          "paired_bootstrap_ci95": [
+            -1.9390751454373016,
+            -0.3794781417915323
+          ]
+        },
+        "rouge_l": {
+          "g1": 61.57693265056492,
+          "g2": 60.57587196269399,
+          "difference_g2_minus_g1": -1.0010606878709325,
+          "paired_bootstrap_ci95": [
+            -2.065865827488765,
+            0.0734950312999551
+          ]
+        },
+        "output_length": {
+          "g1": 33.058,
+          "g2": 32.74,
+          "difference_g2_minus_g1": -0.31799999999999784,
+          "paired_bootstrap_ci95": [
+            -0.83005,
+            0.19
+          ]
+        },
+        "invalid_rate": {
+          "g1": 0.0,
+          "g2": 0.0,
+          "difference_g2_minus_g1": 0.0,
+          "paired_bootstrap_ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "repetition_bigram_fraction": {
+          "g1": 3.3731999999999998,
+          "g2": 4.2062,
+          "difference_g2_minus_g1": 0.8330000000000002,
+          "paired_bootstrap_ci95": [
+            0.4554,
+            1.2070349999999996
+          ]
+        },
+        "repeated_output_rate": {
+          "g1": 52.6,
+          "g2": 60.0,
+          "difference_g2_minus_g1": 7.399999999999999,
+          "paired_bootstrap_ci95": [
+            2.6,
+            12.0
+          ]
+        }
+      }
+    }
+  ],
+  "across_seed_descriptive_statistics": {
+    "corpus_bleu": {
+      "g1_mean": 64.07599637007381,
+      "g1_sample_sd": 0.2056060507331296,
+      "g2_mean": 64.55878102052229,
+      "g2_sample_sd": 1.3624597068668667,
+      "difference_mean": 0.4827846504484891,
+      "difference_sample_sd": 1.5370086095984834
+    },
+    "corpus_chrf": {
+      "g1_mean": 72.54041376680642,
+      "g1_sample_sd": 0.20994886232386836,
+      "g2_mean": 71.32388403196806,
+      "g2_sample_sd": 0.80173568729827,
+      "difference_mean": -1.2165297348383508,
+      "difference_sample_sd": 0.9850269294240582
+    },
+    "mean_sentence_bleu": {
+      "g1_mean": 62.977430595986846,
+      "g1_sample_sd": 0.1747932640696286,
+      "g2_mean": 62.56392700783473,
+      "g2_sample_sd": 0.8648987176311065,
+      "difference_mean": -0.41350358815211524,
+      "difference_sample_sd": 1.0113248714415366
+    },
+    "mean_sentence_chrf": {
+      "g1_mean": 72.70875383898972,
+      "g1_sample_sd": 0.2049946651405103,
+      "g2_mean": 71.46353492371823,
+      "g2_sample_sd": 0.7099926342458177,
+      "difference_mean": -1.2452189152714936,
+      "difference_sample_sd": 0.8650693724946192
+    },
+    "rouge_l": {
+      "g1_mean": 61.43031387889466,
+      "g1_sample_sd": 0.1350602635489723,
+      "g2_mean": 61.11511338560871,
+      "g2_sample_sd": 0.7379334806406724,
+      "difference_mean": -0.3152004932859522,
+      "difference_sample_sd": 0.7929596364216206
+    },
+    "output_length": {
+      "g1_mean": 33.202,
+      "g1_sample_sd": 0.13224220203853113,
+      "g2_mean": 31.74666666666667,
+      "g2_sample_sd": 1.2178166254955356,
+      "difference_mean": -1.4553333333333296,
+      "difference_sample_sd": 1.3382755072604937
+    },
+    "invalid_rate": {
+      "g1_mean": 0.0,
+      "g1_sample_sd": 0.0,
+      "g2_mean": 0.0,
+      "g2_sample_sd": 0.0,
+      "difference_mean": 0.0,
+      "difference_sample_sd": 0.0
+    },
+    "repetition_bigram_fraction": {
+      "g1_mean": 3.2982,
+      "g1_sample_sd": 0.21800082568650958,
+      "g2_mean": 3.313866666666667,
+      "g2_sample_sd": 0.7765605793068131,
+      "difference_mean": 0.01566666666666657,
+      "difference_sample_sd": 0.7629039869690901
+    },
+    "repeated_output_rate": {
+      "g1_mean": 51.86666666666667,
+      "g1_sample_sd": 1.1015141094572196,
+      "g2_mean": 52.86666666666667,
+      "g2_sample_sd": 7.414400402819726,
+      "difference_mean": 1.0,
+      "difference_sample_sd": 7.464583042608606
+    }
+  },
+  "hierarchical_exploratory_intervals": {
+    "corpus_bleu": {
+      "mean": 0.4440526190663384,
+      "exploratory_interval95": [
+        -1.151511290950057,
+        1.8776254524671614
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "corpus_chrf": {
+      "mean": -1.2203759175411963,
+      "exploratory_interval95": [
+        -2.2452460546769575,
+        -0.2172235156049439
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "mean_sentence_bleu": {
+      "mean": -0.41054659666303006,
+      "exploratory_interval95": [
+        -1.5803239515999266,
+        0.6231735184980799
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "mean_sentence_chrf": {
+      "mean": -1.249323238326616,
+      "exploratory_interval95": [
+        -2.1509061966297773,
+        -0.3697673478320804
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "rouge_l": {
+      "mean": -0.3140504045919409,
+      "exploratory_interval95": [
+        -1.2193876324411785,
+        0.6114674003788095
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "output_length": {
+      "mean": -1.4488866,
+      "exploratory_interval95": [
+        -2.872699999999999,
+        -0.336
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "invalid_rate": {
+      "mean": 0.0,
+      "exploratory_interval95": [
+        0.0,
+        0.0
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "repetition_bigram_fraction": {
+      "mean": 0.02379716000000003,
+      "exploratory_interval95": [
+        -0.6471466666666665,
+        0.8078666666666666
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    },
+    "repeated_output_rate": {
+      "mean": 0.9979866666666667,
+      "exploratory_interval95": [
+        -6.868333333333332,
+        7.8
+      ],
+      "interpretation": "Exploratory seed-and-example resampling interval; not an equivalence test."
+    }
+  },
+  "claim_guard": "No three-seed interval in this report is an equivalence test."
+}

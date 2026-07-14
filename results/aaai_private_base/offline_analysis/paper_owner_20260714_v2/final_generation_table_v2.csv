@@ -1,0 +1,8 @@
+method,seed,corpus_bleu,corpus_chrf,rouge_l,output_length,invalid_rate,repetition_bigram_fraction,paired_bleu_ci95,source,provenance
+G0,,41.33347965412229,59.13220104178304,47.347145412945146,34.184,0.0,1.8848000000000003,,results/aaai_private_base/generative_lora/generations/g0_base_test.jsonl,MEASURED
+G1,7,63.93412043235396,72.41341651669777,61.31097758098251,33.23,0.0,3.0526000000000004,,results/aaai_private_base/generative_lora/generations/g1_final_s7_test.jsonl,MEASURED
+G2,7,64.62955962184158,72.15772619771829,60.81336745671143,32.112,0.0,2.9442,"[-0.4212576739762038, 1.8046269695416166]",results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s7_extension.jsonl,MEASURED
+G1,1234,63.98207906355511,72.78274834641049,61.403031405136545,33.318,0.0,3.4688000000000003,,results/aaai_private_base/generative_lora/generations/g1_final_s1234_test.jsonl,MEASURED
+G2,1234,65.88447189569074,70.55866631653622,61.9561007374207,30.388,0.0,2.7912000000000003,"[0.650117087920486, 2.941914057263817]",results/aaai_private_base/offline_analysis/confound_controlled_20260714/source_cache/g2_protected_e2e_L12_s1234_full.jsonl,MEASURED
+G1,2025,64.31178961431235,72.425076437311,61.57693265056492,33.058,0.0,3.3731999999999998,,results/aaai_private_base/generative_lora/generations/g1_final_s2025_test.jsonl,MEASURED
+G2,2025,63.162311544034566,71.2552595816497,60.57587196269399,32.74,0.0,4.2062,"[-2.476003365740991, 0.1709338272648047]",results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s2025_extension.jsonl,MEASURED

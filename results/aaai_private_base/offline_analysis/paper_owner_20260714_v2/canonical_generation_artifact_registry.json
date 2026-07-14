@@ -1,0 +1,62 @@
+{
+  "schema": "canonical_generation_artifact_registry",
+  "version": "2.0",
+  "selection_policy": "Callers must select by logical_id, verify size and SHA-256, and fail closed before parsing. Alternate paths are never selected implicitly.",
+  "artifacts": {
+    "g0_base": {
+      "path": "results/aaai_private_base/generative_lora/generations/g0_base_test.jsonl",
+      "size_bytes": 973533,
+      "sha256": "b225a5c48951b5095fe774baf1e62c1fea387c527a6076c577e4f70c2a947450",
+      "records": 500
+    },
+    "g1_seed7": {
+      "path": "results/aaai_private_base/generative_lora/generations/g1_final_s7_test.jsonl",
+      "size_bytes": 968624,
+      "sha256": "0cfef06b7ace081b71303ca05f7709deb6562b521803f5dc9d9cff9b034aeb17",
+      "records": 500
+    },
+    "g1_seed1234": {
+      "path": "results/aaai_private_base/generative_lora/generations/g1_final_s1234_test.jsonl",
+      "size_bytes": 968843,
+      "sha256": "ec5a432031dcbfed61152e6a1b8299bfc55704568342e7890b412f49e9b7c76b",
+      "records": 500
+    },
+    "g1_seed2025": {
+      "path": "results/aaai_private_base/generative_lora/generations/g1_final_s2025_test.jsonl",
+      "size_bytes": 967357,
+      "sha256": "744d1758db59cff389fa618e8682ea412f076be646257ace296e33da392906f2",
+      "records": 500
+    },
+    "g2_seed7": {
+      "path": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s7_extension.jsonl",
+      "size_bytes": 1019452,
+      "sha256": "70a93b9d50d4cb67037a04f70e0cf9a608ff93f8a5b64dd095e06cae686c2aec",
+      "records": 500
+    },
+    "g2_seed1234": {
+      "path": "results/aaai_private_base/offline_analysis/confound_controlled_20260714/source_cache/g2_protected_e2e_L12_s1234_full.jsonl",
+      "size_bytes": 1010375,
+      "sha256": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31",
+      "records": 500,
+      "canonical_reason": "Exact size and SHA-256 match the immutable completion manifest; the ordinary workspace copy is truncated.",
+      "completion_manifest": "results/aaai_private_base/generative_lora/monitor/e2e_L12_s1234_full/completion_manifest.json",
+      "completion_manifest_sha256": "8fcc155bf34c7c818573025bbfb856e7f7b859fd5ca960bae2ce23cbcef46612"
+    },
+    "g2_seed2025": {
+      "path": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s2025_extension.jsonl",
+      "size_bytes": 1020020,
+      "sha256": "1c7c7a7a12fc9845a9635b1634e8aa5c4fc3a0aabb1185ccfd566770de89fede",
+      "records": 500
+    }
+  },
+  "known_corrupted_copies": [
+    {
+      "logical_id": "g2_seed1234",
+      "path": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s1234_full.jsonl",
+      "size_bytes": 524288,
+      "sha256": "c3aa66cbbe899885f29b24e25082c1bcc24f2625c791160319c43ef073380ec4",
+      "parseable_jsonl": false,
+      "must_not_overwrite": true
+    }
+  ]
+}

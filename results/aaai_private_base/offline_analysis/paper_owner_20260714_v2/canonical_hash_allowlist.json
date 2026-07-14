@@ -1,0 +1,14 @@
+{
+  "schema": "canonical_generation_hash_allowlist",
+  "version": "2.0",
+  "allowed_sha256_by_logical_id": {
+    "g0_base": "b225a5c48951b5095fe774baf1e62c1fea387c527a6076c577e4f70c2a947450",
+    "g1_seed7": "0cfef06b7ace081b71303ca05f7709deb6562b521803f5dc9d9cff9b034aeb17",
+    "g1_seed1234": "ec5a432031dcbfed61152e6a1b8299bfc55704568342e7890b412f49e9b7c76b",
+    "g1_seed2025": "744d1758db59cff389fa618e8682ea412f076be646257ace296e33da392906f2",
+    "g2_seed7": "70a93b9d50d4cb67037a04f70e0cf9a608ff93f8a5b64dd095e06cae686c2aec",
+    "g2_seed1234": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31",
+    "g2_seed2025": "1c7c7a7a12fc9845a9635b1634e8aa5c4fc3a0aabb1185ccfd566770de89fede"
+  },
+  "policy": "Exactly one hash is allowed per logical artifact. Hash mismatch is fatal; alternates are not searched."
+}

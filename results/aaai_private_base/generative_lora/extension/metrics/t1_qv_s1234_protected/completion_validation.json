@@ -1,0 +1,37 @@
+{
+  "schema": "target_ablation_completion_validation",
+  "version": "1.0",
+  "cell": "T1_qv_protected",
+  "seed": 1234,
+  "steps_run": 750,
+  "trajectory_records": 750,
+  "all_steps_finite": true,
+  "generation_records": 500,
+  "unique_sample_ids": 500,
+  "invalid_outputs": 0,
+  "attestation_verified": true,
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "b79b935d64717dff1eb8dc79097361dcec7b8b531d688d0308b0508e6d93dcf36315fc73575693287aaa82b83bb3bb0cb1d44e4462377744278a96baf38ca2c8",
+    "session_setup_once": true
+  },
+  "generation_tokens_per_sec": 51.4,
+  "cost_field_policy": {
+    "raw_counters": "measured",
+    "aggregations_from_raw_counters": "derived",
+    "unavailable_fields": "not_projected"
+  },
+  "file_hashes": {
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T1_qv_s1234_protected.json": "14bc46f31ca50c403c6dc0eee0a8d30525aeaddd74657fbd8953d9f97842ac8b",
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T1_qv_s1234_protected.jsonl": "d37af2539441ee821856a81b73587a50bfb0ae73e012d741a6422db996ec3688",
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T1_qv_s1234_protected.jsonl.profile.json": "168940bd126fc5d28aa06cb1dc6cfb8fc99d947f6685e1b04046174ee50282dd",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T1_qv_s1234_protected.attestation.json": "9dca91ff430284300868e3d03bbe55c6dd5a56ca650740ebba82b50b56d4ab0e",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T1_qv_s1234_protected.training_tdx_counters.json": "13168a11e42f262b7c396e4c070f6b29222fcd9994179b863b143ea649866241",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T1_qv_s1234_protected.generation_tdx_counters.json": "677fe2a5b585b4cb31bb3dba7e6c902c5e69dd5ce211ea8e5a94bdd06f9d4699",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T1_qv_s1234_protected.adapter.pt": "53653d783c5c1fded8c235ef93cba0e7c949aa0c04dac7d2f18adce34f45629f"
+  }
+}

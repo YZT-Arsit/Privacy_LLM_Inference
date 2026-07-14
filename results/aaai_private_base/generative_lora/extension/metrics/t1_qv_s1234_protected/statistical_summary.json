@@ -1,0 +1,19 @@
+{
+  "cells": {
+    "T1_qv_protected": {
+      "BLEU": 64.08,
+      "chrF": 68.34,
+      "ROUGE_L": 60.28,
+      "invalid_rate_pct": 0.0,
+      "repetition_pct": 2.25,
+      "avg_len": 29.9,
+      "n": 500,
+      "METEOR": "unavailable_no_nltk",
+      "NIST": "unavailable_no_nltk"
+    }
+  },
+  "paired_vs_T1_qv_plaintext": {},
+  "has_nltk": false,
+  "baseline": "T1_qv_plaintext",
+  "metric_note": "E2E multi-reference; BLEU/chrF=sacrebleu, ROUGE-L=local LCS-F1."
+}

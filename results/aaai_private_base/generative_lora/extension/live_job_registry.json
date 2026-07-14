@@ -1,18 +1,9 @@
 {
   "schema": "dual_pair_live_job_registry",
-  "version": "1.0",
-  "updated_at": "2026-07-14T09:36:12+08:00",
+  "version": "2.0",
+  "updated_at": "2026-07-14T15:26:36+08:00",
+  "gpu_execution_owner": "sole_current_codex_session",
   "duplicate_execution_allowed": false,
-  "launch_guard": {
-    "checks": [
-      "local immutable/frozen manifest does not already mark the cell complete",
-      "neither A10 has an active process for the same run tag or scientific cell",
-      "the target A10 has no competing GPU workload",
-      "the target TDX has no service bound to a different active cell",
-      "the intended output path and run tag are unique"
-    ],
-    "latency_measurements_run_alone": true
-  },
   "active_assignments": [
     {
       "pair": "pair1",
@@ -20,12 +11,14 @@
       "tdx_public": "39.96.43.122",
       "a10_private": "172.30.25.154",
       "tdx_private": "172.30.25.153",
-      "cell": "T1_qv_exact_protected_E2E_seed1234",
-      "run_tag": "e2e_T1_qv_s1234_protected",
-      "remote_driver_pid": 59219,
+      "cell": "T3_mlp_exact_protected_E2E_seed1234",
+      "run_tag": "e2e_T3_mlp_s1234_protected",
+      "remote_driver_pid": 68107,
+      "remote_worker_pid": 68109,
       "status": "running",
-      "last_verified_step": 1,
-      "last_verified_finite": true
+      "last_verified_step": 24,
+      "last_verified_finite": true,
+      "log_path": "/root/pllo_pb/g2_e2e_T3_mlp_s1234_protected.log"
     },
     {
       "pair": "pair2",
@@ -33,15 +26,32 @@
       "tdx_public": "8.147.112.139",
       "a10_private": "172.30.25.155",
       "tdx_private": "172.30.25.156",
-      "cell": "G2_exact_protected_E2E_L12_seed2025",
-      "run_tag": "e2e_L12_s2025_extension",
-      "remote_driver_pid": 6252,
+      "cell": "T2_qkvo_exact_protected_E2E_seed1234",
+      "run_tag": "e2e_T2_qkvo_s1234_protected",
+      "remote_driver_pid": 16093,
+      "remote_worker_pid": 16095,
       "status": "running",
-      "last_verified_step": 665,
-      "last_verified_finite": true
+      "last_verified_step": 669,
+      "last_verified_finite": true,
+      "log_path": "/root/pllo_pb/g2_e2e_T2_qkvo_s1234_protected.log"
     }
   ],
-  "security_gpu_policy": "No security GPU corpus or surrogate job may start while both pairs are assigned to protected G2. CPU security analysis remains parallel.",
+  "pending_launch": {
+    "cell": "T4_all7_exact_protected_E2E_seed1234",
+    "run_tag": "e2e_T4_all7_s1234_protected",
+    "assigned_pair": "pair2",
+    "launch_exactly_once": true,
+    "scheduler_pid": 83097,
+    "scheduler_script": "scripts/generative_lora/schedule_t4_after_t2.sh",
+    "heartbeat_path": "results/aaai_private_base/generative_lora/extension/monitor/t4_scheduler_heartbeat.json",
+    "gates": [
+      "T2 log contains G2_ALL_DONE",
+      "T2 driver and worker have exited",
+      "pair2 GPU has no competing process",
+      "T2 run, adapter, 500 generations, counters, attestation and log are preserved",
+      "T4 output paths do not exist"
+    ]
+  },
   "frozen_artifacts_mutated": false,
   "commits_created": false
 }

@@ -1,0 +1,181 @@
+{
+  "schema": "target_ablation_snapshot",
+  "version": "2.0",
+  "observed_at": "2026-07-14T07:31:47.846809+00:00",
+  "admission_rule": "Only 750-step, 500-generation, finite, attested, hash-verified terminal bundles are admitted. Smoke runs are excluded.",
+  "cells": [
+    {
+      "cell": "T1",
+      "run_tag": "e2e_T1_qv_s1234_protected",
+      "target_set": [
+        "q_proj",
+        "v_proj"
+      ],
+      "status": "TERMINAL",
+      "terminal": true,
+      "missing_required_paths": [],
+      "terminal_checks": {
+        "completion_steps_750": true,
+        "completion_generation_500": true,
+        "completion_unique_ids_500": true,
+        "completion_all_finite": true,
+        "completion_attested": true,
+        "result_completed": true,
+        "result_steps_750": true,
+        "training_steps_750": true,
+        "generation_rows_500": true,
+        "target_set_exact": true
+      },
+      "quality": {
+        "BLEU": "64.08",
+        "chrF": "68.34",
+        "ROUGE_L": "60.28",
+        "invalid_rate_pct": "0.0",
+        "repetition_pct": "2.25",
+        "avg_len": "29.9",
+        "n": "500"
+      },
+      "trainable_parameter_count": 540672,
+      "total_factor_count": 96,
+      "trusted_A_factor_count": 48,
+      "trusted_B_factor_count": 24,
+      "gpu_local_factor_count": 24,
+      "trusted_parameter_count": 516096,
+      "gpu_local_parameter_count": 24576,
+      "tdx_optimizer_tensor_state_bytes": 6193152,
+      "projected_raw_tensor_bytes_each_direction_per_step": 2064384,
+      "adapter_bytes": 2192735,
+      "trusted_roundtrip_time_sec_per_step": 24.075661829312644,
+      "trusted_compute_time_sec_per_step": null,
+      "transport_only_time_sec_per_step": null,
+      "total_step_time_sec": 25.56530533333333,
+      "protected_generation_tokens_per_sec": 51.4,
+      "attestation_status": "PASS",
+      "source_revision": "1c5e867d4364a867e2939a4e98445b465b5c255e",
+      "source_bundle_hash": "71ea506ab72459d7481c670169271605291b2c9ead7b04797f0681611f77bcc0",
+      "source_hashes": {
+        "scripts/a10_batch_runner.py": "581d2644d02bbcb87b6babe245061f74b3e5bdff12a2e97aa7f90b9009ff8eb3",
+        "scripts/tdx_persistent_service.py": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+        "scripts/batch_dataplane.py": "48ab05a023a97933811833ada38e4581f33803d26842ca9da5f11459da771b68",
+        "scripts/h800_unified_worker.py": "cad194825df6f6057e4e5c1b28ec723329f9e5d97b52d1615bd8bf0c92b8d269",
+        "scripts/h800_d4_worker.py": "d06058efd44ec3ec895b41de57cfac73e0061087f0afae93820730882bfc2e70",
+        "scripts/generative_lora/protected_generate.py": "d67b4e135d32fc048b8b372b24b8f7a71bac44c47c8ba4121b9d078edf810a3d",
+        "scripts/generative_lora/gate_e2e_protected.py": "9d54e61035ab313b481050a8bfa5de2f0030a82c4c67c0afa43bc673f97a95d5"
+      },
+      "config_hashes": {
+        "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+        "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+        "service_hash": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+        "template_hash": "e9b15b3b089a7a2e38f8589a6b4be4ef45eee4bf6e65fe64a7ec8bfefcd7c537",
+        "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "label_schema_hash": "de4f75df52e95dac17ddb6dca5dc6422f590203f7ddabc88e57ecfbd8f80076e"
+      },
+      "artifact_hashes": {
+        "completion": "5f7c41f7751c694e381c56f5cf9cac801cf5a7d11eb779df5848430422f2a908",
+        "metrics": "de93d561eecaf220cf94bc076d7baac45804822c038722574454ee46ca4558c4",
+        "result": "3652f81ae689fe3ffab45d10f065ba4a0556cf3865aad78428631d47285c8946",
+        "training": "14bc46f31ca50c403c6dc0eee0a8d30525aeaddd74657fbd8953d9f97842ac8b",
+        "adapter": "53653d783c5c1fded8c235ef93cba0e7c949aa0c04dac7d2f18adce34f45629f",
+        "train_counters": "13168a11e42f262b7c396e4c070f6b29222fcd9994179b863b143ea649866241",
+        "generation_counters": "677fe2a5b585b4cb31bb3dba7e6c902c5e69dd5ce211ea8e5a94bdd06f9d4699",
+        "attestation": "9dca91ff430284300868e3d03bbe55c6dd5a56ca650740ebba82b50b56d4ab0e",
+        "session": "db7c66c9c26ce518954630a124f6dc4e4032cc93aae415e80283373cd763fcf0",
+        "generation": "d37af2539441ee821856a81b73587a50bfb0ae73e012d741a6422db996ec3688",
+        "generation_profile": "168940bd126fc5d28aa06cb1dc6cfb8fc99d947f6685e1b04046174ee50282dd"
+      },
+      "provenance": {
+        "quality": "MEASURED",
+        "trainable_parameter_count": "MEASURED",
+        "adapter_bytes": "MEASURED",
+        "factor_counts": "MEASURED",
+        "tdx_optimizer_tensor_state_bytes": "PROJECTED",
+        "projected_raw_tensor_bytes_each_direction_per_step": "PROJECTED",
+        "trusted_roundtrip_time_sec_per_step": "MEASURED",
+        "trusted_compute_time_sec_per_step": "MISSING",
+        "transport_only_time_sec_per_step": "MISSING",
+        "total_step_time_sec": "MEASURED",
+        "protected_generation_tokens_per_sec": "MEASURED",
+        "attestation_status": "MEASURED"
+      },
+      "notes": [
+        "Raw tensor-byte projection excludes serialization, framing, and authentication overhead.",
+        "This run did not retain the profiling split needed to separate trusted compute from transport; both remain MISSING."
+      ]
+    },
+    {
+      "cell": "T2",
+      "run_tag": "e2e_T2_qkvo_s1234_protected",
+      "target_set": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj"
+      ],
+      "status": "PENDING",
+      "terminal": false,
+      "missing_required_paths": [
+        "results/aaai_private_base/generative_lora/extension/metrics/t2_qkvo_s1234_protected/completion_validation.json",
+        "results/aaai_private_base/generative_lora/extension/metrics/t2_qkvo_s1234_protected/aggregate_metrics.csv",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T2_qkvo_s1234_protected.result.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T2_qkvo_s1234_protected.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T2_qkvo_s1234_protected.adapter.pt",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T2_qkvo_s1234_protected.training_tdx_counters.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T2_qkvo_s1234_protected.generation_tdx_counters.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T2_qkvo_s1234_protected.attestation.json",
+        "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T2_qkvo_s1234_protected.jsonl",
+        "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T2_qkvo_s1234_protected.jsonl.profile.json"
+      ]
+    },
+    {
+      "cell": "T3",
+      "run_tag": "e2e_T3_mlp_s1234_protected",
+      "target_set": [
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "status": "PENDING",
+      "terminal": false,
+      "missing_required_paths": [
+        "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/completion_validation.json",
+        "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/aggregate_metrics.csv",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.result.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.adapter.pt",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.training_tdx_counters.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.generation_tdx_counters.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.attestation.json",
+        "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T3_mlp_s1234_protected.jsonl",
+        "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T3_mlp_s1234_protected.jsonl.profile.json"
+      ]
+    },
+    {
+      "cell": "T4",
+      "run_tag": "e2e_T4_all7_s1234_protected",
+      "target_set": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "status": "PENDING",
+      "terminal": false,
+      "missing_required_paths": [
+        "results/aaai_private_base/generative_lora/extension/metrics/t4_all7_s1234_protected/completion_validation.json",
+        "results/aaai_private_base/generative_lora/extension/metrics/t4_all7_s1234_protected/aggregate_metrics.csv",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.result.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.adapter.pt",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.training_tdx_counters.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.generation_tdx_counters.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.attestation.json",
+        "results/aaai_private_base/generative_lora/protected_runs/e2e_T4_all7_s1234_protected.tdx_session.json",
+        "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T4_all7_s1234_protected.jsonl",
+        "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T4_all7_s1234_protected.jsonl.profile.json"
+      ]
+    }
+  ]
+}

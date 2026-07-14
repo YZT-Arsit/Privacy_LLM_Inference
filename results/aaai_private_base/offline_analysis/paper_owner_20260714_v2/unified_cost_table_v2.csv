@@ -1,0 +1,16 @@
+method,seed,status,train_wall_sec,generation_wall_sec,total_wall_sec,tokens_per_sec,adapter_bytes,train_provenance,generation_provenance,total_provenance,tokens_per_sec_provenance,adapter_bytes_provenance,source
+G0,,AVAILABLE,,292.7,292.7,58.4,,MISSING,MEASURED,MEASURED,MEASURED,MISSING,g0_base_test.jsonl.profile.json
+G1 FP32,7,AVAILABLE,319.9,506.5,826.4,32.8,17640136,MEASURED,MEASURED,MEASURED,MEASURED,MEASURED,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G1 FP32,1234,AVAILABLE,320.0,503.4,823.4,33.1,17640136,MEASURED,MEASURED,MEASURED,MEASURED,MEASURED,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G1 FP32,2025,AVAILABLE,320.8,512.2,833.0,32.3,17640136,MEASURED,MEASURED,MEASURED,MEASURED,MEASURED,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G1 FP32 mean,3 seeds,AVAILABLE,320.23333333333335,507.3666666666666,827.6,32.733333333333334,17640136.0,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G2 Exact,7,AVAILABLE,19722.631,391.5,20114.131,41.01,17698541,MEASURED,MEASURED,MEASURED,MEASURED,MEASURED,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G2 Exact,1234,AVAILABLE,19708.409,373.1,20081.509,40.73,17697857,MEASURED,MEASURED,MEASURED,MEASURED,MEASURED,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G2 Exact,2025,AVAILABLE,20279.076,401.2,20680.276,40.81,17699567,MEASURED,MEASURED,MEASURED,MEASURED,MEASURED,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G2 Exact mean,3 seeds,AVAILABLE,19903.372,388.59999999999997,20291.971999999998,40.85,17698655.0,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,DERIVED_FROM_MEASURED_COUNTERS,results/aaai_private_base/offline_analysis/confound_controlled_20260714/cost/unified_cost_table.csv
+G1 BF16 matched,,MISSING,,,,,,MISSING,MISSING,MISSING,MISSING,MISSING,No matched 750-step/500-generation BF16 artifact
+T1,1234,AVAILABLE,19173.979,290.7,19464.679,51.4,2192735,DERIVED_FROM_MEASURED_COUNTERS,MEASURED,DERIVED_FROM_MEASURED_COUNTERS,MEASURED,MEASURED,target_ablation_snapshot_v2.json
+T2,1234,PENDING,,,,,,MISSING,MISSING,MISSING,MISSING,MISSING,terminal manifest absent
+T3,1234,PENDING,,,,,,MISSING,MISSING,MISSING,MISSING,MISSING,terminal manifest absent
+T4,1234,PENDING,,,,,,MISSING,MISSING,MISSING,MISSING,MISSING,terminal manifest absent
+ObfuscaTune-style,,MISSING,,,,,,MISSING,MISSING,MISSING,MISSING,MISSING,CPU fidelity preparation only
