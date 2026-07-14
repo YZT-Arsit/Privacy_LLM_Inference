@@ -1,0 +1,9 @@
+{
+  "schema": "obfuscatune_lora_semantics_candidates_v1",
+  "orientation": {"X": "N x d_in", "W": "d_in x d_out", "A": "d_in x r", "B": "r x d_out", "delta_W": "(alpha/r) A B"},
+  "candidates": [
+    {"id": 1, "name": "plaintext_factors_outside", "forward_correct": "only with plaintext activation exposure or trusted LoRA compute", "optimizer": "canonical outside", "paper_fit": "factor location fits; data protection does not", "selected": false},
+    {"id": 2, "name": "transformed_factors_outside", "input_factor_map": {"A_star": "R_in^T A", "B_star": "B"}, "output_factor_map": {"A_star": "A", "B_star": "B R_out"}, "optimizer": "stored-coordinate external", "plaintext_optimizer_equivalent": {"sgd": true, "momentum": true, "adam": false, "adamw": false}, "selected": true},
+    {"id": 3, "name": "external_copy_trusted_canonical_update", "optimizer": "canonical trusted", "plaintext_optimizer_equivalent": true, "paper_fit": "additional trusted functionality not specified", "selected": false}
+  ]
+}

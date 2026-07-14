@@ -55,6 +55,8 @@ def main():
     ap.add_argument("--eval-every", type=int, default=0)
     ap.add_argument("--eval-max", type=int, default=0)     # cap eval examples (0 = all)
     ap.add_argument("--lr", type=float, default=5e-4); ap.add_argument("--seed", type=int, default=1234)
+    ap.add_argument("--weight-decay", type=float, default=0.01,
+                    help="effective decoupled AdamW weight decay for every trusted and GPU-local LoRA factor")
     ap.add_argument("--template-hash", required=True); ap.add_argument("--tokenizer-hash", required=True)
     ap.add_argument("--label-schema-hash", required=True)
     ap.add_argument("--targets", default=",".join(LORA_TARGETS),
@@ -80,9 +82,13 @@ def main():
     unknown_targets = set(active_targets) - set(LORA_TARGETS)
     if unknown_targets:
         raise ValueError(f"unknown LoRA target(s): {sorted(unknown_targets)}")
+    if not torch.isfinite(torch.tensor(a.weight_decay)) or a.weight_decay < 0:
+        raise ValueError("--weight-decay must be finite and non-negative")
     CDT = torch.float32 if a.profile == "L5" else torch.bfloat16
     MDT = torch.float32
-    b1, b2, eps, wd = 0.9, 0.999, 1e-8, 0.01
+    b1, b2, eps, wd = 0.9, 0.999, 1e-8, float(a.weight_decay)
+    wd_label = format(wd, ".12g").replace(".", "p")
+    optimizer_profile = f"{a.profile}_adamw_wd{wd_label}"
     sess = json.loads(Path(a.session).read_text())
     key = bytes.fromhex(sess["session_key_hex"]); run_id = sess["run_id"]
     adapter_id = a.adapter_id or run_id
@@ -155,7 +161,7 @@ def main():
         ih = {"op": "init_adamw", "seq": iseq, "run_id": run_id,
               "hmac": mac(key, ipayload, iseq, run_id, "init_adamw"),
               "hparams": {"lr": a.lr, "b1": b1, "b2": b2, "eps": eps, "wd": wd, "state_dtype": "fp32",
-                          "adapter_id": adapter_id, "optimizer_profile": f"{a.profile}_adamw"}}
+                          "adapter_id": adapter_id, "optimizer_profile": optimizer_profile}}
         rh, _, _ = ch.request(ih, ipayload)
         if rh.get("op") != "init_adamw_ack" or not rh.get("trusted_adamw_state_present"):
             raise TransportError(f"init_adamw failed: {rh}")
@@ -176,7 +182,7 @@ def main():
                                "min_version": int(exp.get("version", 0)),
                                "hparams": {"lr": a.lr, "b1": b1, "b2": b2, "eps": eps, "wd": wd,
                                            "state_dtype": "fp32", "adapter_id": adapter_id,
-                                           "optimizer_profile": exp.get("optimizer_profile", f"{a.profile}_adamw")}})
+                                           "optimizer_profile": exp.get("optimizer_profile", optimizer_profile)}})
         if rh.get("op") != "restore_adamw_ack" or not rh.get("trusted_adamw_state_present"):
             raise TransportError(f"restore_adamw failed: {rh}")
         last_seq = rh["seq"]
@@ -515,6 +521,14 @@ def main():
     Path(a.out).write_text(json.dumps({
         "run_id": run_id, "profile": a.profile, "task": a.task, "dataset_id": a.dataset_id,
         "seed": a.seed, "compute_dtype": str(CDT), "master_dtype": "fp32", "lr": a.lr,
+        "optimizer": {"name": "adamw", "implementation": "explicit_unfused_split_trusted_gpu",
+                      "profile": optimizer_profile, "betas": [b1, b2], "eps": eps,
+                      "weight_decay": wd, "decoupled_weight_decay": True,
+                      "trusted_A_factors": model.L * len(set(active_targets) & TRUSTED_A),
+                      "trusted_B_factors": model.L * len(set(active_targets) & TRUSTED_B),
+                      "gpu_A_factors": model.L * len(set(active_targets) & GPU_A),
+                      "gpu_B_factors": model.L * len(set(active_targets) & GPU_B),
+                      "all_parameter_groups_weight_decay_equal": True},
         "lora_targets": list(active_targets),
         "schedule_hash": schedule_hash, "steps_run": len(steps), "start_step": a.start_step,
         "attestation": attestation, "fail_closed_all_pass": all(x["passed"] for x in fc),

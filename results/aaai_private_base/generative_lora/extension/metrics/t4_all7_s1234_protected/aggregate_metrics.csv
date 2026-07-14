@@ -1,0 +1,2 @@
+cell,BLEU,chrF,ROUGE_L,METEOR,invalid_rate_pct,repetition_pct,avg_len,n
+T4_all7_protected,65.88,70.56,61.96,unavailable_no_nltk,0.0,2.79,30.4,500

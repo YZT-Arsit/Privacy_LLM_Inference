@@ -1,0 +1,18 @@
+{
+  "schema": "obfuscatune_optimizer_equivariance_tests_v1",
+  "theory": {"sgd": "equivariant", "sgd_momentum": "equivariant", "adam": "not_rotation_equivariant", "adamw": "adaptive_part_not_rotation_equivariant", "adamw_zero_gradient_decay": "equivariant"},
+  "adamw_counterexample": {
+    "rotation": [[0.7071067811865475, -0.7071067811865475], [0.7071067811865475, 0.7071067811865475]],
+    "theta": [1.0, 2.0],
+    "gradient": [0.3, -0.7],
+    "lr": 0.1,
+    "betas": [0.9, 0.999],
+    "eps": 1e-8,
+    "weight_decay": 0.01,
+    "canonical_after": [0.8990000033333332, 2.0979999985714284],
+    "rotated_after_mapped_back": [0.9989999985000001, 2.1394213527373096],
+    "max_abs_difference": 0.09999999516666691,
+    "equivalent": false
+  },
+  "selected_contract": "transformed-coordinate AdamW; internally consistent, not plaintext-trajectory equivalent"
+}

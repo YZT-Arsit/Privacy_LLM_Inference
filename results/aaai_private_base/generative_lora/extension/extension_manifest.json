@@ -2,6 +2,7 @@
   "schema": "extended_generative_lora_manifest",
   "version": "1.0",
   "created_at": "2026-07-14T00:00:05+08:00",
+  "last_updated_at": "2026-07-14T22:05:00+08:00",
   "repository": "https://github.com/YZT-Arsit/Privacy_LLM_Inference",
   "branch": "fix/folded-remote-repeat-debug-and-guards",
   "head": "a6376aec4650089e4e8e32bbf86e67dcff03fde4",
@@ -13,9 +14,13 @@
     "negative_controls_seed1234": "complete_verified_9_of_9",
     "paired_seed1234": "complete_verified",
     "restart_seed1234": "in_progress",
-    "target_T1_plaintext_seed1234": "queued",
-    "target_T4_plaintext_seed1234": "reuse_frozen_G1",
-    "target_T4_protected_seed1234": "reuse_frozen_G2"
+    "target_T1_plaintext_seed1234": "complete_verified",
+    "target_T4_plaintext_seed1234": "reuse_frozen_G1_complete_verified",
+    "target_T1_protected_seed1234": "complete_verified",
+    "target_T2_protected_seed1234": "complete_verified",
+    "target_T3_protected_seed1234": "complete_verified",
+    "target_T4_protected_seed1234": "complete_verified_new_run",
+    "protected_target_matrix_manifest": "protected_target_matrix_completion_manifest.json"
   },
   "resource_snapshot": {
     "a10": {"gpu": "NVIDIA A10", "vram_total_mib": 23028, "disk_available_gib": 145, "reachable": true},

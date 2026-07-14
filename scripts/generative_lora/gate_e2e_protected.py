@@ -64,6 +64,7 @@ def main():
     ap.add_argument("--profile", default="L12", choices=["L0", "L5", "L12"])
     ap.add_argument("--seed", type=int, default=1234)
     ap.add_argument("--lr", type=float, default=1e-4)
+    ap.add_argument("--weight-decay", type=float, default=0.01)
     ap.add_argument("--targets", default=ALL_TARGETS)
     ap.add_argument("--max-steps", type=int, default=250)
     ap.add_argument("--gen-in", default="e2e_test_gen.json")
@@ -75,12 +76,18 @@ def main():
     ap.add_argument("--adapter-path", default="")
     ap.add_argument("--sync-code", action="store_true")
     ap.add_argument("--timeout", type=int, default=10800)
+    ap.add_argument("--output-root", default="",
+                    help="append-only path relative to generative_lora; empty preserves the historical layout")
     args = ap.parse_args()
+    if not (args.weight_decay >= 0.0):
+        raise ValueError("--weight-decay must be finite and non-negative")
     targets = tuple(x.strip() for x in args.targets.split(",") if x.strip())
     allowed_targets = set(ALL_TARGETS.split(","))
     if not targets or len(set(targets)) != len(targets) or set(targets) - allowed_targets:
         raise ValueError("--targets must be a non-empty duplicate-free subset of " + ALL_TARGETS)
-    OUT.mkdir(parents=True, exist_ok=True)
+    local_out = (GL / args.output_root / "protected_runs") if args.output_root else OUT
+    local_gen = (GL / args.output_root / "generations") if args.output_root else (GL / "generations")
+    local_out.mkdir(parents=True, exist_ok=True); local_gen.mkdir(parents=True, exist_ok=True)
     tag = args.run_tag or f"e2e_{args.profile}_s{args.seed}_st{args.max_steps}"
     run_id = f"{tag}-{int(time.time())}-{secrets.token_hex(3)}"
     session_key = secrets.token_bytes(32); nonce = secrets.token_hex(16)
@@ -119,8 +126,11 @@ def main():
     local_sched = GL / f"data/e2e_schedule_s{args.seed}.json"
     rsched = f"/tmp/e2e_schedule_s{args.seed}.json"; push_tdx(str(local_sched), rsched)
 
+    wd_label = format(float(args.weight_decay), ".12g").replace(".", "p")
+    optimizer_profile = f"{args.profile}_adamw_wd{wd_label}"
     binding = {"d4_run_id": run_id, "package_root_hash": PKG_ROOT, "seed": args.seed,
-               "optimizer_profile": f"{args.profile}_adamw", "execution_profile": "paper_safe",
+               "optimizer_profile": optimizer_profile, "effective_weight_decay": float(args.weight_decay),
+               "execution_profile": "paper_safe",
                "transport_profile": "direct_a10_tdx_private", "compute_host": "alicloud_a10",
                "data_plane_ip": TDX_PRIV, "source_revision": head,
                "code_revision_or_worktree_hash": source_bundle_hash,
@@ -140,31 +150,35 @@ def main():
                 "batch_label_tables": {"train": rlt}, "batch_schedules": {"train": rsched},
                 "model_cfg": {"num_attention_heads": 14, "num_key_value_heads": 2,
                               "hidden_size": 896, "intermediate_size": 4864}}
-    (OUT / f"{tag}.tdx_session.json").write_text(json.dumps(tdx_sess, indent=2))
-    push_tdx(str(OUT / f"{tag}.tdx_session.json"), "/tmp/direct_session.json")
+    (local_out / f"{tag}.tdx_session.json").write_text(json.dumps(tdx_sess, indent=2))
+    push_tdx(str(local_out / f"{tag}.tdx_session.json"), "/tmp/direct_session.json")
     a10sess = {"session_key_hex": session_key.hex(), "run_id": run_id}
-    (OUT / f"{tag}.a10_session.json").write_text(json.dumps(a10sess))
-    push_a10(str(OUT / f"{tag}.a10_session.json"), "/tmp/e2e_session_a10.json")
+    (local_out / f"{tag}.a10_session.json").write_text(json.dumps(a10sess))
+    push_a10(str(local_out / f"{tag}.a10_session.json"), "/tmp/e2e_session_a10.json")
 
     service_cmd = f"{PY_TDX} {RTDX}/scripts/tdx_persistent_service.py /tmp/direct_session.json"
-    out_json = f"{RA10}/results/aaai_private_base/generative_lora/protected_runs/{tag}.json"
+    remote_root = f"{RA10}/results/aaai_private_base/generative_lora/{args.output_root}" if args.output_root else f"{RA10}/results/aaai_private_base/generative_lora"
+    remote_runs = f"{remote_root}/protected_runs"; remote_gens = f"{remote_root}/generations"
+    out_json = f"{remote_runs}/{tag}.json"
     adapter_remote = out_json.replace(".json", ".adapter.pt")
-    a10(f"mkdir -p {RA10}/results/aaai_private_base/generative_lora/protected_runs")
+    a10(f"mkdir -p {remote_runs} {remote_gens}")
     result = {"tag": tag, "run_id": run_id, "profile": args.profile, "seed": args.seed,
-              "lr": args.lr, "max_steps": args.max_steps, "attest": bool(args.attest),
+              "lr": args.lr, "weight_decay": float(args.weight_decay),
+              "optimizer_profile": optimizer_profile,
+              "max_steps": args.max_steps, "attest": bool(args.attest),
               "lora_targets": list(targets),
               "endpoints": {"a10_pub": A10_PUB, "tdx_pub": TDX, "tdx_priv": TDX_PRIV}}
 
     # ---------------- build robust A10-side nohup driver (survives control-master drops) ----------------
     train_data = f"{DATA}/e2e_train_a10.pt"; sched_a10 = f"{DATA}/e2e_schedule_s{args.seed}.json"
-    gen_out = f"{RA10}/results/aaai_private_base/generative_lora/generations/g2_protected_{tag}.jsonl"
+    gen_out = f"{remote_gens}/g2_protected_{tag}.jsonl"
     adapter_use = args.adapter_path or adapter_remote
     req = " --require-attestation" if args.attest else ""
     train_line = "" if args.skip_train else (
         f"{ENV_A10} {PY_A10} scripts/a10_batch_runner.py --session /tmp/e2e_session_a10.json "
         f"--profile {args.profile} --task clm --dataset-id e2e_nlg --train-split train "
         f"--eval-split validation --eval-max 0 --train-data {train_data} --schedule {sched_a10} "
-        f"--max-steps {args.max_steps} --lr {args.lr} --seed {args.seed} --max-seq 256 "
+        f"--max-steps {args.max_steps} --lr {args.lr} --weight-decay {args.weight_decay} --seed {args.seed} --max-seq 256 "
         f"--targets {','.join(targets)} "
         f"--template-hash {tmpl_hash} --tokenizer-hash {TOK_HASH} --label-schema-hash {lsch_hash} "
         f"--tdx root@{TDX_PRIV} --key /root/.ssh/a10_to_tdx --service-cmd \"{service_cmd}\" "
@@ -180,10 +194,10 @@ def main():
         "'cp /tmp/e2e_batch_counters.json /tmp/e2e_training_counters.frozen.json' "
         "|| { echo G2_COUNTER_FREEZE_FAILED; exit 1; }")
     driver = ("#!/bin/bash\nset -e\ncd " + RA10 + "\n"
-              "mkdir -p results/aaai_private_base/generative_lora/generations\n"
+              f"mkdir -p {remote_gens}\n"
               + (train_line + "\n" + freeze_train_counters + "\n" if train_line else "")
               + gen_line + "\necho G2_ALL_DONE\n")
-    dpath = OUT / f"{tag}.driver.sh"; dpath.write_text(driver)
+    dpath = local_out / f"{tag}.driver.sh"; dpath.write_text(driver)
     push_a10(str(dpath), f"{RA10}/g2_driver_{tag}.sh")
     logf = f"{RA10}/g2_{tag}.log"
     rc, launch_out, launch_err = a10(
@@ -197,7 +211,7 @@ def main():
         "source_revision": head, "source_bundle_hash": source_bundle_hash,
         "start_unix": time.time(),
     }
-    (OUT / f"{tag}.launch.json").write_text(json.dumps(launched, indent=2))
+    (local_out / f"{tag}.launch.json").write_text(json.dumps(launched, indent=2))
     print(f"[g2] launched nohup driver for {tag}, pid {remote_pid}; polling {logf}")
 
     # poll until G2_ALL_DONE / *_FAILED (robust to master drops: reconnect + re-poll)
@@ -212,17 +226,17 @@ def main():
         time.sleep(20)
     result["g2_wall_sec"] = round(time.time() - t0, 1); result["completed"] = done
     # pull everything produced
-    pull_a10(out_json, str(OUT / f"{tag}.json"))
-    pull_a10(adapter_remote, str(OUT / f"{tag}.adapter.pt"))
-    pull_a10(gen_out, str(GL / f"generations/g2_protected_{tag}.jsonl"))
-    pull_a10(gen_out + ".profile.json", str(GL / f"generations/g2_protected_{tag}.jsonl.profile.json"))
+    pull_a10(out_json, str(local_out / f"{tag}.json"))
+    pull_a10(adapter_remote, str(local_out / f"{tag}.adapter.pt"))
+    pull_a10(gen_out, str(local_gen / f"g2_protected_{tag}.jsonl"))
+    pull_a10(gen_out + ".profile.json", str(local_gen / f"g2_protected_{tag}.jsonl.profile.json"))
     if not args.skip_train:
         pull_tdx("/tmp/e2e_training_counters.frozen.json",
-                 str(OUT / f"{tag}.training_tdx_counters.json"))
-    pull_tdx("/tmp/e2e_batch_counters.json", str(OUT / f"{tag}.generation_tdx_counters.json"))
+                 str(local_out / f"{tag}.training_tdx_counters.json"))
+    pull_tdx("/tmp/e2e_batch_counters.json", str(local_out / f"{tag}.generation_tdx_counters.json"))
     if args.attest:
-        pull_tdx("/tmp/e2e_attest/session_attestation.json", str(OUT / f"{tag}.attestation.json"))
-    (OUT / f"{tag}.result.json").write_text(json.dumps(result, indent=2))
+        pull_tdx("/tmp/e2e_attest/session_attestation.json", str(local_out / f"{tag}.attestation.json"))
+    (local_out / f"{tag}.result.json").write_text(json.dumps(result, indent=2))
     print(json.dumps(result, indent=2))
 
 

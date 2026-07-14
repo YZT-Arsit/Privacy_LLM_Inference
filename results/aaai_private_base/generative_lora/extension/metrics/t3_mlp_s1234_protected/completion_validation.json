@@ -1,0 +1,54 @@
+{
+  "schema": "protected_target_completion_validation_v1",
+  "cell": "T3",
+  "run_id": "e2e_T3_mlp_s1234_protected-1784013130-8048a7",
+  "seed": 1234,
+  "profile": "L12",
+  "targets": [
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "gates": {
+    "steps_750": true,
+    "finite_steps_750": true,
+    "optimizer_steps_750": true,
+    "generations_500": true,
+    "unique_sample_ids_500": true,
+    "invalid_outputs_zero": true,
+    "attestation_verified": true,
+    "attestation_appraisal_success": true,
+    "fail_closed_all_pass": true,
+    "silent_fallbacks_zero": true,
+    "target_set_exact": true,
+    "terminal_marker": true,
+    "metrics_n_500": true
+  },
+  "all_gates_pass": true,
+  "metrics": {
+    "BLEU": 65.45,
+    "chrF": 70.6,
+    "ROUGE_L": 61.77,
+    "invalid_rate_pct": 0.0,
+    "repetition_pct": 2.73,
+    "avg_len": 31.1,
+    "n": 500,
+    "METEOR": "unavailable_no_nltk",
+    "NIST": "unavailable_no_nltk"
+  },
+  "artifact_hashes": {
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.json": "43c434a169134c50e75742d0c226cf2926b49673ac6f3c97b3abe0b0af3562e8",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.adapter.pt": "c453b008ae2621708ece260c53ae85fbea356e0a9d9672557b5082d622ed8ea3",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.attestation.json": "80ebd45b3699077b2ad5565c658bd3b9cc8fef403425a4623325b4de8656b26f",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.training_tdx_counters.json": "b049142474d15a40d97eca598390f0e288f18dfe5db946d44234ed4eb85a0200",
+    "results/aaai_private_base/generative_lora/protected_runs/e2e_T3_mlp_s1234_protected.generation_tdx_counters.json": "3bf6577c5b25b68367c0e280f6f8d991055dca316474b61d40b7c9f0206e7d6a",
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T3_mlp_s1234_protected.jsonl": "3492f5580977b09e638942966239466d6d0860dd626c475a3ca7aec08ac25296",
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_T3_mlp_s1234_protected.jsonl.profile.json": "e88dcfdfcb837c7ad1b880b5ea28770570f25fa5128c20a54a2aa124b98abb0e",
+    "results/aaai_private_base/generative_lora/extension/monitor/e2e_T3_mlp_s1234_protected.completed.log": "35a42b4ab73a917437d79e5c7cd37d2f49b4b45d8ef7f0e0453e7e5d600f7901",
+    "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/aggregate_metrics.csv": "187f89a59fee6f8d30607c5cbc5e22a1071b5a421b51d9a48e82586268b7b87c",
+    "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/statistical_summary.json": "ad5befc3e82a7c0d1092100439169130f4504fd4d4cbc7fbf44bd8e833ba8f45",
+    "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/per_example_metrics.jsonl": "ae30503747884bbc1e018b2b88af1a52ee23bb6575199c932629a04bef48a688",
+    "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/metrics_report.md": "c7d75ef2641cbd5e0710b9976a2b940a73ff93309156a60211ee4e3c7d56aa2b"
+  },
+  "transfer_hashes_verified_remote_to_local": true
+}

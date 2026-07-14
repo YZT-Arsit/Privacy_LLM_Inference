@@ -1,0 +1,56 @@
+{
+  "schema": "obfuscatune_paper_claims_and_scope_v1",
+  "paper": {
+    "path": "papers/ObfuscaTune-AAAI.pdf",
+    "sha256": "c747ff601b62053241cc7a9a6f70da48de146aaef552b6789dbcb2142dd99b16",
+    "identifier": "arXiv:2407.02960v2",
+    "venue_marking": "PPAI-25 / The 6th AAAI Workshop on Privacy-Preserving Artificial Intelligence"
+  },
+  "explicit": [
+    "proprietary-model and private-data setting",
+    "honest-but-curious cloud provider",
+    "attention and MLP linear weights obfuscated outside TEE",
+    "embedding normalization nonlinear and output layers in TEE",
+    "orthogonal condition-number-one transforms",
+    "plaintext Q K V outside TEE",
+    "LoRA on all linear and attention layers",
+    "randomly initialized LoRA parameters outside TEE",
+    "loss in TEE",
+    "two-GPU experiment with one GPU simulating TEE"
+  ],
+  "ambiguous_or_absent": [
+    "LoRA factor transformation equations",
+    "backward message protocol",
+    "optimizer placement and moment representation",
+    "mixed precision and master-state policy",
+    "checkpoint and adapter package schema",
+    "post-training inference handoff",
+    "Intel TDX deployment and attestation",
+    "KV-cache protection"
+  ],
+  "repository_adaptations": [
+    "Qwen2.5 RMSNorm",
+    "RoPE",
+    "grouped-query attention",
+    "SwiGLU",
+    "decoder KV cache",
+    "Intel TDX network runtime",
+    "measured communication instrumentation",
+    "versioned checkpoint and adapter validation"
+  ],
+  "official_reproduction": false,
+  "traceability": [
+    {"page": 2, "section": "2", "claim": "honest-but-curious cloud", "status": "explicit"},
+    {"page": 2, "section": "4", "claim": "big linear weights transformed outside TEE", "status": "explicit"},
+    {"page": 3, "figure": "1", "claim": "input and output text remain trusted", "status": "explicit"},
+    {"pages": [3, 4], "equations": [1, 2, 3, 4, 5, 6], "claim": "input/output transformation convention", "status": "explicit"},
+    {"page": 4, "figure": "2", "claim": "normalization softmax activation and residual trusted", "status": "explicit"},
+    {"page": 5, "section": "5", "claim": "LoRA outside TEE on all linear and attention layers", "status": "explicit"},
+    {"page": 9, "appendix": "A", "claim": "paper training and LoRA hyperparameters", "status": "explicit"}
+  ],
+  "legacy_repository_claim": {
+    "claim": "supports_lora_training=True",
+    "classification": "LEGACY_DECLARATION_NOT_BACKED_BY_REAL_QWEN_TRAINING_RUNTIME",
+    "shared_registry_modified": false
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "obfuscatune_lora_v2_observable_view_v1",
+  "gpu_observes": {
+    "transformed_base_weights": true,
+    "transformed_boundary_embeddings": true,
+    "plaintext_qkv": true,
+    "plaintext_attention_scores_or_inputs": true,
+    "plaintext_mlp_pre_nonlinearity": true,
+    "plaintext_kv_cache": true,
+    "tensor_shapes": true,
+    "lora_stored_representation": true,
+    "plaintext_input_tokens": false,
+    "plaintext_output_tokens": false,
+    "orthogonal_transform_secrets": false,
+    "plaintext_base_weights": false,
+    "scalar_loss": false
+  },
+  "trusted_observes": ["tokens", "plaintext embeddings", "base weights during provisioning", "transform secrets", "normalization inputs", "RoPE Q K", "softmax inputs", "SwiGLU inputs", "loss", "outputs"],
+  "paper_assumes_authentication": true,
+  "malicious_gpu_integrity": false,
+  "same_as_g2_threat_model": false
+}

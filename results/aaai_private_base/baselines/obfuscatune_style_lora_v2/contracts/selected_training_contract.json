@@ -1,0 +1,15 @@
+{
+  "schema": "obfuscatune_lora_v2_selected_training_contract_v1",
+  "contract_id": "OBFUSCATUNE_LORA_V2_TRANSFORMED_EXTERNAL_ADAMW_V1",
+  "candidate": 2,
+  "factor_owner": "untrusted_accelerator",
+  "input_direction": {"A_star": "R_in^T A", "B_star": "B"},
+  "output_direction": {"A_star": "A", "B_star": "B R_out"},
+  "optimizer": {"type": "AdamW", "coordinate_system": "stored_transformed", "owner": "untrusted_accelerator", "lr": 0.0002, "betas": [0.9, 0.999], "eps": 1e-8, "weight_decay": 0.01, "schedule": "constant", "clip": null, "parameter_dtype": "fp32", "moment_dtype": "fp32"},
+  "reproduces_plaintext_adamw": false,
+  "trusted_canonical_update": false,
+  "checkpoint_contains_transform_secret": false,
+  "canonical_adapter_export": "UNSUPPORTED_AND_OMITTED",
+  "g2_dependency": false,
+  "label": "faithful ObfuscaTune-style Qwen LoRA adaptation (transformed-coordinate optimizer)"
+}

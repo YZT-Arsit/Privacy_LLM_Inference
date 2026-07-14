@@ -1,0 +1,2 @@
+cell,BLEU,chrF,ROUGE_L,METEOR,invalid_rate_pct,repetition_pct,avg_len,n
+T3_mlp_protected,65.45,70.6,61.77,unavailable_no_nltk,0.0,2.73,31.1,500

@@ -1,0 +1,17 @@
+{
+  "schema": "obfuscatune_lora_v2_minimal_oracle_report_v1",
+  "date": "2026-07-14",
+  "v2_tests": {"passed": 16, "failed": 0},
+  "legacy_tests": {"passed": 52, "failed": 0},
+  "combined": {"passed": 68, "failed": 0},
+  "max_abs_error": {
+    "forward": 7.105427357601002e-15,
+    "da": 0.0,
+    "db": 1.7763568394002505e-15,
+    "dx": 1.0658141036401503e-14,
+    "adamw_one_step": 1.1102230246251565e-16,
+    "adamw_ten_step": 1.1102230246251565e-16
+  },
+  "negative_adamw_rotation_counterexample": {"max_abs_difference": 0.09999999516666691, "unsupported_equivalence_rejected": true},
+  "hardware_jobs_started": 0
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "obfuscatune_lora_v2_fidelity_gap_v1",
+  "legacy_tests": {"passed": 52, "scope": "inference simulator and transform algebra"},
+  "ready_components": ["orthogonal transforms", "input/output linear forward", "Qwen inference simulation", "RMSNorm", "RoPE", "GQA", "SwiGLU", "generation simulation"],
+  "missing_components": ["Qwen LoRA training", "LoRA backward", "optimizer runtime", "checkpoint restart", "adapter export", "real A10 TDX runtime", "measured cost instrumentation"],
+  "ambiguous_in_paper": ["LoRA factor coordinates", "gradient representation", "optimizer placement", "adapter handoff", "KV cache protection"],
+  "shared_registry_modified": false,
+  "formal_execution_allowed": false,
+  "legacy_supports_lora_training": "LEGACY_DECLARATION_NOT_BACKED_BY_REAL_QWEN_TRAINING_RUNTIME"
+}

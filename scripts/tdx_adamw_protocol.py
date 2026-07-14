@@ -325,6 +325,10 @@ class TrustedAdamW:
         aad = canonical_aad(expected_binding, ver, cseq)   # any mismatched bound field -> InvalidTag
         pt = aead_open_std(session_key, blob, aad, nonce_ledger=self.nonce_ledger)  # raises on tamper/key/aad/nonce
         d = torch.load(io.BytesIO(pt), map_location="cpu", weights_only=False)
+        stored_hparams = tuple(float(x) for x in d.get("hparams", ()))
+        expected_hparams = (float(self.lr), float(self.b1), float(self.b2), float(self.eps), float(self.wd))
+        if stored_hparams != expected_hparams:
+            raise ValueError(f"restore: optimizer hparams mismatch {stored_hparams} != {expected_hparams} (fail closed)")
         b = d["binding"]
         for f in ("run_id", "package_root_hash", "adapter_id"):
             if str(b.get(f)) != str(expected_binding[f]):

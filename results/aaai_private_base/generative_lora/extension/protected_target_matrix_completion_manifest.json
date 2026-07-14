@@ -1,0 +1,16 @@
+{
+  "schema": "protected_target_matrix_closure_v1",
+  "status": "PROTECTED_T1_T4_COMPLETE_VERIFIED",
+  "seed": 1234,
+  "cells": {
+    "T1": "COMPLETE_VERIFIED",
+    "T2": "COMPLETE_VERIFIED",
+    "T3": "COMPLETE_VERIFIED",
+    "T4": "COMPLETE_VERIFIED"
+  },
+  "t3_manifest": "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/completion_manifest.json",
+  "t4_manifest": "results/aaai_private_base/generative_lora/extension/metrics/t4_all7_s1234_protected/completion_manifest.json",
+  "table_csv": "results/aaai_private_base/generative_lora/extension/target_ablation_results.csv",
+  "table_md": "results/aaai_private_base/generative_lora/extension/target_ablation_table.md",
+  "scope_note": "Protected arms complete. Plaintext T1-T4 matrix is tracked separately."
+}

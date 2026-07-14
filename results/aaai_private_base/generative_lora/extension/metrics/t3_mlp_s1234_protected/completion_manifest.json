@@ -1,0 +1,28 @@
+{
+  "schema": "protected_target_completion_manifest_v1",
+  "cell": "T3",
+  "status": "COMPLETE_VERIFIED",
+  "run_id": "e2e_T3_mlp_s1234_protected-1784013130-8048a7",
+  "source_revision": "9f6f7c9c4f2491f99bf9209098b95f89035f0025",
+  "source_bundle_hash": "bbb6f7b7337ae5b6d5ab5019e87666db9b244f4704ec1cbb6a0585e2c48febd3",
+  "schedule_hash": "818e2c072a939b9d93e9949f018c39d51a8f67cc6472e8f889a5a842eb0f9a94",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "adapter_sha256": "c453b008ae2621708ece260c53ae85fbea356e0a9d9672557b5082d622ed8ea3",
+  "generation_sha256": "3492f5580977b09e638942966239466d6d0860dd626c475a3ca7aec08ac25296",
+  "steps": 750,
+  "generations": 500,
+  "attestation_verified": true,
+  "quality_metrics": {
+    "BLEU": 65.45,
+    "chrF": 70.6,
+    "ROUGE_L": 61.77,
+    "invalid_rate_pct": 0.0,
+    "repetition_pct": 2.73,
+    "avg_len": 31.1,
+    "n": 500,
+    "METEOR": "unavailable_no_nltk",
+    "NIST": "unavailable_no_nltk"
+  },
+  "cost_summary": "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/cost_summary.json",
+  "completion_validation": "results/aaai_private_base/generative_lora/extension/metrics/t3_mlp_s1234_protected/completion_validation.json"
+}

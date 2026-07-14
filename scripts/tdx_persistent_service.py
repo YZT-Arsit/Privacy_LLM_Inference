@@ -192,6 +192,7 @@ def main():
                 "untrusted_fp32_master_materializations": 0, "silent_fallbacks": 0,
                 "adamw_checkpoint_calls": 0, "adamw_restore_calls": 0, "adamw_state_version": 0,
                 "checkpoint_restore_rejected": 0,
+                "effective_weight_decay": None, "optimizer_profile": None,
                 # --- PHASE 1.3: honest HMAC scope. The transport HMAC key is SHARED WITH the A10,
                 # so HMAC proves channel integrity + replay detection against third-party/network
                 # corruption under the frozen honest-but-curious accelerator model. It does NOT prove
@@ -357,6 +358,8 @@ def main():
                            model_config_hash=cfg.get("model_config_hash", ""),
                            service_hash=cfg.get("service_hash", ""))
             counters["authoritative_state_dtype"] = "FP32" if _sdt == torch.float32 else "FP64"
+            counters["effective_weight_decay"] = float(tw.wd)
+            counters["optimizer_profile"] = tw.binding.get("optimizer_profile")
             bad = False
             for k, t in data.get("A", {}).items():
                 l_str, proj = k.split(".", 1); l = int(l_str)
@@ -379,6 +382,8 @@ def main():
                                "hmac": mac(key, b"", resp_seq, run_id, "init_adamw_ack"),
                                "trusted_adamw_state_present": present,
                                "trusted_A_factors": len(tw.stateA), "trusted_B_factors": len(tw.stateB),
+                               "effective_weight_decay": float(tw.wd),
+                               "optimizer_profile": tw.binding.get("optimizer_profile"),
                                "compute_sec": time.time() - t0})
 
         elif op == "adamw_step":
@@ -481,6 +486,8 @@ def main():
             counters["adamw_restore_calls"] += 1; counters["adamw_state_version"] = tw.version
             counters["trusted_target_state_missing"] = 0 if tw.state_present() else 1
             counters["authoritative_state_dtype"] = "FP32" if _sdt == torch.float32 else "FP64"
+            counters["effective_weight_decay"] = float(tw.wd)
+            counters["optimizer_profile"] = tw.binding.get("optimizer_profile")
             last_seq = seq; resp_seq = seq + 1
             write_frame(fout, {"op": "restore_adamw_ack", "seq": resp_seq,
                                "hmac": mac(key, b"", resp_seq, run_id, "restore_adamw_ack"),

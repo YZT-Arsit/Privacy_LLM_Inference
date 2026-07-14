@@ -1,0 +1,19 @@
+{
+  "cells": {
+    "T3_mlp_protected": {
+      "BLEU": 65.45,
+      "chrF": 70.6,
+      "ROUGE_L": 61.77,
+      "invalid_rate_pct": 0.0,
+      "repetition_pct": 2.73,
+      "avg_len": 31.1,
+      "n": 500,
+      "METEOR": "unavailable_no_nltk",
+      "NIST": "unavailable_no_nltk"
+    }
+  },
+  "paired_vs_T3_mlp_protected": {},
+  "has_nltk": false,
+  "baseline": "T3_mlp_protected",
+  "metric_note": "E2E multi-reference; BLEU/chrF=sacrebleu, ROUGE-L=local LCS-F1."
+}

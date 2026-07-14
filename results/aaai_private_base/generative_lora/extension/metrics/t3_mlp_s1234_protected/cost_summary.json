@@ -1,0 +1,76 @@
+{
+  "schema": "protected_target_cost_summary_v1",
+  "cell": "T3",
+  "training": {
+    "step_wall_sec": {
+      "mean": 26.251542666666666,
+      "median": 25.7925,
+      "p95": 32.05,
+      "tag": "MEASURED"
+    },
+    "total_step_wall_sec": {
+      "value": 19688.657,
+      "tag": "DERIVED_FROM_MEASURED"
+    },
+    "examples_per_sec": {
+      "value": 0.6094879909787652,
+      "tag": "DERIVED_FROM_MEASURED"
+    },
+    "supervised_tokens_per_sec": {
+      "value": 15.470024187023016,
+      "tag": "DERIVED_FROM_MEASURED"
+    },
+    "reported_net_ce_sec_per_step": {
+      "mean": 24.626257022857665,
+      "median": 24.174230456352234,
+      "p95": 30.36222004890442,
+      "tag": "MEASURED_RUNTIME_FIELD"
+    },
+    "reported_net_adamw_sec_per_step": {
+      "mean": 0.046454154014587405,
+      "median": 0.04529464244842529,
+      "p95": 0.05198073387145996,
+      "tag": "MEASURED_RUNTIME_FIELD"
+    },
+    "trusted_state_bytes": {
+      "value": null,
+      "tag": "UNAVAILABLE"
+    },
+    "boundary_bytes": {
+      "value": null,
+      "tag": "UNAVAILABLE"
+    },
+    "peak_gpu_memory_bytes": {
+      "value": null,
+      "tag": "UNAVAILABLE"
+    }
+  },
+  "generation": {
+    "wall_sec": {
+      "value": 315.8,
+      "tag": "MEASURED"
+    },
+    "new_tokens": {
+      "value": 15558,
+      "tag": "MEASURED_COUNTER"
+    },
+    "tokens_per_sec": {
+      "value": 49.26,
+      "tag": "MEASURED"
+    },
+    "tdx_decode_calls": {
+      "value": 16058,
+      "tag": "MEASURED_COUNTER"
+    },
+    "tdx_wait_sec": {
+      "value": 4.7,
+      "tag": "MEASURED"
+    }
+  },
+  "artifact": {
+    "adapter_bytes": {
+      "value": 13316145,
+      "tag": "MEASURED"
+    }
+  }
+}
