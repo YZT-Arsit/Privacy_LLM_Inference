@@ -1,0 +1,11 @@
+{
+  "adamw_m_v": "fp32",
+  "authoritative_lora": "fp32",
+  "autocast": "disabled",
+  "forward": "bf16",
+  "generation": "fp32",
+  "gradient_observed": "recorded_at_runtime",
+  "lora_runtime": "bf16",
+  "loss_scaling": "none",
+  "optimizer": "explicit_unfused_G2_formula"
+}

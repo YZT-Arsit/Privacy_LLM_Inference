@@ -8,3 +8,8 @@ usage: date [-jnRu] [-I[date|hours|minutes|seconds|ns]] [-f input_fmt]
             [ -z output_zone ] [-r filename|seconds] [-v[+|-]val[y|m|w|d|H|M|S]]
             [[[[mm]dd]HH]MM[[cc]yy][.SS] | new_date] [+output_fmt]
 2026-07-14T15:26:36+08:00 scheduler_start pid=83097
+2026-07-14T16:02:00+08:00 scheduler_start pid=86910
+2026-07-14T16:04:53+08:00 t2_terminal_marker_seen
+T2_REMOTE_VALIDATION_OK
+T2_LOCAL_PRESERVATION_OK
+2026-07-14T16:06:33+08:00 launching_t4

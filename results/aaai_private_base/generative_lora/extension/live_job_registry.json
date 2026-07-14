@@ -1,7 +1,7 @@
 {
-  "schema": "dual_pair_live_job_registry",
-  "version": "2.0",
-  "updated_at": "2026-07-14T15:26:36+08:00",
+  "schema": "multi_host_live_job_registry",
+  "version": "3.1",
+  "updated_at": "2026-07-14T16:08:27+08:00",
   "gpu_execution_owner": "sole_current_codex_session",
   "duplicate_execution_allowed": false,
   "active_assignments": [
@@ -16,7 +16,7 @@
       "remote_driver_pid": 68107,
       "remote_worker_pid": 68109,
       "status": "running",
-      "last_verified_step": 24,
+      "last_verified_step": 124,
       "last_verified_finite": true,
       "log_path": "/root/pllo_pb/g2_e2e_T3_mlp_s1234_protected.log"
     },
@@ -26,22 +26,40 @@
       "tdx_public": "8.147.112.139",
       "a10_private": "172.30.25.155",
       "tdx_private": "172.30.25.156",
-      "cell": "T2_qkvo_exact_protected_E2E_seed1234",
-      "run_tag": "e2e_T2_qkvo_s1234_protected",
-      "remote_driver_pid": 16093,
-      "remote_worker_pid": 16095,
+      "cell": "T4_all7_exact_protected_E2E_seed1234",
+      "run_tag": "e2e_T4_all7_s1234_protected",
+      "remote_driver_pid": 26411,
+      "remote_worker_pid": 26413,
       "status": "running",
-      "last_verified_step": 669,
+      "last_verified_step": 2,
       "last_verified_finite": true,
-      "log_path": "/root/pllo_pb/g2_e2e_T2_qkvo_s1234_protected.log"
+      "log_path": "/root/pllo_pb/g2_e2e_T4_all7_s1234_protected.log"
+    },
+    {
+      "pair": "standalone_a10_3",
+      "a10_public": "39.96.4.252",
+      "a10_private": "172.30.25.157",
+      "tdx_required": false,
+      "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
+      "cell": "G1_BF16_MATCHED_E2E_seed7",
+      "run_tag": "g1_bf16_matched_s7",
+      "remote_shell_pid": 6014,
+      "remote_worker_pid": 6015,
+      "status": "running",
+      "last_verified_step": 81,
+      "last_verified_finite": true,
+      "log_path": "/root/g1_bf16_matched_s7.log",
+      "output_path": "/root/pllo_pb/results/aaai_private_base/generative_lora/extension/g1_bf16_matched/seed7",
+      "resume": "repeat the registered command with --resume"
     }
   ],
-  "pending_launch": {
+  "t4_launch": {
     "cell": "T4_all7_exact_protected_E2E_seed1234",
     "run_tag": "e2e_T4_all7_s1234_protected",
     "assigned_pair": "pair2",
     "launch_exactly_once": true,
-    "scheduler_pid": 83097,
+    "scheduler_pid": 86910,
+    "scheduler_status": "all gates passed; launched exactly once at 2026-07-14T16:06:33+08:00; polling active job",
     "scheduler_script": "scripts/generative_lora/schedule_t4_after_t2.sh",
     "heartbeat_path": "results/aaai_private_base/generative_lora/extension/monitor/t4_scheduler_heartbeat.json",
     "gates": [
@@ -52,6 +70,25 @@
       "T4 output paths do not exist"
     ]
   },
+  "recently_completed": [
+    {
+      "cell": "T2_qkvo_exact_protected_E2E_seed1234",
+      "run_tag": "e2e_T2_qkvo_s1234_protected",
+      "status": "complete_verified",
+      "steps": 750,
+      "generations": 500,
+      "attestation_verified": true,
+      "preserved_locally": true
+    },
+    {
+      "cell": "G1_BF16_MATCHED_E2E_seed1234",
+      "run_tag": "g1_bf16_matched_s1234",
+      "status": "complete_verified",
+      "steps": 750,
+      "generations": 500,
+      "generation_sha256": "bd6b9878992cb5652cd1b1e57e54f3cda3827c07a6dd77f4a0de5992ac13d6e9"
+    }
+  ],
   "frozen_artifacts_mutated": false,
   "commits_created": false
 }

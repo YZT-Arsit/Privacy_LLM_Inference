@@ -1,0 +1,28 @@
+{
+  "schema": "g1_bf16_matched_precision_audit",
+  "version": "1.0",
+  "status": "implementation_ready_environment_installing",
+  "matches_executed_g2_not_stale_declared_fields": true,
+  "trainable_parameters": 4399104,
+  "actual_g2_profile": {
+    "forward_dtype": "bf16",
+    "lora_runtime_dtype": "bf16",
+    "master_dtype": "fp32",
+    "gradient_dtype": "bf16 runtime to fp32 accumulation",
+    "adamw_state_dtype": "fp32",
+    "betas": [0.9, 0.999],
+    "epsilon": 1e-8,
+    "weight_decay": 0.01,
+    "learning_rate_schedule": "constant",
+    "gradient_clipping": "none",
+    "generation_dtype": "fp32"
+  },
+  "declared_vs_executed_discrepancies": [
+    "frozen_config weight_decay=0.0 versus executed G2 weight_decay=0.01",
+    "frozen_config warmup/linear decay versus executed G2 constant learning rate",
+    "frozen_config grad_clip=1.0 versus no clipping call in executed G2 runner"
+  ],
+  "plaintext_only": true,
+  "uses_tdx": false,
+  "uses_transformed_package": false
+}
