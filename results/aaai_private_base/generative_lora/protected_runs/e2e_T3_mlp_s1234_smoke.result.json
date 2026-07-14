@@ -1,0 +1,21 @@
+{
+  "tag": "e2e_T3_mlp_s1234_smoke",
+  "run_id": "e2e_T3_mlp_s1234_smoke-1784013014-1da365",
+  "profile": "L12",
+  "seed": 1234,
+  "lr": 0.0002,
+  "max_steps": 1,
+  "attest": true,
+  "lora_targets": [
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "endpoints": {
+    "a10_pub": "root@39.107.123.173",
+    "tdx_pub": "root@39.96.43.122",
+    "tdx_priv": "172.30.25.153"
+  },
+  "g2_wall_sec": 43.5,
+  "completed": true
+}

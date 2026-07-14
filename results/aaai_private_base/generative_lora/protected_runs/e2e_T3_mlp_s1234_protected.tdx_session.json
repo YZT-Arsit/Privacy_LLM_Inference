@@ -1,0 +1,70 @@
+{
+  "session_key_hex": "9824f019e7943afbfeb297301195c40d1d636bf3e93c68d8a29ae12381464709",
+  "run_id": "e2e_T3_mlp_s1234_protected-1784013130-8048a7",
+  "labels": [
+    0
+  ],
+  "gamma_bundle": "/tmp/o1c_bundle.pt",
+  "vocab_seed": 8000,
+  "attest": true,
+  "attest_out": "/tmp/e2e_attest",
+  "binding_manifest": {
+    "d4_run_id": "e2e_T3_mlp_s1234_protected-1784013130-8048a7",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "seed": 1234,
+    "optimizer_profile": "L12_adamw",
+    "execution_profile": "paper_safe",
+    "transport_profile": "direct_a10_tdx_private",
+    "compute_host": "alicloud_a10",
+    "data_plane_ip": "172.30.25.153",
+    "source_revision": "9f6f7c9c4f2491f99bf9209098b95f89035f0025",
+    "code_revision_or_worktree_hash": "bbb6f7b7337ae5b6d5ab5019e87666db9b244f4704ec1cbb6a0585e2c48febd3",
+    "source_hashes": {
+      "scripts/a10_batch_runner.py": "581d2644d02bbcb87b6babe245061f74b3e5bdff12a2e97aa7f90b9009ff8eb3",
+      "scripts/tdx_persistent_service.py": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+      "scripts/batch_dataplane.py": "48ab05a023a97933811833ada38e4581f33803d26842ca9da5f11459da771b68",
+      "scripts/h800_unified_worker.py": "cad194825df6f6057e4e5c1b28ec723329f9e5d97b52d1615bd8bf0c92b8d269",
+      "scripts/h800_d4_worker.py": "d06058efd44ec3ec895b41de57cfac73e0061087f0afae93820730882bfc2e70",
+      "scripts/generative_lora/protected_generate.py": "d67b4e135d32fc048b8b372b24b8f7a71bac44c47c8ba4121b9d078edf810a3d",
+      "scripts/generative_lora/gate_e2e_protected.py": "004b14da29dc75cb52cf7f3397573bf35f05094a7d7f0c2fc08cd0029ab25ace"
+    },
+    "hmac_key_commitment": "4250dfc8621e0fd24308663dcb669b675fd9023751b90837a89a32af939733ac",
+    "nonce": "8421c43ad5c585fc1b3b87957c86472f",
+    "debug_false_required": true,
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "dataset_id": "e2e_nlg",
+    "task": "clm",
+    "lora_targets": [
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "counters_out": "/tmp/e2e_batch_counters.json",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "ckpt_dir": "/tmp/l12_ckpt_e2e",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "service_hash": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+  "dataset_id": "e2e_nlg",
+  "task": "clm",
+  "template_hash": "e9b15b3b089a7a2e38f8589a6b4be4ef45eee4bf6e65fe64a7ec8bfefcd7c537",
+  "lora_targets": [
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "label_schema_hash": "de4f75df52e95dac17ddb6dca5dc6422f590203f7ddabc88e57ecfbd8f80076e",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "batch_label_tables": {
+    "train": "/tmp/e2e_train_labels.pt"
+  },
+  "batch_schedules": {
+    "train": "/tmp/e2e_schedule_s1234.json"
+  },
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
+}

@@ -1,5 +1,7 @@
 # Paper Table Template — Frozen Three-Seed Evidence
 
+Quality deltas below are paired means of per-example sentence metrics; corpus-level scores should be shown separately if used.
+
 | Comparison | Seeds | BLEU Δ | chrF Δ | ROUGE-L Δ | Evidence status |
 |---|---:|---:|---:|---:|---|
 | G2 L12 − matched G1 | 3 | -0.414 ± 1.011 | -1.245 ± 0.865 | -0.315 ± 0.793 | frozen measured |

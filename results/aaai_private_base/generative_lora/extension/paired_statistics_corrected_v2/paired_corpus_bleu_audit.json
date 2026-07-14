@@ -1,0 +1,126 @@
+{
+  "schema": "paired_corpus_bleu_audit",
+  "version": "2.0",
+  "method": "paired resampling of matched example indices; full corpus BLEU recomputed from summed per-example sacreBLEU sufficient statistics on every bootstrap replicate",
+  "bootstrap_samples": 10000,
+  "results": [
+    {
+      "seed": 1234,
+      "g1_file": "results/aaai_private_base/generative_lora/generations/g1_final_s1234_test.jsonl",
+      "g1_sha256": "ec5a432031dcbfed61152e6a1b8299bfc55704568342e7890b412f49e9b7c76b",
+      "g2_file": "results/aaai_private_base/offline_analysis/confound_controlled_20260714/source_cache/g2_protected_e2e_L12_s1234_full.jsonl",
+      "g2_sha256": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31",
+      "g1_corpus_bleu": 63.98207906355511,
+      "g2_corpus_bleu": 65.88447189569074,
+      "corpus_bleu_difference_g2_minus_g1": 1.9023928321356252,
+      "g1_mean_sentence_bleu": 62.92592355825709,
+      "g2_mean_sentence_bleu": 63.33924515918702,
+      "mean_sentence_bleu_difference_g2_minus_g1": 0.4133216009299332,
+      "paired_bootstrap_corpus_bleu_ci95": [
+        0.650117087920486,
+        2.941914057263817
+      ],
+      "paired_bootstrap_corpus_bleu_mean": 1.8029921569468323,
+      "matched_sample_count": 500,
+      "g1_records": 500,
+      "g2_records": 500,
+      "g1_duplicate_sample_ids": [],
+      "g2_duplicate_sample_ids": [],
+      "missing_in_g2": [],
+      "missing_in_g1": [],
+      "reference_mismatch_count": 0,
+      "meaning_representation_mismatch_count": 0,
+      "input_hash_mismatch_count": 0
+    },
+    {
+      "seed": 7,
+      "g1_file": "results/aaai_private_base/generative_lora/generations/g1_final_s7_test.jsonl",
+      "g1_sha256": "0cfef06b7ace081b71303ca05f7709deb6562b521803f5dc9d9cff9b034aeb17",
+      "g2_file": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s7_extension.jsonl",
+      "g2_sha256": "70a93b9d50d4cb67037a04f70e0cf9a608ff93f8a5b64dd095e06cae686c2aec",
+      "g1_corpus_bleu": 63.93412043235396,
+      "g2_corpus_bleu": 64.62955962184158,
+      "corpus_bleu_difference_g2_minus_g1": 0.6954391894876224,
+      "g1_mean_sentence_bleu": 62.83417833399691,
+      "g2_mean_sentence_bleu": 62.72143865303203,
+      "mean_sentence_bleu_difference_g2_minus_g1": -0.11273968096487863,
+      "paired_bootstrap_corpus_bleu_ci95": [
+        -0.4212576739762038,
+        1.8046269695416166
+      ],
+      "paired_bootstrap_corpus_bleu_mean": 0.6868093737196035,
+      "matched_sample_count": 500,
+      "g1_records": 500,
+      "g2_records": 500,
+      "g1_duplicate_sample_ids": [],
+      "g2_duplicate_sample_ids": [],
+      "missing_in_g2": [],
+      "missing_in_g1": [],
+      "reference_mismatch_count": 0,
+      "meaning_representation_mismatch_count": 0,
+      "input_hash_mismatch_count": 0
+    },
+    {
+      "seed": 2025,
+      "g1_file": "results/aaai_private_base/generative_lora/generations/g1_final_s2025_test.jsonl",
+      "g1_sha256": "744d1758db59cff389fa618e8682ea412f076be646257ace296e33da392906f2",
+      "g2_file": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s2025_extension.jsonl",
+      "g2_sha256": "1c7c7a7a12fc9845a9635b1634e8aa5c4fc3a0aabb1185ccfd566770de89fede",
+      "g1_corpus_bleu": 64.31178961431235,
+      "g2_corpus_bleu": 63.162311544034566,
+      "corpus_bleu_difference_g2_minus_g1": -1.1494780702777803,
+      "g1_mean_sentence_bleu": 63.17218989570653,
+      "g2_mean_sentence_bleu": 61.63109721128513,
+      "mean_sentence_bleu_difference_g2_minus_g1": -1.5410926844214003,
+      "paired_bootstrap_corpus_bleu_ci95": [
+        -2.476003365740991,
+        0.1709338272648047
+      ],
+      "paired_bootstrap_corpus_bleu_mean": -1.141925407636575,
+      "matched_sample_count": 500,
+      "g1_records": 500,
+      "g2_records": 500,
+      "g1_duplicate_sample_ids": [],
+      "g2_duplicate_sample_ids": [],
+      "missing_in_g2": [],
+      "missing_in_g1": [],
+      "reference_mismatch_count": 0,
+      "meaning_representation_mismatch_count": 0,
+      "input_hash_mismatch_count": 0
+    }
+  ],
+  "diagnostics": [
+    {
+      "seed": 1234,
+      "bootstrap_seed": 2026072634,
+      "bootstrap_samples": 10000,
+      "sacrebleu_version": "2.6.0",
+      "bleu_signature": "nrefs:45|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0"
+    },
+    {
+      "seed": 7,
+      "bootstrap_seed": 2026071407,
+      "bootstrap_samples": 10000,
+      "sacrebleu_version": "2.6.0",
+      "bleu_signature": "nrefs:45|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0"
+    },
+    {
+      "seed": 2025,
+      "bootstrap_seed": 2026073425,
+      "bootstrap_samples": 10000,
+      "sacrebleu_version": "2.6.0",
+      "bleu_signature": "nrefs:45|case:mixed|eff:no|tok:13a|smooth:exp|version:2.6.0"
+    }
+  ],
+  "seed_1234_local_copy_integrity": {
+    "path": "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s1234_full.jsonl",
+    "observed_size": 524288,
+    "observed_sha256": "c3aa66cbbe899885f29b24e25082c1bcc24f2625c791160319c43ef073380ec4",
+    "parseable": false,
+    "expected_size_from_completion_manifest": 1010375,
+    "expected_sha256_from_completion_manifest": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31",
+    "verified_source_cache_used": "results/aaai_private_base/offline_analysis/confound_controlled_20260714/source_cache/g2_protected_e2e_L12_s1234_full.jsonl",
+    "verified_source_cache_sha256": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31"
+  },
+  "conclusion": "The discrepancy is corpus BLEU versus mean sentence BLEU, not seed, subset, reference, or evaluator-input mismatch. The primary local seed-1234 G2 copy is truncated; a completion-manifest-hash-matched immutable cache copy was used."
+}

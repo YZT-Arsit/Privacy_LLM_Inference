@@ -1,0 +1,29 @@
+{
+  "schema": "confound_controlled_shadow_adapter_manifest",
+  "version": "1.0",
+  "adapter_sha256": "<required>",
+  "adapter_size_bytes": "<required integer>",
+  "shadow_seed": "<7|1234|2025>",
+  "pool_manifest_sha256": "<required>",
+  "membership_assignment_sha256": "<required>",
+  "base_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "training_config_sha256": "<required>",
+  "target_set": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "rank": 8,
+  "alpha": 16,
+  "steps": 750,
+  "dtype": "fp32",
+  "collection_mode": "C0_INFERENCE_ONLY",
+  "model_mode": "eval",
+  "labels_in_feature_file": false,
+  "runtime_metadata_in_features": false
+}
