@@ -1,0 +1,13 @@
+{
+  "shadow_identity_nearest_centroid_cv_accuracy": 1.0,
+  "chance": 0.3333333333333333,
+  "interpretation": "model-specific behavior; no shadow/session/run metadata columns present",
+  "run_session_identity_audit_metadata_only_accuracy": 1.0,
+  "run_session_metadata_in_matrix": false,
+  "presence_missingness_classifier_accuracy": 0.3333333333333333,
+  "mean_shuffle_auc": 0.501804,
+  "mean_pseudo_auc": 0.4713986666666667,
+  "top_joint_univariate_symmetric_auc": 0.5182111111111112,
+  "top_joint_univariate_feature": "kv.k.layer_03.last_l2_by_head.std",
+  "disjoint_range_count": 0
+}

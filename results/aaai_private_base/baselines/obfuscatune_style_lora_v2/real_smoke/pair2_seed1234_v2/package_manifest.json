@@ -1,0 +1,1607 @@
+{
+  "alpha": 16.0,
+  "contains_plaintext_weight": false,
+  "contains_rotation": false,
+  "contract_id": "OBFUSCATUNE_LORA_V2_TRANSFORMED_EXTERNAL_ADAMW_V1",
+  "inventory": {
+    "layers.0.down_proj": {
+      "direction": "output",
+      "factor_seed": 8240,
+      "rotation_seed": 101240,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.0.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8238,
+      "rotation_seed": 101238,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.0.k_proj": {
+      "direction": "input",
+      "factor_seed": 8235,
+      "rotation_seed": 101235,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.0.o_proj": {
+      "direction": "output",
+      "factor_seed": 8237,
+      "rotation_seed": 101237,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.0.q_proj": {
+      "direction": "input",
+      "factor_seed": 8234,
+      "rotation_seed": 101234,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.0.up_proj": {
+      "direction": "input",
+      "factor_seed": 8239,
+      "rotation_seed": 101239,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.0.v_proj": {
+      "direction": "input",
+      "factor_seed": 8236,
+      "rotation_seed": 101236,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.1.down_proj": {
+      "direction": "output",
+      "factor_seed": 8340,
+      "rotation_seed": 101340,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.1.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8338,
+      "rotation_seed": 101338,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.1.k_proj": {
+      "direction": "input",
+      "factor_seed": 8335,
+      "rotation_seed": 101335,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.1.o_proj": {
+      "direction": "output",
+      "factor_seed": 8337,
+      "rotation_seed": 101337,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.1.q_proj": {
+      "direction": "input",
+      "factor_seed": 8334,
+      "rotation_seed": 101334,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.1.up_proj": {
+      "direction": "input",
+      "factor_seed": 8339,
+      "rotation_seed": 101339,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.1.v_proj": {
+      "direction": "input",
+      "factor_seed": 8336,
+      "rotation_seed": 101336,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.10.down_proj": {
+      "direction": "output",
+      "factor_seed": 9240,
+      "rotation_seed": 102240,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.10.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9238,
+      "rotation_seed": 102238,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.10.k_proj": {
+      "direction": "input",
+      "factor_seed": 9235,
+      "rotation_seed": 102235,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.10.o_proj": {
+      "direction": "output",
+      "factor_seed": 9237,
+      "rotation_seed": 102237,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.10.q_proj": {
+      "direction": "input",
+      "factor_seed": 9234,
+      "rotation_seed": 102234,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.10.up_proj": {
+      "direction": "input",
+      "factor_seed": 9239,
+      "rotation_seed": 102239,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.10.v_proj": {
+      "direction": "input",
+      "factor_seed": 9236,
+      "rotation_seed": 102236,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.11.down_proj": {
+      "direction": "output",
+      "factor_seed": 9340,
+      "rotation_seed": 102340,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.11.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9338,
+      "rotation_seed": 102338,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.11.k_proj": {
+      "direction": "input",
+      "factor_seed": 9335,
+      "rotation_seed": 102335,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.11.o_proj": {
+      "direction": "output",
+      "factor_seed": 9337,
+      "rotation_seed": 102337,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.11.q_proj": {
+      "direction": "input",
+      "factor_seed": 9334,
+      "rotation_seed": 102334,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.11.up_proj": {
+      "direction": "input",
+      "factor_seed": 9339,
+      "rotation_seed": 102339,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.11.v_proj": {
+      "direction": "input",
+      "factor_seed": 9336,
+      "rotation_seed": 102336,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.12.down_proj": {
+      "direction": "output",
+      "factor_seed": 9440,
+      "rotation_seed": 102440,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.12.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9438,
+      "rotation_seed": 102438,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.12.k_proj": {
+      "direction": "input",
+      "factor_seed": 9435,
+      "rotation_seed": 102435,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.12.o_proj": {
+      "direction": "output",
+      "factor_seed": 9437,
+      "rotation_seed": 102437,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.12.q_proj": {
+      "direction": "input",
+      "factor_seed": 9434,
+      "rotation_seed": 102434,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.12.up_proj": {
+      "direction": "input",
+      "factor_seed": 9439,
+      "rotation_seed": 102439,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.12.v_proj": {
+      "direction": "input",
+      "factor_seed": 9436,
+      "rotation_seed": 102436,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.13.down_proj": {
+      "direction": "output",
+      "factor_seed": 9540,
+      "rotation_seed": 102540,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.13.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9538,
+      "rotation_seed": 102538,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.13.k_proj": {
+      "direction": "input",
+      "factor_seed": 9535,
+      "rotation_seed": 102535,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.13.o_proj": {
+      "direction": "output",
+      "factor_seed": 9537,
+      "rotation_seed": 102537,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.13.q_proj": {
+      "direction": "input",
+      "factor_seed": 9534,
+      "rotation_seed": 102534,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.13.up_proj": {
+      "direction": "input",
+      "factor_seed": 9539,
+      "rotation_seed": 102539,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.13.v_proj": {
+      "direction": "input",
+      "factor_seed": 9536,
+      "rotation_seed": 102536,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.14.down_proj": {
+      "direction": "output",
+      "factor_seed": 9640,
+      "rotation_seed": 102640,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.14.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9638,
+      "rotation_seed": 102638,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.14.k_proj": {
+      "direction": "input",
+      "factor_seed": 9635,
+      "rotation_seed": 102635,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.14.o_proj": {
+      "direction": "output",
+      "factor_seed": 9637,
+      "rotation_seed": 102637,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.14.q_proj": {
+      "direction": "input",
+      "factor_seed": 9634,
+      "rotation_seed": 102634,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.14.up_proj": {
+      "direction": "input",
+      "factor_seed": 9639,
+      "rotation_seed": 102639,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.14.v_proj": {
+      "direction": "input",
+      "factor_seed": 9636,
+      "rotation_seed": 102636,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.15.down_proj": {
+      "direction": "output",
+      "factor_seed": 9740,
+      "rotation_seed": 102740,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.15.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9738,
+      "rotation_seed": 102738,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.15.k_proj": {
+      "direction": "input",
+      "factor_seed": 9735,
+      "rotation_seed": 102735,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.15.o_proj": {
+      "direction": "output",
+      "factor_seed": 9737,
+      "rotation_seed": 102737,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.15.q_proj": {
+      "direction": "input",
+      "factor_seed": 9734,
+      "rotation_seed": 102734,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.15.up_proj": {
+      "direction": "input",
+      "factor_seed": 9739,
+      "rotation_seed": 102739,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.15.v_proj": {
+      "direction": "input",
+      "factor_seed": 9736,
+      "rotation_seed": 102736,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.16.down_proj": {
+      "direction": "output",
+      "factor_seed": 9840,
+      "rotation_seed": 102840,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.16.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9838,
+      "rotation_seed": 102838,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.16.k_proj": {
+      "direction": "input",
+      "factor_seed": 9835,
+      "rotation_seed": 102835,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.16.o_proj": {
+      "direction": "output",
+      "factor_seed": 9837,
+      "rotation_seed": 102837,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.16.q_proj": {
+      "direction": "input",
+      "factor_seed": 9834,
+      "rotation_seed": 102834,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.16.up_proj": {
+      "direction": "input",
+      "factor_seed": 9839,
+      "rotation_seed": 102839,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.16.v_proj": {
+      "direction": "input",
+      "factor_seed": 9836,
+      "rotation_seed": 102836,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.17.down_proj": {
+      "direction": "output",
+      "factor_seed": 9940,
+      "rotation_seed": 102940,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.17.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9938,
+      "rotation_seed": 102938,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.17.k_proj": {
+      "direction": "input",
+      "factor_seed": 9935,
+      "rotation_seed": 102935,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.17.o_proj": {
+      "direction": "output",
+      "factor_seed": 9937,
+      "rotation_seed": 102937,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.17.q_proj": {
+      "direction": "input",
+      "factor_seed": 9934,
+      "rotation_seed": 102934,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.17.up_proj": {
+      "direction": "input",
+      "factor_seed": 9939,
+      "rotation_seed": 102939,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.17.v_proj": {
+      "direction": "input",
+      "factor_seed": 9936,
+      "rotation_seed": 102936,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.18.down_proj": {
+      "direction": "output",
+      "factor_seed": 10040,
+      "rotation_seed": 103040,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.18.gate_proj": {
+      "direction": "input",
+      "factor_seed": 10038,
+      "rotation_seed": 103038,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.18.k_proj": {
+      "direction": "input",
+      "factor_seed": 10035,
+      "rotation_seed": 103035,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.18.o_proj": {
+      "direction": "output",
+      "factor_seed": 10037,
+      "rotation_seed": 103037,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.18.q_proj": {
+      "direction": "input",
+      "factor_seed": 10034,
+      "rotation_seed": 103034,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.18.up_proj": {
+      "direction": "input",
+      "factor_seed": 10039,
+      "rotation_seed": 103039,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.18.v_proj": {
+      "direction": "input",
+      "factor_seed": 10036,
+      "rotation_seed": 103036,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.19.down_proj": {
+      "direction": "output",
+      "factor_seed": 10140,
+      "rotation_seed": 103140,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.19.gate_proj": {
+      "direction": "input",
+      "factor_seed": 10138,
+      "rotation_seed": 103138,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.19.k_proj": {
+      "direction": "input",
+      "factor_seed": 10135,
+      "rotation_seed": 103135,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.19.o_proj": {
+      "direction": "output",
+      "factor_seed": 10137,
+      "rotation_seed": 103137,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.19.q_proj": {
+      "direction": "input",
+      "factor_seed": 10134,
+      "rotation_seed": 103134,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.19.up_proj": {
+      "direction": "input",
+      "factor_seed": 10139,
+      "rotation_seed": 103139,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.19.v_proj": {
+      "direction": "input",
+      "factor_seed": 10136,
+      "rotation_seed": 103136,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.2.down_proj": {
+      "direction": "output",
+      "factor_seed": 8440,
+      "rotation_seed": 101440,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.2.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8438,
+      "rotation_seed": 101438,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.2.k_proj": {
+      "direction": "input",
+      "factor_seed": 8435,
+      "rotation_seed": 101435,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.2.o_proj": {
+      "direction": "output",
+      "factor_seed": 8437,
+      "rotation_seed": 101437,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.2.q_proj": {
+      "direction": "input",
+      "factor_seed": 8434,
+      "rotation_seed": 101434,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.2.up_proj": {
+      "direction": "input",
+      "factor_seed": 8439,
+      "rotation_seed": 101439,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.2.v_proj": {
+      "direction": "input",
+      "factor_seed": 8436,
+      "rotation_seed": 101436,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.20.down_proj": {
+      "direction": "output",
+      "factor_seed": 10240,
+      "rotation_seed": 103240,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.20.gate_proj": {
+      "direction": "input",
+      "factor_seed": 10238,
+      "rotation_seed": 103238,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.20.k_proj": {
+      "direction": "input",
+      "factor_seed": 10235,
+      "rotation_seed": 103235,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.20.o_proj": {
+      "direction": "output",
+      "factor_seed": 10237,
+      "rotation_seed": 103237,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.20.q_proj": {
+      "direction": "input",
+      "factor_seed": 10234,
+      "rotation_seed": 103234,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.20.up_proj": {
+      "direction": "input",
+      "factor_seed": 10239,
+      "rotation_seed": 103239,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.20.v_proj": {
+      "direction": "input",
+      "factor_seed": 10236,
+      "rotation_seed": 103236,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.21.down_proj": {
+      "direction": "output",
+      "factor_seed": 10340,
+      "rotation_seed": 103340,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.21.gate_proj": {
+      "direction": "input",
+      "factor_seed": 10338,
+      "rotation_seed": 103338,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.21.k_proj": {
+      "direction": "input",
+      "factor_seed": 10335,
+      "rotation_seed": 103335,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.21.o_proj": {
+      "direction": "output",
+      "factor_seed": 10337,
+      "rotation_seed": 103337,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.21.q_proj": {
+      "direction": "input",
+      "factor_seed": 10334,
+      "rotation_seed": 103334,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.21.up_proj": {
+      "direction": "input",
+      "factor_seed": 10339,
+      "rotation_seed": 103339,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.21.v_proj": {
+      "direction": "input",
+      "factor_seed": 10336,
+      "rotation_seed": 103336,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.22.down_proj": {
+      "direction": "output",
+      "factor_seed": 10440,
+      "rotation_seed": 103440,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.22.gate_proj": {
+      "direction": "input",
+      "factor_seed": 10438,
+      "rotation_seed": 103438,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.22.k_proj": {
+      "direction": "input",
+      "factor_seed": 10435,
+      "rotation_seed": 103435,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.22.o_proj": {
+      "direction": "output",
+      "factor_seed": 10437,
+      "rotation_seed": 103437,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.22.q_proj": {
+      "direction": "input",
+      "factor_seed": 10434,
+      "rotation_seed": 103434,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.22.up_proj": {
+      "direction": "input",
+      "factor_seed": 10439,
+      "rotation_seed": 103439,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.22.v_proj": {
+      "direction": "input",
+      "factor_seed": 10436,
+      "rotation_seed": 103436,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.23.down_proj": {
+      "direction": "output",
+      "factor_seed": 10540,
+      "rotation_seed": 103540,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.23.gate_proj": {
+      "direction": "input",
+      "factor_seed": 10538,
+      "rotation_seed": 103538,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.23.k_proj": {
+      "direction": "input",
+      "factor_seed": 10535,
+      "rotation_seed": 103535,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.23.o_proj": {
+      "direction": "output",
+      "factor_seed": 10537,
+      "rotation_seed": 103537,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.23.q_proj": {
+      "direction": "input",
+      "factor_seed": 10534,
+      "rotation_seed": 103534,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.23.up_proj": {
+      "direction": "input",
+      "factor_seed": 10539,
+      "rotation_seed": 103539,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.23.v_proj": {
+      "direction": "input",
+      "factor_seed": 10536,
+      "rotation_seed": 103536,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.3.down_proj": {
+      "direction": "output",
+      "factor_seed": 8540,
+      "rotation_seed": 101540,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.3.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8538,
+      "rotation_seed": 101538,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.3.k_proj": {
+      "direction": "input",
+      "factor_seed": 8535,
+      "rotation_seed": 101535,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.3.o_proj": {
+      "direction": "output",
+      "factor_seed": 8537,
+      "rotation_seed": 101537,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.3.q_proj": {
+      "direction": "input",
+      "factor_seed": 8534,
+      "rotation_seed": 101534,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.3.up_proj": {
+      "direction": "input",
+      "factor_seed": 8539,
+      "rotation_seed": 101539,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.3.v_proj": {
+      "direction": "input",
+      "factor_seed": 8536,
+      "rotation_seed": 101536,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.4.down_proj": {
+      "direction": "output",
+      "factor_seed": 8640,
+      "rotation_seed": 101640,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.4.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8638,
+      "rotation_seed": 101638,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.4.k_proj": {
+      "direction": "input",
+      "factor_seed": 8635,
+      "rotation_seed": 101635,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.4.o_proj": {
+      "direction": "output",
+      "factor_seed": 8637,
+      "rotation_seed": 101637,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.4.q_proj": {
+      "direction": "input",
+      "factor_seed": 8634,
+      "rotation_seed": 101634,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.4.up_proj": {
+      "direction": "input",
+      "factor_seed": 8639,
+      "rotation_seed": 101639,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.4.v_proj": {
+      "direction": "input",
+      "factor_seed": 8636,
+      "rotation_seed": 101636,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.5.down_proj": {
+      "direction": "output",
+      "factor_seed": 8740,
+      "rotation_seed": 101740,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.5.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8738,
+      "rotation_seed": 101738,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.5.k_proj": {
+      "direction": "input",
+      "factor_seed": 8735,
+      "rotation_seed": 101735,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.5.o_proj": {
+      "direction": "output",
+      "factor_seed": 8737,
+      "rotation_seed": 101737,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.5.q_proj": {
+      "direction": "input",
+      "factor_seed": 8734,
+      "rotation_seed": 101734,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.5.up_proj": {
+      "direction": "input",
+      "factor_seed": 8739,
+      "rotation_seed": 101739,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.5.v_proj": {
+      "direction": "input",
+      "factor_seed": 8736,
+      "rotation_seed": 101736,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.6.down_proj": {
+      "direction": "output",
+      "factor_seed": 8840,
+      "rotation_seed": 101840,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.6.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8838,
+      "rotation_seed": 101838,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.6.k_proj": {
+      "direction": "input",
+      "factor_seed": 8835,
+      "rotation_seed": 101835,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.6.o_proj": {
+      "direction": "output",
+      "factor_seed": 8837,
+      "rotation_seed": 101837,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.6.q_proj": {
+      "direction": "input",
+      "factor_seed": 8834,
+      "rotation_seed": 101834,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.6.up_proj": {
+      "direction": "input",
+      "factor_seed": 8839,
+      "rotation_seed": 101839,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.6.v_proj": {
+      "direction": "input",
+      "factor_seed": 8836,
+      "rotation_seed": 101836,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.7.down_proj": {
+      "direction": "output",
+      "factor_seed": 8940,
+      "rotation_seed": 101940,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.7.gate_proj": {
+      "direction": "input",
+      "factor_seed": 8938,
+      "rotation_seed": 101938,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.7.k_proj": {
+      "direction": "input",
+      "factor_seed": 8935,
+      "rotation_seed": 101935,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.7.o_proj": {
+      "direction": "output",
+      "factor_seed": 8937,
+      "rotation_seed": 101937,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.7.q_proj": {
+      "direction": "input",
+      "factor_seed": 8934,
+      "rotation_seed": 101934,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.7.up_proj": {
+      "direction": "input",
+      "factor_seed": 8939,
+      "rotation_seed": 101939,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.7.v_proj": {
+      "direction": "input",
+      "factor_seed": 8936,
+      "rotation_seed": 101936,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.8.down_proj": {
+      "direction": "output",
+      "factor_seed": 9040,
+      "rotation_seed": 102040,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.8.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9038,
+      "rotation_seed": 102038,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.8.k_proj": {
+      "direction": "input",
+      "factor_seed": 9035,
+      "rotation_seed": 102035,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.8.o_proj": {
+      "direction": "output",
+      "factor_seed": 9037,
+      "rotation_seed": 102037,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.8.q_proj": {
+      "direction": "input",
+      "factor_seed": 9034,
+      "rotation_seed": 102034,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.8.up_proj": {
+      "direction": "input",
+      "factor_seed": 9039,
+      "rotation_seed": 102039,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.8.v_proj": {
+      "direction": "input",
+      "factor_seed": 9036,
+      "rotation_seed": 102036,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.9.down_proj": {
+      "direction": "output",
+      "factor_seed": 9140,
+      "rotation_seed": 102140,
+      "weight_shape": [
+        4864,
+        896
+      ]
+    },
+    "layers.9.gate_proj": {
+      "direction": "input",
+      "factor_seed": 9138,
+      "rotation_seed": 102138,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.9.k_proj": {
+      "direction": "input",
+      "factor_seed": 9135,
+      "rotation_seed": 102135,
+      "weight_shape": [
+        896,
+        128
+      ]
+    },
+    "layers.9.o_proj": {
+      "direction": "output",
+      "factor_seed": 9137,
+      "rotation_seed": 102137,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.9.q_proj": {
+      "direction": "input",
+      "factor_seed": 9134,
+      "rotation_seed": 102134,
+      "weight_shape": [
+        896,
+        896
+      ]
+    },
+    "layers.9.up_proj": {
+      "direction": "input",
+      "factor_seed": 9139,
+      "rotation_seed": 102139,
+      "weight_shape": [
+        896,
+        4864
+      ]
+    },
+    "layers.9.v_proj": {
+      "direction": "input",
+      "factor_seed": 9136,
+      "rotation_seed": 102136,
+      "weight_shape": [
+        896,
+        128
+      ]
+    }
+  },
+  "model_config": {
+    "_name_or_path": "/root/qwen25_05b_obf_v2",
+    "architectures": [
+      "Qwen2ForCausalLM"
+    ],
+    "attention_dropout": 0.0,
+    "bos_token_id": 151643,
+    "chunk_size_feed_forward": 0,
+    "dtype": "float32",
+    "eos_token_id": 151643,
+    "hidden_act": "silu",
+    "hidden_size": 896,
+    "id2label": {
+      "0": "LABEL_0",
+      "1": "LABEL_1"
+    },
+    "initializer_range": 0.02,
+    "intermediate_size": 4864,
+    "is_encoder_decoder": false,
+    "label2id": {
+      "LABEL_0": 0,
+      "LABEL_1": 1
+    },
+    "layer_types": [
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention",
+      "full_attention"
+    ],
+    "max_position_embeddings": 32768,
+    "max_window_layers": 24,
+    "model_type": "qwen2",
+    "num_attention_heads": 14,
+    "num_hidden_layers": 24,
+    "num_key_value_heads": 2,
+    "output_attentions": false,
+    "output_hidden_states": false,
+    "pad_token_id": null,
+    "problem_type": null,
+    "return_dict": true,
+    "rms_norm_eps": 1e-06,
+    "rope_parameters": {
+      "rope_theta": 1000000.0,
+      "rope_type": "default"
+    },
+    "sliding_window": null,
+    "tie_word_embeddings": true,
+    "transformers_version": "5.12.1",
+    "use_cache": true,
+    "use_mrope": false,
+    "use_sliding_window": false,
+    "vocab_size": 151936
+  },
+  "paper_facing_name": "OBFUSCATUNE_STYLE_ADAPTED_LORA_BASELINE",
+  "rank": 8,
+  "schema": "obfuscatune_style_adapted_qwen_package_v1",
+  "seed": 1234,
+  "targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "tensor_sha256": "8b9cdfa0156a25c1507e8f6a3bd5b4e0ac2c2d0ed0422c794546f477a3b9f10b"
+}

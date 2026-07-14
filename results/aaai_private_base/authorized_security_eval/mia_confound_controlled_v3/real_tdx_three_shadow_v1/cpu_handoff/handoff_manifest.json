@@ -1,0 +1,165 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "cpu_owner_next_actions": [
+    "real-TDX leave-one-shadow-out classification",
+    "V0, V2, and V0+V2 comparisons",
+    "group-aware sensitivity analysis where supported",
+    "paired bootstrap intervals",
+    "feature-family ablations",
+    "negative-control verification"
+  ],
+  "excluded_sensitive_files": [
+    "shadow_*/a10_session.json",
+    "shadow_*/tdx_session.json"
+  ],
+  "exclusion_reason": "historical session key material; not required for CPU analysis",
+  "feature_schema": "common-semantics schema v2 (610 columns)",
+  "final_collection_status": "REAL_TDX_THREE_SHADOW_COLLECTION_COMPLETE",
+  "final_paper_facing_mia_executed": false,
+  "joint_validation_report": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/joint/joint_validation_report.json",
+  "joint_validation_status": "PASS",
+  "ordered_sample_ids_sha256": "d077509179a93d8873bb5254993040ad336b08f48ed0704a5c9de0d1e59b845c",
+  "queries_sha256": "cfcd454e2a394bbeef046b997c4fe8db7978e3227e30f9097e7f9599381f2826",
+  "sample_pool_sha256": "b65e8b4a6fc531187164472b0245260b6c85816a1040c6959cf0cbeff1cebcae",
+  "schema": "real_tdx_three_shadow_cpu_handoff_v1",
+  "schema_sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+  "scope": "three frozen 1000-sample candidate pools; 500 members and 500 nonmembers per shadow",
+  "shadows": [
+    {
+      "adapter": {
+        "path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_1/training/adapter/adapter_model.safetensors",
+        "sha256": "848dc99b4fa08e638f68bb42c6b293913dfb241d7e25fd02de917b0e91520fb2"
+      },
+      "attestation_evidence": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/attestation",
+      "checks": {
+        "attestation": true,
+        "balance": true,
+        "features": true,
+        "manifest_pass": true,
+        "membership_hash": true,
+        "no_disjoint_ranges": true,
+        "no_fallback": true,
+        "records": true,
+        "source_adapter_hash": true,
+        "transform_manifest_present": true,
+        "validity_pass": true
+      },
+      "collection_command": "python3 /root/real_tdx_three_shadow_v1/bin/collect_real_tdx_common.py --session /root/real_tdx_three_shadow_v1/shadow_1/a10_session.json --tdx 172.30.25.153 --key /root/passkey.pem --service-cmd '/root/real_tdx_three_shadow_v1/launch_service.sh /root/real_tdx_three_shadow_v1/shadow_1/tdx_session.json' --masked-adapter /root/real_tdx_three_shadow_v1/shadow_1/masked_adapter/0a889b3f0018da4df088faee6affba12bf1e78280b5aa02a1b2fc6576365e4fe/adapter_model.safetensors --queries /root/real_tdx_three_shadow_v1/inputs/evaluation_queries.jsonl --schema /root/real_tdx_three_shadow_v1/inputs/common_v2_feature_schema.json --output-dir /root/real_tdx_three_shadow_v1/shadow_1/collection --max-new-tokens 96 --require-attestation",
+      "collection_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/collection_manifest.json",
+      "command_secret_policy": "session JSON supplied the historical key; session files are deliberately excluded",
+      "dtype": "fp32",
+      "feature_columns": 610,
+      "masked_adapter_sha256": "0a889b3f0018da4df088faee6affba12bf1e78280b5aa02a1b2fc6576365e4fe",
+      "members": 500,
+      "membership": {
+        "path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/membership_join.jsonl",
+        "sha256": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676"
+      },
+      "nonmembers": 500,
+      "records": 1000,
+      "run_id": "real-tdx-three-shadow-v1-s1-1784043541-281e99b3",
+      "sample_id_join": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/sample_index.json",
+      "shadow": 1,
+      "status": "SHADOW_1_COLLECTION_VALID",
+      "tdx_decode_calls": 27577,
+      "tdx_session_counters": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/session_counters.json",
+      "transform_commitments": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/transform_commitments.jsonl",
+      "trusted_transform_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/trusted_transform_manifest.json",
+      "v0_matrix": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v0_outputs.jsonl",
+      "v2_matrix": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v2_features.csv",
+      "validity_report": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_1/validity_report.json",
+      "wall_sec": 631.3
+    },
+    {
+      "adapter": {
+        "path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_2/training/adapter/adapter_model.safetensors",
+        "sha256": "7c46d98316c5f09266cade307ecd2653f81c5fcfa021eef5536e326d45547ec9"
+      },
+      "attestation_evidence": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/attestation",
+      "checks": {
+        "attestation": true,
+        "balance": true,
+        "features": true,
+        "manifest_pass": true,
+        "membership_hash": true,
+        "no_disjoint_ranges": true,
+        "no_fallback": true,
+        "records": true,
+        "source_adapter_hash": true,
+        "transform_manifest_present": true,
+        "validity_pass": true
+      },
+      "collection_command": "python3 /root/real_tdx_three_shadow_v1/bin/collect_real_tdx_common.py --session /root/real_tdx_three_shadow_v1/shadow_2/a10_session.json --tdx 172.30.25.153 --key /root/passkey.pem --service-cmd '/root/real_tdx_three_shadow_v1/launch_service.sh /root/real_tdx_three_shadow_v1/shadow_2/tdx_session.json' --masked-adapter /root/real_tdx_three_shadow_v1/shadow_2/masked_adapter/5669c7d35c7dec9723ceab87e5019258f2979563fbdfeb7dfcb78f233f005c1b/adapter_model.safetensors --queries /root/real_tdx_three_shadow_v1/inputs/evaluation_queries.jsonl --schema /root/real_tdx_three_shadow_v1/inputs/common_v2_feature_schema.json --output-dir /root/real_tdx_three_shadow_v1/shadow_2/collection --max-new-tokens 96 --require-attestation",
+      "collection_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/collection_manifest.json",
+      "command_secret_policy": "session JSON supplied the historical key; session files are deliberately excluded",
+      "dtype": "fp32",
+      "feature_columns": 610,
+      "masked_adapter_sha256": "5669c7d35c7dec9723ceab87e5019258f2979563fbdfeb7dfcb78f233f005c1b",
+      "members": 500,
+      "membership": {
+        "path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/membership_join.jsonl",
+        "sha256": "bf98dedcf37a42a9439d9d9fd949263e44440de43b47f7ad87eba632f7bc222a"
+      },
+      "nonmembers": 500,
+      "records": 1000,
+      "run_id": "real-tdx-three-shadow-v1-s2-1784047313-bc98d6bc",
+      "sample_id_join": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/sample_index.json",
+      "shadow": 2,
+      "status": "SHADOW_2_COLLECTION_VALID",
+      "tdx_decode_calls": 28022,
+      "tdx_session_counters": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/session_counters.json",
+      "transform_commitments": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/transform_commitments.jsonl",
+      "trusted_transform_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/trusted_adapter_transform_manifest.json",
+      "v0_matrix": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/real_tdx_v0_outputs.jsonl",
+      "v2_matrix": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/real_tdx_v2_features.csv",
+      "validity_report": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_2/validity_report.json",
+      "wall_sec": 644.9
+    },
+    {
+      "adapter": {
+        "path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_3/training/adapter/adapter_model.safetensors",
+        "sha256": "1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37"
+      },
+      "attestation_evidence": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/attestation",
+      "checks": {
+        "attestation": true,
+        "balance": true,
+        "features": true,
+        "manifest_pass": true,
+        "membership_hash": true,
+        "no_disjoint_ranges": true,
+        "no_fallback": true,
+        "records": true,
+        "source_adapter_hash": true,
+        "transform_manifest_present": true,
+        "validity_pass": true
+      },
+      "collection_command": "python3 /root/real_tdx_three_shadow_v1/bin/collect_real_tdx_common.py --session /root/real_tdx_three_shadow_v1/shadow_3/a10_session.json --tdx 172.30.25.153 --key /root/passkey.pem --service-cmd '/root/real_tdx_three_shadow_v1/launch_service.sh /root/real_tdx_three_shadow_v1/shadow_3/tdx_session.json' --masked-adapter /root/real_tdx_three_shadow_v1/shadow_3/masked_adapter/37ebfebdedfc1b443b2f8f9b36f1585be35561cc8a95b835994a5f12110b26f2/adapter_model.safetensors --queries /root/real_tdx_three_shadow_v1/inputs/evaluation_queries.jsonl --schema /root/real_tdx_three_shadow_v1/inputs/common_v2_feature_schema.json --output-dir /root/real_tdx_three_shadow_v1/shadow_3/collection --max-new-tokens 96 --require-attestation",
+      "collection_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/collection_manifest.json",
+      "command_secret_policy": "session JSON supplied the historical key; session files are deliberately excluded",
+      "dtype": "fp32",
+      "feature_columns": 610,
+      "masked_adapter_sha256": "37ebfebdedfc1b443b2f8f9b36f1585be35561cc8a95b835994a5f12110b26f2",
+      "members": 500,
+      "membership": {
+        "path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/membership_join.jsonl",
+        "sha256": "6bc88e7e92f07aac642759ca870eaec19abd9d4cdfc7209ecbb0ee93547cad4a"
+      },
+      "nonmembers": 500,
+      "records": 1000,
+      "run_id": "real-tdx-three-shadow-v1-s3-1784048319-75354d0b",
+      "sample_id_join": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/sample_index.json",
+      "shadow": 3,
+      "status": "SHADOW_3_COLLECTION_VALID",
+      "tdx_decode_calls": 27033,
+      "tdx_session_counters": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/session_counters.json",
+      "transform_commitments": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/transform_commitments.jsonl",
+      "trusted_transform_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/trusted_transform_manifest.json",
+      "v0_matrix": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/real_tdx_v0_outputs.jsonl",
+      "v2_matrix": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/real_tdx_v2_features.csv",
+      "validity_report": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_3/validity_report.json",
+      "wall_sec": 623.4
+    }
+  ],
+  "status": "PASS"
+}

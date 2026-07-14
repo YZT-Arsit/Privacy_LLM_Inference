@@ -1,0 +1,319 @@
+{
+  "artifact_count": 78,
+  "artifacts": {
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/build_cpu_handoff.py": {
+      "bytes": 19810,
+      "sha256": "c20c231a8769e73b21345f3fb042bea471d1790281a3de7f4150cfa498708a86"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/collect_real_tdx_common.py": {
+      "bytes": 14251,
+      "sha256": "5b9ca8bba8be06f84cd86879faba51f85ff7e72499ffd336d1b18ee1aaf91cb0"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/prepare_inference_session.py": {
+      "bytes": 3787,
+      "sha256": "455e46b46cea687a7f0a3655645ee17a45a38e22517bd969ec3db3f830555db3"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/seal_adapter.py": {
+      "bytes": 2419,
+      "sha256": "fa6b9230ccb349c870864cc3dd6a8a80377f48ed34fb5da9ef99762fd720e634"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/trusted_transform_adapter.py": {
+      "bytes": 7427,
+      "sha256": "01cb8045b7265b81cad299bba90d37385aedac84cd72c8bce0ccc55450e9f6d6"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/validate_joint_real_shadows.py": {
+      "bytes": 8657,
+      "sha256": "99222c7b20109e774dcbaf59a8306595f78d5c203e5ab753b10420f615c65c2c"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/validate_real_shadow.py": {
+      "bytes": 10977,
+      "sha256": "0887df6becd80c0407ee3d62cf363c99eaeea6d150c2988f48c4b2256cf1b10d"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/bin/validate_real_shadow_numpy.py": {
+      "bytes": 10897,
+      "sha256": "18aad1a51cb4b21db1348d511c98b78396b28fa7ce19dd2e72857c06894e1841"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/joint/joint_diagnostics.json": {
+      "bytes": 587,
+      "sha256": "5632ba8ff11c4c06318a972039d63ecfbe793c2e7593febeac48c3973531e7cc"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/joint/joint_univariate_auc_ks.csv": {
+      "bytes": 68804,
+      "sha256": "a1c2403c5cfa76f958eb719257138bcdfe2ed5ded4a94dfc460c749927e6dfe0"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/joint/joint_validation_report.json": {
+      "bytes": 1776,
+      "sha256": "6d74d91cf66824df0be40081ce67d467b7456c73eb0f9472b5e3c44723837799"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/joint/summary.md": {
+      "bytes": 429,
+      "sha256": "bee827766d449628f243f033fb32538f4f26fc83b570f12533cec79d4bcfc716"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_1/summary.md": {
+      "bytes": 309,
+      "sha256": "06c8c3b310461fd2f79e3a6e5c6b957a9d1785d7ef5e9385e2fd9108db05c1af"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_1/univariate_auc_ks.csv": {
+      "bytes": 109706,
+      "sha256": "f9a56aaa146c80e50f246bf7c832cfd88286f39b508892f9288678cd35684be8"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_1/validity_controls.csv": {
+      "bytes": 314,
+      "sha256": "c5f8478ad48e503637fc08ecc9ac8858037be86b39f882c850fcdcbfc1a03a76"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_1/validity_report.json": {
+      "bytes": 2448,
+      "sha256": "6f4cfcad6c7a51b934ffc3166103efc4da920bd5edc313bc9e222d7da6153d42"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_2/summary.md": {
+      "bytes": 309,
+      "sha256": "6ce47889e3c99fa30409666447574f63042f360e26fafcc6eaaada4e5a974f42"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_2/univariate_auc_ks.csv": {
+      "bytes": 110107,
+      "sha256": "a6a45916df5167da4cbf84319fa2ae160675d38a1840f4ba7aea909ab885c39d"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_2/validity_controls.csv": {
+      "bytes": 313,
+      "sha256": "ae569e0e54c16d87225e998355c363176bb3601a58bd445c1c2970d2465d32bc"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_2/validity_report.json": {
+      "bytes": 2446,
+      "sha256": "c1abb5fb4aef2c5c8a23d5c5454e31deb0ce30e050a70ce52776398176aa5dec"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_3/summary.md": {
+      "bytes": 309,
+      "sha256": "717f4078e5651ef7883a8afea14ceac52e82a8ec1c080feb76adb694954d378c"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_3/univariate_auc_ks.csv": {
+      "bytes": 109820,
+      "sha256": "bd2307780ce2eb46b1e7990a44568992c4bd503993b5a782171d830154bd429e"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_3/validity_controls.csv": {
+      "bytes": 324,
+      "sha256": "84c58f7a28863a9cad5d674dd9e9c5d44bb23d8aab7751bd87d0ee5f3d086882"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/collection_validation/shadow_3/validity_report.json": {
+      "bytes": 2458,
+      "sha256": "62f9925c1b4c3ab592c7ba6bf5c7ba2a13712112b2ac1ca83122d9644f859704"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/README.md": {
+      "bytes": 1086,
+      "sha256": "10de0926d2e79cbdd2619a07fd4c896eedf1b3e0c4881641a2fdb825d0eb988b"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/collection_validation.md": {
+      "bytes": 1119,
+      "sha256": "a9bd2a71f1604e0f96cedaea8a80ba6b35c813a7656433b7e2c09f1ba35c8d05"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/environment_manifest.json": {
+      "bytes": 1524,
+      "sha256": "910a6519d19d49681c46a60e26455afb7de478141915ab86f8855826e821bdf0"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/handoff_manifest.json": {
+      "bytes": 12888,
+      "sha256": "b1f7b102ab9512d51b3859aa35a68b19d1d10528b85cf88007d8fd6128d97938"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/per_shadow_summary.csv": {
+      "bytes": 1162,
+      "sha256": "a00d1d029b661e3fa3f51df70be2643ff91307376a6bdda9f10c3024713c551f"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/prohibited_feature_list.json": {
+      "bytes": 748,
+      "sha256": "5cf2033b661dac750b771f3ac93a150c25fa4935a52ac67b7c579d3ed09f1af4"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/schema_manifest.json": {
+      "bytes": 1090,
+      "sha256": "79c4f14a56f71923d8c2945047c32e50fb370fbc840164de511f0f08588281f6"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/inputs/common_v2_feature_schema.json": {
+      "bytes": 200747,
+      "sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/inputs/evaluation_queries.jsonl": {
+      "bytes": 302991,
+      "sha256": "cfcd454e2a394bbeef046b997c4fe8db7978e3227e30f9097e7f9599381f2826"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/resource_audit/shadow_2_prelaunch_comparison.json": {
+      "bytes": 2077,
+      "sha256": "c21627559cd6d578622d99a3fcf480290945f4f604429e32476487581db102c6"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/resource_audit/shadow_3_prelaunch_comparison.json": {
+      "bytes": 1665,
+      "sha256": "83908f583023b865c979dd34f8e5eb6317994ce398e957a5af6ddd249eadc654"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/resource_audit/stale_scp_cleanup.json": {
+      "bytes": 1508,
+      "sha256": "d3b22d2f2bb2bdc17ca40dee6d1e33b16d8da29ca4432d08f1cbaa480481dd52"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection.log": {
+      "bytes": 7641,
+      "sha256": "4f4fe3d37b40846f4b3396b69c0ede4bf9cd2ab1f201eef72a304cc7b3f465c3"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/collection_manifest.json": {
+      "bytes": 2085,
+      "sha256": "94661c038f2f813ce6c6721c6b8c6f2694f48f7330b3b503ed2a881bbdd9730a"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v0_outputs.jsonl": {
+      "bytes": 353560,
+      "sha256": "032701c22ec20e31502049d1f04387b34906c686175f2f3a80b074ac84265658"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v2_features.csv": {
+      "bytes": 11510982,
+      "sha256": "f2e2322999c55cc456676a6cfd2b58eabd042ad0a307fe43ad99ffd6106d440c"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/sample_index.json": {
+      "bytes": 16003,
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/collection/transform_commitments.jsonl": {
+      "bytes": 120000,
+      "sha256": "9c5eee2396d084a7233c7ec7d88d93a4b5703a33e7dff89ff20f0b40ca85b03d"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/membership_join.jsonl": {
+      "bytes": 44500,
+      "sha256": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/attestation/quote.dat": {
+      "bytes": 5006,
+      "sha256": "498476185fce89720db7dea648ae3abb819240a000872f4f25f5126ceb75e7ee"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/attestation/report.dat": {
+      "bytes": 1024,
+      "sha256": "95ee255228af8be8869d4c53f160d9b6f2976536583cc0d6a18e36a2b30c399b"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/attestation/session_attestation.json": {
+      "bytes": 416,
+      "sha256": "b4b4dd643e5fcc234ed963fa076f8dc54c7a9f5f44121db4ca7eeb352995fc17"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/attestation/session_quote.dat": {
+      "bytes": 5006,
+      "sha256": "498476185fce89720db7dea648ae3abb819240a000872f4f25f5126ceb75e7ee"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/session_counters.json": {
+      "bytes": 1893,
+      "sha256": "78711425aca6e4ea7e49e56117ea6f266c3c839ab97d906df7814b9ac120c9fc"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_1/tdx_evidence/trusted_transform_manifest.json": {
+      "bytes": 735,
+      "sha256": "ac013e74f535b89807dedee7b53cde997bf75182868df5cd78115771d35d37c7"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection.log": {
+      "bytes": 7642,
+      "sha256": "5a8effd4da22af9f92db4ab10c273dc4c4db10742c5ffc50514d556fd3b6b69d"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/collection_manifest.json": {
+      "bytes": 2085,
+      "sha256": "b09c889f3a7007b630d813bad636a3185175d983cb897b191edb14ab6e42fd27"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/real_tdx_v0_outputs.jsonl": {
+      "bytes": 357617,
+      "sha256": "d476814cd2eece29635e11825178dce77338a003403869d277e0f36edebaa6c7"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/real_tdx_v2_features.csv": {
+      "bytes": 11516203,
+      "sha256": "fcc69ee841305676ce61c5605a3931891564bea716d1e3de97e00187179653dc"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/sample_index.json": {
+      "bytes": 16003,
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/collection/transform_commitments.jsonl": {
+      "bytes": 120000,
+      "sha256": "e7843866cfe6e9aa26bdfcc2b9305ce5e92eaf588f8439bb7fadf0294035c08e"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/membership_join.jsonl": {
+      "bytes": 44500,
+      "sha256": "bf98dedcf37a42a9439d9d9fd949263e44440de43b47f7ad87eba632f7bc222a"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/attestation/quote.dat": {
+      "bytes": 5006,
+      "sha256": "8a75e055041507b0e27676ea089cb03284e64deeccd013dae1cc99848988a6dc"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/attestation/report.dat": {
+      "bytes": 1024,
+      "sha256": "eed7ca8dc1348e7cd9320b5e9f073739b52fc723b8fd2abae5332e3dff03f005"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/attestation/session_attestation.json": {
+      "bytes": 416,
+      "sha256": "5bf0f925553cd5f0946d1e0d109489fd153f03f036fc5489e920c131ac5040a8"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/attestation/session_quote.dat": {
+      "bytes": 5006,
+      "sha256": "8a75e055041507b0e27676ea089cb03284e64deeccd013dae1cc99848988a6dc"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/session_counters.json": {
+      "bytes": 1893,
+      "sha256": "56ada85f14885826a64aa89f25e1bb39dba9fa9c0f3c64c19f2bf3a5e1d6c12d"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_2/tdx_evidence/trusted_adapter_transform_manifest.json": {
+      "bytes": 734,
+      "sha256": "07f6523dd84a26d0c3c094edb4100de5106fddf9799e3d7682c5a6831ac03f70"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection.log": {
+      "bytes": 7641,
+      "sha256": "fa6eb6a2ff4c9eca5a70b97597ce51d392a90e24319e0d18a5e6935d132201ca"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/collection_manifest.json": {
+      "bytes": 2085,
+      "sha256": "f8d1e08904822f66d2f3451aae79d09c892e471b227aba0610686078183c0df9"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/real_tdx_v0_outputs.jsonl": {
+      "bytes": 348393,
+      "sha256": "2c0fb79f232ac2890e99dd47363dfc519766c3802c819929e61d81929d9925f1"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/real_tdx_v2_features.csv": {
+      "bytes": 11510291,
+      "sha256": "6e15f1bfd8f64d76884402ac08e839a6a4b4b6341519e3ac440420bd9b0ca2eb"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/sample_index.json": {
+      "bytes": 16003,
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/collection/transform_commitments.jsonl": {
+      "bytes": 120000,
+      "sha256": "f0a11b36f4166de110047bfff0de962a7b34e0e8ff7483a3cd88783ad14040b6"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/membership_join.jsonl": {
+      "bytes": 44500,
+      "sha256": "6bc88e7e92f07aac642759ca870eaec19abd9d4cdfc7209ecbb0ee93547cad4a"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/attestation/quote.dat": {
+      "bytes": 5006,
+      "sha256": "8435991a2aef19cfcf5a20442de2124f6785ed8ce13668b35b73224f712c8118"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/attestation/report.dat": {
+      "bytes": 1024,
+      "sha256": "6c6e4e9e9cd8f92e251f4bed9cce96f3b6627e2b40705dc5ff5cb342b05533f5"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/attestation/session_attestation.json": {
+      "bytes": 416,
+      "sha256": "2bbedf7bfeccb72fc6fbc842335463b134fd456df9d6abfc00f9f60cfa63d835"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/attestation/session_quote.dat": {
+      "bytes": 5006,
+      "sha256": "8435991a2aef19cfcf5a20442de2124f6785ed8ce13668b35b73224f712c8118"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/session_counters.json": {
+      "bytes": 1893,
+      "sha256": "842cac352564087f909100a37bb64cfb4799c7a974252a5643bd8202e2bca15a"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/shadow_3/tdx_evidence/trusted_transform_manifest.json": {
+      "bytes": 735,
+      "sha256": "19aa8c648b4bec6f898b795927fe10c563a51173557c17d29ae46b173371eeb6"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_1/training/adapter/adapter_model.safetensors": {
+      "bytes": 17640136,
+      "sha256": "848dc99b4fa08e638f68bb42c6b293913dfb241d7e25fd02de917b0e91520fb2"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_2/training/adapter/adapter_model.safetensors": {
+      "bytes": 17640136,
+      "sha256": "7c46d98316c5f09266cade307ecd2653f81c5fcfa021eef5536e326d45547ec9"
+    },
+    "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_3/training/adapter/adapter_model.safetensors": {
+      "bytes": 17640136,
+      "sha256": "1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37"
+    }
+  },
+  "schema": "sha256_artifact_manifest_v1",
+  "status": "PASS"
+}

@@ -1,0 +1,17 @@
+{
+  "attestation_verified": true,
+  "debug": false,
+  "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+  "overall_appraisal_result": "SUCCESS",
+  "package_hash": "8b9cdfa0156a25c1507e8f6a3bd5b4e0ac2c2d0ed0422c794546f477a3b9f10b",
+  "paper_facing": true,
+  "quote_generated": true,
+  "quote_sha256": "809eb72e2a6cb3c6627ca32904d68f0d8c2b7eac75ea0bd9baa232a157ff0db0",
+  "report_data_expected": "63e81c25a5512b77ba256add664912e637f595fa7ad8af07b9d25bd222443476ef54293a2cec1e8700136d1638e090225d2367342712babdb405280de7706749",
+  "reportdata_bound": true,
+  "runtime_hash": "94e86418b63acad399e628914c493ba6621c9b5938e4419ef289e3b21a8105dbb39b551fd8ba05125be112f2f9cdab6055ffc0e741220e5472cbf9e87a2f4dfb",
+  "schema": "obfuscatune_v2_attestation_v1",
+  "tdx_reportdata": "63e81c25a5512b77ba256add664912e637f595fa7ad8af07b9d25bd222443476ef54293a2cec1e8700136d1638e090225d2367342712babdb405280de7706749",
+  "verifier_rc": 0,
+  "wall_sec": 0.061872005462646484
+}

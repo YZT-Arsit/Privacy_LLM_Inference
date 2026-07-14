@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "shadows": [
+    1,
+    2,
+    3
+  ],
+  "records_per_shadow": [
+    1000,
+    1000,
+    1000
+  ],
+  "feature_columns": 610,
+  "schema_sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+  "gates": {
+    "three_by_1000_rows": true,
+    "balanced_each": true,
+    "schema_names_order_same": true,
+    "same_runtime_dtype": true,
+    "same_collection_contract": true,
+    "v0_v2_ids_join": true,
+    "no_forbidden_columns": true,
+    "no_missing_or_nonfinite": true,
+    "same_missingness_by_shadow": true,
+    "no_disjoint_ranges": true,
+    "no_exact_row_hash_opposite_label_conflicts": true,
+    "membership_hashes": true,
+    "masked_adapter_hashes_bound": true,
+    "attestations_valid": true,
+    "manifest_pass_and_no_fallback": true,
+    "per_shadow_controls_pass": true
+  },
+  "diagnostics": {
+    "shadow_identity_nearest_centroid_cv_accuracy": 1.0,
+    "chance": 0.3333333333333333,
+    "interpretation": "model-specific behavior; no shadow/session/run metadata columns present",
+    "run_session_identity_audit_metadata_only_accuracy": 1.0,
+    "run_session_metadata_in_matrix": false,
+    "presence_missingness_classifier_accuracy": 0.3333333333333333,
+    "mean_shuffle_auc": 0.501804,
+    "mean_pseudo_auc": 0.4713986666666667,
+    "top_joint_univariate_symmetric_auc": 0.5182111111111112,
+    "top_joint_univariate_feature": "kv.k.layer_03.last_l2_by_head.std",
+    "disjoint_range_count": 0
+  },
+  "forbidden_columns": [],
+  "disjoint_features": [],
+  "opposite_label_row_hash_conflicts": [],
+  "shadow_identity_separation_invalidates_collection": false,
+  "reason": "separation is derived from legitimate trained-model outputs; prohibited audit metadata is absent"
+}

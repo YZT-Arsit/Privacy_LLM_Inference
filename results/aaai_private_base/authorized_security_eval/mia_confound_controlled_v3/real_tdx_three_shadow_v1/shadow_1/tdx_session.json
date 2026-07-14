@@ -1,0 +1,50 @@
+{
+  "session_key_hex": "45eaee6eed98b3915f947ba4d70fd0bebd51e6a7c00fe57edae572dd4a724561",
+  "run_id": "real-tdx-three-shadow-v1-s1-1784043541-281e99b3",
+  "labels": [
+    0
+  ],
+  "gamma_bundle": "/tmp/o1c_bundle.pt",
+  "vocab_seed": 8000,
+  "attest": true,
+  "attest_out": "/root/real_tdx_three_shadow_v1/shadow_1/attestation",
+  "binding_manifest": {
+    "d4_run_id": "real-tdx-three-shadow-v1-s1-1784043541-281e99b3",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "validated_feature_schema_sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+    "queries_sha256": "cfcd454e2a394bbeef046b997c4fe8db7978e3227e30f9097e7f9599381f2826",
+    "sample_ids_sha256": "d077509179a93d8873bb5254993040ad336b08f48ed0704a5c9de0d1e59b845c",
+    "source_adapter_sha256": "848dc99b4fa08e638f68bb42c6b293913dfb241d7e25fd02de917b0e91520fb2",
+    "masked_adapter_sha256": "0a889b3f0018da4df088faee6affba12bf1e78280b5aa02a1b2fc6576365e4fe",
+    "membership_map_sha256_evaluator_only": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676",
+    "execution_profile": "paper_safe_inference_only",
+    "optimizer_profile": "none",
+    "collection_mode": "REAL_TDX_BACKED_VIEW",
+    "collection_scale": "REAL_TDX_THREE_SHADOW_FULL",
+    "feature_columns": 610,
+    "data_plane_ip": "172.30.25.153",
+    "nonce": "81268e1d4dfcc5a0ca0521a3e372512c",
+    "hmac_key_commitment": "786549c92cdc6b77e8571d13efe132333596155503eaa7a83f7b7815dc68e598",
+    "debug_false_required": true
+  },
+  "counters_out": "/root/real_tdx_three_shadow_v1/shadow_1/session_counters.json",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "ckpt_dir": "/tmp/mia3_inference_s1_ckpt",
+  "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+  "service_hash": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+  "dataset_id": "frozen_mia_candidate_pool",
+  "task": "clm",
+  "template_hash": "not_applicable_token_ids_frozen",
+  "label_schema_hash": "not_used_in_inference",
+  "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "batch_label_tables": {},
+  "batch_schedules": {},
+  "model_cfg": {
+    "num_attention_heads": 14,
+    "num_key_value_heads": 2,
+    "hidden_size": 896,
+    "intermediate_size": 4864
+  }
+}

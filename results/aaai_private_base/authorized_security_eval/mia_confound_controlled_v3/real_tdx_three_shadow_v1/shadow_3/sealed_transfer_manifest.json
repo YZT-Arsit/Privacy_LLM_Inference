@@ -1,0 +1,9 @@
+{
+  "schema": "mia3_adapter_chacha20poly1305_v1",
+  "status": "PASS",
+  "aad": "real_tdx_three_shadow_v1/shadow_3/1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37",
+  "plaintext_sha256": "1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37",
+  "ciphertext_sha256": "5fa36a1f6393b85a2763320e1fcf2d5ff171354815ab8b78ac85b4f663fa8c49",
+  "plaintext_bytes": 17640136,
+  "ciphertext_bytes": 17640177
+}

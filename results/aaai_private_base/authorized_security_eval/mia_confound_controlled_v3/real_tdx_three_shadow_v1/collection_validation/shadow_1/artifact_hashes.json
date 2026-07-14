@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "shadow": 1,
+  "artifacts": {
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/collection_manifest.json": {
+      "sha256": "94661c038f2f813ce6c6721c6b8c6f2694f48f7330b3b503ed2a881bbdd9730a",
+      "bytes": 2085
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v2_features.csv": {
+      "sha256": "f2e2322999c55cc456676a6cfd2b58eabd042ad0a307fe43ad99ffd6106d440c",
+      "bytes": 11510982
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v0_outputs.jsonl": {
+      "sha256": "032701c22ec20e31502049d1f04387b34906c686175f2f3a80b074ac84265658",
+      "bytes": 353560
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/sample_index.json": {
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90",
+      "bytes": 16003
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/transform_commitments.jsonl": {
+      "sha256": "9c5eee2396d084a7233c7ec7d88d93a4b5703a33e7dff89ff20f0b40ca85b03d",
+      "bytes": 120000
+    },
+    "/root/real_tdx_three_shadow_v1/inputs/evaluation_queries.jsonl": {
+      "sha256": "cfcd454e2a394bbeef046b997c4fe8db7978e3227e30f9097e7f9599381f2826",
+      "bytes": 302991
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/membership_join.jsonl": {
+      "sha256": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676",
+      "bytes": 44500
+    },
+    "/root/real_tdx_three_shadow_v1/inputs/common_v2_feature_schema.json": {
+      "sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+      "bytes": 200747
+    }
+  }
+}

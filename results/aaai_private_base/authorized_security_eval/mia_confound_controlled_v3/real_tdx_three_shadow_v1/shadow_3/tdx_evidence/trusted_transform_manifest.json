@@ -1,0 +1,16 @@
+{
+  "schema": "real_tdx_trusted_adapter_transform_v1",
+  "status": "PASS",
+  "executed_inside_tdx_guest": true,
+  "source_adapter_sha256": "1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37",
+  "source_adapter_config_sha256": "21d8e6daa9b35e097649140a1c3a0c9e27e703ee624ff84e0b01768e40dc7505",
+  "gamma_bundle_sha256": "cc88dbb9120ab593733cd9a57a96397cec28ba698e7b3a7eb4840e879061b56f",
+  "masked_adapter_sha256": "37ebfebdedfc1b443b2f8f9b36f1585be35561cc8a95b835994a5f12110b26f2",
+  "factor_pairs": 168,
+  "rank": 8,
+  "alpha": 16,
+  "transform_algebra": "private_base_fold_v1.0",
+  "max_random_probe_abs_error": 5.960464477539063e-08,
+  "plaintext_adapter_exported_to_gpu": false,
+  "optimizer_state_present": false
+}

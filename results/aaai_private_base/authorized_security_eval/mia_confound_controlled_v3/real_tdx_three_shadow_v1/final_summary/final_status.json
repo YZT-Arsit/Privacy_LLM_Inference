@@ -1,0 +1,20 @@
+{
+  "artifact_hash_manifest": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/artifact_hashes.json",
+  "artifact_hash_manifest_sha256": "629afaf72895a8a7874a104579e4f90d89cd3323fd95ef1e415f7594921e1147",
+  "cpu_handoff": "PASS",
+  "feature_columns": 610,
+  "final_paper_facing_mia_executed": false,
+  "gpu_final_state": "idle; 0 MiB used and 0% utilization at final audit",
+  "joint_validation": "PASS",
+  "per_shadow_validation": "PASS",
+  "records_per_shadow": 1000,
+  "registered_artifact_count": 78,
+  "registered_artifacts_verified": true,
+  "shadows_complete": [
+    1,
+    2,
+    3
+  ],
+  "status": "REAL_TDX_THREE_SHADOW_COLLECTION_COMPLETE",
+  "tdx_final_state": "idle; no collection service or additional listening data-plane port"
+}

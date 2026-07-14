@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "reference_shadows": [1, 2],
+  "candidate_shadow": 3,
+  "shared_contract": {
+    "collector_sha256": "5b9ca8bba8be06f84cd86879faba51f85ff7e72499ffd336d1b18ee1aaf91cb0",
+    "transformed_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "model_config_sha256": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "queries_sha256": "cfcd454e2a394bbeef046b997c4fe8db7978e3227e30f9097e7f9599381f2826",
+    "ordered_sample_ids_sha256": "d077509179a93d8873bb5254993040ad336b08f48ed0704a5c9de0d1e59b845c",
+    "common_schema_sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+    "feature_columns": 610,
+    "dtype": "fp32",
+    "batch_size": 1,
+    "padding": "none_batch1",
+    "model_mode": "inference",
+    "forward_path": "collect_real_tdx_common.py forward-only",
+    "tdx_service_sha256": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+    "fresh_attestation_required": true,
+    "validity_gate_version": "validate_real_shadow_numpy.py/v1"
+  },
+  "allowed_differences": {
+    "source_adapter_sha256": "1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37",
+    "masked_adapter_sha256": "37ebfebdedfc1b443b2f8f9b36f1585be35561cc8a95b835994a5f12110b26f2",
+    "membership_sha256": "6bc88e7e92f07aac642759ca870eaec19abd9d4cdfc7209ecbb0ee93547cad4a",
+    "run_session_attestation": "fresh",
+    "output_directory": "/root/real_tdx_three_shadow_v1/shadow_3/collection"
+  },
+  "unexplained_differences": [],
+  "launch_allowed": true
+}

@@ -81,6 +81,11 @@ class RemoteTrustedRuntime(TrustedRuntime):
     def cross_entropy(self, logits, labels, ignore_index=-100):
         return self._remote("trusted_loss_calls", "cross_entropy", {"ignore_index": int(ignore_index)}, logits, labels)
 
+    def output_loss(self, hidden, labels, ignore_index=-100, chunk_tokens=16):
+        self.counters.trusted_output_calls += 1
+        return self._remote("trusted_loss_calls", "output_loss",
+                            {"ignore_index": int(ignore_index), "chunk_tokens": int(chunk_tokens)}, hidden, labels)
+
     def transform_input(self, key: str, x: torch.Tensor) -> torch.Tensor:
         return self._remote("trusted_residual_calls", "transform_input", {"key": key}, x)
 

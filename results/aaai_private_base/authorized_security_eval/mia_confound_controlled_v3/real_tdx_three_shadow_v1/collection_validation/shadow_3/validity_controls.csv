@@ -1,0 +1,8 @@
+control,auc,pass,note
+shuffled_membership,0.482964,True,
+pseudo_membership,0.469688,True,
+shape_only,0.5041100000000001,True,
+presence_only,0.5,True,
+missingness_only,0.5,True,
+collection_order,0.527624,True,
+session_run_identity_audit_metadata_only,0.5,True,single constant session; audit fields absent from matrix

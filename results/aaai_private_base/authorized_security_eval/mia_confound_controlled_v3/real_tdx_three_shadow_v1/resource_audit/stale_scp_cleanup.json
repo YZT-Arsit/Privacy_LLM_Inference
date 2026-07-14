@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "cleanup_time_local": "2026-07-15 Asia/Shanghai",
+  "host": "39.107.123.173",
+  "processes": [
+    {
+      "pid": 90579,
+      "ppid": 1,
+      "state_before": "S",
+      "start_time": "Tue Jul 14 23:33:38 2026",
+      "command": "scp -q -i /root/.ssh/a10_to_tdx -o BatchMode=yes -o StrictHostKeyChecking=no /root/real_tdx_three_shadow_v1/shadow_1/source_adapter.aead root@172.30.25.153:/root/real_tdx_three_shadow_v1/shadow_1/source_adapter.aead",
+      "decision": "confirmed stale failed transfer",
+      "signal": "SIGTERM",
+      "final_state": "EXITED_AFTER_TERM"
+    },
+    {
+      "pid": 90583,
+      "ppid": 90579,
+      "state_before": "S",
+      "start_time": "Tue Jul 14 23:33:38 2026",
+      "command": "/usr/bin/ssh ... root@172.30.25.153 scp -t /root/real_tdx_three_shadow_v1/shadow_1/source_adapter.aead",
+      "decision": "confirmed stale transport child",
+      "signal": "SIGTERM",
+      "final_state": "EXITED_AFTER_TERM"
+    }
+  ],
+  "stale_tdx_service_pid": 12527,
+  "stale_tdx_service_final_state": "exited automatically after SSH EOF",
+  "io_verification": "two samples two seconds apart were identical; no target artifact file descriptor was open",
+  "verified_artifacts_after_cleanup": {
+    "source_adapter_aead_sha256": "864090fa4d223336781f41a506c641bd65a79297c228521c967480a6c021e209",
+    "masked_adapter_sha256": "0a889b3f0018da4df088faee6affba12bf1e78280b5aa02a1b2fc6576365e4fe"
+  },
+  "valid_artifact_altered": false,
+  "force_signal_used": false
+}

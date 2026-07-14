@@ -1,0 +1,40 @@
+{
+  "captured_utc": "2026-07-14T17:19:58.770412+00:00",
+  "collection_host": {
+    "driver": "580.126.09",
+    "final_state": "idle; 0 MiB used and 0% utilization at final audit",
+    "gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-0729b83b-60dd-c88d-2b9c-2049e0127eae",
+    "hostname": "iZ2zeajy3dc0ssoyi2cf3vZ",
+    "kernel": "Linux 5.15",
+    "numpy": "2.2.6",
+    "private_ip": "172.30.25.154",
+    "public_ip": "39.107.123.173",
+    "python": "3.10.12",
+    "role": "A10 inference host",
+    "torch": "2.8.0+cu128"
+  },
+  "frozen_runtime_hashes": {
+    "collector": "5b9ca8bba8be06f84cd86879faba51f85ff7e72499ffd336d1b18ee1aaf91cb0",
+    "model_config": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "tdx_service": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+    "tokenizer": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "transformed_package_root": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1"
+  },
+  "resource_policy": {
+    "commit_created": false,
+    "concurrent_shadow_collections": false,
+    "retraining_performed": false,
+    "shared_registry_modified": false
+  },
+  "trusted_host": {
+    "final_state": "idle; no collection service or additional listening data-plane port",
+    "hostname": "iZ2zebdihkqll10ragqp0cZ",
+    "kernel": "Linux 5.10",
+    "private_ip": "172.30.25.153",
+    "public_ip": "39.96.43.122",
+    "python": "3.10.20",
+    "role": "Intel TDX service host",
+    "tdx_device": "/dev/tdx_guest"
+  }
+}

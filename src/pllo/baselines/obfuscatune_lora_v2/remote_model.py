@@ -68,7 +68,7 @@ class RemoteAdaptedQwenCausalLM(nn.Module):
         self.config=Qwen2Config.from_dict(manifest["model_config"]); self.runtime=runtime
         tensors={k:v.to(device) for k,v in load_file(package/"transformed_package.safetensors").items()}
         self.blocks=nn.ModuleList([RemoteBlock(i,self.config,tensors,manifest,runtime) for i in range(self.config.num_hidden_layers)])
-        self.rotary=Qwen2RotaryEmbedding(self.config).to(device)
+        self.rotary=Qwen2RotaryEmbedding(config=self.config).to(device)
 
     def forward(self,input_ids,caches=None,labels=None):
         hidden=self.runtime.embedding(input_ids,None); offset=0 if not caches else caches[0].length
@@ -76,7 +76,10 @@ class RemoteAdaptedQwenCausalLM(nn.Module):
         cos,sin=self.rotary(hidden,positions); caches=caches or [KVCache() for _ in self.blocks]
         for i,block in enumerate(self.blocks): hidden,caches[i]=block(hidden,cos,sin,caches[i])
         hidden=self.runtime.rmsnorm_key(hidden,key="final",eps=self.config.rms_norm_eps)
-        logits=self.runtime.output(hidden,None); loss=None if labels is None else self.runtime.cross_entropy(logits,labels)
+        if labels is None:
+            logits=self.runtime.output(hidden,None); loss=None
+        else:
+            logits=None; loss=self.runtime.output_loss(hidden,labels)
         return logits,caches,loss
 
     def transformed_parameters(self):

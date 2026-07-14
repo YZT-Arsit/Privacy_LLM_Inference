@@ -1,0 +1,56 @@
+{
+  "checkpoint_sha256": "9ca67c75352307deab7e2d59f83abe748740793015f508057ea9b91a7c748407",
+  "finite_steps": 3,
+  "gpu_name": "NVIDIA A10",
+  "gpu_uuid": "GPU-fb6e5946-68a3-4861-a4cb-b6e051253e10",
+  "peak_gpu_memory_bytes": 3156610560,
+  "rpc": {
+    "bytes_received": 1664312254,
+    "bytes_sent": 1704270578,
+    "round_trips": 2746,
+    "transport_ns": 15791548866
+  },
+  "runtime_counters": {
+    "backward_boundary_calls": 0,
+    "bytes_a10_to_tdx": 931189848,
+    "bytes_tdx_to_a10": 777333700,
+    "optimizer_updates": 3,
+    "physical_messages": 2760,
+    "transformed_linear_calls": 504,
+    "transport_ns": 8059028377,
+    "trusted_compute_ns": 0,
+    "trusted_embedding_calls": 3,
+    "trusted_loss_calls": 3,
+    "trusted_nonlinear_calls": 72,
+    "trusted_norm_calls": 147,
+    "trusted_output_calls": 3,
+    "trusted_residual_calls": 1008,
+    "trusted_rope_calls": 72,
+    "trusted_softmax_calls": 72
+  },
+  "schema": "obfuscatune_real_a10_tdx_smoke_v1",
+  "status": "TRAINING_COMPLETE_PENDING_FRESH_PROCESS",
+  "steps": 3,
+  "tdx_host": "172.30.25.156",
+  "trajectory": [
+    {
+      "finite": true,
+      "loss": 0.9105930328369141,
+      "step": 1,
+      "wall_sec": 4.527157783508301
+    },
+    {
+      "finite": true,
+      "loss": 1.0880969762802124,
+      "step": 2,
+      "wall_sec": 5.950506210327148
+    },
+    {
+      "finite": true,
+      "loss": 1.2075272798538208,
+      "step": 3,
+      "wall_sec": 6.829005002975464
+    }
+  ],
+  "wall_sec": 17.565080642700195
+}

@@ -1,0 +1,85 @@
+{
+  "status": "SHADOW_1_COLLECTION_VALID",
+  "shadow": 1,
+  "records": 1000,
+  "members": 500,
+  "nonmembers": 500,
+  "feature_columns": 610,
+  "source_adapter_sha256": "848dc99b4fa08e638f68bb42c6b293913dfb241d7e25fd02de917b0e91520fb2",
+  "masked_adapter_sha256": "0a889b3f0018da4df088faee6affba12bf1e78280b5aa02a1b2fc6576365e4fe",
+  "membership_sha256": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676",
+  "schema_sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+  "disjoint_range_feature_count": 0,
+  "disjoint_range_features": [],
+  "top_univariate_symmetric_auc": 0.558084,
+  "top_univariate_feature": "kv.v.layer_12.last_l2_by_head.std",
+  "controls": [
+    {
+      "control": "shuffled_membership",
+      "auc": 0.514668,
+      "pass": true
+    },
+    {
+      "control": "pseudo_membership",
+      "auc": 0.474384,
+      "pass": true
+    },
+    {
+      "control": "shape_only",
+      "auc": 0.506866,
+      "pass": true
+    },
+    {
+      "control": "presence_only",
+      "auc": 0.5,
+      "pass": true
+    },
+    {
+      "control": "missingness_only",
+      "auc": 0.5,
+      "pass": true
+    },
+    {
+      "control": "collection_order",
+      "auc": 0.523496,
+      "pass": true
+    },
+    {
+      "control": "session_run_identity_audit_metadata_only",
+      "auc": 0.5,
+      "pass": true,
+      "note": "single constant session; audit fields absent from matrix"
+    }
+  ],
+  "gates": {
+    "records_1000": true,
+    "balanced_500_500": true,
+    "query_ids_exact": true,
+    "v0_ids_exact": true,
+    "membership_ids_exact": true,
+    "ordered_sample_id_hash": true,
+    "membership_hash": true,
+    "schema_file_hash": true,
+    "feature_count_610": true,
+    "feature_names_and_order": true,
+    "no_forbidden_columns": true,
+    "hidden_final_absent": true,
+    "no_missing": true,
+    "all_finite": true,
+    "no_duplicate_ids": true,
+    "identical_presence": true,
+    "identical_member_nonmember_missingness": true,
+    "identical_scalar_tensor_shape": true,
+    "no_disjoint_member_nonmember_ranges": true,
+    "manifest_pass": true,
+    "manifest_adapter_hash": true,
+    "manifest_schema_hash": true,
+    "manifest_package_hash": true,
+    "fresh_attestation_valid": true,
+    "no_silent_fallback": true,
+    "forbidden_payloads_not_collected": true,
+    "diagnostic_controls": true
+  },
+  "audit_metadata_excluded_from_matrix": true,
+  "final_paper_facing_mia_executed": false
+}

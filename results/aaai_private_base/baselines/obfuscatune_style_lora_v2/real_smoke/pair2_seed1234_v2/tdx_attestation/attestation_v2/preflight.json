@@ -1,0 +1,11 @@
+{
+  "cpu_tdx_guest": true,
+  "dev_tdx_guest": true,
+  "kernel_release": "5.10.134-19.7.al8.x86_64",
+  "kernel_ok": false,
+  "qgen_app_present": true,
+  "qverify_verifier_present": true,
+  "qverify_relying_party_present": true,
+  "all_ok": true,
+  "missing": []
+}

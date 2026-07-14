@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "artifacts": {
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v2_features.csv": {
+      "sha256": "f2e2322999c55cc456676a6cfd2b58eabd042ad0a307fe43ad99ffd6106d440c",
+      "bytes": 11510982
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/real_tdx_v0_outputs.jsonl": {
+      "sha256": "032701c22ec20e31502049d1f04387b34906c686175f2f3a80b074ac84265658",
+      "bytes": 353560
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/sample_index.json": {
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90",
+      "bytes": 16003
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/collection/collection_manifest.json": {
+      "sha256": "94661c038f2f813ce6c6721c6b8c6f2694f48f7330b3b503ed2a881bbdd9730a",
+      "bytes": 2085
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_1/membership_join.jsonl": {
+      "sha256": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676",
+      "bytes": 44500
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_2/collection/real_tdx_v2_features.csv": {
+      "sha256": "fcc69ee841305676ce61c5605a3931891564bea716d1e3de97e00187179653dc",
+      "bytes": 11516203
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_2/collection/real_tdx_v0_outputs.jsonl": {
+      "sha256": "d476814cd2eece29635e11825178dce77338a003403869d277e0f36edebaa6c7",
+      "bytes": 357617
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_2/collection/sample_index.json": {
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90",
+      "bytes": 16003
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_2/collection/collection_manifest.json": {
+      "sha256": "b09c889f3a7007b630d813bad636a3185175d983cb897b191edb14ab6e42fd27",
+      "bytes": 2085
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_2/membership_join.jsonl": {
+      "sha256": "bf98dedcf37a42a9439d9d9fd949263e44440de43b47f7ad87eba632f7bc222a",
+      "bytes": 44500
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_3/collection/real_tdx_v2_features.csv": {
+      "sha256": "6e15f1bfd8f64d76884402ac08e839a6a4b4b6341519e3ac440420bd9b0ca2eb",
+      "bytes": 11510291
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_3/collection/real_tdx_v0_outputs.jsonl": {
+      "sha256": "2c0fb79f232ac2890e99dd47363dfc519766c3802c819929e61d81929d9925f1",
+      "bytes": 348393
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_3/collection/sample_index.json": {
+      "sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90",
+      "bytes": 16003
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_3/collection/collection_manifest.json": {
+      "sha256": "f8d1e08904822f66d2f3451aae79d09c892e471b227aba0610686078183c0df9",
+      "bytes": 2085
+    },
+    "/root/real_tdx_three_shadow_v1/shadow_3/membership_join.jsonl": {
+      "sha256": "6bc88e7e92f07aac642759ca870eaec19abd9d4cdfc7209ecbb0ee93547cad4a",
+      "bytes": 44500
+    }
+  }
+}

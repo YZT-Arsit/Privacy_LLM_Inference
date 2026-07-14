@@ -1,0 +1,17 @@
+{
+  "canonical_feature_definitions_sha256": "311f79a5951906839a91725bc24abf9ed09dd59f5b1c1c586ba6adaf66156a67",
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "collection_scope": "frozen 1000-sample candidate pool per shadow",
+  "excluded_features": [
+    "hidden.final.last_l2"
+  ],
+  "feature_count": 610,
+  "feature_order_frozen": true,
+  "prohibited_feature_list": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/cpu_handoff/prohibited_feature_list.json",
+  "prohibited_feature_list_sha256": "5cf2033b661dac750b771f3ac93a150c25fa4935a52ac67b7c579d3ed09f1af4",
+  "schema": "common-semantics schema v2",
+  "schema_path": "results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_three_shadow_v1/inputs/common_v2_feature_schema.json",
+  "schema_sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+  "source_schema_scope_note": "The immutable schema file records the earlier 250-sample fidelity subset; only its 610 frozen feature definitions are reused here.",
+  "version": 2
+}

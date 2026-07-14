@@ -4,7 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
+import gc
 import json
+import os
+from pathlib import Path
 import socket
 import traceback
 import uuid
@@ -30,6 +34,18 @@ class State:
                 key = f"layers.{layer_index}.{name}"
                 self.rotations[key] = orthogonal_matrix(dim, rotation_seed(seed, layer_index, target_index), dtype=torch.float32)
                 self.biases[key] = None if module.bias is None else module.bias.detach().cpu()
+
+    def trim_if_idle(self):
+        """Return freed RPC/autograd arenas after a complete backward pass."""
+        if self.cache: return
+        gc.collect()
+        try: ctypes.CDLL("libc.so.6").malloc_trim(0)
+        except Exception: pass
+
+    def health(self):
+        try: rss_bytes=int(Path("/proc/self/statm").read_text().split()[1])*os.sysconf("SC_PAGE_SIZE")
+        except (FileNotFoundError,IndexError,ValueError): rss_bytes=None
+        return {"status":"ok","cached_calls":len(self.cache),"rss_bytes":rss_bytes}
 
     def operation(self, name, attrs, values):
         if name == "transform_input": return [values[0] @ self.rotations[attrs["key"]]]
@@ -65,6 +81,7 @@ class State:
         raise ValueError(f"unknown trusted operation {name}")
 
     def forward(self, args):
+        if args["operation"]=="output_loss": return self.output_loss(args)
         training = bool(args["training"]); values=[]; differentiable=[]
         for index, value in enumerate(args["tensors"]):
             value = value.detach().cpu()
@@ -76,8 +93,36 @@ class State:
             call_id = uuid.uuid4().hex; self.cache[call_id] = (values, differentiable, outputs)
         return {"call_id": call_id, "outputs": [out.detach() for out in outputs]}
 
+    def output_loss(self,args):
+        hidden=args["tensors"][0].detach().cpu(); labels=args["tensors"][1].detach().cpu()
+        ignore=args["attributes"]["ignore_index"]; chunk=max(1,args["attributes"]["chunk_tokens"])
+        shifted=hidden[:,:-1].reshape(-1,hidden.shape[-1]); targets=labels[:,1:].reshape(-1)
+        valid=targets.ne(ignore); indices=valid.nonzero(as_tuple=False).flatten()
+        if not len(indices): raise ValueError("output_loss has no supervised tokens")
+        selected=shifted.index_select(0,indices); selected_targets=targets.index_select(0,indices)
+        gradient_selected=torch.empty_like(selected); total=torch.zeros((),dtype=torch.float64)
+        weight=self.model.lm_head.weight.detach(); count=len(indices)
+        with torch.no_grad():
+            for start in range(0,count,chunk):
+                end=min(start+chunk,count); logits=selected[start:end]@weight.T
+                total+=torch.nn.functional.cross_entropy(logits,selected_targets[start:end],reduction="sum").double()
+                probabilities=torch.softmax(logits.float(),-1)
+                probabilities[torch.arange(end-start),selected_targets[start:end]]-=1
+                gradient_selected[start:end]=(probabilities@weight).to(hidden.dtype)/count
+        gradient=torch.zeros_like(shifted); gradient.index_copy_(0,indices,gradient_selected)
+        gradient=torch.cat((gradient.view(hidden.shape[0],hidden.shape[1]-1,hidden.shape[2]),
+                            torch.zeros_like(hidden[:,:1])),dim=1)
+        call_id=uuid.uuid4().hex
+        self.cache[call_id]={"kind":"precomputed_output_loss","input_gradients":[gradient,None]}
+        return {"call_id":call_id,"outputs":[(total/count).to(hidden.dtype)]}
+
     def backward(self, args):
-        values, differentiable, outputs = self.cache.pop(args["call_id"])
+        cached=self.cache.pop(args["call_id"])
+        if isinstance(cached,dict) and cached.get("kind")=="precomputed_output_loss":
+            scale=args["gradients"][0]
+            result={"input_gradients":[None if value is None else value*scale for value in cached["input_gradients"]]}
+            self.trim_if_idle(); return result
+        values, differentiable, outputs = cached
         active_outputs=[]; active_gradients=[]
         for output, gradient in zip(outputs, args["gradients"]):
             if output.requires_grad and gradient is not None:
@@ -86,7 +131,7 @@ class State:
         grads=torch.autograd.grad(active_outputs, inputs, active_gradients, allow_unused=True)
         result=[None]*len(values)
         for index, gradient in zip(differentiable, grads): result[index]=gradient
-        return {"input_gradients": result}
+        response={"input_gradients": result}; self.trim_if_idle(); return response
 
 
 def main():
@@ -96,21 +141,25 @@ def main():
     args=parser.parse_args(); secret=bytes.fromhex(args.secret_hex)
     if len(secret)!=32: raise ValueError("secret must be 32 bytes")
     state=State(args.model,args.seed)
+    stop=False
     with socket.socket() as server:
         server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1); server.bind((args.host,args.port)); server.listen(1)
         open(args.status,"w").write(json.dumps({"status":"ready","port":args.port,"seed":args.seed,"pid":__import__('os').getpid()}))
-        connection,_=server.accept()
-        with connection:
-            while True:
+        while not stop:
+            connection,_=server.accept()
+            with connection:
+              while True:
                 try: request,_=receive_frame(connection,secret)
                 except EOFError: break
                 try:
                     method=request["method"]
                     if method=="forward": result=state.forward(request["args"])
                     elif method=="backward": result=state.backward(request["args"])
-                    elif method=="health": result={"status":"ok","cached_calls":len(state.cache)}
+                    elif method=="health": result=state.health()
                     elif method=="shutdown_connection":
                         send_frame(connection,{"id":request["id"],"ok":True,"result":{}},secret); break
+                    elif method=="shutdown_worker":
+                        send_frame(connection,{"id":request["id"],"ok":True,"result":{}},secret); stop=True; break
                     else: raise ValueError(f"unknown method {method}")
                     response={"id":request["id"],"ok":True,"result":result}
                 except Exception as exc:
