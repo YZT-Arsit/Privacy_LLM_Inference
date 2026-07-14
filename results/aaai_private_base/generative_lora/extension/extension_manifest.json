@@ -2,7 +2,7 @@
   "schema": "extended_generative_lora_manifest",
   "version": "1.0",
   "created_at": "2026-07-14T00:00:05+08:00",
-  "last_updated_at": "2026-07-14T22:05:00+08:00",
+  "last_updated_at": "2026-07-14T22:10:16+08:00",
   "repository": "https://github.com/YZT-Arsit/Privacy_LLM_Inference",
   "branch": "fix/folded-remote-repeat-debug-and-guards",
   "head": "a6376aec4650089e4e8e32bbf86e67dcff03fde4",

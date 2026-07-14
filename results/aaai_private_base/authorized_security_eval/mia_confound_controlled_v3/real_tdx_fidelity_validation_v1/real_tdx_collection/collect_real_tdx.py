@@ -110,8 +110,11 @@ def trace_forward(model: MaskedQwen, ids: torch.Tensor, names: list[str], seed: 
         h = h + model._proj(F.silu(gate) * up, layer, "down_proj")
         counters["mask_domain_transitions"] += 2
 
-    h = rmsnorm_core(h, model.eps)
+    # Match the frozen PEFT/HF collection point: hidden_states[-1] is the final
+    # residual stream before the model's terminal RMSNorm. The transformed package
+    # folds the terminal gamma into lm_head, so logits still consume rmsnorm_core(h).
     values["hidden.final.last_l2"] = float(signed_permute(h[-1].float(), generator).norm().cpu())
+    h = rmsnorm_core(h, model.eps)
     logits = h @ model.t["lm_head"].t()
     last = logits[-1].float()
     permuted = last.index_select(0, torch.randperm(last.numel(), generator=generator).to(last.device))

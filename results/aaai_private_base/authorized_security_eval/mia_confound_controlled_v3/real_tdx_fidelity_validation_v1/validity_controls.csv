@@ -1,0 +1,10 @@
+control,roc_auc,pass,value,ci95_low,ci95_high
+shape_only,0.44657004830917874,True,,,
+presence_only,0.5,True,,,
+missingness_only,0.5,True,,,
+source_classifier_raw,1.0,False,,,
+simulated_vs_real_classifier_calibrated,0.67,False,,,
+disjoint_simulated_real_ranges,,False,1.0,,
+v0_exact_text_agreement,,True,1.0,,
+shuffled_membership,0.49708921095008046,True,,0.42941867954911433,0.563122383252818
+pseudo_membership,0.4998624798711755,True,,0.43779871175523355,0.5776666666666668

@@ -1,0 +1,13 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample fidelity-validation subset",
+  "classifier": "sample-group-disjoint 5-fold standardized L2 logistic regression",
+  "raw_source_roc_auc": 1.0,
+  "train-fold affine source-calibrated_roc_auc": 0.67,
+  "disjoint_range_feature_count": 1,
+  "invalid_collection_features": [
+    "hidden.final.last_l2"
+  ],
+  "interpretation": "Source separation is deterministic and dominated by an unavailable terminal-gamma hidden collection point plus smaller runtime numerical offsets; it is not run/session metadata in the 611-column matrix.",
+  "validity_gate_pass": false
+}

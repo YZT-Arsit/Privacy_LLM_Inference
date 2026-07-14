@@ -1,0 +1,80 @@
+{
+  "adapter_manifest_sha256": "38314d55d3e44e400397adef1318d7d6dd136a6e9a6eab091fcf7ec83e48a909",
+  "adapter_tensors_sha256": "487f4546d019ffc9f44381fc830f24b9cf9822638803eb10787b5b1253b4b1fb",
+  "checkpoint_sha256": "1a5beb326ecc79af6003e032717aa8269583a21bb538be1d48388f0b61c5e52c",
+  "counter_provenance": "LOCAL_ORACLE_NOT_MEASURED_REMOTE",
+  "finite_steps": 10,
+  "fresh_process_checks": [
+    {
+      "checkpoint_step": 10,
+      "pid": 42726,
+      "token_sha256": "c0793b6c6936488f4f49b7cd667a8c90d2bbbfc3f2c3d3363b722d5320dd95ce",
+      "tokens": [
+        [
+          31,
+          50,
+          48,
+          58,
+          42,
+          5,
+          13,
+          51
+        ]
+      ]
+    },
+    {
+      "checkpoint_step": 10,
+      "pid": 42850,
+      "token_sha256": "c0793b6c6936488f4f49b7cd667a8c90d2bbbfc3f2c3d3363b722d5320dd95ce",
+      "tokens": [
+        [
+          31,
+          50,
+          48,
+          58,
+          42,
+          5,
+          13,
+          51
+        ]
+      ]
+    }
+  ],
+  "losses": [
+    4.18965321104925,
+    4.186260408092383,
+    4.163165889614723,
+    4.147730110611611,
+    4.163774127467589,
+    4.143088558261092,
+    4.152140467773936,
+    4.160408297666295,
+    4.166066489618617,
+    4.1081140713385125
+  ],
+  "runtime_counters": {
+    "backward_boundary_calls": 140,
+    "bytes_a10_to_tdx": 0,
+    "bytes_tdx_to_a10": 0,
+    "optimizer_updates": 10,
+    "physical_messages": 0,
+    "transformed_linear_calls": 140,
+    "transport_ns": 0,
+    "trusted_compute_ns": 4864379,
+    "trusted_embedding_calls": 10,
+    "trusted_loss_calls": 10,
+    "trusted_nonlinear_calls": 20,
+    "trusted_norm_calls": 50,
+    "trusted_output_calls": 10,
+    "trusted_residual_calls": 40,
+    "trusted_rope_calls": 20,
+    "trusted_softmax_calls": 20
+  },
+  "schema": "obfuscatune_v2_local_tiny_smoke_v1",
+  "seed": 1234,
+  "source_sha256": "7c55d32a35ebd2b66b0d43d72fd0040c9ec5a3f723f97e0e0960c186920c7f85",
+  "status": "LOCAL_CORRECTNESS_ONLY_NOT_REAL_A10_TDX",
+  "steps": 10,
+  "token_hash_agreement": true,
+  "wall_sec": 5.712445259094238
+}

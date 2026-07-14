@@ -1,0 +1,30 @@
+{
+  "run_id": "real-tdx-mia-v2-shadow2-7f6ea75068c6",
+  "binding_manifest": {
+    "d4_run_id": "real-tdx-mia-v2-shadow2-7f6ea75068c6",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "worker_runtime_hash": "b9703e39ab1424034517e66fd346c9fb9fef97c5a686f246c7c80d27c65ff4ae",
+    "tdx_service_hash": "c2b32d13d778747cc5054294a5563d56c02150b4148cb00723293ddbe68e796d",
+    "model_config_hash": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b",
+    "tokenizer_hash": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "execution_profile": "paper_safe",
+    "feature_mask_family": "private_base_fold_v1.0_orthogonal_invariants",
+    "nonlinear_permutation_profile": "qk_rope_rotation_swiglu_permutation",
+    "qk_bias_handling_profile": "rope_commuting_planar_rotation_OI1",
+    "rank_mask_profile": "frozen_shadow2_rank8_folded_in_tdx",
+    "optimizer_profile": "inference_only_no_optimizer",
+    "vocabulary_mask_profile": "permutation_seed_8000",
+    "gradient_convention": "none_inference_only",
+    "dataset_batch_manifest_hash": "e3f877d6f54fa70acb81f8e66607f9162d25f9f71314ce77e69deb7bc36eba2b",
+    "code_revision_or_worktree_hash": "d30a9a3b59367819e1b6520d87307abd8c5916d8",
+    "debug_false_required": true,
+    "nonce": "b8c2177f7f2ba624be8889d8713428d4",
+    "ephemeral_key_pub": "dd5512823a7af646a0ebdae18826db6e9a03632b9d099d842fdc29ffaf8d5e25",
+    "hmac_key_commitment": "dd5512823a7af646a0ebdae18826db6e9a03632b9d099d842fdc29ffaf8d5e25",
+    "source_adapter_sha256": "7c46d98316c5f09266cade307ecd2653f81c5fcfa021eef5536e326d45547ec9",
+    "masked_adapter_sha256": "5669c7d35c7dec9723ceab87e5019258f2979563fbdfeb7dfcb78f233f005c1b",
+    "validated_feature_schema_sha256": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+    "sample_ids_sha256": "ea399513af254681b1fba253735915936399a2a14e020ede3eb023a7a262baef",
+    "collection_mode": "REAL_TDX_BACKED_VIEW"
+  }
+}

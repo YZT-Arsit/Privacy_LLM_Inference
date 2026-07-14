@@ -69,6 +69,7 @@ class TransformedAdamW:
             "v": {k: v.detach().clone() for k, v in self.v.items()},
         }
 
+    @torch.no_grad()
     def load_state_dict(self, state: dict) -> None:
         if state.get("contract_id") != "OBFUSCATUNE_LORA_V2_TRANSFORMED_EXTERNAL_ADAMW_V1":
             raise ValueError("optimizer contract mismatch")

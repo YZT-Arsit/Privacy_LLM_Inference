@@ -1,0 +1,51 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample fidelity-validation subset",
+  "replicates": 2000,
+  "method": "stratified percentile bootstrap within the frozen subset",
+  "primary_real_tdx": {
+    "roc_auc": {
+      "estimate": 0.4662157809983898,
+      "ci95": [
+        0.3947085346215781,
+        0.5389420289855072
+      ]
+    },
+    "balanced_accuracy": {
+      "estimate": 0.4737520128824477,
+      "ci95": [
+        0.41481481481481486,
+        0.5312399355877616
+      ]
+    },
+    "average_precision": {
+      "estimate": 0.5375436684471967,
+      "ci95": [
+        0.4858240634033736,
+        0.6036806379020507
+      ]
+    },
+    "max_tpr_minus_fpr": {
+      "estimate": 0.03285024154589372,
+      "ci95": [
+        0.011272141706924255,
+        0.15685185185185174
+      ]
+    }
+  },
+  "paired_real_minus_simulated_auc": {
+    "estimate": -0.0015458937198066791,
+    "ci95": [
+      -0.004315619967793893,
+      0.0012898550724638061
+    ]
+  },
+  "paired_score_correlation": {
+    "estimate": 0.8879055850681614,
+    "ci95": [
+      0.8717587163289767,
+      0.9065935383429816
+    ]
+  },
+  "tpr_at_0_1pct_fpr": "not reported: 115 nonmembers give 0.87% empirical FPR resolution"
+}

@@ -1,0 +1,49 @@
+{
+  "status": "REAL_TDX_MIA_FIDELITY_VALIDATION_WITHHELD",
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample fidelity-validation subset",
+  "decision_rule": "C",
+  "paper_claim": "Simulation-to-TDX fidelity validation is inconclusive because the collection paths are not semantically matched.",
+  "completed_collection_count": 250,
+  "preserved_diagnostic_recapture_count": 250,
+  "handoff_integrity_pass": true,
+  "feature_schema_validation_pass": true,
+  "validity_controls_pass": false,
+  "frozen_classifier_transfer_complete": true,
+  "artifact_hash_verification_pass": true,
+  "failed_gates": [
+    "hidden.final.last_l2 has no semantically matched real-runtime collection point",
+    "raw simulated-versus-real source classifier ROC-AUC=1.000",
+    "one simulated/real feature has disjoint ranges"
+  ],
+  "unresolved_simulation_to_tdx_differences": [
+    "hidden.final.last_l2"
+  ],
+  "real_tdx_primary_metrics": {
+    "roc_auc": 0.4662157809983898,
+    "balanced_accuracy": 0.4737520128824477,
+    "average_precision": 0.5375436684471967,
+    "max_tpr_minus_fpr": 0.03285024154589372,
+    "tpr_at_1pct_fpr_exploratory": 0.02962962962962963,
+    "tpr_at_0_1pct_fpr": null
+  },
+  "simulated_same_sample_metrics": {
+    "roc_auc": 0.46776167471819646,
+    "balanced_accuracy": 0.505475040257649,
+    "average_precision": 0.5404748317375683,
+    "max_tpr_minus_fpr": 0.03542673107890498,
+    "tpr_at_1pct_fpr_exploratory": 0.02962962962962963,
+    "tpr_at_0_1pct_fpr": null
+  },
+  "remaining_work": [
+    "revise and re-freeze the simulated schema to use a runtime-available terminal hidden feature",
+    "rerun simulated collection and classifier freeze under the revised schema before a new real-TDX validation"
+  ],
+  "unsupported_claims": [
+    "zero leakage",
+    "equivalence",
+    "formal privacy",
+    "information-theoretic security",
+    "validation beyond the frozen subset"
+  ]
+}
