@@ -35,12 +35,12 @@ plaintext checkpoint, User input, adapter, protected activation/cache, logit,
 token identity, or result. The Supplement formalizes the complete state
 partition, transcript, freshness schedule, and stronger-query variants.
 
-\subsection{Goals and Non-Goals}
+\subsection{Goals and Scope}
 \label{subsec:objectives}
 
-Correctness requires TEE recovery to reproduce the plaintext inference and
-LoRA computations. Confidentiality is empirical non-recovery by the stated GPU
-subject to admitted leakage, not cryptographic, semantic, differential-privacy,
-or indistinguishability security. The TEE is trusted; hardware side channels,
-availability, checkpoint disclosure, and malicious-GPU integrity are outside
-scope. The implemented probabilistic spot-check is only an auxiliary audit.
+Correctness requires plaintext-equivalent execution; confidentiality is
+empirical non-recovery from the correlated GPU transcript, not cryptographic
+security. We exclude TEE compromise, hardware side channels, denial of service,
+and malicious integrity; the GPU receives no plaintext reference checkpoint in
+the canonical private-model threat model, so anchor-dependent alignment attacks
+are outside scope and we evaluate transcript-only attacks.

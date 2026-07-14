@@ -5,23 +5,19 @@
 % correctness. NEVER infer value hiding from coordinate hiding. A setup-blocked
 % attack is NOT a defeated attack. Every artifact carries formal_security_claim=false.
 %
-% SCOPE: ONE threat model only -- CANONICAL PRIVATE-BASE (proprietary checkpoint
-% never disclosed to the adversary; runtime execution is the protection target).
-% Checkpoint-leak / public-weight / post-disclosure-impossibility material is
-% OUT OF SCOPE (archived; see audit/out_of_scope_checkpoint_review.md) and MUST
-% NOT appear here.
+% SCOPE: ONE threat model only -- CANONICAL PRIVATE-BASE. Evaluate attacks that
+% execute from the accelerator-visible transcript defined in Sec.~\ref{sec:threat}.
 % ===========================================================================
 \section{Leakage and Security Analysis}
 \label{sec:security}
 
-% CENTRAL QUESTION: Under the DEFAULT private-base attacker (who observes only the
-% transformed package and never the plaintext checkpoint), which input / activation
-% / cache / adapter signals remain recoverable, which invariants stay visible, and
-% what do we explicitly NOT claim?
+% CENTRAL QUESTION: Under the canonical private-base attacker, which input,
+% activation, cache, and adapter signals remain recoverable from the transformed
+% transcript, and which invariants stay visible?
 
 % ---- 7.1 Attacker model (pointer to Sec~\ref{sec:threat}) -------------------
-% Default attacker: sees transformed tensors + public metadata; is DENIED the
-% plaintext checkpoint, masks, and paired plaintext (security_registry.yaml).
+% Default attacker: sees transformed tensors and admitted metadata but not masks,
+% protected plaintext state, or paired plaintext (security_registry.yaml).
 % Base-weight confidentiality is a mask-secrecy PROXY claim, not formal. \evid{C-NONCLAIM-06}
 
 % ---- 7.2 Observable invariants (leaked BY CONSTRUCTION; do NOT claim hidden) -
@@ -29,8 +25,8 @@
 % 1e-15, corr 1.0); coordinate value-multiset (sorted MSE 0.0); singular spectrum
 % / rank; attention logits Q K^T (exact); confidence/entropy multiset (perm-only);
 % shapes; seq length; decode-step + boundary-call timing; padded rank r_pad.
-% KEY calibration: these invariants are VISIBLE but, under the default attacker,
-% are NOT exploitable into token recovery WITHOUT the checkpoint (see 7.4).
+% KEY calibration: these invariants are VISIBLE; test directly whether the
+% canonical attacker can exploit them rather than inferring safety from masking.
 
 % ---- 7.3 Formal leakage statement (what is provable) ----------------------
 % Permutation-invariant statistics theorem (row norms/sorted/quantiles invariant
@@ -38,12 +34,12 @@
 % \evid{C-SEC-PIINV}
 % NOTE: the RMSNorm norm-leakage impossibility (C-COR-06b) is a CORRECTNESS/leakage
 % fact about norms, belongs in Sec~\ref{sec:correctness}, and is NOT a security
-% guarantee. Do NOT import any checkpoint-disclosure impossibility here (out of scope).
+% guarantee.
 
 % ---- 7.4 Empirical attacks under the DEFAULT attacker (skill S7) -----------
 % For EACH: attacker knowledge, input, target secret, objective, #samples, init,
 % stopping, metric, threshold, seed policy, box-level. Report ONLY default-attacker
-% (checkpoint-denied) results:
+% transcript-executable results:
 %  (a) S1-S6, real Qwen-0.5B as a SECRET oracle (proxy_evaluated, CPU): \evid{C-SEC-S1..S6}
 %      S1 representation inversion strict cos 0.0018 (known-pairs upper bound 0.929);
 %      S2 masked-product SVD recovers the product but plaintext-dW rel 1.41 (uninformative);
@@ -66,6 +62,4 @@
 % base-weight confidentiality is a mask-secrecy proxy, not formal; no HW side-channel;
 % compromised-TEE out of scope; shapes, seq-len, call count/output length, and
 % r_pad visible; generated token identities and returned result remain TEE/User-only.
-% \risk{ONE threat model only -- do NOT reintroduce checkpoint-leak/public-weight
-%   material (archived, out of scope).}
-\TODO{Author from the default private-base attacker only; import S1-S6 configs from results/aaai\_private\_base/security/; keep every verdict proxy-calibrated.}
+\TODO{Author from the canonical private-base attacker only; prioritize S1--S6 and observable-invariant attacks executable from the accelerator-visible transcript, and keep every verdict proxy-calibrated.}

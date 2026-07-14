@@ -36,7 +36,7 @@ The accelerator transcript $\transcript$ is the ordered sequence of $\Sobs$
 tensors, $\Spub$ metadata, and delegated operation identifiers seen by $\acc$.
 The confidentiality adversary $\adv$ is the honest-but-curious GPU: it follows
 the prescribed operations but stores and correlates transcripts across calls
-and sessions. It receives neither the plaintext checkpoint nor TEE internals.
+and sessions. It receives neither protected plaintext state nor TEE internals.
 The stronger known-pair audit grants a bounded set of plaintext/transformed
 pairs but never grants $\params$ or mask state.
 

@@ -20,9 +20,9 @@
 % CPU. \risk{EVA-01: append "synthetic/tiny-HF/CPU" scope to each result line.}
 
 % ---- RQ2: Which input/activation/cache signals stay recoverable under the ----
-% DEFAULT (checkpoint-denied) attacker? -> C-SEC-S1..S6, C-SEC-UNIFIED (default
+% CANONICAL transcript-only attacker? -> C-SEC-S1..S6, C-SEC-UNIFIED (default
 % rows), C-SEC-TIMING. Report proxy verdicts with attacker knowledge stated.
-% \risk{ONE attacker model -- checkpoint-leak/public-weight rows are OUT OF SCOPE.}
+% \risk{Use only the canonical attacker and executable transcript inputs.}
 
 % ---- RQ3: Which invariants remain visible despite masking/padding? ---------
 % -> C-SEC-LEAK, C-SEC-PIINV, C-LORA-RANK. norms/Gram/multiset/spectrum/logits/

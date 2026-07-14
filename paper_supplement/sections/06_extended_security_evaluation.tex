@@ -10,7 +10,7 @@
 % For each attack: attacker knowledge; input; target secret; objective; #samples;
 % init; stopping; metric; success threshold; seed policy; box-level; environment.
 %
-% IN SCOPE -- DEFAULT private-base attacker (report configs):
+% CANONICAL private-base attacker (report transcript-executable configs):
 %  - S1-S6 (real Qwen-0.5B secret oracle, CPU): ridge/MLP/SVD/DLG-LBFGS/Shokri-MIA/KV.
 %  - Unified matrix, DEFAULT rows (toy/CPU): KPA lstsq (fresh-pad), frequency, EIA/BRE-fwd.
 %  - Timing side-channel proxy (op-count).
@@ -18,11 +18,6 @@
 % Setup-blocked (MUST NOT be reported as defeated):
 %  - bre_bisr_backward (needs split-FT gradients); nonlinear masked backward
 %    (not_implemented); real-activation synthetic fallback.
-%
-% ARCHIVED -- OUT OF PAPER SCOPE (checkpoint-leak register 3; do NOT include):
-%  - Gram-inversion / pad-peel / attention-logit fingerprint / CONJFORMER-suite on
-%    real Qwen-7B (require plaintext checkpoint); arrowmatch worst-case; layer-0
-%    TEE relocation ablation. Artifacts in results/attacks/*, not cited by the paper.
 %
 % Strawman/null (MUST NOT be reported as security):
 %  - private-weights adapter extraction sets dW_est=zeros then reports success=False;

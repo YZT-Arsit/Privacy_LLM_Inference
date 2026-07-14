@@ -5,7 +5,7 @@
 % gap -> tension -> method -> contributions -> evidence summary -> limitation
 % boundary. Contribution bullets must be atomic and each independently
 % defensible; do NOT fuse a proven construction with an unproven security
-% implication. SCOPE: canonical PRIVATE-base only; no public-weight framing.
+% implication. SCOPE: canonical PRIVATE-base only.
 % ===========================================================================
 \section{Introduction}
 \label{sec:intro}
@@ -23,7 +23,7 @@
 %     assets (prompts, activations, KV-cache, private LoRA adapters + training
 %     data/gradients) are confidential; only masked forms may cross the boundary.
 % (2) Naive offload exposes everything: activation-inversion / embedding-inversion
-%     / alignment attacks recover inputs from exposed activations, and gradients
+%     attacks recover inputs from exposed activations, and gradients
 %     leak training data; dispatching plaintext W leaks the model. \citeneeded{activation inversion (EIA)}\citeneeded{deep leakage from gradients}
 % (3) Gap: cryptographic private inference (FHE/MPC) is exact but expensive on
 %     nonlinearities; TEE-only execution wastes the accelerator; prior
@@ -49,7 +49,8 @@
 % C3. A leakage characterization that states precisely which invariants remain
 %     visible (permutation-invariant statistics, norms, padded rank, shapes),
 %     plus an EMPIRICAL attack evaluation under the DEFAULT private-base attacker
-%     (checkpoint-denied) -- PROXY-evaluated, NOT a cryptographic security proof.
+%     from the accelerator-visible transcript -- PROXY-evaluated, NOT a cryptographic
+%     security proof.
 %                                          -> ledger C-SEC-LEAK/PIINV/S1..S6/TIMING
 % C4. A cost characterization separating measured wall-clock (CPU emulation) and
 %     trusted-boundary-call accounting / operation-count projections; and a
@@ -76,5 +77,5 @@
 %   LLM + LoRA training + accelerator-side masked path); we share their dual-sided
 %   (weights + data) threat family, so novelty is NOT "we also protect weights".}
 % \risk{Security contribution is PROXY-ONLY (default attacker); do not imply a
-%   formal or worst-case guarantee. Checkpoint-leak material is out of scope.}
+%   formal or worst-case guarantee.}
 \TODO{Write Introduction prose after Method and Evaluation stabilize; import calibrated numbers from claim\_ledger.md only.}
