@@ -1,0 +1,39 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample subset",
+  "schema": "common-semantics schema v2",
+  "engineering_gate_not_formal_equivalence_test": true,
+  "classifier": "paired-sample-group-disjoint 5-fold standardized L2 logistic regression",
+  "raw_source_roc_auc": 0.8053920000000001,
+  "raw_source_roc_auc_ci95": [
+    0.7696063999999999,
+    0.840272
+  ],
+  "predefined_train_fold_source_conditional_normalized_roc_auc": 0.67224,
+  "normalized_source_roc_auc_ci95": [
+    0.6272948,
+    0.7183048
+  ],
+  "per_family_raw_source_roc_auc": {
+    "attention": 0.502192,
+    "kv": 0.59208,
+    "hidden": 0.758544,
+    "logit": 0.501888
+  },
+  "leave_one_family_out_raw_source_roc_auc": {
+    "without_attention": 0.796624,
+    "without_kv": 0.762976,
+    "without_hidden": 0.614816,
+    "without_logit": 0.805248
+  },
+  "shuffled_source_label_auc_mean": 0.48876159999999996,
+  "shuffled_source_label_auc_ci95": [
+    0.4304416,
+    0.5594528
+  ],
+  "maximum_univariate_symmetric_source_auc": 0.76,
+  "disjoint_range_feature_count": 0,
+  "semantic_mismatch_count_in_common_schema": 0,
+  "acceptance_rule": "no semantic mismatch; no disjoint range; max univariate symmetric AUC < 0.95; normalized AUC <= 0.60 or paired-bootstrap CI includes 0.50",
+  "validity_gate_pass": false
+}

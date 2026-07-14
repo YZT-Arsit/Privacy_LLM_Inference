@@ -1,0 +1,55 @@
+# Prior run inventory
+
+Prior root: `/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_fidelity_validation_v1`
+
+Referenced immutable files: 47. No prior artifact was copied or modified.
+
+| Relative path | SHA-256 | Bytes |
+|---|---|---:|
+| `__pycache__/analyze_fidelity.cpython-313.pyc` | `4b41c585baa9420fb21ba0df42a2787b91846c9c2e4bca8b9929f07d8c3bfd1c` | 42207 |
+| `analyze_fidelity.py` | `0d1b73837fbda7c74de5983cc6aad8949c0e4e05219c92b778ba1990edcb0738` | 29581 |
+| `artifact_hashes.json` | `b6239f33d4a36566d9a0764b279c5c17f8944085b0f081d249b07a7d783de20c` | 3962 |
+| `classifier_transfer_metrics.csv` | `c5237147aa6f3a3d150a8a698d613db966722a79e1e185f019ac24c4b1e39ebe` | 1561 |
+| `collection_validation.md` | `497f61e7dc8c0a38575070c208e3a52c9074e68f217a617c2a83a06cb4388d95` | 1143 |
+| `confidence_intervals.json` | `b1003c75e66f20ba9c33c44c7dd24acf4dd02c6aba0f906ce0d17fc99f855013` | 1224 |
+| `feature_family_fidelity.csv` | `cd3e507adb6ff354f244c9865ed63a6046c09cceaee1c11f16a63aef5d38accc` | 548 |
+| `final_status.json` | `861dba4a957b7584ceb2bbd24b928625f64b388e12511c88e87f3d7c4ea52ac5` | 1920 |
+| `final_status.md` | `099b6d5904e56e96a7e3ef8680338858b0b76db0185ba9c1d4c22b1a85809f5f` | 751 |
+| `integrity_audit/__pycache__/trusted_transform_adapter.cpython-313.pyc` | `f8077120c5f01ff8fd6ddd5bd5febff6895a8d964dc64e6be3adace517ae8dfa` | 11637 |
+| `integrity_audit/evaluation_queries_250.jsonl` | `e3f877d6f54fa70acb81f8e66607f9162d25f9f71314ce77e69deb7bc36eba2b` | 75699 |
+| `integrity_audit/receive_ciphertext_once.py` | `3f7350e31542525a337cb2d92a10e387d9cbba6d4ca0e63c4b62cc33749e7b39` | 1524 |
+| `integrity_audit/session_binding_audit_primary.json` | `120cd6c1a61002d445d1f22fb3acee82c44843457a1ed8c89883d9ff7a7ccfa7` | 1984 |
+| `integrity_audit/session_binding_audit_recapture_v2.json` | `e2646180eff90c2fc8ad8a265ec3ee0cfbe421737114f95b757898279bd39810` | 2093 |
+| `integrity_audit/tdx_evidence/attestation/quote.dat` | `fa3f0f47703bd5472c7d341634e4f307c894cf69f54bc2fff0546221880bb06a` | 5006 |
+| `integrity_audit/tdx_evidence/attestation/report.dat` | `6b20bee290ccea5f2c890984cb2be47f137c930e8de605a03dd0b6f72016228a` | 1024 |
+| `integrity_audit/tdx_evidence/attestation/session_attestation.json` | `747c952fc160bff936391bbd783c18e2b561ffa9b1ac321ddd72604ec982ff35` | 416 |
+| `integrity_audit/tdx_evidence/attestation/session_quote.dat` | `fa3f0f47703bd5472c7d341634e4f307c894cf69f54bc2fff0546221880bb06a` | 5006 |
+| `integrity_audit/tdx_evidence/session_counters.json` | `2ac4627e7dbe4450658a3a1936c822eddb4e57f34e1956cbb2297ff874d495d4` | 1892 |
+| `integrity_audit/tdx_evidence/trusted_adapter_transform_manifest.json` | `07f6523dd84a26d0c3c094edb4100de5106fddf9799e3d7682c5a6831ac03f70` | 734 |
+| `integrity_audit/tdx_evidence_recapture_v2/attestation_recapture_v2/quote.dat` | `aa7d2d8c18187e70e9c1a9ffeb601491904e65cfddbd8fa83f333b75ab69840a` | 5006 |
+| `integrity_audit/tdx_evidence_recapture_v2/attestation_recapture_v2/report.dat` | `dad182e4431d3f2ca158cb4248a6ebc8c9a9901e0c12e35ade0a55ffbc0a15a4` | 1024 |
+| `integrity_audit/tdx_evidence_recapture_v2/attestation_recapture_v2/session_attestation.json` | `71810a24dfe1000043828c271ac378752be0588fe4916159b15e78e22214a5a3` | 416 |
+| `integrity_audit/tdx_evidence_recapture_v2/attestation_recapture_v2/session_quote.dat` | `aa7d2d8c18187e70e9c1a9ffeb601491904e65cfddbd8fa83f333b75ab69840a` | 5006 |
+| `integrity_audit/tdx_evidence_recapture_v2/session_counters_recapture_v2.json` | `7d69d3b1e8dee263149facfdcb63e394f60231fec270f965e82b93c6eb45529f` | 1892 |
+| `integrity_audit/trusted_transform_adapter.py` | `01cb8045b7265b81cad299bba90d37385aedac84cd72c8bce0ccc55450e9f6d6` | 7427 |
+| `integrity_validation.md` | `950c881a70a13d6016162e503aafaf1bd7defc5fde1c8d62a8a8d0c0d6210855` | 1190 |
+| `limitations.md` | `b8f16a256f1bdb7952c510548840cbad8692d20d28360aad6c2e7ddec7dcb4cd` | 839 |
+| `paper_claim_text.md` | `b25e5025db11724a7dd62fdf1d2b096d970ed69e411423d647200893148b1735` | 588 |
+| `paper_table.md` | `b8f28d04b88de2d9d60a744a60f737f3f8e745b34e8892f507c99763fab5e42a` | 624 |
+| `per_feature_fidelity.csv` | `75710b343df45f638c9ee4726fb4043ddbc1ae17224c788b30e67a94b08703e5` | 345814 |
+| `real_tdx_collection/__pycache__/collect_real_tdx.cpython-313.pyc` | `23920d07fbdd1edb3345015522052b50f51deb77288e9e5a92091f634afd312c` | 24626 |
+| `real_tdx_collection/collect_real_tdx.py` | `fce9182f4c3efbbdb67373291cf713fe8148337954b044dbb8d013f8f0009c11` | 14361 |
+| `real_tdx_collection/collection_manifest.json` | `359c0c65fc0f8d5fb040d11bad5bc683e78ae60aa3f02e4ecaa97777cd2529fc` | 2034 |
+| `real_tdx_collection/real_tdx_v0_outputs.jsonl` | `8c3aa9addc633a49148e67aada62ef42fdbc500ddd90c35b5192ffb5fa528390` | 88482 |
+| `real_tdx_collection/real_tdx_v2_features.csv` | `ba4760147706cc7f2e5fa561c1c62afa0e02f35b6d6d0b9d8ecf47eb86c12104` | 2902824 |
+| `real_tdx_collection/recapture_v2/collection_manifest.json` | `2df65c9f7ff45eb0118a3d85f7820b66b6d81de4cca43171db4fa3022fc32798` | 2034 |
+| `real_tdx_collection/recapture_v2/real_tdx_v0_outputs.jsonl` | `8c3aa9addc633a49148e67aada62ef42fdbc500ddd90c35b5192ffb5fa528390` | 88482 |
+| `real_tdx_collection/recapture_v2/real_tdx_v2_features.csv` | `a3ae1b6a18a2653a704d91f4e9b55b7e661520cb70ac975a1231652b0fa41863` | 2902714 |
+| `real_tdx_collection/recapture_v2/sample_index.json` | `35485cc9f057b108deb936cd0b955f01dd1098be6441ade8fdbf87f205c8639d` | 4003 |
+| `real_tdx_collection/recapture_v2/transform_commitments.jsonl` | `a99d9412e1f9e89cd6173270b126202ce7eb05bc346b8affef67551f36d968f9` | 30000 |
+| `real_tdx_collection/sample_index.json` | `35485cc9f057b108deb936cd0b955f01dd1098be6441ade8fdbf87f205c8639d` | 4003 |
+| `real_tdx_collection/transform_commitments.jsonl` | `31884fe3c6ecfeaf3308a90e02e111a6214e143b2815f2615e0bf2f410ded85e` | 30000 |
+| `resource_audit.md` | `6ce90061a79c813519b6ce93069e0bfc34d5c2137bd51124953876e1b49fca56` | 1191 |
+| `schema_comparison.csv` | `2d956a436fa54b1ca0cf921a08f404fcc929ef659ecb520cdc9e6592d9794469` | 56335 |
+| `source_classifier_results.json` | `ff749514ed59a346743cd01646968bad086c1d7e1f45f9dd2416a39b850e2dcb` | 636 |
+| `validity_controls.csv` | `21cc57893e47ec1b996890e8c80cdfe5d8ca79cca2adcbfa0c4fcffee560087a` | 475 |

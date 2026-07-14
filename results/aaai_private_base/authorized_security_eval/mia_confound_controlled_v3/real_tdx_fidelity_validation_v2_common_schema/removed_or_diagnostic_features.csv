@@ -1,0 +1,2 @@
+feature,disposition,renamed_to,reason,simulation_only_or_real_only
+hidden.final.last_l2,EXCLUDED_SEMANTIC_MISMATCH,,simulation post-gamma final hidden; real gamma-free core/pre-norm residual,semantically mismatched; neither real probe substitutes

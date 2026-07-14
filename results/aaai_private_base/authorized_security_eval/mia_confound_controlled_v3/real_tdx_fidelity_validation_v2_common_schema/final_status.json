@@ -1,0 +1,31 @@
+{
+  "status": "REAL_TDX_COMMON_SCHEMA_FIDELITY_WITHHELD",
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample subset",
+  "schema": "common-semantics schema v2",
+  "common_feature_count": 610,
+  "schema_definition_sha256": "311f79a5951906839a91725bc24abf9ed09dd59f5b1c1c586ba6adaf66156a67",
+  "collection_integrity_pass": true,
+  "semantic_mismatch_count": 0,
+  "source_fidelity_gate_pass": false,
+  "frozen_classifier_transfer_complete": false,
+  "raw_source_roc_auc": 0.8053920000000001,
+  "normalized_source_roc_auc": 0.67224,
+  "maximum_univariate_symmetric_source_auc": 0.76,
+  "failed_gates": [
+    "failed normalized source-fidelity control"
+  ],
+  "blocker_category": [
+    "unexplained numeric/domain shift",
+    "failed source-fidelity control"
+  ],
+  "real_tdx_rerun_performed": false,
+  "shadow_training_performed": false,
+  "full_three_shadow_mia_rerun_performed": false,
+  "unsupported_claims": [
+    "zero membership leakage",
+    "formal equivalence",
+    "universal fidelity",
+    "information-theoretic privacy"
+  ]
+}

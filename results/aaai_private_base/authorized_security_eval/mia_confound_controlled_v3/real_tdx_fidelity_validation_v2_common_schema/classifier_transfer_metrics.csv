@@ -1,0 +1,2 @@
+collection_mode,scope,schema,status,reason
+REAL_TDX_BACKED_VIEW,frozen 250-sample subset,common-semantics schema v2,NOT_RUN_SOURCE_FIDELITY_GATE_FAILED,Phase 6 is prohibited until common-schema source fidelity passes

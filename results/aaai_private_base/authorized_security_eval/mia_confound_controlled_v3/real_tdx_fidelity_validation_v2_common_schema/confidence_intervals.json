@@ -1,0 +1,20 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample subset",
+  "schema": "common-semantics schema v2",
+  "source_classifier": {
+    "raw_auc_ci95": [
+      0.7696063999999999,
+      0.840272
+    ],
+    "normalized_auc_ci95": [
+      0.6272948,
+      0.7183048
+    ],
+    "bootstrap_replicates": 2000,
+    "method": "paired sample-group percentile bootstrap of fixed OOF scores"
+  },
+  "membership_transfer": {
+    "status": "NOT_RUN_SOURCE_FIDELITY_GATE_FAILED"
+  }
+}

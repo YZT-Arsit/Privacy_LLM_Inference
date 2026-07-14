@@ -1,0 +1,9 @@
+control,value,pass,ci95_low,ci95_high
+common_schema_semantic_mismatch_count,0,True,,
+common_schema_disjoint_range_count,0,True,,
+maximum_univariate_symmetric_source_auc,0.76,True,,
+raw_source_classifier_auc,0.8053920000000001,False,,
+predeclared_normalized_source_classifier_auc,0.67224,False,0.6272948,0.7183048
+shuffled_source_labels,0.48876159999999996,True,0.4304416,0.5594528
+schema_order_and_finite,True,True,,
+v0_exact_text_inherited,250/250,True,,

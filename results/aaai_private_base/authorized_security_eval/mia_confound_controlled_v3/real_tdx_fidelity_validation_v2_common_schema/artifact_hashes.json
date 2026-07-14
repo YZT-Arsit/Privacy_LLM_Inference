@@ -1,0 +1,116 @@
+{
+  "status": "PASS",
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "scope": "frozen 250-sample subset",
+  "schema": "common-semantics schema v2",
+  "output_file_count": 21,
+  "all_listed_files_hash_verified": true,
+  "outputs": {
+    "classifier_transfer_metrics.csv": {
+      "sha256": "62f5d2bdb8410bac09f70863e11936502e8977d47c661c8b6a2ccba684770319",
+      "bytes": 217
+    },
+    "collection_integrity.md": {
+      "sha256": "8cbfee643974da9b0a96646f6132e60b77b02f8395340483db7adb6afceed843",
+      "bytes": 642
+    },
+    "common_v2_feature_schema.json": {
+      "sha256": "959c1a5e1ced8582eb9e43322d42ca596b4f4a79a6ad02269b4ff518c1e69058",
+      "bytes": 200747
+    },
+    "common_v2_feature_schema.md": {
+      "sha256": "442bd4da9322fb9d6f6269195ff10a4ecc17c1ed1830f2996ff3957887d5c448",
+      "bytes": 734
+    },
+    "confidence_intervals.json": {
+      "sha256": "33a2aae1a0609be24a0cc6f1d452109fa0e1580b77e072f19458bd1236a3c505",
+      "bytes": 493
+    },
+    "feature_family_fidelity.csv": {
+      "sha256": "674c405086ac1d8797ae979da92e1e19e84d81b9f3924769471d29798e7b06f7",
+      "bytes": 666
+    },
+    "feature_semantics_audit.csv": {
+      "sha256": "6323d11f26a6d6a368d37b276e766dbe4d984e969ade6cc88fe558081a055a7c",
+      "bytes": 374690
+    },
+    "final_status.json": {
+      "sha256": "4f6bcb99691f7fc7278774e44b55d8e33b79080b29489065bf06753894b7d3f7",
+      "bytes": 1058
+    },
+    "final_status.md": {
+      "sha256": "736e205c79becc523814ed83ca47766c7c0a28f034c974f4b866c9c72ea77dd9",
+      "bytes": 669
+    },
+    "limitations.md": {
+      "sha256": "d633098eed990619d7073ce73de81d458c2df493c59e57603c7e04d76d9bde13",
+      "bytes": 699
+    },
+    "mismatch_root_cause.md": {
+      "sha256": "5d6046734948cd54e49c7d5cf8c11a0c7b2bc0c8a788c425de560d401a17f601",
+      "bytes": 1069
+    },
+    "paper_claim_text.md": {
+      "sha256": "c27fc374dd66c820cc8a1cb6b26556ac0525c480a9a6c2b47bde68b5861c0d07",
+      "bytes": 500
+    },
+    "paper_table.md": {
+      "sha256": "bdf2af5dda0af8f5f0f1b9856d060aa7a2ecdc7ca8818c993b2d6ead33438ea7",
+      "bytes": 428
+    },
+    "per_feature_fidelity.csv": {
+      "sha256": "c2280e5d62dd86949a3ba39584e65f786cc1b3dc409e897416e2ba1c88b13e9a",
+      "bytes": 278552
+    },
+    "prior_run_hashes.json": {
+      "sha256": "fba67d324aea2361cedca99f188e46472c423a1121cb7e8dfb36e2c2e12d3358",
+      "bytes": 7949
+    },
+    "prior_run_inventory.md": {
+      "sha256": "3275a268bde3a4299e8cdcdd8d5c90f07722bd1e38314c2b6659fd46e3685d69",
+      "bytes": 6288
+    },
+    "removed_or_diagnostic_features.csv": {
+      "sha256": "cb5c41bf82f7a30ca81779eff46edb5255740e4fee037e93c159f6fc0c1ec329",
+      "bytes": 247
+    },
+    "source_attribution.md": {
+      "sha256": "f9b218dee2eb7d6597d3afe0cdad7f7f06c0aeea8b1c77b2a596cadd0c3465cf",
+      "bytes": 2126
+    },
+    "source_classifier_results.json": {
+      "sha256": "35da7d72de2d1b4ba391ae25d7821189abc6db2092713b457db21bef0b6fce17",
+      "bytes": 1309
+    },
+    "statistical_method.md": {
+      "sha256": "f2bc4b8ddd2e115885ff853c4b97475617e10b3f814f520f5e32ec1852710bd4",
+      "bytes": 1119
+    },
+    "validity_controls.csv": {
+      "sha256": "e488721c63ce373efa302356b65e955dba827acd999525ea385a30718a577db9",
+      "bytes": 456
+    }
+  },
+  "referenced_evidence": {
+    "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/mia_v2_handoff/validated_feature_schema.json": {
+      "sha256": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+      "bytes": 255271
+    },
+    "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/shadow_2/collection/v2_features.csv": {
+      "sha256": "a8e4ae1ab671a0b5aead72c09ba5bdc54a7ede434d1067f0ef4bbfb31aa39e39",
+      "bytes": 11533844
+    },
+    "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_fidelity_validation_v1/real_tdx_collection/real_tdx_v2_features.csv": {
+      "sha256": "ba4760147706cc7f2e5fa561c1c62afa0e02f35b6d6d0b9d8ecf47eb86c12104",
+      "bytes": 2902824
+    },
+    "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_fidelity_validation_v1/real_tdx_collection/sample_index.json": {
+      "sha256": "35485cc9f057b108deb936cd0b955f01dd1098be6441ade8fdbf87f205c8639d",
+      "bytes": 4003
+    },
+    "/Users/Hoshino/Desktop/privacy_llm_obfuscation/results/aaai_private_base/authorized_security_eval/mia_confound_controlled_v3/real_tdx_fidelity_validation_v1/artifact_hashes.json": {
+      "sha256": "b6239f33d4a36566d9a0764b279c5c17f8944085b0f081d249b07a7d783de20c",
+      "bytes": 3962
+    }
+  }
+}
