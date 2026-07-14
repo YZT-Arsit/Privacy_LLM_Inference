@@ -1,0 +1,57 @@
+{
+  "bootstrap": "PASS",
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "completed_primary_folds": [
+    "S2+S3->S1",
+    "S1+S3->S2",
+    "S1+S2->S3"
+  ],
+  "control_macro_values": {
+    "audit_metadata_only_membership": 0.5,
+    "collection_order": 0.5125773333333333,
+    "gaussian_matched_610": 0.4919458666666666,
+    "missingness_only": 0.5,
+    "presence_only": 0.5,
+    "pseudo_membership": 0.5070949333333333,
+    "shape_only": 0.4933626666666666,
+    "shuffled_membership": 0.5034088
+  },
+  "controls_pass": true,
+  "decision": "C_QUALIFIED_V0_ABOVE_CHANCE",
+  "evaluation": "three-shadow leave-one-shadow-out",
+  "feature_schema": "common-semantics v2, 610 columns",
+  "fold_effect_directions": [
+    -0.2346439999999998,
+    -0.23177199999999998,
+    -0.18247800000000008
+  ],
+  "group_disjoint_sensitivity": "PASS",
+  "input_integrity": "PASS",
+  "max_attack_performance": {
+    "metric": "roc_auc",
+    "value": 0.6748606666666666,
+    "view": "V0"
+  },
+  "paper_claim": "Under the evaluated three-shadow real-TDX setting, validated GPU-visible V2 features do not provide detectable membership advantage beyond the external output view. Output-level membership exposure remains, while the protected GPU view does not measurably amplify it.",
+  "primary_logistic_macro_roc_auc": {
+    "V0": 0.6748606666666666,
+    "V0_plus_V2": 0.47306800000000004,
+    "V2_combined": 0.4585626666666667
+  },
+  "status": "REAL_TDX_MIA_THREE_SHADOW_ANALYSIS_COMPLETE",
+  "unsupported_claims": [
+    "zero leakage",
+    "MIA prevention",
+    "formal privacy",
+    "information-theoretic protection",
+    "universal robustness"
+  ],
+  "v2_minus_v0_roc_auc": {
+    "ci95": [
+      -0.24401798834050595,
+      -0.1874073818687175
+    ],
+    "observed_difference": -0.21629799999999996,
+    "replicates": 2000
+  }
+}

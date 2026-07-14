@@ -1,0 +1,40 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "evaluation": "three-shadow leave-one-shadow-out",
+  "feature_schema": "common-semantics v2, 610 columns",
+  "files": {
+    "README.md": {
+      "bytes": 739,
+      "sha256": "97b144c4492877674b11a6f27c142176f74636b1ddd38df49a31fce371809d82"
+    },
+    "audit_report.md": {
+      "bytes": 1458,
+      "sha256": "7c486b8bd3b0653a7a8648de62041f903cf9e3fe2ba3734f57bc6f231d5551d2"
+    },
+    "bootstrap_status.json": {
+      "bytes": 1086,
+      "sha256": "b3d7a9b1131e9b5e6e33859c9ea8337e9d6420eca21ca7f1960783b620c56753"
+    },
+    "build_orientation_audit.py": {
+      "bytes": 9992,
+      "sha256": "91f11763c92e93084d2765600264836246e4c3f1ff3519579a7b191b42a8253d"
+    },
+    "group_disjoint_symmetric_auc.csv": {
+      "bytes": 1727,
+      "sha256": "b84cbef8bfbd24491eefd4fa67a9ad39d770c41a3a6a27115cf836bae2dffa2d"
+    },
+    "macro_symmetric_auc.csv": {
+      "bytes": 3821,
+      "sha256": "592030e5d095ef051f5315414d19d26ee564410030e42f3875c5ff62b1e25332"
+    },
+    "paired_symmetric_auc_differences.csv": {
+      "bytes": 1648,
+      "sha256": "37e994882f4c9db38df3d9a3ee7c210762c7bed7d852acf1ab4d77301687bc22"
+    },
+    "per_fold_symmetric_auc.csv": {
+      "bytes": 10862,
+      "sha256": "0640834bbac9d1647446a99fac4165675b2f3b9c9b08cc3f4bd891e3f2ef16e2"
+    }
+  },
+  "status": "PASS_FOR_AVAILABLE_INPUTS"
+}

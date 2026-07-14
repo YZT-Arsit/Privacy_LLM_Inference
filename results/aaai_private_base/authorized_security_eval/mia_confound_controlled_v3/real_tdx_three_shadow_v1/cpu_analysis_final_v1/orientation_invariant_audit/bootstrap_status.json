@@ -1,0 +1,14 @@
+{
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "completed_replicates": 0,
+  "evaluation": "three-shadow leave-one-shadow-out",
+  "feature_schema": "common-semantics v2, 610 columns",
+  "forbidden_workaround_not_used": "Classifiers were not refit and predictions were not regenerated.",
+  "minimum_additional_artifact": "For every held-out shadow and view, persist the original sample order, binary y, and frozen decision score; alternatively persist all paired per-replicate AUCs for both views.",
+  "no_retraining_performed": true,
+  "reason": "The frozen analysis persisted only aggregate raw-AUC differences and percentile endpoints; held-out y/score arrays and bootstrap replicate values were not persisted.",
+  "requested_replicates": 2000,
+  "source_confidence_intervals_sha256": "1dd685992d66f233883df1c7a28903d459a0bc260065221331b8fe9fdd3f7933",
+  "status": "WITHHELD_NO_PREDICTION_LEVEL_INPUT",
+  "why_not_derivable": "symmetric_AUC=max(AUC,1-AUC) is nonlinear, so a paired symmetric-AUC interval cannot be reconstructed from the raw difference interval or its endpoints."
+}

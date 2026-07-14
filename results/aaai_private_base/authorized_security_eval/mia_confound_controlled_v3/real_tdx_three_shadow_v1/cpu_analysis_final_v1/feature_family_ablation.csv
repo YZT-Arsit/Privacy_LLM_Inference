@@ -1,0 +1,12 @@
+collection_mode,evaluation,feature_schema,view,protocol,roc_auc_mean,roc_auc_std,balanced_accuracy_mean,average_precision_mean,attack_advantage_mean
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V0,primary_loso,0.6748606666666666,0.014937964371210507,0.6346666666666667,0.6371553947031785,0.2886666666666667
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_attention,primary_loso,0.479516,0.004116450250721747,0.49233333333333335,0.48074670497847993,0.01533333333333331
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_kv,primary_loso,0.46424400000000005,0.007106644402716839,0.5003333333333333,0.47372399956092925,0.006666666666666633
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_hidden,primary_loso,0.4938453333333334,0.013834665767154971,0.5,0.496973602861503,0.031999999999999966
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_logit,primary_loso,0.507132,0.009296979294372992,0.49766666666666665,0.5144153922850572,0.04199999999999999
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_combined,primary_loso,0.4585626666666667,0.015561907795068722,0.49733333333333335,0.4738865193579304,0.008000000000000002
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V0_plus_V2,primary_loso,0.47306800000000004,0.01545929605986855,0.5006666666666666,0.48374999366041055,0.019333333333333345
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_without_attention,leave_one_family_out,0.46773599999999993,0.015367238225089959,0.5,0.47700855703383915,0.00866666666666667
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_without_kv,leave_one_family_out,0.47701733333333335,0.0034922624312741825,0.49266666666666664,0.4787830580939347,0.013333333333333308
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_without_hidden,leave_one_family_out,0.4599853333333333,0.013770020124249013,0.498,0.47424028228508175,0.0073333333333333375
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_without_logit,leave_one_family_out,0.456688,0.013153578169709836,0.49899999999999994,0.4731789137909177,0.006666666666666665

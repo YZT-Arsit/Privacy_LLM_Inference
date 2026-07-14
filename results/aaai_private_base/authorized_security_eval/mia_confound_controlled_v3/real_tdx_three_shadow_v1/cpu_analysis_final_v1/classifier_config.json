@@ -1,0 +1,55 @@
+{
+  "MLP": "not used; it was excluded by the frozen simulated-analysis policy",
+  "V0": {
+    "char_wb_tfidf": {
+      "max_features": 4000,
+      "min_df": 2,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "word_tfidf": {
+      "max_features": 4000,
+      "min_df": 2,
+      "ngram_range": [
+        1,
+        2
+      ]
+    }
+  },
+  "V2": {
+    "imputation": "training median",
+    "scaling": "training StandardScaler"
+  },
+  "classifiers": {
+    "linear_svm": {
+      "C_grid": [
+        0.01,
+        0.1,
+        1.0,
+        10.0
+      ],
+      "class_weight": "balanced",
+      "max_iter": 10000
+    },
+    "logistic_l2": {
+      "C_grid": [
+        0.01,
+        0.1,
+        1.0,
+        10.0
+      ],
+      "class_weight": "balanced",
+      "max_iter": 5000,
+      "penalty": "l2",
+      "solver": "liblinear"
+    }
+  },
+  "collection_mode": "REAL_TDX_BACKED_VIEW",
+  "evaluation": "three-shadow leave-one-shadow-out",
+  "feature_schema": "common-semantics v2, 610 columns",
+  "hyperparameter_selection": "swap the two attack-training shadows; mean validation ROC-AUC; lower-C tie break",
+  "primary_classifier": "logistic_l2",
+  "random_seed": 20260714
+}

@@ -1,0 +1,10 @@
+collection_mode,evaluation,feature_schema,protocol,held_out_shadow,view,classifier,raw_auc_primary_preserved,symmetric_auc
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,1,V0,logistic_l2,0.590788,0.590788
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,1,V2_combined,logistic_l2,0.473028,0.526972
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,1,V0_plus_V2,logistic_l2,0.506672,0.506672
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,2,V0,logistic_l2,0.632752,0.632752
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,2,V2_combined,logistic_l2,0.480476,0.519524
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,2,V0_plus_V2,logistic_l2,0.4904159999999999,0.509584
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,3,V0,logistic_l2,0.5923619999999999,0.5923619999999999
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,3,V2_combined,logistic_l2,0.506408,0.506408
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",semantic_group_disjoint_5fold_sensitivity,3,V0_plus_V2,logistic_l2,0.5140600000000001,0.5140600000000001

@@ -1,0 +1,19 @@
+collection_mode,evaluation,feature_schema,protocol,view,classifier,folds,raw_auc_macro_mean,raw_auc_macro_std,symmetric_auc_macro_mean,symmetric_auc_macro_std
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",leave_one_family_out,V2_without_attention,logistic_l2,3,0.46773599999999993,0.015367238225089948,0.5322640000000001,0.015367238225089914
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",leave_one_family_out,V2_without_hidden,logistic_l2,3,0.4599853333333333,0.013770020124248994,0.5400146666666666,0.013770020124249022
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",leave_one_family_out,V2_without_kv,logistic_l2,3,0.47701733333333335,0.0034922624312741565,0.5229826666666667,0.003492262431274196
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",leave_one_family_out,V2_without_logit,logistic_l2,3,0.456688,0.013153578169709862,0.543312,0.013153578169709886
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V0,linear_svm,3,0.67631,0.015050600076630396,0.67631,0.015050600076630396
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V0,logistic_l2,3,0.6748606666666666,0.014937964371210507,0.6748606666666666,0.014937964371210507
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V0_plus_V2,linear_svm,3,0.5471053333333333,0.0024349682179080658,0.5471053333333333,0.0024349682179080658
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V0_plus_V2,logistic_l2,3,0.47306800000000004,0.015459296059868522,0.526932,0.01545929605986855
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_attention,linear_svm,3,0.4792893333333333,0.005006786150371872,0.5207106666666667,0.005006786150371872
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_attention,logistic_l2,3,0.479516,0.00411645025072177,0.5204840000000001,0.0041164502507217695
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_combined,linear_svm,3,0.47535599999999995,0.008348191341043065,0.524644,0.00834819134104302
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_combined,logistic_l2,3,0.4585626666666666,0.015561907795068696,0.5414373333333333,0.015561907795068677
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_hidden,linear_svm,3,0.4933666666666667,0.013228822001809422,0.512812,0.00740644980180562
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_hidden,logistic_l2,3,0.4938453333333334,0.013834665767154971,0.5107253333333334,0.010688551050332095
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_kv,linear_svm,3,0.48151999999999995,0.007717267910342417,0.51848,0.007717267910342461
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_kv,logistic_l2,3,0.46424400000000005,0.007106644402716839,0.535756,0.007106644402716838
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_logit,linear_svm,3,0.5082240000000001,0.008289544901058595,0.5096240000000001,0.006612817452997371
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",primary_loso,V2_logit,logistic_l2,3,0.507132,0.009296979294373009,0.5088146666666667,0.007720161886615845

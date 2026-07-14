@@ -1,0 +1,9 @@
+collection_mode,evaluation,feature_schema,comparison,scope,symmetric_auc_difference,ci95_low,ci95_high,bootstrap_replicates,bootstrap_status
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_combined_minus_V0,held_out_shadow_1,-0.11036400000000002,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_combined_minus_V0,held_out_shadow_2,-0.15666799999999992,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_combined_minus_V0,held_out_shadow_3,-0.13323799999999997,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V2_combined_minus_V0,equal_weight_macro,-0.1334233333333333,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V0_plus_V2_minus_V0,held_out_shadow_1,-0.1242279999999999,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V0_plus_V2_minus_V0,held_out_shadow_2,-0.17386000000000001,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V0_plus_V2_minus_V0,held_out_shadow_3,-0.1456980000000001,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
+REAL_TDX_BACKED_VIEW,three-shadow leave-one-shadow-out,"common-semantics v2, 610 columns",V0_plus_V2_minus_V0,equal_weight_macro,-0.14792866666666668,,,0,WITHHELD_NO_PREDICTION_LEVEL_INPUT
