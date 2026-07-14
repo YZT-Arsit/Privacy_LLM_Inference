@@ -1,0 +1,51 @@
+{
+  "schema": "g1_bf16_matched_offline_analysis_handoff",
+  "version": "1.0",
+  "status": "ready",
+  "sample_ids": {
+    "count_per_seed": 500,
+    "unique_per_seed": 500,
+    "paths": {
+      "1234": "seed1234/generation_sample_ids.json",
+      "7": "seed7/generation_sample_ids.json",
+      "2025": "seed2025/generation_sample_ids.json"
+    }
+  },
+  "seeds": {
+    "1234": {
+      "terminal_manifest": "seed1234/terminal_manifest.json",
+      "bf16_generation": "seed1234/generations.jsonl",
+      "bf16_generation_sha256": "bd6b9878992cb5652cd1b1e57e54f3cda3827c07a6dd77f4a0de5992ac13d6e9",
+      "g1_fp32_generation": "../../generations/g1_final_s1234_test.jsonl",
+      "g1_fp32_generation_sha256": "ec5a432031dcbfed61152e6a1b8299bfc55704568342e7890b412f49e9b7c76b",
+      "g2_generation": "../../../offline_analysis/confound_controlled_20260714/source_cache/g2_protected_e2e_L12_s1234_full.jsonl",
+      "g2_generation_sha256": "d3b5ad9820c13e473ee7a995480a9ea6b5b3f5a786a4ba3276774cf116e46e31"
+    },
+    "7": {
+      "terminal_manifest": "seed7/terminal_manifest.json",
+      "bf16_generation": "seed7/generations.jsonl",
+      "bf16_generation_sha256": "7923e58cbdbc04bc3dff2c9c1a1f7c821d5978ad2e8f62210fe1040ceff6baa3",
+      "g1_fp32_generation": "../../generations/g1_final_s7_test.jsonl",
+      "g1_fp32_generation_sha256": "0cfef06b7ace081b71303ca05f7709deb6562b521803f5dc9d9cff9b034aeb17",
+      "g2_generation": "../../generations/g2_protected_e2e_L12_s7_extension.jsonl",
+      "g2_generation_sha256": "70a93b9d50d4cb67037a04f70e0cf9a608ff93f8a5b64dd095e06cae686c2aec"
+    },
+    "2025": {
+      "terminal_manifest": "seed2025/terminal_manifest.json",
+      "bf16_generation": "seed2025/generations.jsonl",
+      "bf16_generation_sha256": "ca8a511f909e09590d2dd7bb7ea01df488d376c7a319756f27b68591620d2def",
+      "g1_fp32_generation": "../../generations/g1_final_s2025_test.jsonl",
+      "g1_fp32_generation_sha256": "744d1758db59cff389fa618e8682ea412f076be646257ace296e33da392906f2",
+      "g2_generation": "../../generations/g2_protected_e2e_L12_s2025_extension.jsonl",
+      "g2_generation_sha256": "1c7c7a7a12fc9845a9635b1634e8aa5c4fc3a0aabb1185ccfd566770de89fede"
+    }
+  },
+  "precision_profile": "precision_matching_audit.json",
+  "requested_analysis": [
+    "G1_BF16_MATCHED minus G1_FP32",
+    "G2_PROTECTED minus G1_BF16_MATCHED",
+    "paired corpus-level bootstrap intervals",
+    "three-seed descriptive and hierarchical analyses"
+  ],
+  "equivalence_testing": "not authorized without a predefined equivalence margin"
+}

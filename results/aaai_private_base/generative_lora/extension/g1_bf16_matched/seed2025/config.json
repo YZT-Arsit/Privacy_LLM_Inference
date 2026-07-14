@@ -1,0 +1,78 @@
+{
+  "adamw": {
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "epsilon": 1e-08,
+    "implementation": "explicit_unfused_G2_formula",
+    "state_dtype": "fp32",
+    "weight_decay": 0.01
+  },
+  "alpha": 16,
+  "backward_runtime_dtype": "bf16",
+  "batch_size": 16,
+  "config_sha256": "8f3bb430e5b8eff9cb78673e5784581847ef673383029fa858939e11acf7cd6c",
+  "decoding": {
+    "max_new_tokens": 96,
+    "strategy": "greedy"
+  },
+  "dropout": 0.0,
+  "forward_dtype": "bf16",
+  "generation_dtype": "fp32",
+  "generation_records": 500,
+  "gradient_accumulation": 1,
+  "gradient_clipping": "none_actual_G2_L12",
+  "inputs": {
+    "base_config": {
+      "path": "/root/qwen25_05b/config.json",
+      "sha256": "479dcf0c5286339e41ad3992cd08ae88a467c4187587936248e2b7c96283484b"
+    },
+    "base_weights": {
+      "path": "/root/qwen25_05b/model.safetensors",
+      "sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342"
+    },
+    "generation_input": {
+      "path": "/root/pllo_pb/results/aaai_private_base/generative_lora/data/e2e_test_gen.json",
+      "sha256": "dffadc4c6dc538663999572ea2a65b82b254b850289571c77aced7732cc627cb"
+    },
+    "schedule": {
+      "path": "/root/pllo_pb/results/aaai_private_base/generative_lora/data/e2e_schedule_s2025.json",
+      "sha256": "a42d9d8e54c060579c230e7551cc1a264fd00f61f18e97b7ad17d5814c275856"
+    },
+    "tokenizer": {
+      "path": "/root/qwen25_05b/tokenizer.json",
+      "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+    },
+    "train_data": {
+      "path": "/root/pllo_pb/results/aaai_private_base/generative_lora/data/e2e_train_a10.pt",
+      "sha256": "7e46d5bca17ca3d31e843f2c4709854fac311b73a02fb09c7e1e619f7ee38d07"
+    }
+  },
+  "known_mismatches": [
+    "HF plaintext batched forward replaces G2 transformed per-example forward",
+    "plaintext CE/loss is local instead of TDX CE/dlogits",
+    "frozen_config declares weight_decay=0 and grad_clip=1, but this control matches actual G2 L12 code: weight_decay=0.01 and no gradient clipping"
+  ],
+  "learning_rate": 0.0002,
+  "learning_rate_schedule": "constant_actual_G2_L12",
+  "loss_scaling": "none",
+  "master_parameter_dtype": "fp32",
+  "no_masks_or_corrections": true,
+  "no_tdx": true,
+  "no_transformed_package": true,
+  "rank": 8,
+  "schema": "g1_bf16_matched_config",
+  "seed": 2025,
+  "steps": 750,
+  "targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "version": "1.0"
+}

@@ -1,0 +1,69 @@
+{
+  "all_finite": true,
+  "artifacts": {
+    "adapter/README.md": {
+      "bytes": 5090,
+      "sha256": "8b66571387ae0f1975b85e6e75a262f9f93f0beacb573dc70ac83925864672a7"
+    },
+    "adapter/adapter_config.json": {
+      "bytes": 718,
+      "sha256": "c04761f0434c1a22a92ef0cc1bdd2de2d0153df0bc6f7e525a2702eaeb098262"
+    },
+    "adapter/adapter_model.safetensors": {
+      "bytes": 17640136,
+      "sha256": "d5b27f3d8d5b6083d24713f0f80d50c4f1c3d862e1767860390b7c1e5c7d9403"
+    },
+    "config.json": {
+      "bytes": 2501,
+      "sha256": "de2a98d6e5367d24ec25e7746dbe929f5eb7fb18e8d2e9b23510d4b0e180c3df"
+    },
+    "generation_profile.json": {
+      "bytes": 257,
+      "sha256": "ba38b2200ec314dd83908f9cd81d7c98e5ee9b8b353798d5911acbfa7411668f"
+    },
+    "generation_sample_ids.json": {
+      "bytes": 2391,
+      "sha256": "e0b91960f4124b3103e8a82ca35afad64da8ba1adbcc9ef105824bba64601fb2"
+    },
+    "generations.jsonl": {
+      "bytes": 905743,
+      "sha256": "ca8a511f909e09590d2dd7bb7ea01df488d376c7a319756f27b68591620d2def"
+    },
+    "heartbeat.json": {
+      "bytes": 157,
+      "sha256": "e2d242191fe2878a8cd68b99491b1dc19c42745483c120b1e38df4c088e7bf3e"
+    },
+    "pid.json": {
+      "bytes": 178,
+      "sha256": "39f30e4370aa1d5438f6cd9a75c361e15b40ed415a83f99746358f8a05f72b47"
+    },
+    "precision_profile.json": {
+      "bytes": 273,
+      "sha256": "936b459c0810daceef1be6050a356797043bab2b3f9236a2b93f8a91ac8ada06"
+    },
+    "quality_metrics.json": {
+      "bytes": 204,
+      "sha256": "7893688319b6b3580001cfaec02ae9bd1df794c4309f07529b35d3ed4318cb5e"
+    },
+    "training.json": {
+      "bytes": 140513,
+      "sha256": "b0589d46d44b2b3fb6d0e3bbcba6a77034d70699966a662fac6342ba3e17e1b1"
+    },
+    "training_schedule.json": {
+      "bytes": 154701,
+      "sha256": "cd7f8975fc9d6c834f10be6291b30989f49fb34f6a2ffb04b95ee1a0c2db27c3"
+    }
+  },
+  "completed_at": 1784017673.8118272,
+  "config_sha256": "8f3bb430e5b8eff9cb78673e5784581847ef673383029fa858939e11acf7cd6c",
+  "generation_sha256": "ca8a511f909e09590d2dd7bb7ea01df488d376c7a319756f27b68591620d2def",
+  "generations": 500,
+  "resume_command": "same command with --resume (only before terminal completion)",
+  "schema": "g1_bf16_matched_terminal_manifest",
+  "seed": 2025,
+  "source_sha256": "464164a2d72deadfc9c0793c24f7cbb1edc97d3a142c1d9a89ee3a5a2f9f6429",
+  "status": "complete",
+  "steps": 750,
+  "unique_sample_ids": 500,
+  "version": "1.0"
+}

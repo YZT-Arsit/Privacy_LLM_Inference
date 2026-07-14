@@ -1,0 +1,13 @@
+{
+  "decoding": {
+    "eos": 151643,
+    "max_new_tokens": 96,
+    "strategy": "greedy"
+  },
+  "dtype": "fp32",
+  "records": 500,
+  "tokens_per_sec": 32.46976163453633,
+  "total_tokens": 16168,
+  "unique_sample_ids": 500,
+  "wall_sec": 497.94021224975586
+}

@@ -1,0 +1,9 @@
+{
+  "BLEU": 63.86947658292428,
+  "ROUGE_L": 60.78783727845518,
+  "average_generated_tokens": 32.336,
+  "chrF": 72.01237615842415,
+  "invalid_rate_pct": 0.0,
+  "records": 500,
+  "repetition_pct": 3.2888
+}

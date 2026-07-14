@@ -1,7 +1,7 @@
 {
   "schema": "multi_host_live_job_registry",
-  "version": "3.1",
-  "updated_at": "2026-07-14T16:08:27+08:00",
+  "version": "3.3",
+  "updated_at": "2026-07-14T16:30:03+08:00",
   "gpu_execution_owner": "sole_current_codex_session",
   "duplicate_execution_allowed": false,
   "active_assignments": [
@@ -34,23 +34,6 @@
       "last_verified_step": 2,
       "last_verified_finite": true,
       "log_path": "/root/pllo_pb/g2_e2e_T4_all7_s1234_protected.log"
-    },
-    {
-      "pair": "standalone_a10_3",
-      "a10_public": "39.96.4.252",
-      "a10_private": "172.30.25.157",
-      "tdx_required": false,
-      "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
-      "cell": "G1_BF16_MATCHED_E2E_seed7",
-      "run_tag": "g1_bf16_matched_s7",
-      "remote_shell_pid": 6014,
-      "remote_worker_pid": 6015,
-      "status": "running",
-      "last_verified_step": 81,
-      "last_verified_finite": true,
-      "log_path": "/root/g1_bf16_matched_s7.log",
-      "output_path": "/root/pllo_pb/results/aaai_private_base/generative_lora/extension/g1_bf16_matched/seed7",
-      "resume": "repeat the registered command with --resume"
     }
   ],
   "t4_launch": {
@@ -87,6 +70,32 @@
       "steps": 750,
       "generations": 500,
       "generation_sha256": "bd6b9878992cb5652cd1b1e57e54f3cda3827c07a6dd77f4a0de5992ac13d6e9"
+    },
+    {
+      "cell": "G1_BF16_MATCHED_E2E_seed7",
+      "run_tag": "g1_bf16_matched_s7",
+      "status": "complete_verified",
+      "steps": 750,
+      "generations": 500,
+      "generation_sha256": "7923e58cbdbc04bc3dff2c9c1a1f7c821d5978ad2e8f62210fe1040ceff6baa3"
+    },
+    {
+      "cell": "G1_BF16_MATCHED_E2E_seed2025",
+      "run_tag": "g1_bf16_matched_s2025",
+      "status": "complete_verified",
+      "steps": 750,
+      "generations": 500,
+      "generation_sha256": "ca8a511f909e09590d2dd7bb7ea01df488d376c7a319756f27b68591620d2def"
+    }
+  ],
+  "available_resources": [
+    {
+      "host": "39.96.4.252",
+      "private_ip": "172.30.25.157",
+      "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
+      "status": "idle_after_requested_g1_bf16_matched_completion",
+      "memory_used_mib": 0,
+      "tdx_endpoint": null
     }
   ],
   "frozen_artifacts_mutated": false,
