@@ -1,0 +1,49 @@
+{
+  "schema": "confound_controlled_shadow_config",
+  "version": "1.0",
+  "status": "PREPARED_NOT_LAUNCHED",
+  "shadow_seed": 1234,
+  "pool_manifest_sha256": "c721391d10b8a2a5c83eb708cb6313b6ab7ae16b07e7e0ff8ab015956b370c41",
+  "membership_sha256": "bf98dedcf37a42a9439d9d9fd949263e44440de43b47f7ad87eba632f7bc222a",
+  "model": "Qwen2.5-0.5B",
+  "base_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "training": {
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "rank": 8,
+    "alpha": 16,
+    "lr": 0.0002,
+    "steps": 750,
+    "batch_size": 16,
+    "dtype": "fp32",
+    "members": 500
+  },
+  "C0_INFERENCE_ONLY": {
+    "model_mode": "eval",
+    "forward_only": true,
+    "samples": 1000,
+    "labels_exposed": false,
+    "loss": false,
+    "gradients": false,
+    "dlogits": false,
+    "optimizer_state": false,
+    "per_prompt_fresh_transform": true,
+    "dtype": "fp32",
+    "same_batch_padding_tokenizer_extractor": true
+  },
+  "V0": {
+    "same_samples_and_shadow_model": true,
+    "generated_text": true,
+    "final_label": true,
+    "probabilities": false
+  },
+  "launch_allowed": false
+}

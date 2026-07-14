@@ -1,0 +1,30 @@
+{
+  "schema": "prepared_confound_controlled_shadow_plan",
+  "version": "1.0",
+  "role": "OFFLINE_MIA_ANALYSIS_ONLY",
+  "jobs_launched": false,
+  "estimated_gpu_tdx_hours": "17-18 total for three shadows",
+  "shadows": [
+    {
+      "shadow_seed": 7,
+      "status": "PREPARED_NOT_LAUNCHED",
+      "members": 500,
+      "evaluation_samples": 1000,
+      "directory": "results/aaai_private_base/authorized_security_eval/mia/confound_controlled_v2/shadow_runs/shadow_s7"
+    },
+    {
+      "shadow_seed": 1234,
+      "status": "PREPARED_NOT_LAUNCHED",
+      "members": 500,
+      "evaluation_samples": 1000,
+      "directory": "results/aaai_private_base/authorized_security_eval/mia/confound_controlled_v2/shadow_runs/shadow_s1234"
+    },
+    {
+      "shadow_seed": 2025,
+      "status": "PREPARED_NOT_LAUNCHED",
+      "members": 500,
+      "evaluation_samples": 1000,
+      "directory": "results/aaai_private_base/authorized_security_eval/mia/confound_controlled_v2/shadow_runs/shadow_s2025"
+    }
+  ]
+}

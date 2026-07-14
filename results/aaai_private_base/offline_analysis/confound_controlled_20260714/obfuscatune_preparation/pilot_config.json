@@ -1,0 +1,64 @@
+{
+  "schema": "obfuscatune_fidelity_preparation",
+  "version": "1.0",
+  "status": "PREPARATION_ONLY_DO_NOT_LAUNCH",
+  "paper_identifier": "arXiv:2407.02960",
+  "model": "Qwen2.5-0.5B",
+  "dataset": "E2E NLG",
+  "seeds": [
+    7,
+    1234,
+    2025
+  ],
+  "matrix": "orthogonal",
+  "condition_number": 1.0,
+  "lora": {
+    "rank": 8,
+    "alpha": 16,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "steps": 750,
+    "lr": 0.0002
+  },
+  "boundary": {
+    "rmsnorm": "TEE",
+    "rope": "TEE",
+    "softmax": "TEE",
+    "silu_swiglu": "TEE",
+    "qkv_plaintext_visible": true,
+    "attention_scores_visible": true,
+    "kv_cache_protected": false
+  },
+  "launch_allowed": false,
+  "blocking_gates": [
+    "qwen_prefill_equivalence",
+    "qwen_decode_cache_equivalence",
+    "lora_training_path",
+    "nonlinear_tee_boundary",
+    "same_e2e_pool_and_schedule",
+    "matched_cost_instrumentation"
+  ],
+  "source_hashes": {
+    "src/pllo/baselines/obfuscatune/__init__.py": "09e7dbe7237d70d2b1b141a545f800eaa8e929b829b0468a2bb7795a193a751a",
+    "src/pllo/baselines/obfuscatune/audit.py": "2e45945ef756c3c9d4cffaae3a18a258a56339b2f17c29d07ac07a3b1db9efa2",
+    "src/pllo/baselines/obfuscatune/config.py": "0a7f58f7f02fcfac8921512f0ef8ab1465efd30ae478b1bc51ec5a6d57f9e59c",
+    "src/pllo/baselines/obfuscatune/hf_gpt2_obfuscatune.py": "f70898c2327c85df7f75efbc8d377aad7b1f25b8ec6c61342049cc11f7c48ad6",
+    "src/pllo/baselines/obfuscatune/linear_obfuscation.py": "001a2e48c2bcf3f204ea5156d2bab07cd2efcf324a26ca9ef78573823f1ccb5a",
+    "src/pllo/baselines/obfuscatune/metrics.py": "1c13e1e6006dc9c30e726c9bc8cd9b926d4342c24a74cba9290303d64b7add90",
+    "src/pllo/baselines/obfuscatune/modules.py": "a4a8ab0eec442e8a52b3afad1169b7dd74ea848d34e979a31dad34ec2d601b53",
+    "src/pllo/baselines/obfuscatune/protocol.py": "70c4a6eb732f71d51521f1ec1e21990c6822c9d80a3975f717057714a623d7e1",
+    "src/pllo/baselines/obfuscatune/qwen_cache.py": "47a950485e1ca2ac4b13f07bd9e6ce92fcf9f8245908fd02a7291e080f5c96c5",
+    "src/pllo/baselines/obfuscatune/qwen_config.py": "9be0a0995d6afff714733f3fa1e63611de538bf2123e9a0c22cb57eb9f92ee63",
+    "src/pllo/baselines/obfuscatune/qwen_metrics.py": "d46e5df8bcc9146a29cb6f0c8ae341dd2318f58c58e1fb36ec697b379967a7ad",
+    "src/pllo/baselines/obfuscatune/qwen_modules.py": "0e3981d2d6c2e8061f8c32b6787f627886767875b380ca824240ca9bbf6716bc",
+    "src/pllo/baselines/obfuscatune/qwen_obfuscatune.py": "2936fa3f1079bc937d1c79c62969cb9bd99cb44e78ad9fbfb5407b1130f1ac02",
+    "src/pllo/baselines/obfuscatune/random_matrices.py": "e4a61746c5a5659a05466ce9763e9ad4429013df6bbe39199c54a49ca6573f10"
+  }
+}

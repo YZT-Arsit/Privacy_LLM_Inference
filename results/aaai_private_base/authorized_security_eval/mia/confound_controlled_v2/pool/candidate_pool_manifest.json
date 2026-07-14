@@ -1,0 +1,22 @@
+{
+  "schema": "confound_controlled_same_pool",
+  "version": "1.0",
+  "source": "results/aaai_private_base/generative_lora/data/train.jsonl",
+  "source_sha256": "417874fc79fa6056f4d7122d65ebf9e67e3b9cb68547aea95a39726c6c1f1cbc",
+  "tokenizer": "/Users/Hoshino/privacy_llm_data/checkpoints/Qwen2.5-0.5B",
+  "selection_seed": 20260714,
+  "source_rows": 4000,
+  "source_unique_mr_groups": 2650,
+  "pool_size": 1000,
+  "unique_normalized_inputs": 1000,
+  "unique_references": 999,
+  "shadow_seeds": [
+    7,
+    1234,
+    2025
+  ],
+  "members_per_shadow": 500,
+  "membership_constraint": "each sample is member in 1 or 2 of 3 shadows; every shadow is 500/500",
+  "official_split_used": "train only",
+  "membership_defined_by_official_split": false
+}

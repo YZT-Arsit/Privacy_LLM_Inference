@@ -1,0 +1,92 @@
+{
+  "schema": "paired_g2_minus_g1_closure",
+  "comparison": "G2_L12_s2025 minus G1_s2025",
+  "n": 500,
+  "bootstrap_samples": 10000,
+  "bootstrap_seed": 2025,
+  "ci_method": "paired percentile bootstrap of mean per-example delta",
+  "source_hashes": {
+    "results/aaai_private_base/generative_lora/generations/g1_final_s2025_test.jsonl": "744d1758db59cff389fa618e8682ea412f076be646257ace296e33da392906f2",
+    "results/aaai_private_base/generative_lora/generations/g2_protected_e2e_L12_s2025_extension.jsonl": "1c7c7a7a12fc9845a9635b1634e8aa5c4fc3a0aabb1185ccfd566770de89fede"
+  },
+  "metrics": {
+    "BLEU": {
+      "n": 500,
+      "mean_delta": -1.5410926844213935,
+      "median_delta": 0.0,
+      "bootstrap_ci95": [
+        -2.7375847685540142,
+        -0.31943101041825905
+      ],
+      "effect_size_cohen_dz": -0.112807450169241,
+      "n_positive": 180,
+      "n_negative": 247,
+      "n_zero": 73
+    },
+    "chrF": {
+      "n": 500,
+      "mean_delta": -1.1685159777052536,
+      "median_delta": -0.4790941784912093,
+      "bootstrap_ci95": [
+        -1.96123944463026,
+        -0.3656294668509936
+      ],
+      "effect_size_cohen_dz": -0.12938537759164834,
+      "n_positive": 166,
+      "n_negative": 265,
+      "n_zero": 69
+    },
+    "ROUGE_L": {
+      "n": 500,
+      "mean_delta": -1.0010606878709376,
+      "median_delta": 0.0,
+      "bootstrap_ci95": [
+        -2.051238924996138,
+        0.09471456328343379
+      ],
+      "effect_size_cohen_dz": -0.08203794273545338,
+      "n_positive": 172,
+      "n_negative": 249,
+      "n_zero": 79
+    },
+    "length": {
+      "n": 500,
+      "mean_delta": -0.318,
+      "median_delta": 0.0,
+      "bootstrap_ci95": [
+        -0.822,
+        0.192
+      ],
+      "effect_size_cohen_dz": -0.054270998049696435,
+      "n_positive": 192,
+      "n_negative": 206,
+      "n_zero": 102
+    },
+    "repetition_pct": {
+      "n": 500,
+      "mean_delta": 0.8330000000000001,
+      "median_delta": 0.0,
+      "bootstrap_ci95": [
+        0.4517650000000001,
+        1.2076000000000002
+      ],
+      "effect_size_cohen_dz": 0.19285692299110196,
+      "n_positive": 195,
+      "n_negative": 120,
+      "n_zero": 185
+    },
+    "invalid_pct": {
+      "n": 500,
+      "mean_delta": 0.0,
+      "median_delta": 0.0,
+      "bootstrap_ci95": [
+        0.0,
+        0.0
+      ],
+      "effect_size_cohen_dz": null,
+      "n_positive": 0,
+      "n_negative": 0,
+      "n_zero": 500
+    }
+  }
+}

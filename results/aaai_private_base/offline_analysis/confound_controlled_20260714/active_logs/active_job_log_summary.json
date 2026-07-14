@@ -1,0 +1,52 @@
+{
+  "schema": "read_only_active_target_log_snapshot",
+  "version": "1.0",
+  "jobs": [
+    {
+      "snapshot_time": "2026-07-14T15:05:59.564054+08:00",
+      "cell": "T1_qv",
+      "host": "39.107.123.173",
+      "remote_driver_pid": 59219,
+      "targets": "q_proj,v_proj",
+      "driver_alive": false,
+      "remote_os_owner": "",
+      "log_modified": "2026-07-14 15:00:44.355382759 +0800",
+      "log_size_bytes": 52376,
+      "gpu_snapshot": "0, NVIDIA A10, 0 %, 0 MiB, 23028 MiB, P8",
+      "process_snapshot": "",
+      "parsed_steps": 750,
+      "completed_steps": 750,
+      "last_gbi": 749,
+      "last_ce": 1.10151,
+      "last_step_wall_sec": 22.3,
+      "all_steps_finite": true,
+      "recent_mean_ce": 1.171865,
+      "recent_mean_step_wall_sec": 25.471,
+      "terminal_marker": true
+    },
+    {
+      "snapshot_time": "2026-07-14T15:06:18.182793+08:00",
+      "cell": "T2_qkvo",
+      "host": "8.147.119.67",
+      "remote_driver_pid": 16093,
+      "targets": "q_proj,k_proj,v_proj,o_proj",
+      "driver_alive": true,
+      "remote_os_owner": "root",
+      "log_modified": "2026-07-14 15:06:07.390729941 +0800",
+      "log_size_bytes": 42957,
+      "gpu_snapshot": "0, NVIDIA A10, 0 %, 4799 MiB, 23028 MiB, P0",
+      "process_snapshot": "root 16093 1 Tue Jul 14 10:27:20 2026 04:38:49 bash /root/pllo_pb/g2_driver_e2e_T2_qkvo_s1234_protected.sh",
+      "parsed_steps": 629,
+      "completed_steps": 629,
+      "last_gbi": 628,
+      "last_ce": 1.0785,
+      "last_step_wall_sec": 24.91,
+      "all_steps_finite": true,
+      "recent_mean_ce": 1.1487349999999998,
+      "recent_mean_step_wall_sec": 24.439500000000002,
+      "terminal_marker": false
+    }
+  ],
+  "remote_mutations": false,
+  "signals_sent": false
+}

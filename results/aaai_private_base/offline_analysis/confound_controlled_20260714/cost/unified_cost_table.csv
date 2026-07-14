@@ -1,0 +1,7 @@
+method,seed,steps,train_wall_sec,generation_wall_sec,total_measured_wall_sec,generation_samples,total_new_tokens,tokens_per_sec,tdx_train_calls,tdx_decode_calls,adapter_size_bytes,hardware,scope
+G1_plaintext,7,750,319.9,506.5,826.4,500,16615,32.8,0,0,17640136,NVIDIA A10,frozen measured artifacts
+G2_protected_L12,7,750,19722.631,391.5,20114.131,500,16056,41.01,2252,16556,17698541,NVIDIA A10 + Intel TDX,frozen measured artifacts
+G1_plaintext,1234,750,320.0,503.4,823.4,500,16659,33.1,0,0,17640136,NVIDIA A10,frozen measured artifacts
+G2_protected_L12,1234,750,19708.409,373.1,20081.509,500,15194,40.73,2251,15694,17697857,NVIDIA A10 + Intel TDX,frozen measured artifacts
+G1_plaintext,2025,750,320.8,512.2,833.0,500,16529,32.3,0,0,17640136,NVIDIA A10,frozen measured artifacts
+G2_protected_L12,2025,750,20279.076,401.2,20680.276,500,16370,40.81,unavailable_counter_not_local,16870,17699567,NVIDIA A10 + Intel TDX,frozen measured artifacts

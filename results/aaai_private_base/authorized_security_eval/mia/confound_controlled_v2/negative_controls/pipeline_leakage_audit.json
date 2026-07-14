@@ -1,0 +1,30 @@
+{
+  "schema": "frozen_v2_negative_control_pipeline_audit",
+  "version": "1.0",
+  "status": "PASS",
+  "failure_threshold": "mean raw ROC-AUC > 0.60 over seeds for N0/N1/N2",
+  "fit_scope": {
+    "group_split_before_fit": true,
+    "group_key": "normalized decoded prompt hash",
+    "imputer": "median; fit attack-train only",
+    "scaler": "StandardScaler; fit attack-train only",
+    "pca": "not used",
+    "feature_selection": "not used",
+    "classifier": "LogisticRegression; fit attack-train only"
+  },
+  "N4_sample_order_file_origin": {
+    "raw_concatenation_order_encodes_source": true,
+    "order_or_file_origin_included_as_feature": false,
+    "member_file_records": 500,
+    "nonmember_file_records": 500,
+    "audit_split_shuffles_groups": true
+  },
+  "N5_duplicate_near_duplicate": {
+    "member_unique_exact_prompts": 484,
+    "nonmember_unique_exact_prompts": 500,
+    "cross_source_exact_prompt_overlap": 0,
+    "cross_source_normalized_prompt_overlap": 0,
+    "duplicate_group_crosses_attack_split": false
+  },
+  "failed_pseudo_controls": []
+}

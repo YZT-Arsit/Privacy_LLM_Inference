@@ -1,0 +1,100 @@
+{
+  "schema": "adapter_manifest_negative_controls",
+  "version": "1.0",
+  "all_tests_passed": true,
+  "tests": [
+    {
+      "name": "valid",
+      "expected_pass": true,
+      "actual_pass": true,
+      "test_passed": true,
+      "errors": []
+    },
+    {
+      "name": "wrong_pool",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:pool_manifest_sha256"
+      ]
+    },
+    {
+      "name": "wrong_membership",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:membership_assignment_sha256"
+      ]
+    },
+    {
+      "name": "wrong_checkpoint",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:base_package_root_hash"
+      ]
+    },
+    {
+      "name": "wrong_shadow",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:shadow_seed"
+      ]
+    },
+    {
+      "name": "training_mode",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:model_mode",
+        "model_not_eval"
+      ]
+    },
+    {
+      "name": "training_transcript_mixed",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "forbidden_collection_mode",
+        "mismatch:collection_mode"
+      ]
+    },
+    {
+      "name": "label_in_features",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "labels_in_feature_file",
+        "mismatch:labels_in_feature_file"
+      ]
+    },
+    {
+      "name": "runtime_metadata_in_features",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:runtime_metadata_in_features",
+        "runtime_metadata_in_features"
+      ]
+    },
+    {
+      "name": "missing_adapter_hash",
+      "expected_pass": false,
+      "actual_pass": false,
+      "test_passed": true,
+      "errors": [
+        "mismatch:adapter_sha256",
+        "missing:adapter_sha256"
+      ]
+    }
+  ]
+}

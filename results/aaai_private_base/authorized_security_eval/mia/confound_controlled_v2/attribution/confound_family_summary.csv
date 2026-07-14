@@ -1,0 +1,21 @@
+dimension,group,disjoint_features,fraction_of_446
+feature_family,hidden norm,225,0.5044843049327354
+feature_family,attention extrema,122,0.273542600896861
+feature_family,attention entropy,55,0.12331838565022421
+feature_family,attention moments,36,0.08071748878923767
+feature_family,masked logits,8,0.017937219730941704
+tensor_family,attention_scores,213,0.47757847533632286
+tensor_family,masked_v,72,0.16143497757847533
+tensor_family,masked_q,66,0.14798206278026907
+tensor_family,masked_k,64,0.14349775784753363
+tensor_family,transformed_hidden,23,0.0515695067264574
+tensor_family,masked_logits,8,0.017937219730941704
+layer_band,early_0_7,149,0.33408071748878926
+layer_band,late_16_23,145,0.3251121076233184
+layer_band,middle_8_15,144,0.32286995515695066
+layer_band,final,8,0.017937219730941704
+reduction,mean,127,0.28475336322869954
+reduction,std,108,0.242152466367713
+reduction,max,103,0.23094170403587444
+reduction,min,84,0.18834080717488788
+reduction,l2,24,0.053811659192825115

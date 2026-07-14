@@ -1,0 +1,6 @@
+{
+  "schema": "confound_controlled_mia_local_job_registry",
+  "version": "1.0",
+  "scope": "this directory only; never synchronized to shared registry",
+  "jobs": []
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "prepared_shadow_validation",
+  "version": "1.0",
+  "all_passed": true,
+  "every_sample_crosses_membership_state": true,
+  "remote_actions": false,
+  "shadows": [
+    {
+      "shadow_seed": 7,
+      "passed": true,
+      "checks": {
+        "train_members_500": true,
+        "evaluation_queries_1000": true,
+        "metadata_1000": true,
+        "query_ids_unique": true,
+        "labels_outside_feature_queries": true,
+        "member_ids_match_metadata": true,
+        "eval_mode": true,
+        "forward_only": true,
+        "no_training_signals": true,
+        "fresh_transform": true,
+        "not_launchable": true
+      }
+    },
+    {
+      "shadow_seed": 1234,
+      "passed": true,
+      "checks": {
+        "train_members_500": true,
+        "evaluation_queries_1000": true,
+        "metadata_1000": true,
+        "query_ids_unique": true,
+        "labels_outside_feature_queries": true,
+        "member_ids_match_metadata": true,
+        "eval_mode": true,
+        "forward_only": true,
+        "no_training_signals": true,
+        "fresh_transform": true,
+        "not_launchable": true
+      }
+    },
+    {
+      "shadow_seed": 2025,
+      "passed": true,
+      "checks": {
+        "train_members_500": true,
+        "evaluation_queries_1000": true,
+        "metadata_1000": true,
+        "query_ids_unique": true,
+        "labels_outside_feature_queries": true,
+        "member_ids_match_metadata": true,
+        "eval_mode": true,
+        "forward_only": true,
+        "no_training_signals": true,
+        "fresh_transform": true,
+        "not_launchable": true
+      }
+    }
+  ]
+}

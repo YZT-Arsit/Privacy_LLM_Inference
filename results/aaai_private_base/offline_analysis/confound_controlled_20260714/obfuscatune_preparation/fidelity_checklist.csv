@@ -1,0 +1,9 @@
+gate,required,current,launch_blocking
+paper_method_mapping,True,documented,True
+qwen_prefill_equivalence,True,implemented_not_revalidated_here,True
+qwen_decode_cache_equivalence,True,implemented_not_revalidated_here,True
+lora_training_path,True,not_implemented,True
+nonlinear_tee_boundary,True,simulator_only,True
+qkv_attention_exposure_accounted,True,implemented,True
+same_e2e_pool_and_schedule,True,prepared,True
+matched_cost_instrumentation,True,prepared,True
