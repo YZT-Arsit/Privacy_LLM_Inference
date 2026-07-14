@@ -120,6 +120,7 @@ def main() -> None:
     ap.add_argument("--queries", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--run-id", required=True)
+    ap.add_argument("--split", default="test")
     ap.add_argument("--max-samples", type=int, default=0)
     ap.add_argument("--dtype", choices=["fp32", "bf16"], default="fp32")
     args = ap.parse_args()
@@ -144,8 +145,8 @@ def main() -> None:
         for index, query in enumerate(queries):
             trace = forward_trace(model, torch.tensor(query["prompt_ids"], device=dev), counters)
             row = {
-                "sample_id": f"e2e_nlg:test:{int(query['sample_id']):06d}",
-                "run_id": args.run_id, "task": "e2e_nlg", "split": "test",
+                "sample_id": f"e2e_nlg:{args.split}:{int(query['sample_id']):06d}",
+                "run_id": args.run_id, "task": "e2e_nlg", "split": args.split,
                 **trace,
                 "package_metadata": {
                     "base_package_root_hash": root,

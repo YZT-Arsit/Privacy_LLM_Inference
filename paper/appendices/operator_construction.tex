@@ -1,0 +1,111 @@
+% Full operator definitions migrated from the main-paper Method.
+\section{Operator Construction}
+\label{app:operators}
+
+\subsection{Linear Boundary}
+
+For $\X\in\mathbb{R}^{n\times\dinX}$,
+$\W\in\mathbb{R}^{\dinX\times\doutX}$, learned
+$\bias\in\mathbb{R}^{\doutX}$, invertible
+$\Nin\in\mathbb{R}^{\dinX\times\dinX}$ and
+$\Nout\in\mathbb{R}^{\doutX\times\doutX}$, and
+$\Tpad\in\mathbb{R}^{n\times\dinX}$, the TEE constructs
+\begin{align}
+\Xt&=(\X-\Tpad)\Nin, &
+\Wt&=\Nin^{-1}\W\Nout,\\
+\Ct&=\Tpad\W\Nout, &
+\Yt&=\Xt\Wt+\bias\Nout+\Ct.
+\label{eq:app-linear}
+\end{align}
+The GPU evaluates the last expression and the TEE applies
+$\Recover(\Yt)=\Yt\Nout^{-1}$. A broadcast implementation samples the masked
+pad $\Tpad\Nin\in\mathbb{R}^{\dinX}$ directly and broadcasts its
+$\doutX$-dimensional compensation. Pads terminate at the linear boundary and
+do not enter RoPE, softmax, normalization, or pointwise activation cores.
+
+\subsection{Attention, RoPE, and Cache}
+
+For each head, the TEE applies RoPE to recovered $\Qmat$ and $\K$, then forms
+$\Qt=\RoPE(\Qmat)\NQ$, $\Kt=\RoPE(\K)\NK$, and
+$\Vt=\Vmat\NV$, with
+\begin{equation}
+\NQ\NK^{\mathsf T}=\mathbf I_{d_h}.
+\label{eq:app-attention-compat}
+\end{equation}
+For GQA, each group of $h/h_{kv}$ query heads derives its $\NQ$ from the
+shared key head's $\NK$; MQA is $h_{kv}=1$. No mask mixes heads. The output
+projection folds the appropriate per-head $\NV^{-1}$ into its input basis.
+
+During prefill, each layer stores $\Kt,\Vt$ with per-head shape
+$n\times d_h$. At decode position $t$, the GPU appends one
+$1\times d_h$ row and evaluates a $1\times(t+1)$ score row. Because $\NK$ and
+$\NV$ are fixed within the session, token-axis concatenation yields
+$[\K_1\NK;\ldots;\K_t\NK]=[\K_1;\ldots;\K_t]\NK$, and analogously for
+values. The wired theorem target masks after RoPE; pre-RoPE commutation is used
+only by variants whose masks are restricted to RoPE-compatible two-dimensional
+blocks.
+
+\subsection{Normalization, Residuals, and Activations}
+
+The canonical path executes embedding lookup, RMSNorm including private gain,
+final normalization, RoPE, recovery, residual addition, logit recovery, token
+selection, loss evaluation, and derivatives of trusted operators in the TEE.
+The GPU evaluates attention softmax/value aggregation and operator-compatible
+pointwise activations. For SwiGLU, gate and up projections share one channel
+permutation $\Perm$; the down projection folds $\Perm^{-1}$. GELU and ReLU use
+the same permutation boundary. A transformed residual update returns to the
+TEE before residual addition.
+
+\subsection{Rank Padding and LoRA Forward}
+
+The User-owned factors are
+$\Amat\in\mathbb{R}^{\dinX\times\rtrue}$ and
+$\Bmat\in\mathbb{R}^{\rtrue\times\doutX}$. The TEE constructs
+$\Apad\in\mathbb{R}^{\dinX\times\rpad}$ and
+$\Bpad\in\mathbb{R}^{\rpad\times\doutX}$ such that
+$\Apad\Bpad=\Amat\Bmat$. Exact-cancellation padding uses either a random down
+block paired with a zero up block or paired columns/rows with opposite
+contributions. Scaling remains $\alpha/\rtrue$.
+
+For a call-local $\Umix\in\mathbb{R}^{\rpad\times\rpad}$,
+\begin{align}
+\At&=\Nin^{-1}\Apad\Umix,&
+\Bt&=\Umix^{-1}\Bpad\Nout.
+\label{eq:app-lora-factors}
+\end{align}
+The GPU keeps the base and adapter branches separate and evaluates
+\begin{multline}
+\Yt=\Xt\Wt+\frac{\alpha}{\rtrue}(\Xt\At)\Bt+\bias\Nout+\Ct\\
++\frac{\alpha}{\rtrue}\Tpad\Apad\Bpad\Nout.
+\label{eq:app-lora-forward}
+\end{multline}
+
+\subsection{LoRA Backward and Optimizer Interface}
+
+Given $\Gmat\in\mathbb{R}^{n\times\doutX}$, the TEE sends
+$\Gt=\Gmat\Nout^{-\mathsf T}$. The GPU computes
+\begin{align}
+d\At&=\frac{\alpha}{\rtrue}\Xt^{\mathsf T}
+       (\Gt\Bt^{\mathsf T}),&
+d\Bt&=\frac{\alpha}{\rtrue}(\Xt\At)^{\mathsf T}\Gt.
+\label{eq:app-lora-backward}
+\end{align}
+The TEE recovers padded-coordinate gradients by
+\begin{align}
+d\Apad&=\Nin^{-\mathsf T}d\At\Umix^{\mathsf T},&
+d\Bpad&=\Umix^{-\mathsf T}d\Bt\Nout^{\mathsf T},
+\label{eq:app-lora-gradient-recovery}
+\end{align}
+and, when a pad is used, adds
+\begin{align}
+d\Apad&\mathrel{+}=\frac{\alpha}{\rtrue}
+ \Tpad^{\mathsf T}\Gmat\Bpad^{\mathsf T},\\
+d\Bpad&\mathrel{+}=\frac{\alpha}{\rtrue}
+ \Apad^{\mathsf T}\Tpad^{\mathsf T}\Gmat.
+\label{eq:app-lora-gradient-pad}
+\end{align}
+The first $\rtrue$ columns/rows give $d\Amat,d\Bmat$. The TEE owns the loss,
+real-rank gradients, factors, and optimizer state, performs the update, and
+constructs fresh transformed factors for the next call. Full nonlinear masked
+backward is not assumed; trusted derivatives provide the upstream gradient at
+each delegated linear boundary.

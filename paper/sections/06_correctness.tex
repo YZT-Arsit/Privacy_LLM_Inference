@@ -1,56 +1,72 @@
-% ===========================================================================
-% CORRECTNESS ANALYSIS --- argument skeleton (skill S8 correctness half + S6
-% math protocol). Show the transformed execution recovers the intended
-% plaintext computation. Distinguish EXACT symbolic equality from FLOATING-POINT
-% closeness (state magnitude + dtype for every identity). Proofs go to
-% appendices/proofs.tex; state theorems + failure conditions here.
-% ===========================================================================
 \section{Correctness Analysis}
 \label{sec:correctness}
 
-% CENTRAL QUESTION: Under which stated conditions does masked execution reproduce
-% the plaintext model output, and at what numerical precision?
+We use row-vector derivatives.  Correctness compares the canonical plaintext
+model with masked execution under the same inputs, parameters, and trusted
+operator results.  The following statements are identities over exact
+arithmetic; they assume that masks have the dimensions in
+Appendix~\ref{app:operators}, every inverse exists, and trusted operators occur
+at the boundaries specified in Section~\ref{sec:method}.  They do not require
+the transformed operands to be statistically independent of their plaintexts.
 
-% ---- 6.0 Conventions -------------------------------------------------------
-% Row-vector convention; per-layer object types (invertible vs orthogonal vs
-% permutation vs paired-permutation vs additive pad). \evid{C-COR-CONV}
-% \risk{COR-01: LoRA backward proof terse -- state convention, expand U^{-1}/N_out^{-1} cancellation.}
+\begin{theorem}[Masked linear execution]\label{thm:linear-execution}
+For any compatible $\X,\W,\bias,\Tpad$ and invertible $\Nin,\Nout$, the
+construction in Eq.~\eqref{eq:method-linear} recovers exactly
+$\X\W+\bias$ for any batch or sequence length.  The claim composes across
+adjacent delegated linear maps whenever the output basis of one map is the
+input basis of the next; otherwise the TEE recovers and remasks at the boundary.
+Thus a private learned bias needs no public-coordinate copy.
+\end{theorem}
 
-% ---- 6.1 Linear + boundary pad (Thm 1) -------------------------------------
-% \evid{C-COR-01} Proven; fp64 max abs err 1.07e-14; fp32 6.68e-6; real Qwen-0.5B
-% (CPU,fp32) recovered-logit max abs err 1.79e-7, greedy token match 1.0.
+The cancellation has two independent roles: $\Nin^{-1}$ removes the input
+basis and $\Nout$ establishes the recoverable output basis, while
+$\Tpad\W\Nout$ restores the part removed by the additive input pad.  Omitting
+any required compensation term, or allowing an uncompensated pad to cross a
+nonlinearity, is outside the theorem.
 
-% ---- 6.2 Nonlinear islands (Thm 2 pointwise perm; Thm 3 SwiGLU paired perm) -
-% \evid{C-COR-06,07,08} Pointwise permutation island EXACT (0.0). SwiGLU paired
-% perm fp64 1.78e-15. NEG control (mismatched perm) MUST fail (state it).
-% \risk{COR-02: include dense-mask non-commutation counterexample.}
+\begin{theorem}[Attention and cache]\label{thm:attention-cache}
+Suppose RoPE is applied before masking, no mask mixes heads, and each query/key
+pair satisfies $\NQ\NK^{\mathsf T}=\mathbf I$.  Then masked attention has the
+same score matrix, softmax probabilities, and recovered output as plaintext
+attention.  This remains true for GQA (and MQA) when all query heads sharing a
+KV head use its tied key mask.  If $\NK,\NV$ remain fixed within a session,
+appending masked KV rows is equivalent to masking the appended plaintext cache.
+\end{theorem}
 
-% ---- 6.3 Norm islands (Thm 4 RMSNorm orthogonal; Thm 5 LayerNorm mean-pres.) -
-% \evid{C-COR-NORM} RMSNorm commutes with orthogonal N only if gain folded;
-% VECTOR gamma does NOT commute (measured error 9.68). Impossibility: exact
-% input-independent RMSNorm-covariant obfuscation forces N N^T = cI => per-token
-% norm leakage unavoidable (analytically_estimated, scoped). \risk{Wired path
-% uses TRUSTED recompute (trusted_fallback_with_repad), not a GPU island.}
+The compatibility condition cancels between each query and its addressed key
+before scaling, causal masking, and softmax, so those operators receive the
+plaintext score matrix.  Value aggregation preserves the right $\NV$ basis,
+which the output projection removes.  Post-RoPE masking is essential here: a
+pre-RoPE variant would additionally need its masks to commute with every
+position-dependent rotation.  Changing a KV mask mid-session would likewise
+make old and new cache rows incompatible.
 
-% ---- 6.4 Attention / RoPE / GQA / KV-cache (Thm 6) -------------------------
-% \evid{C-COR-02,03,04,05} QK invariance under N_Q N_K^T=I (fp64 ~1e-14/1e-16);
-% RoPE commutes only with 2x2-block masks; GQA mask-tying; KV-append distributes
-% over token axis. KV mask FIXED within session (restriction).
-% \risk{CF-COR-KV: design.md "fresh per token" vs KV-fixed restriction.}
+\begin{theorem}[LoRA adaptation]\label{thm:lora-equivalence}
+Let $\Apad\Bpad=\Amat\Bmat$ and let $\Nin,\Nout,\Umix$ be invertible.  The
+forward construction in Eq.~\eqref{eq:method-lora-forward} recovers the
+plaintext base-plus-LoRA linear map.  Given the correspondingly transformed
+upstream gradient, Eqs.~\eqref{eq:app-lora-backward}--\eqref{eq:app-lora-gradient-pad}
+recover the plaintext factor and input gradients.  Applying the same trusted
+optimizer to these gradients therefore produces the same parameter update.
+\end{theorem}
 
-% ---- 6.5 LoRA forward / backward (Thm 7, Thm 8) ---------------------------
-% \evid{C-LORA-FWD,C-LORA-BWD} Forward fp64 ~1e-14; gradient recovery fp64
-% ~1e-16..1e-15 (SYNTHETIC linear only). Nonlinear masked backward NOT implemented.
+Rank-space mixing cancels because $\Umix\Umix^{-1}=\mathbf I$, and exact rank
+padding changes neither $\Amat\Bmat$ nor its real-rank gradients after the TEE
+adds the pad-gradient terms.  Gradient transformation is the adjoint of output
+recovery, so the delegated backward products reduce to the plaintext chain
+rule.  Update equivalence assumes identical initial adapter and optimizer state;
+the optimizer itself remains trusted.  The theorem covers delegated linear
+boundaries, not a GPU implementation of nonlinear backward operators.
 
-% ---- 6.6 Rank padding (Thm 9) ---------------------------------------------
-% \evid{C-LORA-RANK} A_pad B_pad = A B, dummy contribution norm ~0 (fp64).
-% \risk{Dummy-strategy count inconsistent ("four"/six/seven) -- fix to actual 7.}
-
-% ---- 6.7 Autoregressive generation ----------------------------------------
-% \evid{C-COR-GEN} GREEDY only: sequence exact match 1.0. \risk{Do NOT
-% generalize to sampling/top-k/top-p/beam -- unsupported by artifacts.}
-
-% ---- 6.8 What correctness does NOT claim ----------------------------------
-% Not indistinguishability; not all inputs; not untested architectures; not
-% bit-exactness (float-close); not real GPU/bf16 kernels (all CPU/fp64|fp32).
-\TODO{Author after notation unified and float-vs-exact table (tables/) generated.}
+Appendix~\ref{app:proofs} gives complete derivations and failure conditions.
+Finite-precision executions are not bit-exact claims: synthetic CPU tests give
+maximum absolute errors of $1.07\times10^{-14}$ (linear),
+$4.26\times10^{-14}$ (attention), $8.88\times10^{-16}$ (cached decode), and
+$1.62\times10^{-14}$/$9.99\times10^{-16}$ (LoRA forward/backward) in fp64;
+the measured fp32 maxima are $6.68\times10^{-6}$ for linear execution and
+$4.32\times10^{-6}$ for KV caching.  A real Qwen-0.5B CPU fp32 check gives
+$1.79\times10^{-7}$ recovered-logit error and identical greedy tokens.  These
+measurements validate numerical closeness only for the tested settings.  They
+do not imply bitwise equality, bf16/GPU error bounds, correctness for untested
+architectures, or token equality under sampling, top-$k$/top-$p$, or beam
+decoding.

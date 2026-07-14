@@ -1,29 +1,132 @@
-% ===========================================================================
-% APPENDIX B: IMPLEMENTATION CORRESPONDENCE --- skeleton (skill S9). Map every
-% algorithmic component to its concrete implementation and flag deviations
-% between the idealized paper algorithm and the wired execution order.
-% ===========================================================================
-\section{Implementation Correspondence}
+% Detailed protocol and implementation correspondence migrated from the
+% main-paper Threat Model and Method for the eight-page AAAI body budget.
+\section{Detailed Protocol and Implementation Correspondence}
+\label{app:protocol}
 \label{app:impl}
 
-% Table: component -> file:symbol -> test -> deviation-from-idealized.
-%  mask/pad gen ......... src/pllo/ops/linear.py, deployment/linear_boundary_pad.py
-%  linear ............... src/pllo/ops/linear.py
-%  attention/RoPE/GQA ... src/pllo/ops/{attention,rope,gqa_attention}.py
-%  KV-cache ............. src/pllo/cache/kv_cache.py
-%  nonlinear ............ src/pllo/deployment/folded_nonlinear.py (current=TRUSTED,
-%                         trusted_shortcut=ACCELERATOR [misleading name],
-%                         compatible_right_multiply)
-%  trusted boundary ..... src/pllo/tee/{simulated_runtime,process_runtime}.py (EMULATION)
-%  logits recovery + gen  src/pllo/wrappers/*_generation_wrapper.py (GREEDY argmax)
-%  LoRA fwd/bwd ......... src/pllo/ops/{lora,lora_backward,lora_rank_padding}.py
-%  optimizer ............ experiments/unified_masked_training.py, private_base_optimizer.py
-%  attestation .......... experiments/real_tdx_attestation.py (v5 quote; mr_td not pinned)
-%
-% KEY DEVIATIONS TO DOCUMENT (do not hide):
-%  - RMSNorm: idealized GPU orthogonal island vs wired trusted recompute.
-%  - Nonlinear "current" mode runs trusted-side, not on the accelerator.
-%  - Optimizer: design prose says trusted-side AdamW; config fail-closes to
-%    gpu_masked_sgd; two distinct architectures (Scheme A vs Scheme B).
-%  - Real Qwen-0.5B run keeps base weights plaintext on GPU (private-base NOT claimed).
-\TODO{Build the correspondence table; label each row implemented/prototyped/proposed.}
+\subsection{Administrative Roles and Trust Partition}
+
+The administrative parties are the Model Provider $\prov$, User $\usr$, and
+Cloud Service $\cloud$. The Cloud Service contains the trusted execution
+environment $\ctrl$ and untrusted GPU $\acc$; these are execution components,
+not additional parties. The Model Provider provisions the proprietary
+parameters $\params$ into $\ctrl$. The User supplies private adaptation data or
+a generation prompt to $\ctrl$ and receives the updated adapter or generated
+result directly from $\ctrl$.
+
+The runtime state is partitioned as $\Ssec\sqcup\Stra\sqcup\Sobs$, together
+with admitted metadata $\Spub$.
+\begin{itemize}
+\item $\Ssec$ contains $\params$, $\maskset$, $\Tpad$, $(\Amat,\Bmat)$,
+optimizer state, and $\Recover$. These values remain in $\ctrl$.
+\item $\Stra$ contains pass-local plaintexts such as $\X$, $\Qmat$, $\K$,
+$\Vmat$, pre-sampling logits, $\Gmat$, $d\Amat$, and $d\Bmat$. They are erased
+after their last trusted consumer.
+\item $\Sobs$ contains the transformed operands that cross to $\acc$:
+$\Xt,\Wt,\At,\Bt,\Kt,\Vt,\Yt$ and transformed pad compensations. The cache is
+stored only as $\Kt,\Vt$ on $\acc$.
+\item $\Spub$ contains the architecture $\arch$, tensor and batch shapes,
+admitted sequence and cache lengths, padded rank $\rpad$, call count, and the
+coarse operation schedule. It excludes training examples, prompts, learned
+parameters and biases, adapter values, logits, generated token identities, and
+the returned result.
+\end{itemize}
+
+The accelerator transcript $\transcript$ is the ordered sequence of $\Sobs$
+tensors, $\Spub$ metadata, and delegated operation identifiers seen by $\acc$.
+The confidentiality adversary $\adv$ is the honest-but-curious GPU: it follows
+the prescribed operations but stores and correlates transcripts across calls
+and sessions. It receives neither the plaintext checkpoint nor TEE internals.
+The stronger known-pair audit grants a bounded set of plaintext/transformed
+pairs but never grants $\params$ or mask state.
+
+\subsection{Preparation, Messages, and Freshness}
+
+During preparation, $\ctrl$ validates all projection dimensions, attention
+head grouping, RoPE layout, normalization locations, residual order, and
+rank-padding configuration. It may generate a private schedule of call-local
+masks and pads. Transformed operands are materialized for the call that
+consumes them; only public configuration metadata initializes $\acc$.
+
+For a delegated linear, $\ctrl$ sends $\Xt,\Wt,\bias\Nout,\Ct$ and public
+shape metadata. The GPU returns $\Yt$. If the next operation is trusted,
+$\ctrl$ recovers the output; if it accepts the same transformed basis, the
+tensor stays on $\acc$. Q/K/V and output projections use the same interface.
+The GPU additionally retains $\Kt,\Vt$ between generation calls. Masked logits
+return to $\ctrl$ once per prefill/decode call; token selection and the returned
+token identities remain in $\ctrl$.
+
+Boundary masks, additive pads, and LoRA rank mixers are call-local and consumed
+once. In contrast, $\NK$ and $\NV$ are sampled once per layer and generation
+session so all cache appends share one basis; query-head masks are tied to the
+corresponding key head. Session termination destroys those masks and the masked
+cache.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Lifetime & TEE state & GPU state \\
+\midrule
+Persistent & $\params,(\Amat,\Bmat)$, optimizer & none \\
+Session & $\NK,\NV$ and inverses & $\Kt,\Vt$ \\
+Call & $\Nin,\Nout,\Umix,\Tpad,\Recover$ & $\Xt,\Wt,\At,\Bt,\Yt$ \\
+Transient & $\X,\Qmat,\K,\Vmat,\Gmat,d\Amat,d\Bmat$ & masked branches \\
+\bottomrule
+\end{tabular}
+\caption{Complete runtime ownership and lifetime table. Public shape metadata
+accompanies GPU operands; transformed compensation tensors are produced by the
+TEE and consumed by the GPU.}
+\label{tab:app-ownership}
+\end{table}
+
+\subsection{Complete Lifecycle}
+
+\begin{methodalgorithm}{Detailed inference and adaptation lifecycle}
+\label{alg:app-unified-lifecycle}
+\textbf{Inputs:} private $x$, $\params$, and optional training data and
+$(\Amat,\Bmat)$; public $\arch$.\par
+\textbf{Outputs:} generated result or updated private adapter, returned to
+$\usr$.\par
+\textbf{TEE state:} $\params,\maskset,\Tpad,\Recover$, plaintext residuals and
+logits, cache-mask state, gradients, and optimizer state.\par
+\textbf{GPU state:} transformed operators/activations and $\Kt,\Vt$.\par
+\begin{enumerate}
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+\item $\prov$ provisions $\params$ to $\ctrl$; $\ctrl$ validates the call plan
+and initializes optional User-owned adapter and optimizer state.
+\item For prefill, $\usr$ sends $x$ to $\ctrl$. For each layer, $\ctrl$ performs
+trusted normalization and boundary preparation; $\acc$ evaluates transformed
+projections, attention/compatible activations, and retains $\Kt,\Vt$; $\ctrl$
+recovers residual updates.
+\item The GPU returns masked logits. The TEE recovers logits and selects the
+next token without disclosing its identity to the GPU.
+\item For each decode step, the TEE embeds and masks one token; the GPU appends
+one $\Kt,\Vt$ row per layer and returns masked logits; the TEE recovers and
+selects again.
+\item For adaptation, the TEE prepares transformed base and rank-padded adapter
+operands. The GPU performs each delegated forward and linear backward. The TEE
+evaluates the loss and trusted derivatives, recovers real-rank gradients, and
+updates the factors and optimizer state.
+\item On termination, erase pass-local plaintexts, masks, pads, and cache state;
+return only the generated result or updated adapter to $\usr$.
+\end{enumerate}
+\end{methodalgorithm}
+
+\subsection{Implementation Map}
+
+Linear masking and padding correspond to \url{src/pllo/ops/linear.py} and
+\url{src/pllo/deployment/linear_boundary_pad.py}; attention, RoPE, GQA/MQA, and
+cache operations to \url{src/pllo/ops/attention.py},
+\url{src/pllo/ops/rope.py}, \url{src/pllo/ops/gqa_attention.py}, and
+\url{src/pllo/cache/kv_cache.py}; LoRA to \url{src/pllo/ops/lora.py},
+\url{src/pllo/ops/lora_backward.py}, and
+\url{src/pllo/ops/lora_rank_padding.py}; and the emulated TEE boundary to
+\url{src/pllo/tee/simulated_runtime.py} and
+\url{src/pllo/tee/process_runtime.py}. The canonical
+main-paper path uses trusted RMSNorm recomputation and post-RoPE masking. Other
+repository modes that fold normalization into accelerator weights or keep the
+entire compatible residual stream on the GPU are implementation variants, not
+the theorem target. Coordinatewise optimizers use the trusted interface; a
+dense-masked accelerator-side AdamW update is not part of this protocol.

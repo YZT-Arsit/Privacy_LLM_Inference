@@ -19,7 +19,8 @@
 % U6 PADDED LoRA rank r_pad is VISIBLE (only true rank removed from shape).
 % U7 Loss/optimizer stay trusted-side (or GPU-masked SGD only). \evid{C-OPT-*}
 % U8 Compromised-TEE out of scope; integrity is probabilistic spot-check only.
-% U9 Sequence length, batch/tensor shapes, output tokens+length VISIBLE. \evid{C-SEC-LEAK-*}
+% U9 Sequence length, batch/tensor shapes, call count/output length VISIBLE;
+% generated token identities and returned result remain TEE/User-only. \evid{C-SEC-LEAK-*}
 % U10 Correctness validated for GREEDY decoding only. \evid{C-COR-GEN}
 % U11 Security is PROXY-EVALUATED ONLY (default private-base attacker); no formal,
 %    cryptographic, or worst-case guarantee. Residual invariants (norms/Gram/

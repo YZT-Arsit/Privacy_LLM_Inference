@@ -7,9 +7,9 @@
 % CENTRAL MESSAGE (one paragraph, to be written last):
 %   Setting: a PRIVATE (proprietary) foundation model -- base weights, inputs,
 %   KV-cache, and LoRA adapters are all confidential and only masked forms cross
-%   the boundary; an untrusted accelerator does the heavy linear algebra on
+%   the boundary; an untrusted GPU does the heavy linear algebra on
 %   transformed tensors while a small trusted component holds secrets and
-%   selected nonlinear/boundary operations. (Open-source checkpoints are proxies.)
+%   selected nonlinear/boundary operations.
 %
 % CONTENT GATE: the abstract may state ONLY claims that already appear in
 % claim_ledger.md with a status of at least algebraically_proven,
@@ -18,7 +18,7 @@
 %
 % PLAN (fill after ledger + evaluation stabilize):
 %  - 1 sentence: deployment problem (serve/fine-tune a PROPRIETARY model on an
-%    untrusted accelerator; weights AND runtime assets confidential). \evid{C-THREAT-02}
+%    untrusted GPU; weights AND runtime assets confidential). \evid{C-THREAT-02}
 %  - 1 sentence: what we build (obfuscated execution + trusted boundary).
 %  - 1 sentence: correctness result (algebraic + numerically verified scope).
 %  - 1 sentence: leakage/security result, CALIBRATED (what is hidden vs what

@@ -1,0 +1,11 @@
+{
+  "labels_or_targets_included": false,
+  "output_sha256": "785469e9122b3038498f930a128ab808c248bdd2e53d121c44fd51ef7890c4ac",
+  "records": 500,
+  "schema": "authorized_security_member_query_pool",
+  "selection_indices_sha256": "352391edcc2da492569de8c14519f215df1a7257043bf9dfdd4d100c33e2ab19",
+  "selection_seed": 20260714,
+  "source_train_data_sha256": "7e46d5bca17ca3d31e843f2c4709854fac311b73a02fb09c7e1e619f7ee38d07",
+  "split": "train",
+  "version": "1.0"
+}

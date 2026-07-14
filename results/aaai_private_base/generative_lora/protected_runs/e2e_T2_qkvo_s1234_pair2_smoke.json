@@ -1,0 +1,65 @@
+{
+  "run_id": "e2e_T2_qkvo_s1234_pair2_smoke-1783995690-5c681a",
+  "profile": "L12",
+  "task": "clm",
+  "dataset_id": "e2e_nlg",
+  "seed": 1234,
+  "compute_dtype": "torch.bfloat16",
+  "master_dtype": "fp32",
+  "lr": 0.0002,
+  "lora_targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj"
+  ],
+  "schedule_hash": "818e2c072a939b9d93e9949f018c39d51a8f67cc6472e8f889a5a842eb0f9a94",
+  "steps_run": 1,
+  "start_step": 0,
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "8caae3687457f113843977daac7a2f5b4ce7bc6f2c1a441cc7863d16098828059a72b7fb6e8bbf689c426e27013a42bc81c1a97b44bab625e184eb6ef57b3a9c",
+    "session_setup_once": true
+  },
+  "fail_closed_all_pass": true,
+  "package_root_hash_matches": true,
+  "eval": null,
+  "batched_forward": false,
+  "verify_batched": null,
+  "attestation_gated_execution": true,
+  "hmac_scope": "channel_integrity_replay_detection_vs_third_party_under_honest_but_curious_accelerator",
+  "hmac_proves_request_from_honest_a10": false,
+  "dlogits_instrumentation": {
+    "a10_cpu_dlogits_materialized": 0,
+    "a10_gpu_dlogits_materialized": 2,
+    "dlogits_dtype": "torch.bfloat16",
+    "dlogits_shape": [
+      375,
+      151936
+    ],
+    "dlogits_bytes": 113952000,
+    "dlogits_lifetime_us": 22139,
+    "dlogits_persisted": false,
+    "dlogits_logged": false,
+    "device": "cuda"
+  },
+  "dlogits_honest_statement": "The A10 does not observe plaintext labels or scalar loss, but consumes transient masked dlogits (per step, on the compute device) for backward propagation; dlogits are not persisted or logged.",
+  "trajectory": [
+    {
+      "gbi": 0,
+      "opt_step": 0,
+      "ce": 1.5873547770182292,
+      "n": 16,
+      "sup_total": 375,
+      "finite": true,
+      "ledger_last": null,
+      "net_ce": 23.393096685409546,
+      "net_adamw": 0.1107478141784668,
+      "wall": 25.507
+    }
+  ]
+}

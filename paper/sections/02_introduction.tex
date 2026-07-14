@@ -1,7 +1,7 @@
 % ===========================================================================
 % INTRODUCTION --- argument skeleton (write body after Method + Evaluation).
 % Follows the introduction protocol (skill S13): problem -> why a proprietary
-% model on an untrusted accelerator exposes BOTH weights and runtime assets ->
+% model on an untrusted GPU exposes BOTH weights and runtime assets ->
 % gap -> tension -> method -> contributions -> evidence summary -> limitation
 % boundary. Contribution bullets must be atomic and each independently
 % defensible; do NOT fuse a proven construction with an unproven security
@@ -12,7 +12,7 @@
 
 % ---- CENTRAL QUESTION -------------------------------------------------------
 % Can a provider serve and privately fine-tune a PROPRIETARY foundation model on
-% an UNTRUSTED accelerator so that the base weights AND the user's runtime assets
+% an UNTRUSTED GPU so that the base weights AND the user's runtime assets
 % (inputs, intermediate states, KV-cache, LoRA adapters/gradients) are not
 % exposed in cleartext, while preserving the model's computation at acceptable
 % cost -- and exactly which of those protections can we actually substantiate?
@@ -34,7 +34,7 @@
 %     algebraic INVARIANTS visible (norms, Gram, permutation-invariant stats);
 %     hiding those requires either trusted nonlinear work or heavier crypto.
 % (5) High-level method: right-action masks + boundary additive pads let the
-%     untrusted accelerator do the heavy linear algebra on transformed tensors;
+%     untrusted GPU do the heavy linear algebra on transformed tensors;
 %     a small trusted component holds secrets, does selected nonlinear/boundary
 %     ops, recovery, sampling, and auditing (Section~\ref{sec:method}).
 %

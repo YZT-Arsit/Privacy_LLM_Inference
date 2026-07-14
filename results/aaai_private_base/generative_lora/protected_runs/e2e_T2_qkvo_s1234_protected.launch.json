@@ -1,0 +1,28 @@
+{
+  "tag": "e2e_T2_qkvo_s1234_protected",
+  "run_id": "e2e_T2_qkvo_s1234_protected-1783996015-8b6b59",
+  "profile": "L12",
+  "seed": 1234,
+  "lr": 0.0002,
+  "max_steps": 750,
+  "attest": true,
+  "lora_targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj"
+  ],
+  "endpoints": {
+    "a10_pub": "root@8.147.119.67",
+    "tdx_pub": "root@8.147.112.139",
+    "tdx_priv": "172.30.25.156"
+  },
+  "status": "running",
+  "host": "root@8.147.119.67",
+  "pid": 16093,
+  "log_path": "/root/pllo_pb/g2_e2e_T2_qkvo_s1234_protected.log",
+  "driver_path": "/root/pllo_pb/g2_driver_e2e_T2_qkvo_s1234_protected.sh",
+  "source_revision": "dfb2ecd4f098e415ca7098cd701c28c75ee1b11b",
+  "source_bundle_hash": "bbb6f7b7337ae5b6d5ab5019e87666db9b244f4704ec1cbb6a0585e2c48febd3",
+  "start_unix": 1783996041.545286
+}

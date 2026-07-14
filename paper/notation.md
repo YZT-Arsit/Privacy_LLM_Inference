@@ -13,12 +13,12 @@ Authoritative symbol table for the paper. Every symbol lists **dimensions**, **o
 | Symbol (macro) | Meaning | Kind | Public/Private |
 |---|---|---|---|
 | `𝓟` (`\prov`) | model provider — owns the proprietary checkpoint | party | — |
-| `𝓤` (`\usr`) | user — owns the prompt / private context | party | — |
-| `𝓛` (`\loraown`) | LoRA owner — owns the adapter + private fine-tuning data | party | — |
-| `𝓒` (`\ctrl`) | trusted controller — the trusted domain | party | — |
-| `𝓖` (`\acc`) | untrusted accelerator | party | — |
-| `𝓐` (`\adv`) | adversary (= honest-but-curious `𝓖` + any observer of `τ`) | party | — |
-| `θ` (`\params`) | proprietary parameter set: projection weights `{W}` + norm gains `{γ}` | parameters | **private** |
+| `𝓤` (`\usr`) | user — owns LoRA data/adapter, prompt/context, and generated result | party | — |
+| `𝓢` (`\cloud`) | cloud service — administrative party containing the TEE and GPU | party | — |
+| `𝓒` (`\ctrl`) | trusted execution environment (TEE) | cloud component | trusted |
+| `𝓖` (`\acc`) | untrusted GPU | cloud component | honest-but-curious |
+| `𝓐` (`\adv`) | confidentiality adversary (= honest-but-curious `𝓖`) | adversary | — |
+| `θ` (`\params`) | proprietary parameter set: embeddings, projection/output-head weights, norm gains, and learned biases | parameters | **private** |
 | `γ` (`\rmsgain`) | RMSNorm/LayerNorm gains (part of `θ`) | vector per norm | **private** |
 | `Ω` (`\maskset`) | mask family drawn per call/session: `{N_in,N_out,N_Q,N_K,N_V,R,P,U}` | secret randomness | **private** |
 | `Φ` (`\arch`) | public architecture tuple `(L,d,h,h_kv,d_h,m,V)` | constants | public |
@@ -27,7 +27,7 @@ Authoritative symbol table for the paper. Every symbol lists **dimensions**, **o
 | `𝕊` (`\Ssec`) | secret-resident set (never leaves `𝓒`): `θ,Ω,T,(A,B)`, optimizer state, `Rec` | set | private |
 | `𝕋` (`\Stra`) | transient-plaintext set (materialized in `𝓒`, erased after a pass): `X,Q,K,V,`logits`,G,dA,dB` | set | private |
 | `𝕆` (`\Sobs`) | observable set (crosses to `𝓖`): `X̃,W̃,Ã,B̃,K̃,Ṽ,Ỹ` | set | masked (allowed) |
-| `ℙ` (`\Spub`) | public set: `Φ`, biases `b`, chat template, shapes, `n`, cache length, `r_pad`, output tokens/length | set | public |
+| `ℙ` (`\Spub`) | admitted metadata: `Φ`, shapes, `n`, cache length, `r_pad`, call count, coarse operation schedule | set | public |
 | `τ` (`\transcript`) | accelerator transcript = the sequence of `𝕆` tensors + `ℙ` metadata that `𝓖` observes | adversary view | observable |
 
 **Collision note:** the base glyph `P` appears as three distinct objects in three fonts — permutation `P` (`\Perm`, bold), public set `ℙ` (`\Spub`, blackboard), provider `𝓟` (`\prov`, calligraphic). Similarly `T`: pad `T` (`\Tpad`, bold) vs transient set `𝕋` (`\Stra`, blackboard); `G`: gradient `G` (`\Gmat`, bold) vs accelerator `𝓖` (`\acc`, calligraphic). Fonts disambiguate; never mix.
@@ -40,7 +40,7 @@ Authoritative symbol table for the paper. Every symbol lists **dimensions**, **o
 | `X̃` (`\Xt`) | masked hidden state `=(X−T)N_in` | `[T,d_in]` | masked (allowed leakage) | accelerator-visible |
 | `W` (`\W`) | base weight | `[d_in,d_out]` | **private (proprietary); only `W̃` crosses** (canonical, CF-1 resolved) | trusted |
 | `W̃` (`\Wt`) | masked weight `=N_in⁻¹WN_out` | `[d_in,d_out]` | masked | accelerator-visible |
-| `b` | bias | `[d_out]` | public | trusted |
+| `b` | learned bias, when present (part of `θ`) | `[d_out]` | **private** | trusted (only `bN_out` crosses) |
 | `Y` (`\Y`) | plaintext Linear output `XW+b` | `[T,d_out]` | private | trusted |
 | `Ỹ` (`\Yt`) | masked output `=YN_out` | `[T,d_out]` | masked | accelerator-visible |
 | `T` (`\Tpad`) | **additive one-time pad** (boundary translation) | shape of `X` | private | trusted (only `TN_in`, `TWN_out` cross) |
@@ -62,7 +62,7 @@ Authoritative symbol table for the paper. Every symbol lists **dimensions**, **o
 | KV cache | stored masked: `K_{1:t}N_K`, `V_{1:t}N_V` | grows on token axis | masked | accelerator-visible |
 | `G` (`\Gmat`) | upstream gradient `∂L/∂Y`; `G̃=GN_out⁻ᵀ` | `[T,d_out]` | private | trusted (`G̃` visible) |
 | `dA,dB` | per-step LoRA gradients | `A/B` shapes | private | trusted (`dÃ,dB̃` visible) |
-| `C_T` (`\Ct`) | trusted compensation `C_T=TWN_out` | `[·,d_out]` | private | trusted |
+| `C_T` (`\Ct`) | transformed compensation `C_T=TWN_out` | `[·,d_out]` | masked/observable | produced by TEE; consumed by GPU |
 | `Rec` (`\Recover`) | trusted recovery `Y=ỸN_out⁻¹` | operator | — | **trusted only** |
 | `φ` | pointwise activation (GELU/ReLU/SiLU) | — | — | accelerator (on masked input) |
 | `RMSCore/LNCore` | orthogonally-invariant norm cores | — | — | mixed (wired: trusted recompute) |

@@ -1,0 +1,48 @@
+{
+  "mode": "protected_generate",
+  "cell": "G2_protected_L12",
+  "n": 500,
+  "adapter": "/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s2025_extension.adapter.pt",
+  "adapter_source": "raw_adapter_pt:/root/pllo_pb/results/aaai_private_base/generative_lora/protected_runs/e2e_L12_s2025_extension.adapter.pt",
+  "adapter_package": "",
+  "adapter_hash": "d9ecfdfc74531842",
+  "base_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "dtype": "fp32",
+  "decoding": {
+    "strategy": "greedy",
+    "max_new_tokens": 96,
+    "eos": 151643,
+    "boundary": "tdx_decode_argmax_scalar",
+    "dtype": "fp32"
+  },
+  "total_new_tokens": 16370,
+  "tdx_decode_calls": 16870,
+  "tdx_wait_sec": 5.4,
+  "wall_sec": 401.2,
+  "tokens_per_sec": 40.81,
+  "attestation_verified": true,
+  "attestation": {
+    "attestation_verified": true,
+    "overall_appraisal_result": "SUCCESS",
+    "reportdata_bound": true,
+    "debug_false": true,
+    "mr_td": "8a56b29ae530d23ee602628eff3b7fdf5e159d4a55d62b2454e8e4fbde424d67dfbe256f0473bcf4e4b2acba999419e0",
+    "report_data": "ac1e453f77b95dcbbdbb7a2967256dfd806365b8807e743d90975201bffa5703d1c33a32606889c6ae82c8f187d208944a123ee7b57f58a7611f5bfbb04c9576",
+    "session_setup_once": true
+  },
+  "gpu": "NVIDIA A10",
+  "worker_counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 1636390
+  },
+  "security_note": "GPU held masked base+adapter, masked hidden states, true attention scores, masked logits; NEVER plaintext base/A/B/DeltaW, vocab perm, or plaintext logits. Per token: 1 scalar argmax index -> TDX -> true token (public output)."
+}

@@ -68,16 +68,18 @@
 \input{sections/10_conclusion}
 
 % ---------------------------------------------------------------------------
-% Bibliography. Skeleton sections use \citeneeded{...} rather than \cite{...}
-% until each entry is verified (audit/citation_inventory.md) and promoted into
-% references.bib. \nocite{*} is intentionally NOT used.
+% Bibliography gate. aaai2027.sty supplies \bibliographystyle{aaai2027}; do not
+% repeat it here. Skeleton sections currently emit no verified \cite commands,
+% so the bibliography call remains disabled until the first verified citation
+% is promoted from audit/citation_inventory.md. Re-enable the single line below
+% at that point. \nocite{*} is intentionally NOT used.
 % ---------------------------------------------------------------------------
-\bibliographystyle{aaai2027}
-\bibliography{references}
+% \bibliography{references}
 
 \appendix
-\input{appendices/proofs}
 \input{appendices/implementation_correspondence}
+\input{appendices/operator_construction}
+\input{appendices/proofs}
 \input{appendices/attack_details}
 \input{appendices/reproducibility}
 

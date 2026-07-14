@@ -12,15 +12,19 @@ Usage:
       --max-steps 250 --gen-max 200 --attest
 """
 from __future__ import annotations
-import argparse, hashlib, json, secrets, subprocess, time
+import argparse, hashlib, json, os, secrets, subprocess, time
 from pathlib import Path
 
 REPO = Path("/Users/Hoshino/Desktop/privacy_llm_obfuscation")
 GL = REPO / "results/aaai_private_base/generative_lora"
 OUT = GL / "protected_runs"
-CM_A10 = "/tmp/cm-a10"; A10 = "root@172.30.25.154"; A10_PUB = "root@39.107.123.173"
-PK = "/Users/Hoshino/Downloads/passkey.pem"; KH = "/Users/Hoshino/.ssh/known_hosts"
-TDX = "root@39.96.43.122"; TDX_PRIV = "172.30.25.153"
+CM_A10 = os.environ.get("G2_CM_A10", "/tmp/cm-a10")
+A10 = os.environ.get("G2_A10", "root@172.30.25.154")
+A10_PUB = os.environ.get("G2_A10_PUB", "root@39.107.123.173")
+PK = os.environ.get("G2_SSH_KEY", "/Users/Hoshino/Downloads/passkey.pem")
+KH = os.environ.get("G2_KNOWN_HOSTS", "/Users/Hoshino/.ssh/known_hosts")
+TDX = os.environ.get("G2_TDX_PUB", "root@39.96.43.122")
+TDX_PRIV = os.environ.get("G2_TDX_PRIV", "172.30.25.153")
 RA10 = "/root/pllo_pb"; RTDX = "/root/privacy_llm_obfuscation"
 PY_A10 = "/usr/bin/python3"; PY_TDX = "/root/miniconda3/envs/tdx310/bin/python"
 CKPT_A10 = "/root/qwen25_05b"

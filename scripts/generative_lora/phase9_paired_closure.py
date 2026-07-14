@@ -90,6 +90,7 @@ def main():
     parser.add_argument("--out-md", required=True)
     parser.add_argument("--bootstrap", type=int, default=10000)
     parser.add_argument("--seed", type=int, default=1234)
+    parser.add_argument("--comparison", default="G2_L12_s1234 minus G1_s1234")
     args = parser.parse_args()
     out_json, out_md = Path(args.out_json), Path(args.out_md)
     if out_json.exists() or out_md.exists():
@@ -110,7 +111,7 @@ def main():
 
     result = {
         "schema": "paired_g2_minus_g1_closure",
-        "comparison": "G2_L12_s1234 minus G1_s1234",
+        "comparison": args.comparison,
         "n": len(ids),
         "bootstrap_samples": args.bootstrap,
         "bootstrap_seed": args.seed,
@@ -125,7 +126,7 @@ def main():
     out_json.write_text(json.dumps(result, indent=2))
 
     lines = [
-        "# Final paired analysis: G2 − G1 (seed 1234)", "",
+        f"# Final paired analysis: {args.comparison}", "",
         "All statistics use the existing 500 aligned frozen E2E outputs; generation was not rerun.", "",
         "| Metric | Mean delta | 95% paired bootstrap CI | Cohen dz | + / − / 0 |",
         "|---|---:|---:|---:|---:|",

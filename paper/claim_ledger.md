@@ -24,10 +24,10 @@ Single source of truth for every substantive paper claim. **A claim may appear i
 
 | ID | Exact claim (calibrated) | Status | Assumptions | Evidence path / key | Limitation |
 |---|---|---|---|---|---|
-| C-THREAT-01 | The untrusted accelerator observes only transformed tensors + public metadata (shapes, seq-len, per-call timing proxy, output tokens). | definition | trusted component holds secrets/masks/pads/recovery/sampling | `system_and_threat_model.md`; `src/pllo/tee/*` | trusted side is CPU **emulation**, not a real TEE |
+| C-THREAT-01 | The three administrative parties are the Model Provider, User, and Cloud Service; the Cloud Service contains a trusted TEE and an honest-but-curious GPU. The GPU observes transformed tensors plus admitted metadata, never returned token identities. | definition | TEE holds secrets/masks/pads/recovery/sampling and returns results only to the User | `sections/04_problem_threat_model.tex`; `src/pllo/tee/*` | trusted side is CPU **emulation** in several experiments, not a real TEE |
 | **C-THREAT-02** | **RESOLVED — CANONICAL PRIVATE-BASE**: base weights are proprietary/private; only `W̃=N_in⁻¹WN_out` crosses to the untrusted GPU. Open-source Qwen/Llama are experimental proxies (register 2); checkpoint-leak is a worst-case ablation (register 3), not the default. | definition (private-base); base-weight confidentiality = **mask-secrecy proxy_evaluated**, not formal | attacker never receives the plaintext checkpoint (`security_registry.yaml` hard rule) | `paper_draft/system_and_threat_model.md` L35–48; `threat_model_revision_patch.md`; `results/aaai_private_base/security/security_registry.yaml:scenario=from_scratch_private_base_model`; `audit/threat_model_reconciliation.md` | base-weight confidentiality is a proxy claim, not formal; a stronger weight-recovery attacker than those evaluated is out of scope; propagate wording into Sec 4/5/7 (pending) |
-| C-THREAT-03 | Allowed leakage (visible by construction): tensor/batch shapes, **sequence length**, output tokens+length, per-call timing, permutation-invariant statistics, norms, Gram, padded rank r_pad. | definition | structured/orthogonal masks | `security_registry.yaml` documented_leaks; §7.2 | do NOT claim any of these hidden |
-| C-BND-01 | The trusted component performs mask/pad generation, selected nonlinear/boundary ops, recovery, sampling, auditing; accelerator does heavy linear algebra on masked tensors. | definition (measured on emulated boundary) | — | `src/pllo/tee/{simulated,process}_runtime.py`; `trusted_boundary_accounting.py` | boundary "cost" = op-count proxy, not latency |
+| C-THREAT-03 | Admitted leakage includes tensor/batch shapes, **sequence length**, cache length, call count/coarse schedule, permutation-invariant statistics, norms, Gram quantities, and padded rank `r_pad`; generated token identities and the returned result are not public metadata. | definition | structured/orthogonal masks | `security_registry.yaml` documented leaks, reconciled to the canonical three-party model; §7.2 | output length may be inferred from admitted call count; token identities remain TEE/User-only |
+| C-BND-01 | The Cloud Service TEE performs mask/pad generation, selected nonlinear/boundary ops, recovery, sampling, and auditing; its untrusted GPU component performs bulk linear algebra on transformed tensors. | definition (measured on emulated boundary) | — | `src/pllo/tee/{simulated,process}_runtime.py`; `trusted_boundary_accounting.py` | boundary "cost" = op-count proxy, not latency |
 | C-BND-02 | Integrity is a probabilistic spot-check only; compromised-TEE and availability out of scope. | definition / unsupported(beyond) | — | audit-v2 `integrity_only_probabilistic_spot_check` | U8 |
 
 ## B. FUNCTIONAL / ALGEBRAIC CORRECTNESS (C-COR)
@@ -116,7 +116,7 @@ These are stated GOALS (status `definition`), each traceable to the substantiati
 | O4 | Availability: explicitly NOT a goal. | definition | — | named to delimit scope (A5) |
 | O5 | Training privacy: O2 across the LoRA loop (data, `G,dA,dB`, `(A,B)`, optimizer state). | definition | C-LORA-BWD, C-OPT-*, C-SEC-S1..S6 | proxy |
 | O6 | Runtime privacy: O2 for inference assets (`x,X`, cache values). | definition | C-SEC-S1..S6, C-SEC-LEAK | proxy |
-| O7 | Generation privacy: `𝓖` learns no more than admitted leakage; output length admitted, tokens disclosed only to `𝓤`. | definition | C-COR-GEN, C-THREAT-03 | output tokens/length are allowed leakage |
+| O7 | Generation privacy: `𝓖` learns no more than admitted metadata; token identities and the final result are disclosed only to `𝓤` (output length may be inferred from admitted call count). | definition | C-COR-GEN, C-THREAT-03 | generated tokens are protected assets, not public metadata |
 
 The trust-partition and adversary definitions (Definitions in Section~\ref{sec:threat}) are covered by C-THREAT-01/02/03 and C-BND-01/02; no new evidence-backed claim is introduced (these are `definition`-status specifications).
 
@@ -155,7 +155,7 @@ The trust-partition and adversary definitions (Definitions in Section~\ref{sec:t
 
 Contributions map to in-scope claims only. If a contribution's support set is empty after pruning, it is flagged.
 
-- **C1 — Masked-execution correctness for a private (proprietary) decoder LLM on an untrusted accelerator.**
+- **C1 — Masked-execution correctness for a private (proprietary) decoder LLM on the Cloud Service's untrusted GPU component.**
   Support: C-COR-01..08, C-COR-GEN, C-COR-CONV, C-COR-06b. Threat model: C-THREAT-01/02/03, C-BND-01/02. → **fully supported (checkpoint-independent).**
 - **C2 — Masked LoRA adaptation + optimizer-compatibility boundary.**
   Support: C-LORA-FWD, C-LORA-BWD, C-LORA-BWD-LEAK, C-LORA-RANK, C-LORA-RANK-INF, C-OPT-SGD, C-OPT-ADAMW-GPU, C-OPT-O1C. → **fully supported (checkpoint-independent).**

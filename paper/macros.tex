@@ -23,7 +23,7 @@
 \providecommand{\K}{}\renewcommand{\K}{\mathbf{K}}  % attention keys (guarded: \K may be undefined in some classes)
 \newcommand{\Vmat}{\mathbf{V}}       % attention values
 \newcommand{\Gmat}{\mathbf{G}}       % gradient
-\newcommand{\bias}{\mathbf{b}}       % bias (public, where present)
+\newcommand{\bias}{\mathbf{b}}       % learned bias (private model parameter, where present)
 
 % ---------------------------------------------------------------------------
 % Mask / permutation / pad family. These objects are NOT interchangeable;
@@ -46,7 +46,7 @@
 \newcommand{\Cone}{\mathbf{C}_{1}}
 
 % ---------------------------------------------------------------------------
-% Masked (tilde) variants -- quantities visible to the untrusted accelerator.
+% Masked (tilde) variants -- quantities visible to the untrusted GPU.
 % ---------------------------------------------------------------------------
 \newcommand{\Ht}{\widetilde{\mathbf{H}}}
 \newcommand{\Xt}{\widetilde{\mathbf{X}}}
@@ -86,11 +86,11 @@
 % blackboard letters that share a base glyph, e.g. P / P / P).
 % ---------------------------------------------------------------------------
 \newcommand{\prov}{\mathcal{P}}      % model provider (owns the proprietary checkpoint)
-\newcommand{\usr}{\mathcal{U}}       % user (owns the prompt / private context)
-\newcommand{\loraown}{\mathcal{L}}   % LoRA owner (adapter + private fine-tuning data)
-\newcommand{\ctrl}{\mathcal{C}}      % trusted controller (trusted domain)
-\newcommand{\acc}{\mathcal{G}}       % untrusted accelerator
-\newcommand{\adv}{\mathcal{A}}       % adversary
+\newcommand{\usr}{\mathcal{U}}       % user (LoRA data/adapter, prompt/context, generated result)
+\newcommand{\cloud}{\mathcal{S}}     % cloud service (administrative party containing TEE + GPU)
+\newcommand{\ctrl}{\mathcal{C}}      % trusted execution environment (cloud component)
+\newcommand{\acc}{\mathcal{G}}       % untrusted GPU (cloud component)
+\newcommand{\adv}{\mathcal{A}}       % honest-but-curious GPU adversary
 \newcommand{\params}{\boldsymbol{\theta}} % proprietary parameter set
 \newcommand{\rmsgain}{\boldsymbol{\gamma}} % RMSNorm / LayerNorm gains (part of \params)
 \newcommand{\maskset}{\Omega}        % mask family drawn per call/session

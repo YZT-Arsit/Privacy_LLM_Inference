@@ -64,7 +64,8 @@
 % ---- 7.5 Non-claims / formal boundary -------------------------------------
 % \evid{C-NONCLAIM-01,03,06} No cryptographic/semantic/DP/indistinguishability claim;
 % base-weight confidentiality is a mask-secrecy proxy, not formal; no HW side-channel;
-% compromised-TEE out of scope; output tokens+length + seq-len + r_pad visible.
+% compromised-TEE out of scope; shapes, seq-len, call count/output length, and
+% r_pad visible; generated token identities and returned result remain TEE/User-only.
 % \risk{ONE threat model only -- do NOT reintroduce checkpoint-leak/public-weight
 %   material (archived, out of scope).}
 \TODO{Author from the default private-base attacker only; import S1-S6 configs from results/aaai\_private\_base/security/; keep every verdict proxy-calibrated.}
