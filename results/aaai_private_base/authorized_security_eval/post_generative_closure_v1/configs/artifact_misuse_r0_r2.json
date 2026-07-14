@@ -1,0 +1,18 @@
+{
+  "schema": "artifact_misuse_r0_r2_config_v1",
+  "resource_class": "NVIDIA A10 (verified; user described it as A100)",
+  "public_ip": "39.96.4.252",
+  "private_ip": "172.30.25.157",
+  "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
+  "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "package_manifest_sha256": "58d2275193b36d9bc3aa8b965c031a83508c4f89f33c107ffee6721333af7f6c",
+  "artifact_hashes_sha256": "6175c2a60943412fb0eb1c68dc4b92326dbf31c5ed9d30a0cb90807f5eb795e0",
+  "adapter_sha256": "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2",
+  "input_sha256": "dffadc4c6dc538663999572ea2a65b82b254b850289571c77aced7732cc627cb",
+  "prohibitions": [
+    "no TDX launch/configuration",
+    "no plaintext checkpoint access",
+    "no shared job/script/registry mutation",
+    "no cryptographic impossibility claim"
+  ]
+}

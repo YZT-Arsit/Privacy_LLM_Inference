@@ -1,0 +1,32 @@
+{
+  "schema": "surrogate_fidelity_pilot_preflight_v1",
+  "recorded_before_launch": true,
+  "launch_status_at_recording": "not_launched",
+  "view_label": "SIMULATED_PROTOCOL_VIEW",
+  "resource": {
+    "public_ip": "39.96.4.252",
+    "private_ip": "172.30.25.157",
+    "observed_gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5"
+  },
+  "inputs": {
+    "surrogate_fidelity_pilot.py": "4b16369800623959423e234078c443510cdf15ecbcd0e39908dac7b9c2919814",
+    "fixed_length_view_audit.py": "63ae3c9944ce5b4e49660c30d0a812f3b4f5800fe498ea0c27c0760b3d29e18e",
+    "fixed_length_source_audit_results.json": "d4bcce47bc37b0197f66d3af8396dabfabd9a7e3bc1df5010ac669def76d19b9",
+    "e2e_test_v0_s1234.jsonl": "2695408fa3536b36daf8a1a5da5b9ac3273824dbb4edb831ceba6f4bd3fe7de7",
+    "e2e_test_v2_s1234.jsonl": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6"
+  },
+  "protocol": {
+    "budget_order": [0.01, 0.05, 0.1, 0.2],
+    "fixed_evaluator_records": 200,
+    "random_initialization": true,
+    "same_architecture_and_steps_across_views": true,
+    "negative_controls": ["label_shuffle"],
+    "claim_boundary": "coarse output-property agreement; not exact text reconstruction or full model extraction"
+  },
+  "guards": {
+    "central_registry_write": false,
+    "tdx_launch_or_configuration": false,
+    "existing_remote_job_or_artifact_write": false
+  }
+}

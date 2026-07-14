@@ -1,0 +1,21 @@
+{
+  "schema": "cross_phase_fusion_gate_v1",
+  "phase_4_status": "NOT_RUN",
+  "authorized_to_run": false,
+  "decision": "FAIL_CLOSED",
+  "blocking_evidence": [
+    {
+      "phase": 3,
+      "artifact": "../fixed_length_attention_kv_v2/results.json",
+      "reason": "single-length metadata-free source classifier is perfectly separable for attention, KV, hidden, logits, and combined V2"
+    },
+    {
+      "phase": 3,
+      "artifact": "../fixed_length_attention_kv_v2/results.json",
+      "reason": "some three-seed shuffled-label controls are unstable and materially above chance in the 25-per-source cohort"
+    }
+  ],
+  "membership_status": "WITHHELD_PENDING_COMPLETED_CORRECTED_SHADOW_CAPTURES",
+  "unrelated_assets_combined": false,
+  "gpu_job_launched": false
+}

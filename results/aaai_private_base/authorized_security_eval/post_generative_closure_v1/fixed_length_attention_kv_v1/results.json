@@ -1,0 +1,361 @@
+{
+  "schema": "fixed_length_metadata_free_view_audit_v1",
+  "view_label": "SIMULATED_PROTOCOL_VIEW",
+  "records_per_source": 215,
+  "exact_length_multisets_identical": true,
+  "source_a_sha256": "39129012a451a98bbd373c7e039bebc79a495a8f16ce58e85596b1e9186f3985",
+  "source_b_sha256": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6",
+  "forbidden_fields_selected": [],
+  "metadata_free_feature_count": 706,
+  "membership_result": "WITHHELD",
+  "membership_reason": "corrected shadow plans exist but completed corrected shadow feature captures do not",
+  "interpretation": "source-identity/confound diagnostic only; not a membership attack result",
+  "aggregate": [
+    {
+      "view": "shape_only",
+      "control": "true_source_label",
+      "features": 1,
+      "roc_auc_mean": 0.5038985036956913,
+      "roc_auc_std": 0.01567108385091406
+    },
+    {
+      "view": "shape_only",
+      "control": "train_label_shuffle",
+      "features": 1,
+      "roc_auc_mean": 0.49610149630430866,
+      "roc_auc_std": 0.015671083850914088
+    },
+    {
+      "view": "attention",
+      "control": "true_source_label",
+      "features": 480,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0
+    },
+    {
+      "view": "attention",
+      "control": "train_label_shuffle",
+      "features": 480,
+      "roc_auc_mean": 0.4952677122769064,
+      "roc_auc_std": 0.09202118925708759
+    },
+    {
+      "view": "kv",
+      "control": "true_source_label",
+      "features": 192,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0
+    },
+    {
+      "view": "kv",
+      "control": "train_label_shuffle",
+      "features": 192,
+      "roc_auc_mean": 0.41914548404543,
+      "roc_auc_std": 0.11553643327077473
+    },
+    {
+      "view": "hidden",
+      "control": "true_source_label",
+      "features": 25,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0
+    },
+    {
+      "view": "hidden",
+      "control": "train_label_shuffle",
+      "features": 25,
+      "roc_auc_mean": 0.5173967910582297,
+      "roc_auc_std": 0.307803595555608
+    },
+    {
+      "view": "logit",
+      "control": "true_source_label",
+      "features": 9,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0
+    },
+    {
+      "view": "logit",
+      "control": "train_label_shuffle",
+      "features": 9,
+      "roc_auc_mean": 0.5311880295655309,
+      "roc_auc_std": 0.4136410475384826
+    },
+    {
+      "view": "combined_metadata_free",
+      "control": "true_source_label",
+      "features": 706,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0
+    },
+    {
+      "view": "combined_metadata_free",
+      "control": "train_label_shuffle",
+      "features": 706,
+      "roc_auc_mean": 0.4875157742924103,
+      "roc_auc_std": 0.09975639551839244
+    }
+  ],
+  "top_univariate": [
+    {
+      "feature": "transformed_hidden.layer_00.last_l2",
+      "family": "transformed_hidden",
+      "layer": 0,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_01.last_l2",
+      "family": "transformed_hidden",
+      "layer": 1,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_02.last_l2",
+      "family": "transformed_hidden",
+      "layer": 2,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_03.last_l2",
+      "family": "transformed_hidden",
+      "layer": 3,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_04.last_l2",
+      "family": "transformed_hidden",
+      "layer": 4,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_05.last_l2",
+      "family": "transformed_hidden",
+      "layer": 5,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_06.last_l2",
+      "family": "transformed_hidden",
+      "layer": 6,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_07.last_l2",
+      "family": "transformed_hidden",
+      "layer": 7,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_08.last_l2",
+      "family": "transformed_hidden",
+      "layer": 8,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_09.last_l2",
+      "family": "transformed_hidden",
+      "layer": 9,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 1.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_11.last_l2",
+      "family": "transformed_hidden",
+      "layer": 11,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_12.last_l2",
+      "family": "transformed_hidden",
+      "layer": 12,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_13.last_l2",
+      "family": "transformed_hidden",
+      "layer": 13,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_14.last_l2",
+      "family": "transformed_hidden",
+      "layer": 14,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_15.last_l2",
+      "family": "transformed_hidden",
+      "layer": 15,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_16.last_l2",
+      "family": "transformed_hidden",
+      "layer": 16,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_17.last_l2",
+      "family": "transformed_hidden",
+      "layer": 17,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_18.last_l2",
+      "family": "transformed_hidden",
+      "layer": 18,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_19.last_l2",
+      "family": "transformed_hidden",
+      "layer": 19,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    },
+    {
+      "feature": "transformed_hidden.layer_20.last_l2",
+      "family": "transformed_hidden",
+      "layer": 20,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant_under_per_prompt_transform": true,
+      "derived_from_runtime_metadata": false,
+      "views": "hidden;combined_metadata_free",
+      "roc_auc_source_higher": 0.0,
+      "roc_auc_separability": 1.0,
+      "ks_statistic": 1.0,
+      "disjoint_ranges": true
+    }
+  ]
+}

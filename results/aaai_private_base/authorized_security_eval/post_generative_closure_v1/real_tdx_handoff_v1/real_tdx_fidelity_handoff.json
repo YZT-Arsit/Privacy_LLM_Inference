@@ -1,0 +1,6205 @@
+{
+  "schema": "real_tdx_fidelity_validation_handoff_v1",
+  "status": "PREPARED_NOT_EXECUTED",
+  "collection_mode_target": "REAL_TDX_BACKED_VIEW",
+  "reference_mode": "SIMULATED_PROTOCOL_VIEW",
+  "new_tdx_requested_or_configured": false,
+  "frozen_sample_ids": [
+    "e2e_nlg:test:000000",
+    "e2e_nlg:test:000001",
+    "e2e_nlg:test:000002",
+    "e2e_nlg:test:000003",
+    "e2e_nlg:test:000004",
+    "e2e_nlg:test:000005",
+    "e2e_nlg:test:000006",
+    "e2e_nlg:test:000007",
+    "e2e_nlg:test:000008",
+    "e2e_nlg:test:000009",
+    "e2e_nlg:test:000010",
+    "e2e_nlg:test:000011",
+    "e2e_nlg:test:000012",
+    "e2e_nlg:test:000013",
+    "e2e_nlg:test:000014",
+    "e2e_nlg:test:000015",
+    "e2e_nlg:test:000016",
+    "e2e_nlg:test:000017",
+    "e2e_nlg:test:000018",
+    "e2e_nlg:test:000019",
+    "e2e_nlg:test:000020",
+    "e2e_nlg:test:000021",
+    "e2e_nlg:test:000022",
+    "e2e_nlg:test:000023",
+    "e2e_nlg:test:000024",
+    "e2e_nlg:test:000025",
+    "e2e_nlg:test:000026",
+    "e2e_nlg:test:000027",
+    "e2e_nlg:test:000028",
+    "e2e_nlg:test:000029",
+    "e2e_nlg:test:000030",
+    "e2e_nlg:test:000031",
+    "e2e_nlg:test:000032",
+    "e2e_nlg:test:000033",
+    "e2e_nlg:test:000034",
+    "e2e_nlg:test:000035",
+    "e2e_nlg:test:000036",
+    "e2e_nlg:test:000037",
+    "e2e_nlg:test:000038",
+    "e2e_nlg:test:000039",
+    "e2e_nlg:test:000040",
+    "e2e_nlg:test:000041",
+    "e2e_nlg:test:000042",
+    "e2e_nlg:test:000043",
+    "e2e_nlg:test:000044",
+    "e2e_nlg:test:000045",
+    "e2e_nlg:test:000046",
+    "e2e_nlg:test:000047",
+    "e2e_nlg:test:000048",
+    "e2e_nlg:test:000049",
+    "e2e_nlg:test:000050",
+    "e2e_nlg:test:000051",
+    "e2e_nlg:test:000052",
+    "e2e_nlg:test:000053",
+    "e2e_nlg:test:000054",
+    "e2e_nlg:test:000055",
+    "e2e_nlg:test:000056",
+    "e2e_nlg:test:000057",
+    "e2e_nlg:test:000058",
+    "e2e_nlg:test:000059",
+    "e2e_nlg:test:000060",
+    "e2e_nlg:test:000061",
+    "e2e_nlg:test:000062",
+    "e2e_nlg:test:000063",
+    "e2e_nlg:test:000064",
+    "e2e_nlg:test:000065",
+    "e2e_nlg:test:000066",
+    "e2e_nlg:test:000067",
+    "e2e_nlg:test:000068",
+    "e2e_nlg:test:000069",
+    "e2e_nlg:test:000070",
+    "e2e_nlg:test:000071",
+    "e2e_nlg:test:000072",
+    "e2e_nlg:test:000073",
+    "e2e_nlg:test:000074",
+    "e2e_nlg:test:000075",
+    "e2e_nlg:test:000076",
+    "e2e_nlg:test:000077",
+    "e2e_nlg:test:000078",
+    "e2e_nlg:test:000079",
+    "e2e_nlg:test:000080",
+    "e2e_nlg:test:000081",
+    "e2e_nlg:test:000082",
+    "e2e_nlg:test:000083",
+    "e2e_nlg:test:000084",
+    "e2e_nlg:test:000085",
+    "e2e_nlg:test:000086",
+    "e2e_nlg:test:000087",
+    "e2e_nlg:test:000088",
+    "e2e_nlg:test:000089",
+    "e2e_nlg:test:000090",
+    "e2e_nlg:test:000091",
+    "e2e_nlg:test:000092",
+    "e2e_nlg:test:000093",
+    "e2e_nlg:test:000094",
+    "e2e_nlg:test:000095",
+    "e2e_nlg:test:000096",
+    "e2e_nlg:test:000097",
+    "e2e_nlg:test:000098",
+    "e2e_nlg:test:000099",
+    "e2e_nlg:test:000100",
+    "e2e_nlg:test:000101",
+    "e2e_nlg:test:000102",
+    "e2e_nlg:test:000103",
+    "e2e_nlg:test:000104",
+    "e2e_nlg:test:000105",
+    "e2e_nlg:test:000106",
+    "e2e_nlg:test:000107",
+    "e2e_nlg:test:000108",
+    "e2e_nlg:test:000109",
+    "e2e_nlg:test:000110",
+    "e2e_nlg:test:000111",
+    "e2e_nlg:test:000112",
+    "e2e_nlg:test:000113",
+    "e2e_nlg:test:000114",
+    "e2e_nlg:test:000115",
+    "e2e_nlg:test:000116",
+    "e2e_nlg:test:000117",
+    "e2e_nlg:test:000118",
+    "e2e_nlg:test:000119",
+    "e2e_nlg:test:000120",
+    "e2e_nlg:test:000121",
+    "e2e_nlg:test:000122",
+    "e2e_nlg:test:000123",
+    "e2e_nlg:test:000124",
+    "e2e_nlg:test:000125",
+    "e2e_nlg:test:000126",
+    "e2e_nlg:test:000127",
+    "e2e_nlg:test:000128",
+    "e2e_nlg:test:000129",
+    "e2e_nlg:test:000130",
+    "e2e_nlg:test:000131",
+    "e2e_nlg:test:000132",
+    "e2e_nlg:test:000133",
+    "e2e_nlg:test:000134",
+    "e2e_nlg:test:000135",
+    "e2e_nlg:test:000136",
+    "e2e_nlg:test:000137",
+    "e2e_nlg:test:000138",
+    "e2e_nlg:test:000139",
+    "e2e_nlg:test:000140",
+    "e2e_nlg:test:000141",
+    "e2e_nlg:test:000142",
+    "e2e_nlg:test:000143",
+    "e2e_nlg:test:000144",
+    "e2e_nlg:test:000145",
+    "e2e_nlg:test:000146",
+    "e2e_nlg:test:000147",
+    "e2e_nlg:test:000148",
+    "e2e_nlg:test:000149",
+    "e2e_nlg:test:000150",
+    "e2e_nlg:test:000151",
+    "e2e_nlg:test:000152",
+    "e2e_nlg:test:000153",
+    "e2e_nlg:test:000154",
+    "e2e_nlg:test:000155",
+    "e2e_nlg:test:000156",
+    "e2e_nlg:test:000157",
+    "e2e_nlg:test:000158",
+    "e2e_nlg:test:000159",
+    "e2e_nlg:test:000160",
+    "e2e_nlg:test:000161",
+    "e2e_nlg:test:000162",
+    "e2e_nlg:test:000163",
+    "e2e_nlg:test:000164",
+    "e2e_nlg:test:000165",
+    "e2e_nlg:test:000166",
+    "e2e_nlg:test:000167",
+    "e2e_nlg:test:000168",
+    "e2e_nlg:test:000169",
+    "e2e_nlg:test:000170",
+    "e2e_nlg:test:000171",
+    "e2e_nlg:test:000172",
+    "e2e_nlg:test:000173",
+    "e2e_nlg:test:000174",
+    "e2e_nlg:test:000175",
+    "e2e_nlg:test:000176",
+    "e2e_nlg:test:000177",
+    "e2e_nlg:test:000178",
+    "e2e_nlg:test:000179",
+    "e2e_nlg:test:000180",
+    "e2e_nlg:test:000181",
+    "e2e_nlg:test:000182",
+    "e2e_nlg:test:000183",
+    "e2e_nlg:test:000184",
+    "e2e_nlg:test:000185",
+    "e2e_nlg:test:000186",
+    "e2e_nlg:test:000187",
+    "e2e_nlg:test:000188",
+    "e2e_nlg:test:000189",
+    "e2e_nlg:test:000190",
+    "e2e_nlg:test:000191",
+    "e2e_nlg:test:000192",
+    "e2e_nlg:test:000193",
+    "e2e_nlg:test:000194",
+    "e2e_nlg:test:000195",
+    "e2e_nlg:test:000196",
+    "e2e_nlg:test:000197",
+    "e2e_nlg:test:000198",
+    "e2e_nlg:test:000199",
+    "e2e_nlg:test:000200",
+    "e2e_nlg:test:000201",
+    "e2e_nlg:test:000202",
+    "e2e_nlg:test:000203",
+    "e2e_nlg:test:000204",
+    "e2e_nlg:test:000205",
+    "e2e_nlg:test:000206",
+    "e2e_nlg:test:000207",
+    "e2e_nlg:test:000208",
+    "e2e_nlg:test:000209",
+    "e2e_nlg:test:000210",
+    "e2e_nlg:test:000211",
+    "e2e_nlg:test:000212",
+    "e2e_nlg:test:000213",
+    "e2e_nlg:test:000214",
+    "e2e_nlg:test:000215",
+    "e2e_nlg:test:000216",
+    "e2e_nlg:test:000217",
+    "e2e_nlg:test:000218",
+    "e2e_nlg:test:000219",
+    "e2e_nlg:test:000220",
+    "e2e_nlg:test:000221",
+    "e2e_nlg:test:000222",
+    "e2e_nlg:test:000223",
+    "e2e_nlg:test:000224",
+    "e2e_nlg:test:000225",
+    "e2e_nlg:test:000226",
+    "e2e_nlg:test:000227",
+    "e2e_nlg:test:000228",
+    "e2e_nlg:test:000229",
+    "e2e_nlg:test:000230",
+    "e2e_nlg:test:000231",
+    "e2e_nlg:test:000232",
+    "e2e_nlg:test:000233",
+    "e2e_nlg:test:000234",
+    "e2e_nlg:test:000235",
+    "e2e_nlg:test:000236",
+    "e2e_nlg:test:000237",
+    "e2e_nlg:test:000238",
+    "e2e_nlg:test:000239",
+    "e2e_nlg:test:000240",
+    "e2e_nlg:test:000241",
+    "e2e_nlg:test:000242",
+    "e2e_nlg:test:000243",
+    "e2e_nlg:test:000244",
+    "e2e_nlg:test:000245",
+    "e2e_nlg:test:000246",
+    "e2e_nlg:test:000247",
+    "e2e_nlg:test:000248",
+    "e2e_nlg:test:000249",
+    "e2e_nlg:test:000250",
+    "e2e_nlg:test:000251",
+    "e2e_nlg:test:000252",
+    "e2e_nlg:test:000253",
+    "e2e_nlg:test:000254",
+    "e2e_nlg:test:000255",
+    "e2e_nlg:test:000256",
+    "e2e_nlg:test:000257",
+    "e2e_nlg:test:000258",
+    "e2e_nlg:test:000259",
+    "e2e_nlg:test:000260",
+    "e2e_nlg:test:000261",
+    "e2e_nlg:test:000262",
+    "e2e_nlg:test:000263",
+    "e2e_nlg:test:000264",
+    "e2e_nlg:test:000265",
+    "e2e_nlg:test:000266",
+    "e2e_nlg:test:000267",
+    "e2e_nlg:test:000268",
+    "e2e_nlg:test:000269",
+    "e2e_nlg:test:000270",
+    "e2e_nlg:test:000271",
+    "e2e_nlg:test:000272",
+    "e2e_nlg:test:000273",
+    "e2e_nlg:test:000274",
+    "e2e_nlg:test:000275",
+    "e2e_nlg:test:000276",
+    "e2e_nlg:test:000277",
+    "e2e_nlg:test:000278",
+    "e2e_nlg:test:000279",
+    "e2e_nlg:test:000280",
+    "e2e_nlg:test:000281",
+    "e2e_nlg:test:000282",
+    "e2e_nlg:test:000283",
+    "e2e_nlg:test:000284",
+    "e2e_nlg:test:000285",
+    "e2e_nlg:test:000286",
+    "e2e_nlg:test:000287",
+    "e2e_nlg:test:000288",
+    "e2e_nlg:test:000289",
+    "e2e_nlg:test:000290",
+    "e2e_nlg:test:000291",
+    "e2e_nlg:test:000292",
+    "e2e_nlg:test:000293",
+    "e2e_nlg:test:000294",
+    "e2e_nlg:test:000295",
+    "e2e_nlg:test:000296",
+    "e2e_nlg:test:000297",
+    "e2e_nlg:test:000298",
+    "e2e_nlg:test:000299",
+    "e2e_nlg:test:000300",
+    "e2e_nlg:test:000301",
+    "e2e_nlg:test:000302",
+    "e2e_nlg:test:000303",
+    "e2e_nlg:test:000304",
+    "e2e_nlg:test:000305",
+    "e2e_nlg:test:000306",
+    "e2e_nlg:test:000307",
+    "e2e_nlg:test:000308",
+    "e2e_nlg:test:000309",
+    "e2e_nlg:test:000310",
+    "e2e_nlg:test:000311",
+    "e2e_nlg:test:000312",
+    "e2e_nlg:test:000313",
+    "e2e_nlg:test:000314",
+    "e2e_nlg:test:000315",
+    "e2e_nlg:test:000316",
+    "e2e_nlg:test:000317",
+    "e2e_nlg:test:000318",
+    "e2e_nlg:test:000319",
+    "e2e_nlg:test:000320",
+    "e2e_nlg:test:000321",
+    "e2e_nlg:test:000322",
+    "e2e_nlg:test:000323",
+    "e2e_nlg:test:000324",
+    "e2e_nlg:test:000325",
+    "e2e_nlg:test:000326",
+    "e2e_nlg:test:000327",
+    "e2e_nlg:test:000328",
+    "e2e_nlg:test:000329",
+    "e2e_nlg:test:000330",
+    "e2e_nlg:test:000331",
+    "e2e_nlg:test:000332",
+    "e2e_nlg:test:000333",
+    "e2e_nlg:test:000334",
+    "e2e_nlg:test:000335",
+    "e2e_nlg:test:000336",
+    "e2e_nlg:test:000337",
+    "e2e_nlg:test:000338",
+    "e2e_nlg:test:000339",
+    "e2e_nlg:test:000340",
+    "e2e_nlg:test:000341",
+    "e2e_nlg:test:000342",
+    "e2e_nlg:test:000343",
+    "e2e_nlg:test:000344",
+    "e2e_nlg:test:000345",
+    "e2e_nlg:test:000346",
+    "e2e_nlg:test:000347",
+    "e2e_nlg:test:000348",
+    "e2e_nlg:test:000349",
+    "e2e_nlg:test:000350",
+    "e2e_nlg:test:000351",
+    "e2e_nlg:test:000352",
+    "e2e_nlg:test:000353",
+    "e2e_nlg:test:000354",
+    "e2e_nlg:test:000355",
+    "e2e_nlg:test:000356",
+    "e2e_nlg:test:000357",
+    "e2e_nlg:test:000358",
+    "e2e_nlg:test:000359",
+    "e2e_nlg:test:000360",
+    "e2e_nlg:test:000361",
+    "e2e_nlg:test:000362",
+    "e2e_nlg:test:000363",
+    "e2e_nlg:test:000364",
+    "e2e_nlg:test:000365",
+    "e2e_nlg:test:000366",
+    "e2e_nlg:test:000367",
+    "e2e_nlg:test:000368",
+    "e2e_nlg:test:000369",
+    "e2e_nlg:test:000370",
+    "e2e_nlg:test:000371",
+    "e2e_nlg:test:000372",
+    "e2e_nlg:test:000373",
+    "e2e_nlg:test:000374",
+    "e2e_nlg:test:000375",
+    "e2e_nlg:test:000376",
+    "e2e_nlg:test:000377",
+    "e2e_nlg:test:000378",
+    "e2e_nlg:test:000379",
+    "e2e_nlg:test:000380",
+    "e2e_nlg:test:000381",
+    "e2e_nlg:test:000382",
+    "e2e_nlg:test:000383",
+    "e2e_nlg:test:000384",
+    "e2e_nlg:test:000385",
+    "e2e_nlg:test:000386",
+    "e2e_nlg:test:000387",
+    "e2e_nlg:test:000388",
+    "e2e_nlg:test:000389",
+    "e2e_nlg:test:000390",
+    "e2e_nlg:test:000391",
+    "e2e_nlg:test:000392",
+    "e2e_nlg:test:000393",
+    "e2e_nlg:test:000394",
+    "e2e_nlg:test:000395",
+    "e2e_nlg:test:000396",
+    "e2e_nlg:test:000397",
+    "e2e_nlg:test:000398",
+    "e2e_nlg:test:000399",
+    "e2e_nlg:test:000400",
+    "e2e_nlg:test:000401",
+    "e2e_nlg:test:000402",
+    "e2e_nlg:test:000403",
+    "e2e_nlg:test:000404",
+    "e2e_nlg:test:000405",
+    "e2e_nlg:test:000406",
+    "e2e_nlg:test:000407",
+    "e2e_nlg:test:000408",
+    "e2e_nlg:test:000409",
+    "e2e_nlg:test:000410",
+    "e2e_nlg:test:000411",
+    "e2e_nlg:test:000412",
+    "e2e_nlg:test:000413",
+    "e2e_nlg:test:000414",
+    "e2e_nlg:test:000415",
+    "e2e_nlg:test:000416",
+    "e2e_nlg:test:000417",
+    "e2e_nlg:test:000418",
+    "e2e_nlg:test:000419",
+    "e2e_nlg:test:000420",
+    "e2e_nlg:test:000421",
+    "e2e_nlg:test:000422",
+    "e2e_nlg:test:000423",
+    "e2e_nlg:test:000424",
+    "e2e_nlg:test:000425",
+    "e2e_nlg:test:000426",
+    "e2e_nlg:test:000427",
+    "e2e_nlg:test:000428",
+    "e2e_nlg:test:000429",
+    "e2e_nlg:test:000430",
+    "e2e_nlg:test:000431",
+    "e2e_nlg:test:000432",
+    "e2e_nlg:test:000433",
+    "e2e_nlg:test:000434",
+    "e2e_nlg:test:000435",
+    "e2e_nlg:test:000436",
+    "e2e_nlg:test:000437",
+    "e2e_nlg:test:000438",
+    "e2e_nlg:test:000439",
+    "e2e_nlg:test:000440",
+    "e2e_nlg:test:000441",
+    "e2e_nlg:test:000442",
+    "e2e_nlg:test:000443",
+    "e2e_nlg:test:000444",
+    "e2e_nlg:test:000445",
+    "e2e_nlg:test:000446",
+    "e2e_nlg:test:000447",
+    "e2e_nlg:test:000448",
+    "e2e_nlg:test:000449",
+    "e2e_nlg:test:000450",
+    "e2e_nlg:test:000451",
+    "e2e_nlg:test:000452",
+    "e2e_nlg:test:000453",
+    "e2e_nlg:test:000454",
+    "e2e_nlg:test:000455",
+    "e2e_nlg:test:000456",
+    "e2e_nlg:test:000457",
+    "e2e_nlg:test:000458",
+    "e2e_nlg:test:000459",
+    "e2e_nlg:test:000460",
+    "e2e_nlg:test:000461",
+    "e2e_nlg:test:000462",
+    "e2e_nlg:test:000463",
+    "e2e_nlg:test:000464",
+    "e2e_nlg:test:000465",
+    "e2e_nlg:test:000466",
+    "e2e_nlg:test:000467",
+    "e2e_nlg:test:000468",
+    "e2e_nlg:test:000469",
+    "e2e_nlg:test:000470",
+    "e2e_nlg:test:000471",
+    "e2e_nlg:test:000472",
+    "e2e_nlg:test:000473",
+    "e2e_nlg:test:000474",
+    "e2e_nlg:test:000475",
+    "e2e_nlg:test:000476",
+    "e2e_nlg:test:000477",
+    "e2e_nlg:test:000478",
+    "e2e_nlg:test:000479",
+    "e2e_nlg:test:000480",
+    "e2e_nlg:test:000481",
+    "e2e_nlg:test:000482",
+    "e2e_nlg:test:000483",
+    "e2e_nlg:test:000484",
+    "e2e_nlg:test:000485",
+    "e2e_nlg:test:000486",
+    "e2e_nlg:test:000487",
+    "e2e_nlg:test:000488",
+    "e2e_nlg:test:000489",
+    "e2e_nlg:test:000490",
+    "e2e_nlg:test:000491",
+    "e2e_nlg:test:000492",
+    "e2e_nlg:test:000493",
+    "e2e_nlg:test:000494",
+    "e2e_nlg:test:000495",
+    "e2e_nlg:test:000496",
+    "e2e_nlg:test:000497",
+    "e2e_nlg:test:000498",
+    "e2e_nlg:test:000499"
+  ],
+  "sample_count": 500,
+  "feature_schema": [
+    {
+      "name": "transformed_hidden.final.last_l2",
+      "family": "transformed_hidden",
+      "layer": "final",
+      "statistic": "last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_00.last_l2",
+      "family": "transformed_hidden",
+      "layer": 0,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_01.last_l2",
+      "family": "transformed_hidden",
+      "layer": 1,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_02.last_l2",
+      "family": "transformed_hidden",
+      "layer": 2,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_03.last_l2",
+      "family": "transformed_hidden",
+      "layer": 3,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_04.last_l2",
+      "family": "transformed_hidden",
+      "layer": 4,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_05.last_l2",
+      "family": "transformed_hidden",
+      "layer": 5,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_06.last_l2",
+      "family": "transformed_hidden",
+      "layer": 6,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_07.last_l2",
+      "family": "transformed_hidden",
+      "layer": 7,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_08.last_l2",
+      "family": "transformed_hidden",
+      "layer": 8,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_09.last_l2",
+      "family": "transformed_hidden",
+      "layer": 9,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_10.last_l2",
+      "family": "transformed_hidden",
+      "layer": 10,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_11.last_l2",
+      "family": "transformed_hidden",
+      "layer": 11,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_12.last_l2",
+      "family": "transformed_hidden",
+      "layer": 12,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_13.last_l2",
+      "family": "transformed_hidden",
+      "layer": 13,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_14.last_l2",
+      "family": "transformed_hidden",
+      "layer": 14,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_15.last_l2",
+      "family": "transformed_hidden",
+      "layer": 15,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_16.last_l2",
+      "family": "transformed_hidden",
+      "layer": 16,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_17.last_l2",
+      "family": "transformed_hidden",
+      "layer": 17,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_18.last_l2",
+      "family": "transformed_hidden",
+      "layer": 18,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_19.last_l2",
+      "family": "transformed_hidden",
+      "layer": 19,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_20.last_l2",
+      "family": "transformed_hidden",
+      "layer": 20,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_21.last_l2",
+      "family": "transformed_hidden",
+      "layer": 21,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_22.last_l2",
+      "family": "transformed_hidden",
+      "layer": 22,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "transformed_hidden.layer_23.last_l2",
+      "family": "transformed_hidden",
+      "layer": 23,
+      "statistic": "pre_attention_last_token_l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.mean",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "mean",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.std",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "std",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.l2",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "l2",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.min",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "min",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.max",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "max",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.top_values.mean",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "mean(top_values)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.top_values.std",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "std(top_values)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.top_values.min",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "min(top_values)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_logits.top_values.max",
+      "family": "masked_logits",
+      "layer": "final",
+      "statistic": "max(top_values)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_00.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 0,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_00.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 0,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_00.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 0,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_00.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 0,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_01.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 1,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_01.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 1,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_01.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 1,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_01.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 1,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_02.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 2,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_02.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 2,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_02.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 2,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_02.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 2,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_03.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 3,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_03.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 3,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_03.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 3,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_03.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 3,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_04.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 4,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_04.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 4,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_04.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 4,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_04.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 4,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_05.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 5,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_05.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 5,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_05.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 5,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_05.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 5,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_06.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 6,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_06.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 6,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_06.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 6,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_06.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 6,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_07.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 7,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_07.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 7,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_07.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 7,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_07.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 7,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_08.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 8,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_08.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 8,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_08.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 8,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_08.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 8,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_09.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 9,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_09.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 9,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_09.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 9,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_09.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 9,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_10.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 10,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_10.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 10,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_10.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 10,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_10.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 10,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_11.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 11,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_11.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 11,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_11.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 11,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_11.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 11,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_12.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 12,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_12.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 12,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_12.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 12,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_12.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 12,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_13.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 13,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_13.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 13,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_13.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 13,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_13.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 13,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_14.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 14,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_14.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 14,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_14.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 14,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_14.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 14,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_15.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 15,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_15.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 15,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_15.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 15,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_15.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 15,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_16.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 16,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_16.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 16,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_16.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 16,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_16.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 16,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_17.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 17,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_17.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 17,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_17.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 17,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_17.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 17,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_18.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 18,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_18.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 18,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_18.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 18,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_18.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 18,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_19.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 19,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_19.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 19,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_19.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 19,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_19.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 19,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_20.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 20,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_20.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 20,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_20.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 20,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_20.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 20,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_21.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 21,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_21.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 21,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_21.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 21,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_21.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 21,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_22.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 22,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_22.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 22,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_22.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 22,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_22.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 22,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_23.last_l2_by_head.mean",
+      "family": "masked_k",
+      "layer": 23,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_23.last_l2_by_head.std",
+      "family": "masked_k",
+      "layer": 23,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_23.last_l2_by_head.min",
+      "family": "masked_k",
+      "layer": 23,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_k.layer_23.last_l2_by_head.max",
+      "family": "masked_k",
+      "layer": 23,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_00.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 0,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_00.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 0,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_00.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 0,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_00.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 0,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_01.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 1,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_01.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 1,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_01.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 1,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_01.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 1,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_02.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 2,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_02.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 2,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_02.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 2,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_02.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 2,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_03.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 3,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_03.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 3,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_03.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 3,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_03.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 3,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_04.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 4,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_04.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 4,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_04.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 4,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_04.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 4,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_05.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 5,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_05.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 5,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_05.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 5,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_05.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 5,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_06.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 6,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_06.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 6,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_06.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 6,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_06.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 6,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_07.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 7,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_07.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 7,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_07.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 7,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_07.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 7,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_08.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 8,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_08.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 8,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_08.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 8,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_08.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 8,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_09.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 9,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_09.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 9,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_09.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 9,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_09.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 9,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_10.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 10,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_10.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 10,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_10.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 10,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_10.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 10,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_11.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 11,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_11.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 11,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_11.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 11,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_11.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 11,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_12.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 12,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_12.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 12,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_12.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 12,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_12.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 12,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_13.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 13,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_13.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 13,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_13.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 13,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_13.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 13,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_14.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 14,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_14.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 14,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_14.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 14,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_14.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 14,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_15.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 15,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_15.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 15,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_15.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 15,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_15.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 15,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_16.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 16,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_16.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 16,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_16.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 16,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_16.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 16,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_17.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 17,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_17.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 17,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_17.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 17,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_17.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 17,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_18.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 18,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_18.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 18,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_18.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 18,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_18.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 18,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_19.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 19,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_19.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 19,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_19.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 19,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_19.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 19,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_20.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 20,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_20.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 20,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_20.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 20,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_20.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 20,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_21.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 21,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_21.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 21,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_21.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 21,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_21.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 21,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_22.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 22,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_22.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 22,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_22.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 22,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_22.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 22,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_23.last_l2_by_head.mean",
+      "family": "masked_v",
+      "layer": 23,
+      "statistic": "mean(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_23.last_l2_by_head.std",
+      "family": "masked_v",
+      "layer": 23,
+      "statistic": "std(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_23.last_l2_by_head.min",
+      "family": "masked_v",
+      "layer": 23,
+      "statistic": "min(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "masked_v.layer_23.last_l2_by_head.max",
+      "family": "masked_v",
+      "layer": 23,
+      "statistic": "max(last_l2_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_00.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 0,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_01.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 1,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_02.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 2,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_03.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 3,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_04.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 4,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_05.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 5,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_06.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 6,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_07.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 7,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_08.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 8,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_09.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 9,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_10.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 10,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_11.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 11,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_12.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 12,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_13.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 13,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_14.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 14,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_15.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 15,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_16.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 16,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_17.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 17,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_18.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 18,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_19.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 19,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_20.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 20,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_21.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 21,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_22.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 22,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_entropy_by_head.mean",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "mean(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_entropy_by_head.std",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "std(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_entropy_by_head.min",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "min(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_entropy_by_head.max",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "max(last_entropy_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_max_by_head.mean",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "mean(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_max_by_head.std",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "std(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_max_by_head.min",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "min(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.last_max_by_head.max",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "max(last_max_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_mean_by_head.mean",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "mean(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_mean_by_head.std",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "std(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_mean_by_head.min",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "min(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_mean_by_head.max",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "max(true_score_last_mean_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_std_by_head.mean",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "mean(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_std_by_head.std",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "std(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_std_by_head.min",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "min(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.true_score_last_std_by_head.max",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "max(true_score_last_std_by_head)",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.normalized_last_argmax_by_head.mean",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "mean(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.normalized_last_argmax_by_head.std",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "std(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.normalized_last_argmax_by_head.min",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "min(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    },
+    {
+      "name": "attention_scores.layer_23.normalized_last_argmax_by_head.max",
+      "family": "attention_scores",
+      "layer": 23,
+      "statistic": "max(last_argmax/(sequence_length-1))",
+      "invariant": true,
+      "runtime_metadata": false
+    }
+  ],
+  "simulated_artifacts": {
+    "v2_sha256": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6",
+    "profile_sha256": "2c0a633b721ac0659dc426a06ad3517c32ca44870bc05154311f925b2397b11f",
+    "package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "adapter_sha256": "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2"
+  },
+  "expected_capture": {
+    "tensor_shapes": {
+      "attention_heads": 14,
+      "hidden_size": 896,
+      "masked_logits": [
+        31,
+        151936
+      ],
+      "sequence_length": 31
+    },
+    "dtype": "fp32",
+    "prefill_per_sample": 1,
+    "feature_count": 706,
+    "forbidden_fields": [
+      "labels",
+      "loss",
+      "gradients",
+      "dlogits",
+      "optimizer_state",
+      "session_id",
+      "run_id",
+      "step",
+      "trusted_secrets"
+    ]
+  },
+  "comparison_procedure": [
+    "verify package, adapter, frozen-ID, capture-source, and schema hashes before collection",
+    "collect each frozen ID once with identical dtype, batch size, padding, collection point, and mask policy",
+    "remove raw shape and all run/session/source metadata before evaluator release",
+    "require exact ID order, field names, tensor shapes, dtypes, missingness, and feature count",
+    "compute paired per-feature absolute/relative errors, Spearman correlation, and distributional KS",
+    "rerun the frozen output-property metric and report paired REAL_TDX minus SIMULATED differences with bootstrap CIs",
+    "label every real result REAL_TDX_BACKED_VIEW and retain simulation results separately"
+  ],
+  "acceptance_policy": {
+    "no_silent_fallback": true,
+    "metadata_leakage": "zero forbidden fields",
+    "decision": "a later evaluator must preregister numerical tolerances from implementation precision before collection"
+  }
+}

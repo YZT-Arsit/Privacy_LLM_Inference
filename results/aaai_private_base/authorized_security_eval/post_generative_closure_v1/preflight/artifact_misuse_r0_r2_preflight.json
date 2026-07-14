@@ -1,0 +1,31 @@
+{
+  "schema": "isolated_gpu_preflight_v1",
+  "recorded_before_launch": true,
+  "launch_status_at_recording": "not_launched",
+  "remote_root": "/root/security_eval_post_closure_v1",
+  "resource": {
+    "public_ip": "39.96.4.252",
+    "private_ip": "172.30.25.157",
+    "observed_gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
+    "registry_status_read_only": "idle_after_requested_g1_bf16_matched_completion"
+  },
+  "inputs": {
+    "artifact_misuse_r0_r2.py": "f54b464d9a56c0e20c4a4a4db0c5da263e8a603263f18d2512689d0c5c5e8c25",
+    "artifact_misuse_r0_r2.json": "1ae51884004bfdd3d839a08642b5c28c6b16e43e4b4cec1120c7103baca7c464",
+    "protected_generate.py": "d67b4e135d32fc048b8b372b24b8f7a71bac44c47c8ba4121b9d078edf810a3d",
+    "h800_unified_worker.py": "cad194825df6f6057e4e5c1b28ec723329f9e5d97b52d1615bd8bf0c92b8d269",
+    "h800_direct_runner.py": "34df6c2478fd0020f33e963636b1be73fa0c34a884d52ec1f3d72e5dcd8c282a",
+    "masked_training_kernels.py": "417a93905ac679ac3292117be8d3415668d1f431d3582c99bef8a19521c45875",
+    "gpu_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+    "adapter": "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2",
+    "generation_input": "dffadc4c6dc538663999572ea2a65b82b254b850289571c77aced7732cc627cb"
+  },
+  "guards": {
+    "central_registry_write": false,
+    "existing_remote_job_or_artifact_write": false,
+    "tdx_launch_or_configuration": false,
+    "plaintext_checkpoint_copy": false,
+    "remote_destination_is_new_isolated_root": true
+  }
+}
