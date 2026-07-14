@@ -1,0 +1,9 @@
+{
+  "schema": "mia_v3_transform_pair_recapture",
+  "paired_samples": 32,
+  "features": 611,
+  "max_abs_difference": 0.0,
+  "all_finite": true,
+  "collector_sha256": "bfb06dec942a329c9daffcc7d2910d0f313223ab7879f29513b53863203b1199",
+  "adapter_sha256": "848dc99b4fa08e638f68bb42c6b293913dfb241d7e25fd02de917b0e91520fb2"
+}

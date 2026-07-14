@@ -1,0 +1,36 @@
+{
+  "schema": "obfuscatune_style_lora_fidelity_contract",
+  "version": "1.0",
+  "paper_facing_name": "OBFUSCATUNE_STYLE_LORA_BASELINE",
+  "official_reproduction": false,
+  "source_paper": "arXiv:2407.02960",
+  "gate_status": "BLOCKED",
+  "launch_allowed": false,
+  "blocking_reasons": [
+    "qwen_lora_training_path_not_implemented",
+    "real_tdx_nonlinear_training_boundary_not_implemented",
+    "baseline_optimizer_placement_not_implemented",
+    "adapter_transformation_export_not_implemented",
+    "fresh_process_handoff_not_implemented"
+  ],
+  "components": {
+    "linear_obfuscation": "FAITHFUL",
+    "qwen_rmsnorm": "ADAPTED_WITH_JUSTIFICATION",
+    "qwen_swiglu": "ADAPTED_WITH_JUSTIFICATION",
+    "qwen_rope": "ADAPTED_WITH_JUSTIFICATION",
+    "qwen_grouped_query_attention": "ADAPTED_WITH_JUSTIFICATION",
+    "qwen_prefill_decode_simulator": "ADAPTED_WITH_JUSTIFICATION",
+    "kv_cache_protection": "NOT_IMPLEMENTED",
+    "qwen_lora_training": "NOT_IMPLEMENTED",
+    "optimizer_placement": "NOT_IMPLEMENTED",
+    "real_tdx_partition": "NOT_IMPLEMENTED",
+    "adapter_transform_export": "NOT_IMPLEMENTED",
+    "fresh_process_inference_handoff": "NOT_IMPLEMENTED",
+    "real_tdx_attestation": "NOT_IMPLEMENTED",
+    "official_gpt2_nanogpt_protocol": "NOT_APPLICABLE"
+  },
+  "smoke_command": null,
+  "formal_seed_1234_command": null,
+  "decision": "BASELINE_INVALID_TO_LAUNCH_IN_CURRENT_IMPLEMENTATION"
+}
+

@@ -1,0 +1,116 @@
+{
+  "schema": "mia_v3_cpu_handoff",
+  "status": "PASS",
+  "execution_mode": "SIMULATED_PROTOCOL_VIEW",
+  "paper_facing_final_mia_executed": false,
+  "phase0_validation": {
+    "path": "phase0/phase0_validation.json",
+    "sha256": "fe70cf839fc92eac2add67993451476bf287432c1583220b1a1b553b1a54d8e0"
+  },
+  "feature_schema": {
+    "path": "../mia_v2_handoff/validated_feature_schema.json",
+    "sha256": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+    "allowed_features": 611,
+    "forbidden_features": 96
+  },
+  "prohibited_feature_list": {
+    "path": "../mia_v2_handoff/prohibited_feature_list.json",
+    "sha256": "2c492e5573e8a32ce443d6e6ea79d55cd475751e1dc7b878a665cbdeab491bf8"
+  },
+  "base_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "shadows": [
+    {
+      "shadow": 1,
+      "seed": 7,
+      "run_id": "mia_v3_shadow_seed7_848dc99b4fa0",
+      "terminal_manifest": "shadow_1/terminal_manifest.json",
+      "terminal_manifest_sha256": "a172c939a0cacb233d1ed8b456e2d8ccc1074c2e72a8986cc96b296992734993",
+      "collection_terminal_manifest": "shadow_1/collection_terminal_manifest.json",
+      "collection_terminal_manifest_sha256": "c409d082b53bb8c3b157a267e87585d9357b678d470d5a2dac4d7c885db1a4df",
+      "validity_gates": "shadow_1/validity_gates.json",
+      "validity_gates_sha256": "b7162953f67f997fa35db8b21596c3cffd8fef4c8bd3d8429a0f6fbe710a9a0b",
+      "adapter_path": "shadow_1/training/adapter/adapter_model.safetensors",
+      "adapter_sha256": "848dc99b4fa08e638f68bb42c6b293913dfb241d7e25fd02de917b0e91520fb2",
+      "membership_map": "shadow_1/collection/membership_join.jsonl",
+      "membership_sha256": "01eb983e80078c81ae48abff3838f9671ec4225cf53eedcc84869f63fa151676",
+      "v0_outputs": "shadow_1/collection/v0_outputs.jsonl",
+      "v0_sha256": "9ced69c416a0ad914f83d7ad27d207a2d33b9b810df02ee1c5b18e957edac54f",
+      "v2_matrix": "shadow_1/collection/v2_features.csv",
+      "v2_sha256": "5dfb35e38b9dbddcdbadba96d17e72a13790d6590f9a07d8ab55a6f3b2402ca9",
+      "sample_join": "shadow_1/collection/sample_order.json",
+      "sample_join_sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90"
+    },
+    {
+      "shadow": 2,
+      "seed": 1234,
+      "run_id": "mia_v3_shadow_seed1234_7c46d98316c5",
+      "terminal_manifest": "shadow_2/terminal_manifest.json",
+      "terminal_manifest_sha256": "5bd45bbb646d49b06ecfaa76a2f34958d21e06a3e2485f5a35fbe9a67fc01b9d",
+      "collection_terminal_manifest": "shadow_2/collection_terminal_manifest.json",
+      "collection_terminal_manifest_sha256": "34ad1b37d4d743ee84fb2e9fe6587616113e4528acfbf2231c6995996df29976",
+      "validity_gates": "shadow_2/validity_gates.json",
+      "validity_gates_sha256": "3786cf4afdd985dc919c5925d167a5f47c1f684ced172c26e40c3b2fc5cb7f34",
+      "adapter_path": "shadow_2/training/adapter/adapter_model.safetensors",
+      "adapter_sha256": "7c46d98316c5f09266cade307ecd2653f81c5fcfa021eef5536e326d45547ec9",
+      "membership_map": "shadow_2/collection/membership_join.jsonl",
+      "membership_sha256": "bf98dedcf37a42a9439d9d9fd949263e44440de43b47f7ad87eba632f7bc222a",
+      "v0_outputs": "shadow_2/collection/v0_outputs.jsonl",
+      "v0_sha256": "388f26a6a1ded2d51cee2e6485de4d940ebe9a38e04d4ffd43422a049480ae2b",
+      "v2_matrix": "shadow_2/collection/v2_features.csv",
+      "v2_sha256": "a8e4ae1ab671a0b5aead72c09ba5bdc54a7ede434d1067f0ef4bbfb31aa39e39",
+      "sample_join": "shadow_2/collection/sample_order.json",
+      "sample_join_sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90"
+    },
+    {
+      "shadow": 3,
+      "seed": 2025,
+      "run_id": "mia_v3_shadow_seed2025_1990fef53762",
+      "terminal_manifest": "shadow_3/terminal_manifest.json",
+      "terminal_manifest_sha256": "cee6eab2529aca60453fecf999897a41b14369c18d9c9bc8b05dea0671b561c4",
+      "collection_terminal_manifest": "shadow_3/collection_terminal_manifest.json",
+      "collection_terminal_manifest_sha256": "aefad60eaf3fb0ffbceb8d06206fca9f4838289765b71e929faf8ebd0be6a71e",
+      "validity_gates": "shadow_3/validity_gates.json",
+      "validity_gates_sha256": "87b91c3d5346271245f2d2773f0371457c6ed592e4a965b0b44cf477b2c2fe1e",
+      "adapter_path": "shadow_3/training/adapter/adapter_model.safetensors",
+      "adapter_sha256": "1990fef5376210989d3302cba30206993d280a098557981bd59680f897828c37",
+      "membership_map": "shadow_3/collection/membership_join.jsonl",
+      "membership_sha256": "6bc88e7e92f07aac642759ca870eaec19abd9d4cdfc7209ecbb0ee93547cad4a",
+      "v0_outputs": "shadow_3/collection/v0_outputs.jsonl",
+      "v0_sha256": "b2aed54bc4ef05191db706bfe6ed1239ed58ab8ce773e66f0701fef44ec8a32e",
+      "v2_matrix": "shadow_3/collection/v2_features.csv",
+      "v2_sha256": "8147bc21c40f0728c8abdbaccd5953b9e13db202660f601a74947764677e1ff0",
+      "sample_join": "shadow_3/collection/sample_order.json",
+      "sample_join_sha256": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90"
+    }
+  ],
+  "diagnostic_controls": {
+    "path": "capture_validation/joint_diagnostics/diagnostic_controls.json",
+    "sha256": "406e37f8e2f80c56abcdaa06332a94b4f6221aecc7cf831c9921439016e9134c",
+    "status": "PASS"
+  },
+  "per_feature_audit": {
+    "path": "capture_validation/joint_diagnostics/per_feature_audit.csv",
+    "sha256": "b3390ab6383dfa87e3ffd55275a3afcc715db1c6aae30bf10524946ae319082e"
+  },
+  "real_tdx_validation_handoff": {
+    "path": "handoff_to_cpu/real_tdx_validation_handoff.json",
+    "sha256": "954f90449311d863f9c612fad479430d99ccb7fb26219f2aa3a1208280001967"
+  },
+  "cpu_owner_next_steps": [
+    "verify artifact_hashes.json",
+    "leave-one-shadow-out evaluation",
+    "optional leave-sample-group-out evaluation",
+    "fit scaler and feature selection on training folds only",
+    "compare V0, V2, and V0+V2",
+    "feature-family ablations",
+    "bootstrap confidence intervals",
+    "report ROC-AUC, balanced accuracy, TPR@1% FPR, TPR@0.1% FPR where supported, and max(TPR-FPR)",
+    "repeat label-shuffle and pseudo-membership controls"
+  ],
+  "claims_not_authorized": [
+    "zero membership leakage",
+    "information-theoretic privacy",
+    "universal resistance",
+    "final MIA safety before CPU leave-one-shadow-out analysis"
+  ]
+}

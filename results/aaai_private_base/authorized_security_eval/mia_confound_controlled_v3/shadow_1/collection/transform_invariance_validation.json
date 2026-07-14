@@ -1,0 +1,11 @@
+{
+  "schema": "mia_v3_transform_invariance_validation",
+  "paired_samples": 32,
+  "feature_columns": 611,
+  "max_abs_difference": 0.0,
+  "tolerance": 1e-05,
+  "all_pairs_within_tolerance": true,
+  "source_classifier": "group-disjoint 4-fold standardized logistic regression",
+  "source_classifier_roc_auc": 0.5,
+  "auc_null_two_sided_p_value": 1.0
+}

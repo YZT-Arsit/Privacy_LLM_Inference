@@ -1,0 +1,210 @@
+{
+  "collection_mode": "SIMULATED_PROTOCOL_VIEW",
+  "exploratory_due_to_three_shadows": true,
+  "comparisons": {
+    "V2_combined_minus_V0": {
+      "replicates": 2000,
+      "method": "paired within-held-out-shadow percentile bootstrap; equal macro aggregation",
+      "metrics": {
+        "roc_auc": {
+          "observed_difference": -0.19537133333333329,
+          "ci95": [
+            -0.22038026072188896,
+            -0.17062374850318604
+          ]
+        },
+        "balanced_accuracy": {
+          "observed_difference": -0.13566666666666666,
+          "ci95": [
+            -0.15154230549791908,
+            -0.11818530215248133
+          ]
+        },
+        "average_precision": {
+          "observed_difference": -0.1515307605568078,
+          "ci95": [
+            -0.17682490507790255,
+            -0.12745401575065438
+          ]
+        },
+        "attack_advantage": {
+          "observed_difference": -0.2833333333333333,
+          "ci95": [
+            -0.3138682878474801,
+            -0.24549696612654792
+          ]
+        }
+      }
+    },
+    "V0_plus_V2_minus_V0": {
+      "replicates": 2000,
+      "method": "paired within-held-out-shadow percentile bootstrap; equal macro aggregation",
+      "metrics": {
+        "roc_auc": {
+          "observed_difference": -0.18064733333333333,
+          "ci95": [
+            -0.20398552991876764,
+            -0.15555696116857007
+          ]
+        },
+        "balanced_accuracy": {
+          "observed_difference": -0.13533333333333325,
+          "ci95": [
+            -0.15176167817497627,
+            -0.1180738426283292
+          ]
+        },
+        "average_precision": {
+          "observed_difference": -0.1398827131899602,
+          "ci95": [
+            -0.16346055714021782,
+            -0.1148844332513335
+          ]
+        },
+        "attack_advantage": {
+          "observed_difference": -0.2713333333333333,
+          "ci95": [
+            -0.3022661033604033,
+            -0.2274476633861711
+          ]
+        }
+      }
+    },
+    "V2_attention_minus_V0": {
+      "replicates": 2000,
+      "method": "paired within-held-out-shadow percentile bootstrap; equal macro aggregation",
+      "metrics": {
+        "roc_auc": {
+          "observed_difference": -0.1953686666666667,
+          "ci95": [
+            -0.22348305513126251,
+            -0.1679848429656058
+          ]
+        },
+        "balanced_accuracy": {
+          "observed_difference": -0.14233333333333326,
+          "ci95": [
+            -0.16033659586844742,
+            -0.12341760329171338
+          ]
+        },
+        "average_precision": {
+          "observed_difference": -0.15641983167715573,
+          "ci95": [
+            -0.18222909773870707,
+            -0.12963079832397012
+          ]
+        },
+        "attack_advantage": {
+          "observed_difference": -0.2733333333333334,
+          "ci95": [
+            -0.30181067195695455,
+            -0.22623838903337473
+          ]
+        }
+      }
+    },
+    "V2_kv_minus_V0": {
+      "replicates": 2000,
+      "method": "paired within-held-out-shadow percentile bootstrap; equal macro aggregation",
+      "metrics": {
+        "roc_auc": {
+          "observed_difference": -0.1931193333333333,
+          "ci95": [
+            -0.21940817226450982,
+            -0.16694900678964383
+          ]
+        },
+        "balanced_accuracy": {
+          "observed_difference": -0.1336666666666666,
+          "ci95": [
+            -0.15061318624656958,
+            -0.11676750809864603
+          ]
+        },
+        "average_precision": {
+          "observed_difference": -0.14858390651097747,
+          "ci95": [
+            -0.17540613696058138,
+            -0.1239352427682157
+          ]
+        },
+        "attack_advantage": {
+          "observed_difference": -0.2826666666666667,
+          "ci95": [
+            -0.3162896308933505,
+            -0.24049255219439097
+          ]
+        }
+      }
+    },
+    "V2_hidden_minus_V0": {
+      "replicates": 2000,
+      "method": "paired within-held-out-shadow percentile bootstrap; equal macro aggregation",
+      "metrics": {
+        "roc_auc": {
+          "observed_difference": -0.175838,
+          "ci95": [
+            -0.2025649402838949,
+            -0.1484783973455572
+          ]
+        },
+        "balanced_accuracy": {
+          "observed_difference": -0.13633333333333325,
+          "ci95": [
+            -0.1533307254715247,
+            -0.11918983984270938
+          ]
+        },
+        "average_precision": {
+          "observed_difference": -0.139594524103534,
+          "ci95": [
+            -0.16611062994620818,
+            -0.1108792658300312
+          ]
+        },
+        "attack_advantage": {
+          "observed_difference": -0.248,
+          "ci95": [
+            -0.2809940394947229,
+            -0.2025752681428771
+          ]
+        }
+      }
+    },
+    "V2_logit_minus_V0": {
+      "replicates": 2000,
+      "method": "paired within-held-out-shadow percentile bootstrap; equal macro aggregation",
+      "metrics": {
+        "roc_auc": {
+          "observed_difference": -0.16772866666666664,
+          "ci95": [
+            -0.19489199218197012,
+            -0.13951051133280562
+          ]
+        },
+        "balanced_accuracy": {
+          "observed_difference": -0.13699999999999996,
+          "ci95": [
+            -0.15396422597802026,
+            -0.11947135459386042
+          ]
+        },
+        "average_precision": {
+          "observed_difference": -0.12274212008315422,
+          "ci95": [
+            -0.1499882828193637,
+            -0.0956852427880222
+          ]
+        },
+        "attack_advantage": {
+          "observed_difference": -0.2466666666666667,
+          "ci95": [
+            -0.27710928707848814,
+            -0.19885046443997675
+          ]
+        }
+      }
+    }
+  }
+}

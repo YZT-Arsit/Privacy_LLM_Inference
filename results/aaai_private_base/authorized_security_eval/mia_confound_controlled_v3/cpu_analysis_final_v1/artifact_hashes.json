@@ -1,0 +1,70 @@
+{
+  "collection_mode": "SIMULATED_PROTOCOL_VIEW",
+  "files": {
+    "final_status.md": {
+      "sha256": "22ad68d21cb44c72a59de8a41a28c7b62702767bc54bc291d603ced82277f9ca",
+      "bytes": 719
+    },
+    "final_status.json": {
+      "sha256": "4c201ce2a473bd63ed372b963b1706d0052d7367702587982e3cd13a50db2924",
+      "bytes": 1522
+    },
+    "integrity_validation.md": {
+      "sha256": "023abe2a2ec3dd43c64fbadda46ac0541f5eeaf18bf65a5b14df95fe37b48953",
+      "bytes": 405
+    },
+    "duplicate_group_audit.md": {
+      "sha256": "fa1fd1dfac6fea1c09d1067e9e8b06f6a1bc893740856e8be7c80dccaee761a2",
+      "bytes": 784
+    },
+    "per_fold_metrics.csv": {
+      "sha256": "078d90207d2d3c20ff0d041f89a4a39cbdec100c71db8969d03f39abf737d214",
+      "bytes": 11234
+    },
+    "macro_metrics.csv": {
+      "sha256": "a95a24e1448de05c4d260fa75fd16812a1d7494912621fce11f17de82b2a56cf",
+      "bytes": 5086
+    },
+    "paired_view_differences.csv": {
+      "sha256": "7d3125f35aa1c13da2e026447594db0c01d8d30c7aed16c43096f716bf6de2b3",
+      "bytes": 3056
+    },
+    "confidence_intervals.json": {
+      "sha256": "3f7aa78fe97bd07e166f31d46ad238a60e9008776c6108e99832abdbd548fbcf",
+      "bytes": 5796
+    },
+    "negative_controls.csv": {
+      "sha256": "26de7e1ae281511f5482ad52dd951b839e96bac3eb73cbe8c01d3d6e4d91f536",
+      "bytes": 2947
+    },
+    "feature_family_ablation.csv": {
+      "sha256": "477229debba95ad4da86f913c1647e4fd69db0feb2d513c648ae3fbc040d22fc",
+      "bytes": 1009
+    },
+    "feature_attribution.md": {
+      "sha256": "69584f5f3aa393bd558a3fc99896ed2b2c55dbc7a76f33f18947d7e7de920e03",
+      "bytes": 5164
+    },
+    "classifier_config.json": {
+      "sha256": "04f3cfa98c03d7d0731026c91e71730c448a551012248c76a68a03b7ebfa16ef",
+      "bytes": 1076
+    },
+    "statistical_method.md": {
+      "sha256": "aeb2dbe44cb9505882fb7ae51f03773d8119f5dbbd89463d17982519770d46ce",
+      "bytes": 965
+    },
+    "limitations.md": {
+      "sha256": "561c4c53ed26afe7304444d0b6ed84b8ffce81b9253321b7e6177541ef5559fa",
+      "bytes": 1067
+    },
+    "paper_table.md": {
+      "sha256": "185461326737934c103ad70a30d826fff8f52dcb8aab02f40325086811b55ae8",
+      "bytes": 1456
+    },
+    "paper_claim_text.md": {
+      "sha256": "b5db48ea6fc608c1c273546ea54d55d12a66add8c3ee144dfa1da85c1e56226f",
+      "bytes": 712
+    }
+  },
+  "file_count": 16
+}

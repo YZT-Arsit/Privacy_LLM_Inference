@@ -1,0 +1,48 @@
+{
+  "schema": "mia_v3_collection_terminal_manifest",
+  "status": "PASS",
+  "run_id": "mia_v3_shadow_seed1234_7c46d98316c5_collection",
+  "shadow_seed": 1234,
+  "views": [
+    "V0_MATCHED_EXTERNAL_OUTPUT",
+    "V2_SIMULATED_PROTOCOL_VIEW"
+  ],
+  "feature_schema_version": "2.0",
+  "feature_schema_sha256": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+  "prohibited_feature_list_sha256": "2c492e5573e8a32ce443d6e6ea79d55cd475751e1dc7b878a665cbdeab491bf8",
+  "collector_source_sha256": "bfb06dec942a329c9daffcc7d2910d0f313223ab7879f29513b53863203b1199",
+  "base_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "adapter_sha256": "7c46d98316c5f09266cade307ecd2653f81c5fcfa021eef5536e326d45547ec9",
+  "dtype": "fp32",
+  "batch_size": 1,
+  "padding_policy": "batch-size-one; no padding",
+  "effective_length_handling": {
+    "source": "separate evaluator metadata only",
+    "min": 28,
+    "max": 63,
+    "excluded_from_feature_matrix": true
+  },
+  "outputs": {
+    "v0_outputs.jsonl": "388f26a6a1ded2d51cee2e6485de4d940ebe9a38e04d4ffd43422a049480ae2b",
+    "v2_features.csv": "a8e4ae1ab671a0b5aead72c09ba5bdc54a7ede434d1067f0ef4bbfb31aa39e39",
+    "sample_order.json": "3d926b7534ab808e68b43a4b5145bbec6f9e39ddf9f6daada522baf1c73d9b90",
+    "membership_join.jsonl": "bf98dedcf37a42a9439d9d9fd949263e44440de43b47f7ad87eba632f7bc222a",
+    "evaluator_metadata.jsonl": "fb19bfbfe7bd20206a39284d3bf786961d7607819bc2c1e134135ce4ac0b459c",
+    "transform_commitments.jsonl": "57a134596eea3201f07f9ef1189c7af5144f4abcf17b071a45a278f367242920",
+    "transform_invariance_validation.json": "4f2afb2a42cfa6920fb4f1173eb1f43c309557cb2c03221de0a07658575fd0f7",
+    "collection_manifest.json": "7c177e70290aa3f9ec6371a791979a8ed33dc98e831409d99455d75363eeb75e"
+  },
+  "gates": {
+    "training_terminal_pass": true,
+    "collector_pass": true,
+    "records_1000": true,
+    "unique_ids": true,
+    "identical_order": true,
+    "matrix_1000x611": true,
+    "exact_schema": true,
+    "finite": true,
+    "balanced_ground_truth": true,
+    "same_path": true,
+    "fresh_transform": true
+  }
+}

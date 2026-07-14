@@ -1,0 +1,53 @@
+{
+  "collection_mode": "SIMULATED_PROTOCOL_VIEW",
+  "primary_classifier": "logistic_l2",
+  "classifiers": {
+    "logistic_l2": {
+      "C_grid": [
+        0.01,
+        0.1,
+        1.0,
+        10.0
+      ],
+      "penalty": "l2",
+      "solver": "liblinear",
+      "class_weight": "balanced",
+      "max_iter": 5000
+    },
+    "linear_svm": {
+      "C_grid": [
+        0.01,
+        0.1,
+        1.0,
+        10.0
+      ],
+      "class_weight": "balanced",
+      "max_iter": 10000
+    }
+  },
+  "random_seed": 20260714,
+  "hyperparameter_selection": "two training shadows swap train/validation; mean ROC-AUC; lower C tie-break",
+  "V0": {
+    "word_tfidf": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "min_df": 2,
+      "max_features": 4000
+    },
+    "char_wb_tfidf": {
+      "ngram_range": [
+        3,
+        5
+      ],
+      "min_df": 2,
+      "max_features": 4000
+    }
+  },
+  "V2": {
+    "imputation": "training median",
+    "scaling": "training StandardScaler"
+  },
+  "MLP": "not used: sparse high-dimensional V0/combined with 2,000 training rows"
+}

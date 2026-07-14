@@ -1,0 +1,24 @@
+{
+  "schema": "mia_v3_environment_manifest",
+  "local": {
+    "python": "3.13.12 | packaged by Anaconda, Inc. | (main, Feb 24 2026, 16:07:20) [Clang 20.1.8 ]",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "numpy": "2.4.2",
+    "scipy": "1.17.1",
+    "scikit_learn": "1.8.0"
+  },
+  "remote": {
+    "hostname": "iZ2zee7myks0u6f1zckqgnZ",
+    "gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-8ca0b189-5024-4849-b038-8e8b1e850966",
+    "driver": "580.126.09",
+    "driver_cuda": "13.0",
+    "torch": "2.8.0+cu128",
+    "transformers": "4.46.3",
+    "collection_dependency": "isolated /root/mia_confound_controlled_v3/python_deps scikit-learn 1.7.2"
+  },
+  "repository": {
+    "branch": "fix/folded-remote-repeat-debug-and-guards",
+    "head": "26d84e4e1797c87b5fce8b8142e7a68948ae3979"
+  }
+}

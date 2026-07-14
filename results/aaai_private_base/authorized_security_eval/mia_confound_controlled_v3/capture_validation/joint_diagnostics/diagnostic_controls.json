@@ -1,0 +1,111 @@
+{
+  "schema": "mia_v3_diagnostic_controls",
+  "status": "PASS",
+  "paper_facing_final_mia_executed": false,
+  "per_shadow": [
+    {
+      "shadow": 1,
+      "records": 1000,
+      "matched_per_class": 433,
+      "feature_presence_auc": 0.5,
+      "missingness_only_auc": 0.5,
+      "shape_only_auc": 0.475598,
+      "source_classifier_auc": 0.5,
+      "source_classifier_pvalue": 1.0,
+      "shuffle_auc_mean": 0.4988487999999999,
+      "shuffle_auc_values": [
+        0.499976,
+        0.50918,
+        0.488532,
+        0.503976,
+        0.49257999999999996
+      ],
+      "pseudo_auc_mean": 0.4843471999999999,
+      "pseudo_auc_values": [
+        0.48872000000000004,
+        0.5047079999999999,
+        0.493348,
+        0.47585999999999995,
+        0.4591
+      ],
+      "disjoint_range_features": 0,
+      "missing_values": 0,
+      "duplicate_ids": 0,
+      "prohibited_header_columns": [],
+      "pass": true
+    },
+    {
+      "shadow": 2,
+      "records": 1000,
+      "matched_per_class": 448,
+      "feature_presence_auc": 0.5,
+      "missingness_only_auc": 0.5,
+      "shape_only_auc": 0.503626,
+      "source_classifier_auc": 0.5,
+      "source_classifier_pvalue": 1.0,
+      "shuffle_auc_mean": 0.4876864,
+      "shuffle_auc_values": [
+        0.521672,
+        0.454828,
+        0.483364,
+        0.479972,
+        0.49859600000000004
+      ],
+      "pseudo_auc_mean": 0.4825016,
+      "pseudo_auc_values": [
+        0.525344,
+        0.4787640000000001,
+        0.47119199999999994,
+        0.460632,
+        0.476576
+      ],
+      "disjoint_range_features": 0,
+      "missing_values": 0,
+      "duplicate_ids": 0,
+      "prohibited_header_columns": [],
+      "pass": true
+    },
+    {
+      "shadow": 3,
+      "records": 1000,
+      "matched_per_class": 444,
+      "feature_presence_auc": 0.5,
+      "missingness_only_auc": 0.5,
+      "shape_only_auc": 0.4735459999999999,
+      "source_classifier_auc": 0.5,
+      "source_classifier_pvalue": 1.0,
+      "shuffle_auc_mean": 0.5175592,
+      "shuffle_auc_values": [
+        0.48008400000000007,
+        0.539544,
+        0.534536,
+        0.5288999999999999,
+        0.504732
+      ],
+      "pseudo_auc_mean": 0.5139016,
+      "pseudo_auc_values": [
+        0.515936,
+        0.50844,
+        0.514572,
+        0.54518,
+        0.48538
+      ],
+      "disjoint_range_features": 0,
+      "missing_values": 0,
+      "duplicate_ids": 0,
+      "prohibited_header_columns": [],
+      "pass": true
+    }
+  ],
+  "shadow_id_classifier": {
+    "accuracy": 1.0,
+    "chance": 0.3333333333333333,
+    "metadata_columns_present": false,
+    "interpretation": "diagnostic model-identity separability only; feature matrix contains no shadow metadata"
+  },
+  "duplicate_group_control": {
+    "exact_groups_all_singleton": true,
+    "semantic_groups_all_singleton": true
+  },
+  "global_preprocessing_before_split": false
+}

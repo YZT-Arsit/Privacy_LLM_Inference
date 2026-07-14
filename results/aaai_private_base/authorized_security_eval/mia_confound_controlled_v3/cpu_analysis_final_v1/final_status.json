@@ -1,0 +1,47 @@
+{
+  "status": "MIA_CONFOUND_CONTROLLED_PILOT_COMPLETE",
+  "collection_mode": "SIMULATED_PROTOCOL_VIEW",
+  "decision_rule": "A_QUALIFIED_V0_ABOVE_CHANCE",
+  "paper_claim": "Under the evaluated three-shadow simulated protocol view, validated V2 features do not provide a detectable membership advantage over V0. V0 itself carries measurable membership signal, so this is not a no-leakage or equivalence result.",
+  "primary_logistic_macro_roc_auc": {
+    "V0": 0.6748606666666667,
+    "V2": 0.4794893333333334,
+    "V0_plus_V2": 0.49421333333333334
+  },
+  "paired_V2_minus_V0_roc_auc": {
+    "difference": -0.19537133333333329,
+    "exploratory_ci95": [-0.22038026072188896, -0.17062374850318604]
+  },
+  "controls_pass": true,
+  "control_macro_auc": {
+    "shape_only": 0.4933626666666666,
+    "presence_only": 0.5,
+    "missingness_only": 0.5,
+    "random_gaussian_611": 0.4766826666666666,
+    "shuffled_membership_mean": 0.5035265333333334,
+    "pseudo_membership_mean": 0.501,
+    "balanced_transform_source": 0.5
+  },
+  "completed_primary_folds": [
+    3,
+    2,
+    1
+  ],
+  "completed_semantic_group_sensitivity_folds": 15,
+  "final_mia_views": [
+    "V0",
+    "V2 families",
+    "V2 combined",
+    "V0+V2"
+  ],
+  "historical_source_confounded_auc1": "DIAGNOSTIC_ONLY",
+  "real_tdx_executed": false,
+  "unsupported_claims": [
+    "zero membership leakage",
+    "formal privacy",
+    "information-theoretic security",
+    "universal resistance",
+    "real-TDX-backed membership results",
+    "V0/V2 equivalence"
+  ]
+}
