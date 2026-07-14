@@ -4,7 +4,7 @@ Single source of truth for every substantive paper claim. **A claim may appear i
 
 **Status vocabulary** (skill S4): `definition`, `algebraically_proven`, `formally_proven_under_model`, `experimentally_validated`, `measured_real_system`, `proxy_evaluated`, `analytically_estimated`, `cost_proxy_only`, `observed_limitation`, `unsupported`, `future_work`. Distinguish: algebraic correctness ≠ numerical equivalence ≠ empirical attack resistance ≠ leakage reduction ≠ formal security ≠ cryptographic security ≠ hardware isolation.
 
-**Provenance:** evidence paths are relative to repo root `/Users/Hoshino/Desktop/privacy_llm_obfuscation`. "Last verified commit" = HEAD `86da258` (2026-07-13) unless noted; **commit subjects are empty in git history, so provenance is coarse** — re-verify on refresh. Legacy-ledger cross-refs: T# = `PAPER_THEORY_OUTLINE.md`; S#/P#/U# = `claims_mapping.md`; Gate# = `claim_experiment_map.md`.
+**Provenance:** evidence paths are relative to the repository root; repository and local user names are intentionally omitted for anonymous review. "Last verified commit" = HEAD `86da258` (2026-07-13) unless noted; **commit subjects are empty in git history, so provenance is coarse** — re-verify on refresh. Legacy-ledger cross-refs: T# = `PAPER_THEORY_OUTLINE.md`; S#/P#/U# = `claims_mapping.md`; Gate# = `claim_experiment_map.md`.
 
 **Reconciles four legacy ledgers** (see `audit/repository_evidence_audit.md` CF-6). Numerical convention: "fp64 ~1e-14" means float-close at that magnitude, **NOT** symbolic exactness.
 

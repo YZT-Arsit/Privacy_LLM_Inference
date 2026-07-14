@@ -1,8 +1,8 @@
 % ===========================================================================
-% APPENDIX D: REPRODUCIBILITY --- skeleton. Environment, seeds, artifact
+% REPRODUCTION DETAILS. Environment, seeds, artifact
 % manifests, and the evidence-lineage map so numbers are traceable.
 % ===========================================================================
-\section{Reproducibility}
+\section{Reproduction Details}
 \label{app:repro}
 
 % - Environments: CPU-emulation host (fp64/fp32); H800 PCIe (bf16); A10 (sm_86)+
@@ -12,4 +12,10 @@
 % - Artifact manifest: paper_results/csv/artifact_inventory.csv; results/INDEX.md.
 % - Evidence lineage L1-L5 table (Sec~\ref{sec:eval}) with measured-vs-projected.
 % - Attestation records: results/real_qwen_tdx_audit/**/gate*_*.json (v5 quotes).
-\TODO{Assemble manifest table; note allow\_any\_mr\_td and empty failed\_run\_registry.jsonl.}
+The separate Code and Data Supplement manifest is the submission-time index of
+commands and artifacts. Current repository evidence records seeds
+$\{7,1234,2025\}$, but several hardware profiles are single runs and the H800
+latency artifact does not record repetitions. The TDX evidence uses Quote v5;
+its policy permits any measurement register value, which is a limitation rather
+than a pinned-enclave claim. Absolute paths embedded in legacy JSON outputs must
+be replaced by archive-relative paths before packaging.

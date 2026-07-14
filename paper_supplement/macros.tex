@@ -1,0 +1,145 @@
+% macros.tex --- shared math macros and drafting aids for the AAAI paper.
+% Reuses the notation conventions from ../paper_draft/latex/macros.tex and
+% ../paper_draft/latex/sections/a_notation.tex, adapted for the official AAAI
+% 2027 template. Every symbol here is defined with dimensions and ownership in
+% notation.md; keep the two files in sync.
+%
+% AAAI-COMPLIANCE NOTE: hyperref, cleveref-with-hyperref, geometry, and titlesec
+% are forbidden by aaai2027.sty. We therefore use plain \ref/\eqref and avoid any
+% link-embedding package. Do NOT add \usepackage{hyperref} or \usepackage{cleveref}.
+
+% ---------------------------------------------------------------------------
+% Plain tensors. CANONICAL threat model = PRIVATE-base: base weights W are
+% proprietary/private (only the masked \Wt crosses to the untrusted GPU);
+% activations are private. See notation.md for the per-symbol ownership table.
+% ---------------------------------------------------------------------------
+\newcommand{\X}{\mathbf{X}}          % plaintext hidden state / input activation
+\newcommand{\Y}{\mathbf{Y}}          % plaintext output activation
+\newcommand{\W}{\mathbf{W}}          % base weight matrix (private/proprietary; only masked \Wt crosses)
+\newcommand{\Z}{\mathbf{Z}}          % generic intermediate
+\newcommand{\Amat}{\mathbf{A}}       % LoRA down-projection (r x d_in)
+\newcommand{\Bmat}{\mathbf{B}}       % LoRA up-projection (d_out x r)
+\newcommand{\Qmat}{\mathbf{Q}}       % attention queries
+\providecommand{\K}{}\renewcommand{\K}{\mathbf{K}}  % attention keys (guarded: \K may be undefined in some classes)
+\newcommand{\Vmat}{\mathbf{V}}       % attention values
+\newcommand{\Gmat}{\mathbf{G}}       % gradient
+\newcommand{\bias}{\mathbf{b}}       % learned bias (private model parameter, where present)
+
+% ---------------------------------------------------------------------------
+% Mask / permutation / pad family. These objects are NOT interchangeable;
+% notation.md records which is orthogonal, permutation, signed-permutation,
+% invertible-dense, additive one-time, or cancellation padding.
+% ---------------------------------------------------------------------------
+\newcommand{\Mask}{\mathbf{N}}       % generic right-action invertible mask
+\newcommand{\Nin}{\mathbf{N}_{\mathrm{in}}}
+\newcommand{\Nout}{\mathbf{N}_{\mathrm{out}}}
+\newcommand{\NQ}{\mathbf{N}_{Q}}     % head-space query mask
+\newcommand{\NK}{\mathbf{N}_{K}}     % head-space key mask
+\newcommand{\NV}{\mathbf{N}_{V}}     % value / output mask
+\newcommand{\Perm}{\mathbf{P}}       % permutation matrix
+\newcommand{\Umix}{\mathbf{U}}       % rank-space LoRA mixer (invertible, r_pad x r_pad)
+\newcommand{\Rmask}{\mathbf{R}}      % residual-space mask
+
+% Trusted-side additive pads and compensations.
+\newcommand{\Tpad}{\mathbf{T}}       % additive one-time pad (trusted)
+\newcommand{\Ct}{\mathbf{C}_{T}}     % trusted compensation term
+\newcommand{\Cone}{\mathbf{C}_{1}}
+
+% ---------------------------------------------------------------------------
+% Masked (tilde) variants -- quantities visible to the untrusted GPU.
+% ---------------------------------------------------------------------------
+\newcommand{\Ht}{\widetilde{\mathbf{H}}}
+\newcommand{\Xt}{\widetilde{\mathbf{X}}}
+\newcommand{\Yt}{\widetilde{\mathbf{Y}}}
+\newcommand{\Wt}{\widetilde{\mathbf{W}}}
+\newcommand{\At}{\widetilde{\mathbf{A}}}
+\newcommand{\Bt}{\widetilde{\mathbf{B}}}
+\newcommand{\Gt}{\widetilde{\mathbf{G}}}
+\newcommand{\Qt}{\widetilde{\mathbf{Q}}}
+\newcommand{\Kt}{\widetilde{\mathbf{K}}}
+\newcommand{\Vt}{\widetilde{\mathbf{V}}}
+\newcommand{\Zt}{\widetilde{\mathbf{Z}}}
+\newcommand{\Apad}{\mathbf{A}_{\mathrm{pad}}}
+\newcommand{\Bpad}{\mathbf{B}_{\mathrm{pad}}}
+\newcommand{\Adummy}{\mathbf{A}_{\mathrm{dummy}}}
+\newcommand{\Bdummy}{\mathbf{B}_{\mathrm{dummy}}}
+
+% ---------------------------------------------------------------------------
+% Operators.
+% ---------------------------------------------------------------------------
+\newcommand{\RMSCore}{\mathrm{RMSCore}}
+\newcommand{\LNCore}{\mathrm{LNCore}}
+\newcommand{\softmax}{\mathrm{softmax}}
+\newcommand{\SiLU}{\mathrm{SiLU}}
+\newcommand{\GELU}{\mathrm{GELU}}
+\newcommand{\ReLU}{\mathrm{ReLU}}
+\newcommand{\SwiGLU}{\mathrm{SwiGLU}}
+\newcommand{\RoPE}{\mathrm{RoPE}}
+\newcommand{\KV}{\mathrm{KV}}
+\newcommand{\LoRA}{\mathrm{LoRA}}
+\newcommand{\Recover}{\mathsf{Rec}}  % trusted recovery function
+
+% ---------------------------------------------------------------------------
+% Entities, sets, and the accelerator transcript (Problem/Threat section).
+% Parties are calligraphic; partition sets are blackboard-bold; tensors stay
+% bold. See notation.md for the collision note (calligraphic vs bold vs
+% blackboard letters that share a base glyph, e.g. P / P / P).
+% ---------------------------------------------------------------------------
+\newcommand{\prov}{\mathcal{P}}      % model provider (owns the proprietary checkpoint)
+\newcommand{\usr}{\mathcal{U}}       % user (LoRA data/adapter, prompt/context, generated result)
+\newcommand{\cloud}{\mathcal{S}}     % cloud service (administrative party containing TEE + GPU)
+\newcommand{\ctrl}{\mathcal{C}}      % trusted execution environment (cloud component)
+\newcommand{\acc}{\mathcal{G}}       % untrusted GPU (cloud component)
+\newcommand{\adv}{\mathcal{A}}       % honest-but-curious GPU adversary
+\newcommand{\params}{\boldsymbol{\theta}} % proprietary parameter set
+\newcommand{\rmsgain}{\boldsymbol{\gamma}} % RMSNorm / LayerNorm gains (part of \params)
+\newcommand{\maskset}{\Omega}        % mask family drawn per call/session
+\newcommand{\Ssec}{\mathbb{S}}       % secret-resident tensors (never leave \ctrl)
+\newcommand{\Stra}{\mathbb{T}}       % transient plaintext tensors (erased after a pass)
+\newcommand{\Sobs}{\mathbb{O}}       % observable (boundary-crossing) tensors
+\newcommand{\Spub}{\mathbb{P}}       % public information
+\newcommand{\transcript}{\tau}       % accelerator transcript (the adversary's view)
+\newcommand{\arch}{\Phi}             % public architecture tuple
+
+% ---------------------------------------------------------------------------
+% Scalars / dimensions.
+% ---------------------------------------------------------------------------
+\newcommand{\rtrue}{r}
+\newcommand{\rpad}{r_{\mathrm{pad}}}
+\newcommand{\dinX}{d_{\mathrm{in}}}
+\newcommand{\doutX}{d_{\mathrm{out}}}
+\newcommand{\dmodel}{d_{\mathrm{model}}}
+\newcommand{\eqtested}{\stackrel{\text{tested}}{=}}   % numerically verified equality
+\newcommand{\eqexact}{\stackrel{\text{alg}}{=}}       % exact algebraic equality
+\newcommand{\circs}{\odot}
+
+% ---------------------------------------------------------------------------
+% Theorem environments.
+% ---------------------------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ---------------------------------------------------------------------------
+% Drafting aids (per aaai-paper-writing skill). These are intentionally loud
+% during drafting. They MUST be resolved (emptied) before camera-ready.
+% ---------------------------------------------------------------------------
+% Unverified citation placeholder -- use INSTEAD of \cite until the entry is
+% verified from the original paper / authoritative index and promoted into
+% references.bib (tracked in audit/citation_inventory.md).
+\newcommand{\citeneeded}[1]{\textcolor{red}{[CITATION NEEDED: #1]}}
+% Open drafting task.
+\newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
+% Evidence pointer that ties prose to a claim-ledger ID (e.g. \evid{C-COR-01}).
+\newcommand{\evid}[1]{\textcolor{blue}{[EVIDENCE: #1]}}
+% Reviewer-risk margin flag.
+\newcommand{\risk}[1]{\textcolor{orange}{[RISK: #1]}}
+% Claim-status tag rendered inline while drafting (e.g. \status{cost\_proxy\_only}).
+\newcommand{\status}[1]{\textcolor{purple}{\textsf{\footnotesize[#1]}}}

@@ -1,5 +1,5 @@
 % Compact main-paper construction. Full messages, dimensions, schedules, and
-% backward formulas are in Appendices~\ref{app:protocol} and \ref{app:operators}.
+% backward formulas are in the separately submitted Technical Supplement.
 \newcounter{methodalgorithm}
 \newenvironment{methodalgorithm}[1]{%
   \par\medskip\refstepcounter{methodalgorithm}%
@@ -58,7 +58,7 @@ branches; $\ctrl$ recovers gradients and updates the User-owned factors.
 \end{enumerate}
 \end{methodalgorithm}
 
-\subsection{Obfuscated Inference}
+\subsection{Obfuscated Transformer Execution}
 \label{subsec:linear-execution}
 
 For a row-vector linear $\Y=\X\W+\bias$, the TEE samples invertible right
@@ -79,7 +79,7 @@ RoPE, residual updates, logit recovery, and decoding in the TEE. Attention
 softmax/value aggregation and permutation-compatible pointwise activations run
 on the GPU; a shared permutation is used for both SwiGLU branches. Pads are
 compensated before any nonlinear core. Full dimensions and operator boundaries
-are in Appendix~\ref{app:operators}.
+are given in the Supplement.
 
 \subsection{Autoregressive Attention and KV Cache}
 \label{subsec:attention-execution}
@@ -117,5 +117,5 @@ For backward execution, the TEE transforms the upstream gradient, the GPU
 returns transformed factor gradients, and the TEE recovers their real-rank
 slices and applies pad-gradient compensation. Loss evaluation, trusted
 nonlinear derivatives, optimizer state, and every parameter update stay in the
-TEE; refreshed transformed factors are created for the next call. Appendix
-\ref{app:operators} specifies the complete backward and optimizer interface.
+TEE; refreshed transformed factors are created for the next call. The
+Supplement specifies the complete backward and optimizer interface.

@@ -1,0 +1,49 @@
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage[submission]{aaai2027} % DO NOT CHANGE THIS
+\usepackage[hyphens]{url} % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm} % DO NOT CHANGE THIS
+\usepackage{natbib} % DO NOT CHANGE THIS AND DO NOT ADD OPTIONS
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD OPTIONS
+\frenchspacing % DO NOT CHANGE THIS
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{2}
+\input{macros}
+
+\newcounter{methodalgorithm}
+\newenvironment{methodalgorithm}[1]{%
+  \par\medskip\refstepcounter{methodalgorithm}%
+  \small\hrule\vspace{3pt}%
+  \noindent\textbf{Algorithm \themethodalgorithm: #1}\par\vspace{3pt}
+}{\vspace{3pt}\hrule\par\medskip}
+
+\title{Technical Supplement: Leakage-Aware Obfuscated Execution for Private
+Foundation-Model Inference and LoRA Adaptation}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+\maketitle
+
+This document supplies verification depth for the independently submitted main
+paper. The main paper contains the central threat model, construction, theorem
+statements, claim boundaries, headline evidence, and limitations; this
+supplement is not required to identify the method or its principal conclusions.
+
+\input{sections/01_extended_system_runtime_protocol}
+\input{sections/03_operator_and_lora_constructions}
+\input{sections/05_complete_correctness_proofs}
+\input{sections/06_extended_security_evaluation}
+\input{sections/07_additional_experimental_results}
+\input{sections/09_reproduction_details}
+
+\end{document}

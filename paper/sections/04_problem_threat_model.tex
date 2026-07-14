@@ -1,5 +1,5 @@
-% Compact main-paper system and threat model. Expanded partition, transcript,
-% adversary axes, and assumptions are in Appendix~\ref{app:protocol}.
+% Compact main-paper system and threat model. Expanded definitions are in the
+% separately submitted Technical Supplement.
 \section{Problem Formulation and Threat Model}
 \label{sec:threat}
 
@@ -7,58 +7,40 @@
 \label{subsec:system}
 
 The deployment has three administrative parties. The \emph{Model Provider}
-$\prov$ owns a proprietary decoder-only foundation model
-$M_{\params}$ and provisions its plaintext parameters into the Cloud Service's
-trusted execution environment (TEE). The \emph{User} $\usr$ owns private LoRA
-training examples, labels, prompts, and context; the User also owns the
-resulting adapter and generated result. The \emph{Cloud Service} $\cloud$
-contains two execution components: the trusted TEE $\ctrl$ and an untrusted GPU
-$\acc$. The TEE holds or transiently materializes plaintext secrets, controls
-masks and pads, executes trusted operators and recovery, maintains LoRA and
-optimizer state, recovers logits, decodes tokens, and returns results to the
-User. The GPU performs delegated bulk computation on transformed operands.
+$\prov$ owns a proprietary foundation model $M_{\params}$ and provisions its
+private parameters into the Cloud Service's trusted execution environment
+(TEE). The \emph{User} $\usr$ owns private LoRA data and adapter, generation
+prompts and context, and generated results. The \emph{Cloud Service} $\cloud$
+contains the trusted TEE $\ctrl$ and an untrusted GPU $\acc$ as execution
+components. The TEE manages plaintext secrets, masks, pads, trusted operators,
+recovery, LoRA and optimizer state, logits, decoding, and result return. The GPU
+performs delegated bulk computation only on transformed operands.
 
-The public architecture is
-$\arch=(L,d,h,h_{kv},d_h,m,V)$. All learned model parameters are private:
-$\params$ includes embeddings, projection and output-head weights,
-normalization parameters, and learned biases when present. The GPU receives
-only transformed images of these parameters; it never receives the plaintext
-checkpoint.
-
-\subsection{Protected Assets and Adversary View}
+\subsection{Assets and Adversary}
 \label{subsec:attacker}
 
-Protected Provider assets are $\params$. Protected adaptation assets are the
-User's training examples, labels and targets, training prompts, LoRA factors,
-gradients, and optimizer state. Protected generation assets are the prompt and
-context, plaintext intermediate states, KV contents, pre-sampling logits,
-generated token identities, and final result. The TEE releases the adapter or
-generated result only to $\usr$.
+Protected Provider assets are all learned checkpoint parameters, including
+embeddings, normalization parameters, output heads, and learned biases.
+Protected User assets are LoRA examples, targets, factors, gradients and
+optimizer state, prompts and context, plaintext activations and KV contents,
+pre-sampling logits, generated token identities, and final results. Results and
+adapters are released only to $\usr$.
 
-For confidentiality, $\adv$ is the honest-but-curious GPU $\acc$: it follows
-the delegated computation but records and correlates its transcript
-$\transcript$ across calls and sessions. Its view comprises transformed
-operands, the requested operation sequence, and admitted metadata: architecture
-dimensions, tensor and batch shapes, sequence and cache lengths, padded rank
-$\rpad$, call count, and the coarse operation schedule. Generated token
-identities are not public metadata. The GPU cannot inspect the TEE or obtain
-plaintext parameters, masks, pads, adapter factors, protected intermediate
-states, logits, or results. Appendix~\ref{app:protocol} gives the full tensor
-partition, freshness schedule, and message transcript.
+The confidentiality adversary is the honest-but-curious GPU: it follows the
+protocol but records and correlates the transcript of transformed operands,
+delegated operations, and admitted metadata. Admitted metadata is limited to
+architecture dimensions, tensor shapes, sequence/cache lengths, padded rank,
+call count, and coarse schedule. The GPU cannot inspect the TEE and receives no
+plaintext checkpoint, User input, adapter, protected activation/cache, logit,
+token identity, or result. The Supplement formalizes the complete state
+partition, transcript, freshness schedule, and stronger-query variants.
 
 \subsection{Goals and Non-Goals}
 \label{subsec:objectives}
 
-The functional goal is to recover the plaintext model computation at the TEE
-boundary, including the delegated linear, autoregressive attention/cache, and
-LoRA-adaptation paths. The confidentiality goal is empirical non-recovery of
-the protected assets by the stated GPU adversary, subject to the admitted
-metadata and transformed values. This is not a claim of cryptographic,
-semantic, or differential-privacy indistinguishability.
-
-The TEE is assumed uncompromised. Fine-grained timing, cache/page-fault, power,
-physical, and other hardware side channels are outside the model. Availability
-and malicious-GPU integrity are not goals; the implemented probabilistic
-spot-check is an auxiliary audit rather than a general integrity guarantee.
-Checkpoint disclosure, collusion that reveals TEE secrets, and unbounded
-plaintext/transcript pairs are also outside scope.
+Correctness requires TEE recovery to reproduce the plaintext inference and
+LoRA computations. Confidentiality is empirical non-recovery by the stated GPU
+subject to admitted leakage, not cryptographic, semantic, differential-privacy,
+or indistinguishability security. The TEE is trusted; hardware side channels,
+availability, checkpoint disclosure, and malicious-GPU integrity are outside
+scope. The implemented probabilistic spot-check is only an auxiliary audit.

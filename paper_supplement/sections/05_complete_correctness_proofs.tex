@@ -1,6 +1,27 @@
 \section{Complete Proofs}
 \label{app:proofs}
 
+For a self-contained supplement, we restate the three main-paper correctness
+claims before proving them.
+
+\begin{theorem}[Masked linear execution]\label{thm:linear-execution}
+For compatible $\X,\W,\bias,\Tpad$ and invertible $\Nin,\Nout$, the
+construction in Eq.~\eqref{eq:app-linear} recovers exactly $\X\W+\bias$.
+\end{theorem}
+
+\begin{theorem}[Attention and cache]\label{thm:attention-cache}
+If RoPE precedes masking, heads are not mixed, and
+$\NQ\NK^{\mathsf T}=\mathbf I$, masked attention recovers plaintext attention.
+The claim includes GQA/MQA with group-tied masks and incremental caching when
+$\NK,\NV$ remain fixed within a session.
+\end{theorem}
+
+\begin{theorem}[LoRA adaptation]\label{thm:lora-equivalence}
+If $\Apad\Bpad=\Amat\Bmat$ and $\Nin,\Nout,\Umix$ are invertible, the masked
+LoRA forward, compensated backward, and trusted optimizer update are
+algebraically equivalent to their plaintext linear-boundary counterparts.
+\end{theorem}
+
 All proofs use exact real arithmetic and the row-vector convention.  They prove
 functional equivalence, not confidentiality.  The TEE owns the untransformed
 quantities and masks; the GPU sees only the operands described in

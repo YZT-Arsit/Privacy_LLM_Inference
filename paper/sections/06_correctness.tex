@@ -4,8 +4,8 @@
 We use row-vector derivatives.  Correctness compares the canonical plaintext
 model with masked execution under the same inputs, parameters, and trusted
 operator results.  The following statements are identities over exact
-arithmetic; they assume that masks have the dimensions in
-Appendix~\ref{app:operators}, every inverse exists, and trusted operators occur
+arithmetic; they assume compatible mask dimensions, every inverse exists, and
+trusted operators occur
 at the boundaries specified in Section~\ref{sec:method}.  They do not require
 the transformed operands to be statistically independent of their plaintexts.
 
@@ -44,9 +44,9 @@ make old and new cache rows incompatible.
 \begin{theorem}[LoRA adaptation]\label{thm:lora-equivalence}
 Let $\Apad\Bpad=\Amat\Bmat$ and let $\Nin,\Nout,\Umix$ be invertible.  The
 forward construction in Eq.~\eqref{eq:method-lora-forward} recovers the
-plaintext base-plus-LoRA linear map.  Given the correspondingly transformed
-upstream gradient, Eqs.~\eqref{eq:app-lora-backward}--\eqref{eq:app-lora-gradient-pad}
-recover the plaintext factor and input gradients.  Applying the same trusted
+plaintext base-plus-LoRA linear map. Given the correspondingly transformed
+upstream gradient and pad-gradient compensation, the TEE recovers the plaintext
+factor and input gradients. Applying the same trusted
 optimizer to these gradients therefore produces the same parameter update.
 \end{theorem}
 
@@ -58,7 +58,7 @@ rule.  Update equivalence assumes identical initial adapter and optimizer state;
 the optimizer itself remains trusted.  The theorem covers delegated linear
 boundaries, not a GPU implementation of nonlinear backward operators.
 
-Appendix~\ref{app:proofs} gives complete derivations and failure conditions.
+The Supplement gives complete derivations and failure conditions.
 Finite-precision executions are not bit-exact claims: synthetic CPU tests give
 maximum absolute errors of $1.07\times10^{-14}$ (linear),
 $4.26\times10^{-14}$ (attention), $8.88\times10^{-16}$ (cached decode), and
