@@ -10,7 +10,7 @@
     "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5"
   },
   "inputs": {
-    "surrogate_fidelity_pilot.py": "4b16369800623959423e234078c443510cdf15ecbcd0e39908dac7b9c2919814",
+    "surrogate_fidelity_pilot.py": "7ba6e03c43c92f108a3b4185d6510a1059c1bb2c5e80974e846d0073e77f05cc",
     "fixed_length_view_audit.py": "63ae3c9944ce5b4e49660c30d0a812f3b4f5800fe498ea0c27c0760b3d29e18e",
     "fixed_length_source_audit_results.json": "d4bcce47bc37b0197f66d3af8396dabfabd9a7e3bc1df5010ac669def76d19b9",
     "e2e_test_v0_s1234.jsonl": "2695408fa3536b36daf8a1a5da5b9ac3273824dbb4edb831ceba6f4bd3fe7de7",

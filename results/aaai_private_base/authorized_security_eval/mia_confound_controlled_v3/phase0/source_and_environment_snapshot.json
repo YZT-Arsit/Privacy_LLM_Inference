@@ -1,0 +1,27 @@
+{
+  "schema": "mia_v3_phase0_source_environment_snapshot",
+  "captured_at": "2026-07-14T19:10:35+08:00",
+  "repository": {
+    "branch": "fix/folded-remote-repeat-debug-and-guards",
+    "head": "26d84e4e1797c87b5fce8b8142e7a68948ae3979",
+    "working_tree_clean": false,
+    "status_porcelain_sha256": "66228ae745364aad3f9d13cbe6108a6bb4356b107b85dd6e38df648b2276789e",
+    "tracked_diff_sha256": "d150788c2fdebc2935c6daecd0315542917dee8386aaec3d513e583ba7c5119a",
+    "note": "pre-existing researcher changes were preserved; this evaluation writes only to the new isolated v3 directory"
+  },
+  "host": {
+    "hostname": "iZ2zee7myks0u6f1zckqgnZ",
+    "gpu_name": "NVIDIA A10",
+    "gpu_uuid": "GPU-8ca0b189-5024-4849-b038-8e8b1e850966",
+    "driver_version": "580.126.09",
+    "cuda_reported_by_driver": "13.0",
+    "memory_total_mib": 23028,
+    "memory_used_mib": 0,
+    "memory_free_mib": 22588,
+    "gpu_utilization_percent": 0,
+    "isolated_before_launch": true,
+    "gpu_processes_before_launch": 0,
+    "screen_sessions_before_launch": 0,
+    "tmux_sessions_before_launch": 0
+  }
+}

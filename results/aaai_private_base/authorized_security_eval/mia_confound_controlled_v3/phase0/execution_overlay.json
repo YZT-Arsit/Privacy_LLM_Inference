@@ -1,0 +1,39 @@
+{
+  "schema": "mia_v3_gpu_execution_overlay",
+  "version": "1.0",
+  "authorization": "explicit AUTHORIZED_MEMBERSHIP_EVALUATION_GPU_OWNER request",
+  "authorization_date": "2026-07-14",
+  "purpose": "replace prior offline-only launch state without modifying frozen handoff files",
+  "host": {
+    "hostname": "iZ2zee7myks0u6f1zckqgnZ",
+    "public_ip": "39.96.4.252",
+    "private_ip": "172.30.25.157",
+    "gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-8ca0b189-5024-4849-b038-8e8b1e850966"
+  },
+  "repository": {
+    "branch": "fix/folded-remote-repeat-debug-and-guards",
+    "head": "26d84e4e1797c87b5fce8b8142e7a68948ae3979"
+  },
+  "fixed_execution_details_not_present_in_frozen_handoff": {
+    "optimizer": "AdamW",
+    "weight_decay": 0.0,
+    "betas": [0.9, 0.999],
+    "eps": 1e-8,
+    "warmup_fraction": 0.03,
+    "learning_rate_schedule": "linear_decay",
+    "gradient_clip_norm": 1.0,
+    "sample_schedule": "contiguous batches of 16 in exact train_members.jsonl order, cyclic wrap at 500",
+    "lora_dropout": 0.0,
+    "lora_bias": "none",
+    "warm_start": false
+  },
+  "constraints": {
+    "sequential_shadows": true,
+    "no_tdx": true,
+    "append_only_outputs": true,
+    "shared_registry_updates": false,
+    "shared_script_modifications": false,
+    "commits": false
+  }
+}

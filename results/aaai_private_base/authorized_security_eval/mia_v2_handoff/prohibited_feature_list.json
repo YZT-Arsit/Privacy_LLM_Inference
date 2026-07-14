@@ -1,0 +1,33 @@
+{
+  "schema": "mia_v2_prohibited_features",
+  "features": [
+    "sample_id",
+    "run_id",
+    "session_id",
+    "adapter_id",
+    "adapter_sha256",
+    "checkpoint_id",
+    "base_package_root_hash",
+    "split",
+    "source_file",
+    "timestamp",
+    "generation_order",
+    "tensor_shapes",
+    "sequence_length",
+    "top_indices",
+    "raw_tensor_coordinates",
+    "labels",
+    "loss",
+    "gradients",
+    "dlogits",
+    "optimizer_state"
+  ],
+  "additional": [
+    "membership_by_shadow",
+    "source_population",
+    "original_sample_id",
+    "duplicate_group_id as model input",
+    "normalized_input_hash as model input"
+  ],
+  "enforcement": "fail audit if any prohibited name or derived path/presence flag enters the feature matrix"
+}

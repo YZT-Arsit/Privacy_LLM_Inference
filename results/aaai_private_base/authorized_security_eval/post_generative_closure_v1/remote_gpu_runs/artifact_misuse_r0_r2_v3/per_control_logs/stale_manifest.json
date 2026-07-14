@@ -1,0 +1,6 @@
+{
+  "test": "stale_manifest",
+  "passed": true,
+  "detail": "manifest stale",
+  "evidence_mode": "static_rejection"
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "mia_v2_shadow_adapter_requirements",
+  "status": "PREPARED_NOT_LAUNCHED",
+  "shadow_seeds": [
+    7,
+    1234,
+    2025
+  ],
+  "members_per_shadow": 500,
+  "evaluation_samples_per_shadow": 1000,
+  "rank": 8,
+  "alpha": 16,
+  "targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "requirements": [
+    "one independently trained adapter per shadow seed",
+    "same frozen 1000-sample pool for member and nonmember collection",
+    "same capture binary/config/batch/dtype/padding/collection point for both labels",
+    "fresh transform policy identical across labels within each shadow",
+    "adapter/package/schema hashes pinned before capture",
+    "membership labels joined evaluator-side only",
+    "leave-one-shadow-run-out evaluation"
+  ],
+  "existing_plan": [
+    {
+      "shadow_seed": 7,
+      "status": "PREPARED_NOT_LAUNCHED",
+      "members": 500,
+      "evaluation_samples": 1000,
+      "directory": "results/aaai_private_base/authorized_security_eval/mia/confound_controlled_v2/shadow_runs/shadow_s7"
+    },
+    {
+      "shadow_seed": 1234,
+      "status": "PREPARED_NOT_LAUNCHED",
+      "members": 500,
+      "evaluation_samples": 1000,
+      "directory": "results/aaai_private_base/authorized_security_eval/mia/confound_controlled_v2/shadow_runs/shadow_s1234"
+    },
+    {
+      "shadow_seed": 2025,
+      "status": "PREPARED_NOT_LAUNCHED",
+      "members": 500,
+      "evaluation_samples": 1000,
+      "directory": "results/aaai_private_base/authorized_security_eval/mia/confound_controlled_v2/shadow_runs/shadow_s2025"
+    }
+  ],
+  "jobs_launched_by_this_handoff": false
+}

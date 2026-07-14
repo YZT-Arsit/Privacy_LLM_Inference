@@ -1,0 +1,6 @@
+{
+  "test": "cross_run_session",
+  "passed": true,
+  "detail": "session_binding mismatch",
+  "evidence_mode": "static_rejection"
+}

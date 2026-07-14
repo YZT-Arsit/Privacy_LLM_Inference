@@ -1,0 +1,6 @@
+{
+  "test": "manifest_declares_no_plaintext_base",
+  "passed": true,
+  "detail": "manifest declaration only; filename/hash controls provide separate observed evidence",
+  "evidence_mode": "static_rejection"
+}

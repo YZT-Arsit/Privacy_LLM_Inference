@@ -1,0 +1,26 @@
+{
+  "schema": "surrogate_fidelity_v2_preflight",
+  "recorded_before_launch": true,
+  "host": "39.96.4.252",
+  "gpu_uuid": "GPU-8ca0b189-5024-4849-b038-8e8b1e850966",
+  "gpu": "NVIDIA A10",
+  "memory_used_mib": 0,
+  "active_jobs": 0,
+  "validation_gate": "PASS",
+  "validated_feature_count": 611,
+  "expected_runtime": "approximately 1-3 minutes",
+  "output_root": "/root/security_feature_validation_v2/results/surrogate_fidelity_v2",
+  "source_hashes": {
+    "run_surrogate_fidelity_v2.py": "3ae43ded048d1a1ba967a6fa1541a788faff70ded6c61cac4d09b5a7bb66c2e3",
+    "v2_feature_schema.json": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+    "fixed_length_v2_validation_v2.json": "86681a5f994d23d527f3ba92d67e766b3570fd158b37c3af32f54c63816c68a5",
+    "e2e_test_v0_s1234.jsonl": "2695408fa3536b36daf8a1a5da5b9ac3273824dbb4edb831ceba6f4bd3fe7de7",
+    "e2e_test_v2_s1234.jsonl": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6"
+  },
+  "guards": {
+    "one_gpu_job_at_a_time": true,
+    "registry_write": false,
+    "shared_script_write": false,
+    "frozen_artifact_overwrite": false
+  }
+}

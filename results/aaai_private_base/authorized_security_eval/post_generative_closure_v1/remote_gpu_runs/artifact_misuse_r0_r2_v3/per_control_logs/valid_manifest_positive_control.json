@@ -1,0 +1,6 @@
+{
+  "test": "valid_manifest_positive_control",
+  "passed": true,
+  "detail": "all pinned fields and inventory accepted",
+  "evidence_mode": "static_rejection"
+}

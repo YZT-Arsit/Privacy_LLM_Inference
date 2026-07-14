@@ -1,0 +1,125 @@
+{
+  "schema": "feature_family_provenance_audit_v2",
+  "metadata": {
+    "source_a": {
+      "records": 500,
+      "sha256": "39129012a451a98bbd373c7e039bebc79a495a8f16ce58e85596b1e9186f3985",
+      "profile_sha256": "4ea32b04bc7fb37baad8922135ae6febb553198bc3850ed1b254947059d5e1e4",
+      "split_values": [
+        "train"
+      ],
+      "run_ids": [
+        "e2e_L12_s1234_full"
+      ],
+      "adapter_ids": [
+        "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2"
+      ],
+      "package_ids": [
+        "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1"
+      ]
+    },
+    "source_b": {
+      "records": 500,
+      "sha256": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6",
+      "profile_sha256": "2c0a633b721ac0659dc426a06ad3517c32ca44870bc05154311f925b2397b11f",
+      "split_values": [
+        "test"
+      ],
+      "run_ids": [
+        "e2e_L12_s1234_full"
+      ],
+      "adapter_ids": [
+        "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2"
+      ],
+      "package_ids": [
+        "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1"
+      ]
+    },
+    "common_sample_ids": 0,
+    "ordered_sample_ids_equal": false,
+    "same_capture_profile_fields": {
+      "schema": true,
+      "version": true,
+      "run_id": true,
+      "base_package_root_hash": true,
+      "adapter_sha256": true,
+      "device": true,
+      "dtype": true,
+      "victim_runs": true,
+      "prefill_per_sample": true
+    },
+    "different_query_hashes": true,
+    "raw_metadata_direct_source_identifiers": [
+      "sample_id namespace",
+      "split"
+    ],
+    "raw_metadata_indirect_identifiers": [
+      "queries_sha256 in profile"
+    ],
+    "historical_source_test_valid": false,
+    "invalidity_reason": "source label is aliased with dataset split/query set and there are zero shared sample IDs"
+  },
+  "feature_columns": 707,
+  "status_counts": {
+    "DIAGNOSTIC_ONLY": 611,
+    "INVALID": 96
+  },
+  "families": [
+    {
+      "family": "attention",
+      "columns": 480,
+      "schema_allowed_columns": 384,
+      "invalid_columns": 96,
+      "diagnostic_only_columns": 384,
+      "max_source_auc_separability": 1.0,
+      "max_ks": 1.0,
+      "disjoint_columns": 194,
+      "historical_evidence_status": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "family": "kv",
+      "columns": 192,
+      "schema_allowed_columns": 192,
+      "invalid_columns": 0,
+      "diagnostic_only_columns": 192,
+      "max_source_auc_separability": 1.0,
+      "max_ks": 1.0,
+      "disjoint_columns": 131,
+      "historical_evidence_status": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "family": "hidden",
+      "columns": 25,
+      "schema_allowed_columns": 25,
+      "invalid_columns": 0,
+      "diagnostic_only_columns": 25,
+      "max_source_auc_separability": 1.0,
+      "max_ks": 1.0,
+      "disjoint_columns": 23,
+      "historical_evidence_status": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "family": "logit",
+      "columns": 10,
+      "schema_allowed_columns": 10,
+      "invalid_columns": 0,
+      "diagnostic_only_columns": 10,
+      "max_source_auc_separability": 1.0,
+      "max_ks": 1.0,
+      "disjoint_columns": 8,
+      "historical_evidence_status": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "family": "combined",
+      "columns": 707,
+      "schema_allowed_columns": 611,
+      "invalid_columns": 96,
+      "diagnostic_only_columns": 611,
+      "max_source_auc_separability": 1.0,
+      "max_ks": 1.0,
+      "disjoint_columns": 356,
+      "historical_evidence_status": "DIAGNOSTIC_ONLY"
+    }
+  ],
+  "conclusion": "historical AUC cannot identify a collection-code confound because source is aliased with dataset split/query set"
+}

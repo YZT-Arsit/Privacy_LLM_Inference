@@ -1,0 +1,6 @@
+{
+  "test": "all_transformed_tensor_hashes_and_gpu_initialization",
+  "passed": true,
+  "detail": "loaded=242 bad=[]",
+  "evidence_mode": "attempted_execution"
+}

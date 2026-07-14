@@ -1,0 +1,6 @@
+{
+  "test": "wrong_base_hash",
+  "passed": true,
+  "detail": "base_package_root_hash mismatch",
+  "evidence_mode": "static_rejection"
+}

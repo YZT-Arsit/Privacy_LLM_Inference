@@ -1,0 +1,6 @@
+{
+  "test": "gpu_uuid_matches",
+  "passed": true,
+  "detail": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
+  "evidence_mode": "attempted_execution"
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "post_generative_security_closure_summary_v1",
+  "overall_verdict": "FAIL_CLOSED",
+  "hardware": {
+    "user_supplied_public_ip": "39.96.4.252",
+    "user_supplied_private_ip": "172.30.25.157",
+    "observed_gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-209b577b-b17f-22ab-eed7-4914b5b6c7a5",
+    "note": "The supplied resource was described as A100, but both nvidia-smi and the read-only registry identify an A10."
+  },
+  "collection_labels": {
+    "phases_1_to_3": "SIMULATED_PROTOCOL_VIEW",
+    "known_plaintext": "TRUSTED_POSITIVE_CONTROL",
+    "real_tdx": "PREPARED_NOT_EXECUTED"
+  },
+  "phases": {
+    "phase_0": {
+      "status": "COMPLETE",
+      "result": "Existing cells classified by final-protocol compatibility; only material semantic gaps require rerun."
+    },
+    "phase_1": {
+      "status": "FAIL",
+      "integrity_checks": "8/8 pass",
+      "enumerated_controls": "13/14 pass",
+      "package_gpu_initialization": "242/242 transformed tensors",
+      "r1_r2": "both attempted entries fail at absent-session read before package/model forward; no protected output or silent fallback",
+      "blocking_control": "native copied generation entry retains an unmanifested raw --adapter torch.load path",
+      "artifact_only_surrogate": "NOT_ESTABLISHED"
+    },
+    "phase_2": {
+      "status": "FAIL",
+      "scope": "SURROGATE_FIDELITY_PILOT; coarse output-length property only",
+      "one_percent_queries": 5,
+      "one_percent_accuracy": {"V0": 0.466667, "V2": 0.555556, "V0_plus_V2": 0.577778, "trusted_positive_control": 1.0},
+      "v2_minus_v0_accuracy_curve": {"0.01": 0.088889, "0.05": -0.007407, "0.10": -0.072222, "0.20": -0.101852},
+      "negative_controls": "label shuffle, sample-feature shuffle, Gaussian, shape-only, source identity, and split/preprocessing controls recorded",
+      "blocking_control": "fixed-length source identity AUC is 1.0; no V2 utility claim is permitted"
+    },
+    "phase_3": {
+      "status": "FAIL",
+      "cohort": "single sequence length 51; 25 records per source; batch size 1; fp32 single prefill",
+      "shape_only_auc": 0.5,
+      "source_auc": {"attention": 1.0, "kv": 1.0, "hidden": 1.0, "logit": 1.0, "combined_metadata_free": 1.0},
+      "membership": "WITHHELD pending completed corrected shadow feature captures",
+      "interpretation": "collection/source confounding, not plaintext recovery and not membership evidence"
+    },
+    "phase_4": {
+      "status": "NOT_RUN",
+      "reason": "Phases 1-3 did not pass their controls."
+    }
+  },
+  "real_tdx_handoff": "PREPARED_NOT_EXECUTED; 500 frozen IDs and 706-feature schema",
+  "key_artifact_sha256": {
+    "final_protocol_attack_coverage.json": "9351b8a901044c97545c10e146efa1c1c959c7ac910bb36a476ab2ae55b9fba5",
+    "artifact_misuse_r0_r2_report.json": "25678ab6c73a2b9293befab923cebedb858891ea873bd1c22a62d06aa4e38e29",
+    "surrogate_fidelity_results.json": "ee70a1f11ace0907aa5a6206508d201234f46b95e173fd334300a9021c75142e",
+    "fixed_length_results.json": "d4bcce47bc37b0197f66d3af8396dabfabd9a7e3bc1df5010ac669def76d19b9",
+    "real_tdx_fidelity_handoff.json": "f5985739a4404fdf6d495e54c4e2b09abc2b22939388b772d21530b5dff869a0",
+    "fusion_gate.json": "ee20a9a76986ea3f544c9c272c3e11429ca30d6ee4f0687b7e1b9b88df869a0f"
+  },
+  "policy_compliance": {
+    "central_registry_modified": false,
+    "existing_active_jobs_or_shared_scripts_modified": false,
+    "new_tdx_requested_or_configured": false,
+    "committed": false,
+    "one_gpu_job_at_a_time": true,
+    "outputs_isolated": true
+  }
+}

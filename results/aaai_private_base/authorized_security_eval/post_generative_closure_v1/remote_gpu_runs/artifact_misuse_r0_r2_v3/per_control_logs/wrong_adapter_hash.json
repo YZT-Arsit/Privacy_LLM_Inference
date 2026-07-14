@@ -1,0 +1,6 @@
+{
+  "test": "wrong_adapter_hash",
+  "passed": true,
+  "detail": "adapter_sha256 mismatch",
+  "evidence_mode": "static_rejection"
+}

@@ -193,7 +193,9 @@ def main() -> None:
     integrity.append(check("all_transformed_tensor_hashes_and_gpu_initialization", not bad_hashes,
                            f"loaded={len(tensor_inventory)} bad={bad_hashes[:3]}", "attempted_execution"))
     names = [p.name.lower() for p in package_files]
-    forbidden_files = sorted(n for n in names if any(x in n for x in PLAIN_PATTERNS))
+    allowed_audit_records = {"plaintext_absence_scan.json"}
+    forbidden_files = sorted(n for n in names if n not in allowed_audit_records
+                             and any(x in n for x in PLAIN_PATTERNS))
     integrity.extend([
         check("no_forbidden_plaintext_or_secret_filenames", not forbidden_files, str(forbidden_files)),
         check("manifest_declares_no_mask_secrets", manifest.get("contains_mask_secrets") is False,

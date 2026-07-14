@@ -1,0 +1,212 @@
+{
+  "schema": "fixed_length_v2_validation_v2",
+  "status": "FAIL",
+  "collection_mode": "SIMULATED_PROTOCOL_VIEW",
+  "records_per_repeat": 77,
+  "fixed_sequence_length": 61,
+  "batch_size": 1,
+  "padding": "none",
+  "dtype": "fp32",
+  "ordered_sample_ids_equal": true,
+  "unique_sample_ids": 77,
+  "train_test_sample_id_overlap": 0,
+  "repeat_a_sha256": "1e874b6fc596bb778964755d52bec49955582d12e251a37c997b32162244f0c1",
+  "repeat_b_sha256": "1e874b6fc596bb778964755d52bec49955582d12e251a37c997b32162244f0c1",
+  "capture_bytes_identical": true,
+  "profile_fields_equal": true,
+  "allowed_feature_count": 611,
+  "forbidden_schema_features_excluded": 96,
+  "forbidden_identifiers_in_matrix": false,
+  "max_paired_absolute_difference": 0.0,
+  "acceptance_rule": "all aligned and negative-control AUCs in [0.35,0.65], exact pairing and no metadata",
+  "source_auc": {
+    "attention": 0.5,
+    "kv": 0.5,
+    "hidden": 0.5,
+    "logit": 0.5,
+    "combined": 0.5
+  },
+  "runs": [
+    {
+      "family": "attention",
+      "control": "aligned",
+      "features": 384,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "family": "attention",
+      "control": "shuffled_labels",
+      "features": 384,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.36153489214148005,
+        0.6451764586914753
+      ]
+    },
+    {
+      "family": "attention",
+      "control": "shuffled_sample_mapping",
+      "features": 384,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.20811654526534862,
+      "roc_auc_ci95": [
+        0.0877592136198647,
+        0.3382694849099513
+      ]
+    },
+    {
+      "family": "kv",
+      "control": "aligned",
+      "features": 192,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "family": "kv",
+      "control": "shuffled_labels",
+      "features": 192,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.34615079365079365,
+        0.6417095588235291
+      ]
+    },
+    {
+      "family": "kv",
+      "control": "shuffled_sample_mapping",
+      "features": 192,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.23933402705515086,
+      "roc_auc_ci95": [
+        0.12589766777331815,
+        0.36567352484472043
+      ]
+    },
+    {
+      "family": "hidden",
+      "control": "aligned",
+      "features": 25,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "family": "hidden",
+      "control": "shuffled_labels",
+      "features": 25,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.35237583749716106,
+        0.6431613613313664
+      ]
+    },
+    {
+      "family": "hidden",
+      "control": "shuffled_sample_mapping",
+      "features": 25,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.29292403746097817,
+      "roc_auc_ci95": [
+        0.16138975966562175,
+        0.4375212251828631
+      ]
+    },
+    {
+      "family": "logit",
+      "control": "aligned",
+      "features": 10,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "family": "logit",
+      "control": "shuffled_labels",
+      "features": 10,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.3497173828881146,
+        0.6381433823529411
+      ]
+    },
+    {
+      "family": "logit",
+      "control": "shuffled_sample_mapping",
+      "features": 10,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.35848074921956297,
+      "roc_auc_ci95": [
+        0.22935331656173444,
+        0.5052578597228364
+      ]
+    },
+    {
+      "family": "combined",
+      "control": "aligned",
+      "features": 611,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "family": "combined",
+      "control": "shuffled_labels",
+      "features": 611,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.5,
+      "roc_auc_ci95": [
+        0.36196407903439154,
+        0.6431942267502612
+      ]
+    },
+    {
+      "family": "combined",
+      "control": "shuffled_sample_mapping",
+      "features": 611,
+      "train_records": 92,
+      "test_records": 62,
+      "roc_auc": 0.2117585848074922,
+      "roc_auc_ci95": [
+        0.10188254989495797,
+        0.3412095088819225
+      ]
+    }
+  ],
+  "interpretation": "source confound remains; stop before surrogate and MIA"
+}

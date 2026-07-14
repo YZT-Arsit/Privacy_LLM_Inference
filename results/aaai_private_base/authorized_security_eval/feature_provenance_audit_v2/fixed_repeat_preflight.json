@@ -1,0 +1,42 @@
+{
+  "schema": "fixed_length_repeat_preflight_v1",
+  "recorded_before_launch": true,
+  "resource": {
+    "host": "39.96.4.252",
+    "private_ip": "172.30.25.157",
+    "observed_gpu": "NVIDIA A10",
+    "gpu_uuid": "GPU-8ca0b189-5024-4849-b038-8e8b1e850966",
+    "memory_used_mib": 0,
+    "memory_free_mib": 22588,
+    "active_gpu_jobs": 0
+  },
+  "remote_root": "/root/security_feature_validation_v2",
+  "source_hashes": {
+    "capture_v2_prefill.py": "a9723a3122ffcadbb18ece2c03b7acbc293f0c12be489ee85e884664a86b64d7",
+    "view_contracts.py": "467f5a7b003143df45e890d495d732e2f307a1476df36692b9d29d1f4fb14edd",
+    "h800_unified_worker.py": "cad194825df6f6057e4e5c1b28ec723329f9e5d97b52d1615bd8bf0c92b8d269",
+    "fixed_length_queries.json": "853cfb8539ce9af90757b0461b16d72287df497d6725208277c7321c858a5ab3",
+    "v2_feature_schema.json": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+    "adapter.pt": "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2",
+    "transformed_package_root": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1"
+  },
+  "capture": {
+    "repeats": 2,
+    "records_per_repeat": 77,
+    "effective_sequence_length": 61,
+    "batch_size": 1,
+    "padding": "none",
+    "dtype": "fp32",
+    "run_id": "feature_validation_repeat_s1234",
+    "same_queries_code_config_package_adapter": true,
+    "expected_runtime_each": "approximately 5-15 seconds plus package initialization"
+  },
+  "guards": {
+    "one_gpu_job_at_a_time": true,
+    "central_registry_write": false,
+    "shared_script_write": false,
+    "frozen_artifact_overwrite": false,
+    "tdx_use": false,
+    "active_job_interference": false
+  }
+}

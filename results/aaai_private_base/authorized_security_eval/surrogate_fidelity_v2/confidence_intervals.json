@@ -1,0 +1,278 @@
+{
+  "aggregate": [
+    {
+      "budget": 0.01,
+      "queries": 5,
+      "view": "V0",
+      "agreement_mean": 0.4666666666666666,
+      "agreement_ci95": [
+        0.42777777777777776,
+        0.5333333333333333
+      ]
+    },
+    {
+      "budget": 0.01,
+      "queries": 5,
+      "view": "V2",
+      "agreement_mean": 0.5814814814814815,
+      "agreement_ci95": [
+        0.45,
+        0.6611111111111111
+      ]
+    },
+    {
+      "budget": 0.01,
+      "queries": 5,
+      "view": "V0_plus_V2",
+      "agreement_mean": 0.5537037037037037,
+      "agreement_ci95": [
+        0.45,
+        0.6388888888888888
+      ]
+    },
+    {
+      "budget": 0.01,
+      "queries": 5,
+      "view": "TRUSTED_POSITIVE_CONTROL",
+      "agreement_mean": 1.0,
+      "agreement_ci95": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "budget": 0.01,
+      "queries": 5,
+      "view": "RANDOM_FEATURES",
+      "agreement_mean": 0.34259259259259256,
+      "agreement_ci95": [
+        0.3277777777777778,
+        0.36666666666666664
+      ]
+    },
+    {
+      "budget": 0.01,
+      "queries": 5,
+      "view": "RANDOM_MAPPING",
+      "agreement_mean": 0.3333333333333333,
+      "agreement_ci95": [
+        0.3111111111111111,
+        0.35555555555555557
+      ]
+    },
+    {
+      "budget": 0.05,
+      "queries": 25,
+      "view": "V0",
+      "agreement_mean": 0.6259259259259259,
+      "agreement_ci95": [
+        0.5722222222222222,
+        0.6555555555555556
+      ]
+    },
+    {
+      "budget": 0.05,
+      "queries": 25,
+      "view": "V2",
+      "agreement_mean": 0.6166666666666667,
+      "agreement_ci95": [
+        0.6055555555555555,
+        0.6388888888888888
+      ]
+    },
+    {
+      "budget": 0.05,
+      "queries": 25,
+      "view": "V0_plus_V2",
+      "agreement_mean": 0.6333333333333333,
+      "agreement_ci95": [
+        0.6222222222222222,
+        0.6444444444444445
+      ]
+    },
+    {
+      "budget": 0.05,
+      "queries": 25,
+      "view": "TRUSTED_POSITIVE_CONTROL",
+      "agreement_mean": 1.0,
+      "agreement_ci95": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "budget": 0.05,
+      "queries": 25,
+      "view": "RANDOM_FEATURES",
+      "agreement_mean": 0.31296296296296294,
+      "agreement_ci95": [
+        0.28888888888888886,
+        0.33888888888888885
+      ]
+    },
+    {
+      "budget": 0.05,
+      "queries": 25,
+      "view": "RANDOM_MAPPING",
+      "agreement_mean": 0.3185185185185185,
+      "agreement_ci95": [
+        0.2833333333333333,
+        0.3611111111111111
+      ]
+    },
+    {
+      "budget": 0.1,
+      "queries": 50,
+      "view": "V0",
+      "agreement_mean": 0.6814814814814815,
+      "agreement_ci95": [
+        0.6666666666666666,
+        0.6999999999999998
+      ]
+    },
+    {
+      "budget": 0.1,
+      "queries": 50,
+      "view": "V2",
+      "agreement_mean": 0.5907407407407407,
+      "agreement_ci95": [
+        0.5888888888888889,
+        0.5944444444444444
+      ]
+    },
+    {
+      "budget": 0.1,
+      "queries": 50,
+      "view": "V0_plus_V2",
+      "agreement_mean": 0.662962962962963,
+      "agreement_ci95": [
+        0.6333333333333333,
+        0.6777777777777777
+      ]
+    },
+    {
+      "budget": 0.1,
+      "queries": 50,
+      "view": "TRUSTED_POSITIVE_CONTROL",
+      "agreement_mean": 1.0,
+      "agreement_ci95": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "budget": 0.1,
+      "queries": 50,
+      "view": "RANDOM_FEATURES",
+      "agreement_mean": 0.3185185185185185,
+      "agreement_ci95": [
+        0.28888888888888886,
+        0.3499999999999999
+      ]
+    },
+    {
+      "budget": 0.1,
+      "queries": 50,
+      "view": "RANDOM_MAPPING",
+      "agreement_mean": 0.3351851851851852,
+      "agreement_ci95": [
+        0.3111111111111111,
+        0.37777777777777777
+      ]
+    },
+    {
+      "budget": 0.2,
+      "queries": 100,
+      "view": "V0",
+      "agreement_mean": 0.762962962962963,
+      "agreement_ci95": [
+        0.7277777777777777,
+        0.7833333333333333
+      ]
+    },
+    {
+      "budget": 0.2,
+      "queries": 100,
+      "view": "V2",
+      "agreement_mean": 0.648148148148148,
+      "agreement_ci95": [
+        0.6277777777777778,
+        0.6666666666666666
+      ]
+    },
+    {
+      "budget": 0.2,
+      "queries": 100,
+      "view": "V0_plus_V2",
+      "agreement_mean": 0.75,
+      "agreement_ci95": [
+        0.7277777777777777,
+        0.7777777777777778
+      ]
+    },
+    {
+      "budget": 0.2,
+      "queries": 100,
+      "view": "TRUSTED_POSITIVE_CONTROL",
+      "agreement_mean": 1.0,
+      "agreement_ci95": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "budget": 0.2,
+      "queries": 100,
+      "view": "RANDOM_FEATURES",
+      "agreement_mean": 0.3444444444444444,
+      "agreement_ci95": [
+        0.29444444444444445,
+        0.41111111111111115
+      ]
+    },
+    {
+      "budget": 0.2,
+      "queries": 100,
+      "view": "RANDOM_MAPPING",
+      "agreement_mean": 0.3,
+      "agreement_ci95": [
+        0.2833333333333333,
+        0.32222222222222224
+      ]
+    }
+  ],
+  "v2_minus_v0": [
+    {
+      "budget": 0.01,
+      "v2_minus_v0_mean": 0.11481481481481481,
+      "ci95": [
+        -0.08333333333333331,
+        0.2222222222222222
+      ]
+    },
+    {
+      "budget": 0.05,
+      "v2_minus_v0_mean": -0.0092592592592593,
+      "ci95": [
+        -0.050000000000000044,
+        0.06666666666666665
+      ]
+    },
+    {
+      "budget": 0.1,
+      "v2_minus_v0_mean": -0.09074074074074072,
+      "ci95": [
+        -0.11111111111111105,
+        -0.07222222222222219
+      ]
+    },
+    {
+      "budget": 0.2,
+      "v2_minus_v0_mean": -0.11481481481481481,
+      "ci95": [
+        -0.1333333333333333,
+        -0.09999999999999998
+      ]
+    }
+  ]
+}

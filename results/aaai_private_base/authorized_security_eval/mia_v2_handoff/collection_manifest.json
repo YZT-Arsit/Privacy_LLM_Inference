@@ -1,0 +1,39 @@
+{
+  "schema": "mia_v2_corrected_collection_manifest",
+  "status": "BLOCKED",
+  "blocked_reasons": [
+    "three shadow adapters are PREPARED_NOT_LAUNCHED",
+    "matched 1000-sample V0/V2 captures do not exist"
+  ],
+  "feature_validation_status": "PASS",
+  "feature_source_auc": {
+    "attention": 0.5,
+    "kv": 0.5,
+    "hidden": 0.5,
+    "logit": 0.5,
+    "combined": 0.5
+  },
+  "validated_feature_count": 611,
+  "raw_metadata_feature_count": 0,
+  "artifacts": {
+    "schema_sha256": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+    "validation_sha256": "86681a5f994d23d527f3ba92d67e766b3570fd158b37c3af32f54c63816c68a5",
+    "pool_sha256": "b65e8b4a65566c438845c9d2a43a3a77dcec7327f8f7ae32452d37d800cebcae",
+    "pool_manifest_sha256": "c721391d10b8a2a5c83eb708cb6313b6ab7ae16b07e7e0ff8ab015956b370c41",
+    "assignments_sha256": "70635e2c587a77b75f98fba33783e293a2508a797c2c0e97ccf7fd98d52feebd",
+    "shadow_plan_sha256": "42b40ea373529e9c930f39e4f263c0dc46887453a831e6a837e68255d8cd1a7a"
+  },
+  "collection_contract": {
+    "same_ordered_sample_ids": true,
+    "same_collection_code_path": true,
+    "same_batch_construction": true,
+    "same_dtype": "fp32",
+    "same_padding_and_fixed_length_buckets": true,
+    "identical_feature_extraction": true,
+    "metadata_stripped_before_model": true,
+    "labels_evaluator_only": true,
+    "source_classifier_must_pass_per_shadow": true
+  },
+  "final_mia_executed": false,
+  "reason": "handoff preparation only"
+}

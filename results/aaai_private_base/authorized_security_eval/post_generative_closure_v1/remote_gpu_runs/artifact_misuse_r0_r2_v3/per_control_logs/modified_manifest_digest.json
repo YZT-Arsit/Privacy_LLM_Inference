@@ -1,0 +1,6 @@
+{
+  "test": "modified_manifest_digest",
+  "passed": true,
+  "detail": "rank mismatch",
+  "evidence_mode": "static_rejection"
+}

@@ -1,0 +1,6 @@
+{
+  "test": "wrong_rank",
+  "passed": true,
+  "detail": "rank mismatch",
+  "evidence_mode": "static_rejection"
+}

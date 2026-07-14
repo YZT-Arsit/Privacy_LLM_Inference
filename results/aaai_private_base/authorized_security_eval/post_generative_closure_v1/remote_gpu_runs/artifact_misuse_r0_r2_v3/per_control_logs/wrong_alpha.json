@@ -1,0 +1,6 @@
+{
+  "test": "wrong_alpha",
+  "passed": true,
+  "detail": "alpha mismatch",
+  "evidence_mode": "static_rejection"
+}

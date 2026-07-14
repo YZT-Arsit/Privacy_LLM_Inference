@@ -1,0 +1,6 @@
+{
+  "test": "cuda_available",
+  "passed": true,
+  "detail": "NVIDIA A10",
+  "evidence_mode": "attempted_execution"
+}

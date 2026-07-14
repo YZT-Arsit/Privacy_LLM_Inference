@@ -15,9 +15,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.metrics import accuracy_score, f1_score, log_loss
-
-from fixed_length_view_audit import descriptors
 
 
 BUDGETS = [.01, .05, .10, .20]
@@ -25,6 +22,61 @@ SEEDS = [7, 1234, 2025]
 INPUT_DIM = 1024
 HIDDEN = 64
 STEPS = 300
+
+
+def accuracy_score(y, pred) -> float:
+    return float(np.mean(np.asarray(y) == np.asarray(pred)))
+
+
+def f1_score(y, pred, average="macro") -> float:
+    if average != "macro": raise ValueError("only macro supported")
+    vals = []
+    for c in range(3):
+        tp = np.sum((y == c) & (pred == c)); fp = np.sum((y != c) & (pred == c)); fn = np.sum((y == c) & (pred != c))
+        vals.append(float(2 * tp / max(1, 2 * tp + fp + fn)))
+    return float(np.mean(vals))
+
+
+def log_loss(y, prob, labels=None) -> float:
+    del labels
+    return float(-np.log(np.clip(prob[np.arange(len(y)), y], 1e-12, 1)).mean())
+
+
+def _stats(values) -> list[float]:
+    x = np.asarray(values, dtype=float)
+    return [float(x.mean()), float(x.std()), float(x.min()), float(x.max())]
+
+
+def descriptors(row: dict) -> list[dict]:
+    """The pinned 706-feature, shape-free subset used by the closure audit."""
+    seq = float(row["tensor_shapes"]["sequence_length"]); out = []
+    def add(name, value, family, layer, statistic):
+        out.append({"name": name, "value": float(value), "family": family,
+                    "layer": layer, "statistic": statistic})
+    def reductions(prefix, values, family, layer, source):
+        for reduction, value in zip(("mean", "std", "min", "max"), _stats(values)):
+            add(f"{prefix}.{reduction}", value, family, layer, f"{reduction}({source})")
+    hidden = row["transformed_hidden"]
+    add("transformed_hidden.final.last_l2", hidden["final_last_l2"], "transformed_hidden", "final", "last_token_l2")
+    for item in hidden["per_layer"]:
+        add(f"transformed_hidden.layer_{item['layer']:02d}.last_l2", item["last_l2"],
+            "transformed_hidden", int(item["layer"]), "pre_attention_last_token_l2")
+    logits = row["masked_logits"]
+    for key in ("mean", "std", "l2", "min", "max"):
+        add(f"masked_logits.{key}", logits[key], "masked_logits", "final", key)
+    reductions("masked_logits.top_values", logits["top_values"], "masked_logits", "final", "top_values")
+    for family in ("masked_k", "masked_v"):
+        for layer in row[family]:
+            reductions(f"{family}.layer_{layer['layer']:02d}.last_l2_by_head", layer["last_l2_by_head"],
+                       family, int(layer["layer"]), "last_l2_by_head")
+    for layer in row["attention_scores"]:
+        lid = int(layer["layer"])
+        for key in ("last_entropy_by_head", "last_max_by_head", "true_score_last_mean_by_head", "true_score_last_std_by_head"):
+            reductions(f"attention_scores.layer_{lid:02d}.{key}", layer[key], "attention_scores", lid, key)
+        normalized = np.asarray(layer["last_argmax_by_head"], float) / max(seq - 1, 1)
+        reductions(f"attention_scores.layer_{lid:02d}.normalized_last_argmax_by_head", normalized,
+                   "attention_scores", lid, "last_argmax/(sequence_length-1)")
+    return out
 
 
 def sha(path: Path) -> str:

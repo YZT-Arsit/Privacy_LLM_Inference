@@ -1,0 +1,6 @@
+{
+  "test": "wrong_target_set",
+  "passed": true,
+  "detail": "target_modules mismatch",
+  "evidence_mode": "static_rejection"
+}

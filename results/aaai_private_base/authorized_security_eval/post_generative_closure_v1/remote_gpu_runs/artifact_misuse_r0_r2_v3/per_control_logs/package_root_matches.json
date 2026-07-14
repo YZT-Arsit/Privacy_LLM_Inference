@@ -1,0 +1,6 @@
+{
+  "test": "package_root_matches",
+  "passed": true,
+  "detail": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "evidence_mode": "attempted_execution"
+}

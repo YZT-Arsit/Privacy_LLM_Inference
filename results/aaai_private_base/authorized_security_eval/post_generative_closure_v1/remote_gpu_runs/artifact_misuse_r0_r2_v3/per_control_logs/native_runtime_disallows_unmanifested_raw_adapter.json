@@ -1,0 +1,6 @@
+{
+  "test": "native_runtime_disallows_unmanifested_raw_adapter",
+  "passed": false,
+  "detail": "FAIL: copied native entrypoint contains --adapter torch.load path without adapter-package manifest validation",
+  "evidence_mode": "static_rejection"
+}

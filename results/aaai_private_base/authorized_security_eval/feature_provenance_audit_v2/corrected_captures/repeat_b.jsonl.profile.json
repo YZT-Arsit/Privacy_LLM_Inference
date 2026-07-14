@@ -1,0 +1,31 @@
+{
+  "schema": "authorized_v2_prefill_capture",
+  "version": "1.0",
+  "view": "V2",
+  "records": 77,
+  "run_id": "feature_validation_repeat_s1234",
+  "base_package_root_hash": "bfd578b809ef2313ed623c88893b1199f10be770f7678c1346ad473e36f0cde1",
+  "adapter_sha256": "1e29821f0b4cf4eb90bd748f171a14c2d2607b6e086b7d23bd2ad18b16e90cd2",
+  "queries_sha256": "853cfb8539ce9af90757b0461b16d72287df497d6725208277c7321c858a5ab3",
+  "output_sha256": "1e874b6fc596bb778964755d52bec49955582d12e251a37c997b32162244f0c1",
+  "wall_sec": 4.185723543167114,
+  "device": "cuda",
+  "dtype": "fp32",
+  "victim_runs": 1,
+  "prefill_per_sample": 1,
+  "timing_eligible": false,
+  "plaintext_or_tdx_state_written": false,
+  "worker_counters": {
+    "untrusted_worker_plaintext_base_weight_materializations": 0,
+    "untrusted_worker_plaintext_embedding_materializations": 0,
+    "untrusted_worker_plaintext_hidden_materializations": 0,
+    "untrusted_worker_plaintext_lora_materializations": 0,
+    "untrusted_worker_plaintext_gradient_materializations": 0,
+    "nonlinear_trusted_calls": 0,
+    "packed_update_calls": 0,
+    "trusted_optimizer_calls": 0,
+    "silent_fallbacks": 0,
+    "logical_trusted_invocations": 0,
+    "mask_domain_transitions": 7469
+  }
+}

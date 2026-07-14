@@ -1,0 +1,6 @@
+{
+  "test": "plaintext_named_tensor",
+  "passed": true,
+  "detail": "tensor inventory mismatch",
+  "evidence_mode": "static_rejection"
+}

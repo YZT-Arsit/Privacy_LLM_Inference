@@ -1,0 +1,30 @@
+{
+  "schema": "surrogate_fidelity_v2_config",
+  "collection_mode": "SIMULATED_PROTOCOL_VIEW",
+  "target": "coarse output-token-length class",
+  "budgets": [
+    0.01,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "seeds": [
+    7,
+    1234,
+    2025
+  ],
+  "architecture": "1024->64->3",
+  "optimizer": "AdamW(lr=0.003,weight_decay=0.0001)",
+  "steps": 300,
+  "validated_v2_features": 611,
+  "v0_sha256": "2695408fa3536b36daf8a1a5da5b9ac3273824dbb4edb831ceba6f4bd3fe7de7",
+  "v2_sha256": "812e0f898c4b181ac889acae1d51e46f1b967e512cc9cb46d66f3d9bf076d1f6",
+  "schema_sha256": "7be799cbebf59d383c805e2195cf855bf22de3ade04c511dd2dd68069486406e",
+  "validation_sha256": "86681a5f994d23d527f3ba92d67e766b3570fd158b37c3af32f54c63816c68a5",
+  "same_pool": true,
+  "test_records": 180,
+  "validation_records": 40,
+  "query_pool_records": 280,
+  "near_duplicate_groups": 469,
+  "device": "cuda"
+}

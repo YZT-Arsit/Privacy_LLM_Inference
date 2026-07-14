@@ -1,0 +1,6 @@
+{
+  "test": "artifact_count_matches",
+  "passed": true,
+  "detail": "hashes=242 manifest=242",
+  "evidence_mode": "static_rejection"
+}
