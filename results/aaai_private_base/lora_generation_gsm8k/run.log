@@ -1,22 +1,0 @@
-[M0] loading base ...
-Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 4923.17it/s]
-[M0] EM=0.025 extract=1.000
-[M1] injecting + training plaintext LoRA ...
-/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/lora_gen_gsm8k/run_gsm8k_lora_eval.py:152: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
-Consider using tensor.detach() first. (Triggered internally at /Users/runner/work/pytorch/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:837.)
-  losses.append(float(loss))
-  [train] step 0 loss 0.7837
-  [train] step 20 loss 0.9302
-  [train] step 40 loss 1.1172
-  [train] step 60 loss 0.3917
-  [train] step 80 loss 0.5927
-  [train] step 100 loss 0.9117
-  [train] step 120 loss 0.7618
-  [train] step 140 loss 0.4580
-  [train] step 160 loss 0.4414
-  [train] step 180 loss 0.5865
-  [train] step 200 loss 0.8357
-  [train] step 220 loss 0.8099
-  [train] step 240 loss 0.9088
-[M1] EM=0.000 extract=1.000 loss 0.784->0.679
-[done] M0 EM=0.025  M1 EM=0.000  gap M1-M2=0.0

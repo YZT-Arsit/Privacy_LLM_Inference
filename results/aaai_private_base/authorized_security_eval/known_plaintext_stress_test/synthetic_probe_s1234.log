@@ -1,6 +1,0 @@
-=== Synthetic adversary probe (A_rightmul-style folded scheme) ===
-dim=64 vocab=2000 tokens=256 shared-input families=5
-
-{"mask": "signed_permutation", "pad_scale": 0.0, "families": 5, "A0_raw_nn": {"top1": 100.0, "top10": 100.0}, "A1a_norm_on_h_tilde_top1": 100.0, "A1b_norm_on_padded_operand_top1": 100.0, "A2_gram_residual": 0.0, "A2_gram_recovers_maskerr": 1.1131, "A2_gram_nn_no_padknow": {"top1": 0.0, "top10": 0.78}, "A2_gram_nn_pad_oracle": {"top1": 0.0, "top10": 0.78}}
-{"mask": "signed_permutation", "pad_scale": 0.1, "families": 5, "A0_raw_nn": {"top1": 100.0, "top10": 100.0}, "A1a_norm_on_h_tilde_top1": 100.0, "A1b_norm_on_padded_operand_top1": 3.12, "A2_gram_residual": 0.0, "A2_gram_recovers_maskerr": 1.1172, "A2_gram_nn_no_padknow": {"top1": 0.0, "top10": 0.78}, "A2_gram_nn_pad_oracle": {"top1": 0.0, "top10": 0.78}}
-{"mask": "signed_permutation", "pad_scale": 0.5, "families": 5, "A0_raw_nn": {"top1": 100.0, "top10": 100.0}, "A1a_norm_on_h_tilde_top1": 100.0, "A1b_norm_on_padded_operand_top1": 0.0, "A2_gram_residual": 0.0, "A2_gram_recovers_maskerr": 1.2148, "A2_gram_nn_no_padknow": {"top1": 0.0, "top10": 0.78}, "A2_gram_nn_pad_oracle": {"top1": 0.0, "top10": 1.56}}

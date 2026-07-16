@@ -1,5 +1,0 @@
-/Users/Hoshino/Desktop/privacy_llm_obfuscation/.venv/lib/python3.13/site-packages/torch/_subclasses/functional_tensor.py:368: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /Users/runner/work/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:84.)
-  cpu = _conversion_method_template(device=torch.device("cpu"))
-real 1.42
-user 1.31
-sys 0.12

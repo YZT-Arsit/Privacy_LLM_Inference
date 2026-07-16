@@ -1,9 +1,0 @@
-[sync] pushed current code to A10 + TDX
-Traceback (most recent call last):
-  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/generative_lora/gate_e2e_protected_pair2.py", line 16, in <module>
-    gate.main()
-    ~~~~~~~~~^^
-  File "/Users/Hoshino/Desktop/privacy_llm_obfuscation/scripts/generative_lora/gate_e2e_protected.py", line 178, in main
-    raise RuntimeError(f"failed to launch durable G2 driver: rc={rc} stderr={launch_err}")
-RuntimeError: failed to launch durable G2 driver: rc=255 stderr=root@8.147.119.67: Permission denied (publickey).
-

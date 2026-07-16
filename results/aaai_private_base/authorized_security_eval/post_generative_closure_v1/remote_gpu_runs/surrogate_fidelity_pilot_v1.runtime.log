@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/root/security_eval_post_closure_v1/scripts/surrogate_fidelity_pilot.py", line 18, in <module>
-    from sklearn.metrics import accuracy_score, f1_score, log_loss
-ModuleNotFoundError: No module named 'sklearn'
